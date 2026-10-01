@@ -184,14 +184,15 @@ class FakeResponse:
 
 
 class FakeSession:
-    """Serves queued responses (or raises queued exceptions) in order and records each request's headers."""
+    """Serves queued responses (or raises queued exceptions) in order and records each request's headers and timeout."""
 
     def __init__(self, *responses):
-        self.responses, self.calls = list(responses), []
+        self.responses, self.calls, self.timeouts = list(responses), [], []
         self.headers = {}
 
     def get(self, url, headers=None, timeout=None):
         self.calls.append((url, headers or {}))
+        self.timeouts.append(timeout)
         nxt = self.responses.pop(0)
         if isinstance(nxt, Exception):
             raise nxt

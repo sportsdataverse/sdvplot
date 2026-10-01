@@ -176,3 +176,21 @@ def test_immutable_connection_error_gives_offline_guidance(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(requests.ConnectionError("down")))
     with pytest.raises(OfflineError, match="SDVPLOT_CACHE_DIR"):
         _cache.fetch_immutable("https://x/a.png", "images/ab/cd.png", "0" * 64)
+
+
+def test_fetch_cached_uses_timeout_5_60(cache, monkeypatch):
+    """R16: fetch_cached must use timeout=(5, 60) to prevent network hangs."""
+    s = FakeSession(FakeResponse(200, b"data"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
+    assert s.timeouts[0] == (5, 60)
+
+
+def test_fetch_immutable_uses_timeout_5_60(cache, monkeypatch):
+    """R16: fetch_immutable must use timeout=(5, 60) to prevent network hangs."""
+    body = b"\x89PNG"
+    sha = hashlib.sha256(body).hexdigest()
+    s = FakeSession(FakeResponse(200, body))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    _cache.fetch_immutable("https://x/a.png", f"images/{sha[:2]}/{sha}.png", sha)
+    assert s.timeouts[0] == (5, 60)
