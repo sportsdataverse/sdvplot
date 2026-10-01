@@ -173,3 +173,24 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
     if unresolved:
         _report(unresolved, league, strict)
     return wrap(out)
+
+
+def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
+    """Up to n (team_id, name) candidates for a value that did not resolve, best first. It never picks one:
+    similar names can be different teams ("Bethany (KS)" and "Bethany (WV)")."""
+    import difflib
+
+    key = norm_value(value)
+    if key is None:
+        return []
+    merged: dict[str, list[str]] = {}
+    for system in _lookup(league).values():
+        for k, cands in system.items():
+            merged.setdefault(k, []).extend(c[0] for c in cands)
+    names = dict(_index.teams(league).select("team_id", "name").iter_rows())
+    out: list[tuple[str, str]] = []
+    for k in difflib.get_close_matches(key, list(merged), n=n * 3, cutoff=0.6):
+        for tid in merged[k]:
+            if tid not in {t for t, _ in out}:
+                out.append((tid, names.get(tid, tid)))
+    return out[:n]
