@@ -107,6 +107,7 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
 ## Release
 
 1. Bump `version` in `pyproject.toml`.
-2. Rename `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z Release: <date>`.
+2. In `CHANGELOG.md`, move the `## Unreleased` entries under a new `## X.Y.Z Release: <date>` heading directly below
+   an emptied `## Unreleased`, which always stays at the top (a test asserts it).
 3. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
 4. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates.
