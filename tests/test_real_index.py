@@ -65,3 +65,10 @@ def test_live_readme_logo_examples(tmp_path, monkeypatch):
     oak = sdvplot.marks("OAK", "nfl", 2010)  # the README's "Oakland-era mark"
     assert sdvplot.logo_url("OAK", "nfl", season=2010) == oak.filter(oak["entity_id"] == "OAK")["archive_url"][0]
     assert max(sdvplot.logo_image("LV", "nfl", size=128).size) == 128
+
+
+def test_wnba_san_antonio_codes_carry_their_own_eras():  # M6: sdvplotR's Silver Stars / Stars eras
+    a = _index.alias_table().filter((pl.col("league") == "wnba") & pl.col("value").is_in(["SAS", "SA", "espn:SAS", "espn:SA"]))
+    assert sorted(a.select("value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("SA", "17", 2014, 2017), ("SAS", "17", 2003, 2013), ("espn:SA", "17", 2014, 2017), ("espn:SAS", "17", 2003, 2013)
+    ]
