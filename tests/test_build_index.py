@@ -315,3 +315,25 @@ def test_sdvplotr_keys_map_through_their_canonical_abbreviation(tmp_path):  # F1
     # historical: OAK; RAI through abbr_mapping's LVR; LVR stays abbr_mapping's (sdvplotR's order)
     assert sorted(got) == [("nfl", "LAS VEGAS", "13"), ("nfl", "LVR", "13"), ("nfl", "OAK", "13"), ("nfl", "RAI", "13")]
     assert aliases.filter(pl.col("id_system") == "sdvplotr")["valid_from"].is_null().all()
+
+
+def test_mark_nhl_rows_of_a_franchise_without_an_espn_team_follow_its_tri_code():  # R50
+    # the Coyotes franchise has no ESPN team; its tri-codes resolve to Utah through the user-facing aliases
+    # (sdvplotR's ARI/PHX), so its marks join Utah's with no alias range: each keeps its manifest range
+    got = _crosswalk(
+        [
+            ("nhl", "nhl", "53", "ARI", "2015", "2021"),
+            ("nhl", "nhl", "27", "PHX", "1997", "1999"),
+            ("nhl", "nhl", "45", "SLE", "1934", "1935"),
+        ],
+        [("nhl", "129764")],
+        aliases=[("nhl", "sdvplotr", "ARI", "129764", None, None), ("nhl", "sdvplotr", "PHX", "129764", None, None)],
+        nhl=[
+            ("53", "28", "ARI", "Arizona Coyotes", "Arizona Coyotes", "Coyotes"),
+            ("27", "28", "PHX", "Phoenix Coyotes", "Arizona Coyotes", "Coyotes"),
+            ("45", "3", "SLE", "St. Louis Eagles", "St. Louis Eagles", "Eagles"),
+        ],
+        espn=[("nhl", "129764", "Mammoth")],
+        ranges=True,
+    )
+    assert got == {"nhl:53": ("129764", None, None), "nhl:27": ("129764", None, None), "nhl:45": (None, None, None)}

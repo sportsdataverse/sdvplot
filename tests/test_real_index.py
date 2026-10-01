@@ -86,3 +86,11 @@ def test_nhl_stats_ids_answer_only_when_named():  # R49: NHL ids 1-28 are other 
     assert sdvplot.resolve(1, "nhl", id_system="nhl_id") == "11"  # NHL id 1: the Devils
     assert sdvplot.resolve([1, 6, 52, 55], "nhl", id_system="nhl_id") == ["11", "1", "28", "124292"]
     assert sdvplot.resolve("NJD", "nhl") == "11"  # tri-codes stay under auto
+
+
+def test_coyotes_marks_reach_utah_with_their_own_ranges():  # R50
+    m = _index.alias_table().filter((pl.col("id_system") == "mark") & pl.col("value").is_in(["nhl:27", "nhl:53"]))
+    assert sorted(m.select("value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("nhl:27", "129764", None, None),
+        ("nhl:53", "129764", None, None),
+    ]

@@ -77,11 +77,13 @@ def test_named_examples(league, value, name):
 
 
 
-# sdvplotR's season logos that sdvplot picks differently (final-fix-report.md, F1): the Coyotes' codes resolve to
-# Utah, whose marks sdvplot shows (the NHL franchise has no ESPN team, so no Coyotes mark maps); the others are NHL
-# marks with the same or touching ranges (KCS/CLR 1977, TSP/TOR 1927, Utah 2025), which the two break differently
+# sdvplotR's season logos (sport, key, season probed) that sdvplot picks differently (final-fix-report.md, F1, R50):
+# NHL marks with the same or touching ranges, which the two break differently (two Coyotes marks for 2022-2024,
+# KCS/CLR 1977, TSP/TOR 1927, Utah 2025)
 LOGO_DIFFERENCES = {
-    ("nhl", k) for k in ("ARI", "PHX", "CGY", "DAL", "KCS", "MNS", "TOR", "TSP", "UTA", "UTAH")
+    ("nhl", "ARI", 2022), ("nhl", "CGY", 1987), ("nhl", "CGY", 2007), ("nhl", "DAL", 2017), ("nhl", "KCS", 1975),
+    ("nhl", "KCS", 1977), ("nhl", "MNS", 1988), ("nhl", "TOR", 1927), ("nhl", "TOR", 1985), ("nhl", "TOR", 2002),
+    ("nhl", "TSP", 1927), ("nhl", "UTA", 2025), ("nhl", "UTAH", 2025),
 }
 
 
@@ -100,6 +102,20 @@ def test_live_season_logos_match_sdvplotr(tmp_path, monkeypatch):
         if url == r["url"]:
             same += 1
         elif url is not None:  # None: a defunct club sdvplot does not carry (Montreal Maroons, Charlotte Sting)
-            differ.add((r["sport"], r["key"]))
+            differ.add((r["sport"], r["key"], season))
     assert differ <= LOGO_DIFFERENCES, sorted(differ - LOGO_DIFFERENCES)
-    assert same >= 317  # of 401 at R43
+    assert same >= 327  # of 401 at R50
+
+
+@pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
+def test_live_coyotes_era_logos(tmp_path, monkeypatch):  # R50
+    from sdvplot import _manifest
+    from sdvplot._marks import select_mark
+
+    monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
+    _manifest._read.cache_clear()
+    lh = pl.read_csv(Path(__file__).parent / "fixtures" / "sdvplotr_logo_history.csv", infer_schema_length=0)
+    ari = lh.filter((pl.col("key") == "ARI") & (pl.col("season_from") == "2015") & (pl.col("variant") == "primary"))
+    assert sdvplot.logo_url("ARI", "nhl", season=2017) == ari["url"].item()  # sdvplotR's Coyotes mark
+    current = select_mark("UTA", "nhl")  # no season: Utah's current mark, not a Coyotes one
+    assert (current["source"], current["entity_id"], current["valid_to"]) == ("espn", "129764", None)

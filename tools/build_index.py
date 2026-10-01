@@ -18,6 +18,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools")]
 from fetch_sources import IDENTITY_SOURCES  # noqa: E402  (the team universe and the mark crosswalk share it)
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
+from sdvplot._resolve import PRIORITY  # noqa: E402  (the R50 tri-code fallback follows resolve()'s order)
 
 # A colorblind-safe qualitative palette for teams no source gives colors for (flagged color_source="fallback")
 FALLBACK = [
@@ -147,6 +148,27 @@ def nhl_aliases(nhl: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
     return pl.concat([_alias(j, "nhl", "nhl", "tri_code"), _alias(j, "nhl", "nhl_id", "nhl_id")])
 
 
+def _nhl_by_tri_code(nhl: pl.DataFrame, espn: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
+    """For marks only (R50): an NHL team whose franchise ESPN no longer lists (the Coyotes) goes to the team its
+    tri-code resolves to through the user-facing aliases, the first PRIORITY system that knows it naming one team
+    (ARI/PHX -> Utah, as sdvplotR). The alias has no range, so each mark keeps its manifest range."""
+    espn_nicknames = espn.filter(pl.col("league") == "nhl").select(pl.col("nickname").alias("franchise_common_name"))
+    orphans = nhl.join(espn_nicknames, on="franchise_common_name", how="anti")
+    rank = pl.DataFrame({"id_system": list(PRIORITY), "_rank": range(len(PRIORITY))})
+    first = (
+        aliases.filter(pl.col("league") == "nhl")
+        .join(rank, on="id_system")
+        .select(_norm(pl.col("value")).alias("_key"), "team_id", "_rank")
+        .filter(pl.col("_rank") == pl.col("_rank").min().over("_key"))
+        .group_by("_key")
+        .agg(pl.col("team_id").unique())
+        .filter(pl.col("team_id").list.len() == 1)
+        .with_columns(pl.col("team_id").list.first())
+    )
+    j = orphans.with_columns(_norm(pl.col("tri_code")).alias("_key")).join(first, on="_key")
+    return pl.concat([_alias(j, "nhl", "nhl", "tri_code"), _alias(j, "nhl", "nhl_id", "nhl_id")])
+
+
 def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
     """sdvplotR's keys (R43): clean_team_abbrs()'s abbr_mapping, then resolve_historical_abbr()'s table where
     abbr_mapping lacks the key, its target looked up in abbr_mapping again (sdvplotR's order). A key goes to the team
@@ -220,7 +242,7 @@ def mark_aliases(
         system.alias("id_system"),
         _norm(pl.when(src == "nwhl.co").then(pl.col("entity_name")).otherwise(pl.col("entity_id"))).alias("_key"),
     )
-    nhl_xw = nhl_aliases(nhl, espn)
+    nhl_xw = pl.concat([nhl_aliases(nhl, espn), _nhl_by_tri_code(nhl, espn, aliases.cast(ALIAS_SCHEMA))])
     known = teams.select("league", "team_id")
     lookup = (
         pl.concat([aliases.cast(ALIAS_SCHEMA), nhl_xw.cast(ALIAS_SCHEMA)])
