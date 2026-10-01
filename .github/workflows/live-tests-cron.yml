@@ -10,6 +10,7 @@ permissions:
   contents: write # required to push the tutorials-refresh branch
   issues: write # required to open / update the drift tracking issue
   pull-requests: write # required to open the tutorials-refresh PR
+  actions: write # required to dispatch docs-build and drift on that PR (GITHUB_TOKEN pushes trigger no workflows)
 concurrency:
   group: live-tests-cron
   cancel-in-progress: false
@@ -19,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # The tests and notebooks run third-party code; only the PR step below gets a write token.
+          persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
@@ -36,6 +40,8 @@ jobs:
           set -o pipefail
           uv run --frozen pytest --maxfail=10 -rN 2>&1 | tee pytest-live.log
       - name: Run example notebooks (nbmake)
+        # !cancelled(): run even when the live tests failed, so a drift week still gets the notebook signal.
+        if: ${{ !cancelled() }}
         # The example notebooks hit the same live APIs. Flakiness here shouldn't
         # mask the core live-test drift signal (the tracking issue keys off the
         # run-pytest step), so this leg is informational: continue-on-error with a
@@ -46,28 +52,34 @@ jobs:
         run: |
           set -o pipefail
           uv run --frozen pytest --nbmake examples/notebooks/ -q -rN 2>&1 | tee pytest-notebooks.log
-      - name: Render notebook tutorials and open refresh PR
+      - name: Render notebook tutorials
         # Re-execute the example notebooks and render them (with outputs) to
-        # docs/docs/tutorials/. we push a refresh branch and open/update
-        # a PR rather than committing to main.
-        # Informational: a live-API flake here shouldn't fail the cron.
-        continue-on-error: true
+        # docs/docs/tutorials/. Only from main: a dispatch from another branch would
+        # otherwise build the refresh PR on top of that branch's unmerged commits.
+        id: render
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
         env:
           SDVPLOT_LIVE_TESTS: "1"
+        run: |
+          # render_notebooks.py exits 1 if ANY notebook fails, but still writes the
+          # pages that did render (a failed notebook keeps its prior page). Record
+          # the failure for the drift issue instead of failing here, so one flake
+          # never skips publishing the pages that did render.
+          set -o pipefail
+          if ! uv run --frozen python tools/render_notebooks.py 2>&1 | tee render-notebooks.log; then
+            echo "failed=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Open tutorials refresh PR
+        # The only step holding a write token; it runs no project code.
+        if: ${{ !cancelled() && steps.render.outcome == 'success' }}
+        env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -o pipefail
-          # render_notebooks.py exits 1 if ANY of the live notebooks flakes, but
-          # it still writes the pages that DID render. `|| true` keeps that partial
-          # failure from aborting the step here (under `set -o pipefail`) so the
-          # commit/PR below still publishes the refreshed pages — failed notebooks
-          # simply keep their prior page (no diff). Without this, one weekly flake
-          # (near-certain across the live notebooks) skips the refresh entirely.
-          uv run --frozen python tools/render_notebooks.py 2>&1 | tee render-notebooks.log || true
           if git diff --quiet -- docs/docs/tutorials; then
             echo "No tutorial changes to publish."
             exit 0
           fi
+          gh auth setup-git
           branch="auto/tutorials-refresh"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -80,6 +92,10 @@ jobs:
               --title "docs(tutorials): weekly refresh of executed notebook pages" \
               --body "Automated re-execution + render of \`examples/notebooks/\` to \`docs/docs/tutorials/\` by \`render_notebooks.py\` (live-tests-cron). Review the output diffs and merge to refresh the rendered tutorials."
           fi
+          # A push made with GITHUB_TOKEN starts no workflows, so dispatch the checks
+          # that guard the rendered pages; their runs attach to the PR's head commit.
+          gh workflow run docs-build.yml --ref "$branch"
+          gh workflow run drift.yml --ref "$branch"
       - name: Upload notebook render log
         if: always()
         uses: actions/upload-artifact@v7
@@ -109,19 +125,23 @@ jobs:
       # so we don't fan out into a stream of duplicates. Closing the
       # issue (e.g. after fixing the regression) resets state.
       - name: Open / update drift tracking issue
-        if: failure() && steps.run-pytest.outcome == 'failure'
+        # Also opens when only the tutorial render failed (that step records it instead of failing).
+        if: ${{ !cancelled() && (steps.run-pytest.outcome == 'failure' || steps.render.outputs.failed == '1') }}
         uses: actions/github-script@v9
+        env:
+          LOG_FILE: ${{ steps.run-pytest.outcome == 'failure' && 'pytest-live.log' || 'render-notebooks.log' }}
         with:
           script: |
             const fs = require('fs');
+            const logFile = process.env.LOG_FILE;
             let logTail = '';
             try {
-              const log = fs.readFileSync('pytest-live.log', 'utf8');
+              const log = fs.readFileSync(logFile, 'utf8');
               // Last 4 KB of the log -- usually contains the summary lines
               // plus enough context to identify which assertions failed.
               logTail = log.slice(-4000);
             } catch (e) {
-              logTail = `(could not read pytest-live.log: ${e.message})`;
+              logTail = `(could not read ${logFile}: ${e.message})`;
             }
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const today = new Date().toISOString().slice(0, 10);
@@ -130,7 +150,7 @@ jobs:
               ``,
               `Run: ${runUrl}`,
               ``,
-              `<details><summary>Last 4KB of pytest output</summary>`,
+              `<details><summary>Last 4KB of ${logFile}</summary>`,
               ``,
               '```',
               logTail,
@@ -181,7 +201,7 @@ jobs:
       # cron run that goes green will leave the issue closed", and nothing
       # would execute that, so a fixed drift would stay open indefinitely.
       - name: Close drift tracking issue on green
-        if: success() && steps.run-pytest.outcome == 'success'
+        if: success() && steps.run-pytest.outcome == 'success' && steps.render.outputs.failed != '1'
         uses: actions/github-script@v9
         with:
           script: |

@@ -8,6 +8,7 @@ on:
       - "src/sdvplot/**"
       - "CHANGELOG.md"
       - ".github/workflows/docs-build.yml"
+  workflow_dispatch: # live-tests-cron dispatches it for the tutorials-refresh PR
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
