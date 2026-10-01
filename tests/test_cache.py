@@ -131,6 +131,22 @@ def test_file_mode_is_world_readable(cache, monkeypatch):
     assert actual_mode == expected_mode
 
 
+def test_atomic_write_never_touches_the_process_umask(tmp_path, monkeypatch):
+    """F4: os.umask(0) + restore races between threads and can leave the process umask at 0."""
+    before = os.umask(0o022)
+    os.umask(before)
+
+    def no_umask(mask):
+        raise AssertionError("atomic_write changed the process umask")
+
+    monkeypatch.setattr(os, "umask", no_umask)
+    _cache.atomic_write(tmp_path / "f", b"x")
+    monkeypatch.undo()
+    assert (tmp_path / "f").read_bytes() == b"x" and not list(tmp_path.glob("*.part"))
+    after = os.umask(before)
+    assert after == before
+
+
 def test_repeated_offline_uses_cache_without_request(cache, monkeypatch):
     """R16: After a failing refresh, repeated calls skip the network and don't warn again."""
     import warnings

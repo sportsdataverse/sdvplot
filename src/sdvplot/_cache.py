@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 import shutil
-import tempfile
 import time
 import warnings
 from collections.abc import Callable
@@ -52,16 +51,16 @@ def read_meta(relpath: str) -> dict | None:
 def atomic_write(path: Path, data: bytes) -> None:
     """Write to a temp file beside the target, then rename: a reader never sees a partial file."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".part")
+    tmp = path.with_name(f"{path.name}.{os.urandom(8).hex()}.part")
+    # mode 0o666 with the kernel applying the umask: world-readable like any file, and the process umask is never
+    # read or changed (toggling it races between threads)
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o666)
     try:
         with os.fdopen(fd, "wb") as f:
             f.write(data)
-        current_umask = os.umask(0)
-        os.umask(current_umask)
-        os.chmod(tmp, 0o666 & ~current_umask)
         os.replace(tmp, path)
     except BaseException:
-        Path(tmp).unlink(missing_ok=True)
+        tmp.unlink(missing_ok=True)
         raise
 
 
