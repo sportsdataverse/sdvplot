@@ -131,6 +131,8 @@ def _errors_page(position: int) -> str:
 
 def render(out_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("*.md"):  # every page here is generated: drop those of removed functions
+        stale.unlink()
     errors: list[str] = []
     index = ["---\ntitle: API reference\nsidebar_label: Overview\nsidebar_position: 0\n---\n", "# API reference\n"]
     pos = 1

@@ -62,6 +62,16 @@ def test_check_mode_detects_drift(tmp_path):
     assert gd.main(["--out", str(out), "--check"]) == 1
 
 
+def test_regeneration_removes_the_page_of_a_removed_function(tmp_path):
+    out = tmp_path / "reference"
+    out.mkdir()
+    (out / "renamed_away.md").write_text("old page\n")
+    assert gd.main(["--out", str(out), "--check"]) == 1
+    assert gd.main(["--out", str(out)]) == 0
+    assert not (out / "renamed_away.md").exists()
+    assert gd.main(["--out", str(out), "--check"]) == 0
+
+
 def test_the_committed_reference_is_current():
     assert gd.main(["--check"]) == 0
 
