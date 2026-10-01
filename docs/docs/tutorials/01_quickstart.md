@@ -14,7 +14,7 @@ fetched on demand and cached.
 pip install "sdvplot[mpl,svg]"
 ```
 
-The `mpl` extra adds matplotlib helpers and the `svg` extra rasterizes SVG marks (many NHL logos are SVG).
+The `mpl` extra installs matplotlib, used here to plot `logo_image` marks (the `add_logos` helpers arrive with the adapters), and the `svg` extra rasterizes SVG marks (many NHL logos are SVG).
 
 
 ```python

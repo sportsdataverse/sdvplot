@@ -19,9 +19,11 @@
 [![Docs](https://img.shields.io/badge/docs-sdvplot.sportsdataverse.org-blue)](https://sdvplot.sportsdataverse.org)
 
 Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
-resolves team abbreviations, names and provider ids across 28 leagues, picks the right era's mark for a season, and
-plugs into matplotlib, plotnine, plotly, altair, bokeh, holoviews, great_tables and folium. The Python counterpart to
-[sdvplotR](https://sdvplotR.sportsdataverse.org/). See [CHANGELOG.md](https://sdvplot.sportsdataverse.org/CHANGELOG).
+resolves team abbreviations, names and provider ids across 28 leagues and picks the right era's mark for a season. Colors
+and logos work with any library today through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`. The
+`add_logos` adapters for matplotlib, plotnine, plotly, altair, bokeh, holoviews, great_tables and folium arrive in later
+releases. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
+[CHANGELOG.md](https://sdvplot.sportsdataverse.org/CHANGELOG).
 
 ## Installation
 
@@ -31,7 +33,8 @@ pip install sdvplot
 uv add sdvplot
 ```
 
-Plotting libraries are optional extras, for example `pip install "sdvplot[mpl]"`:
+Plotting libraries are optional extras, for example `pip install "sdvplot[mpl]"`. In this core release they only install
+the library; the adapters that use it arrive in later releases:
 
 | Extra | Adds |
 | --- | --- |
