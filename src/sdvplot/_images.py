@@ -23,7 +23,10 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     except ImportError as e:
         raise OptionalDependencyError("SVG logos need the svg extra: pip install sdvplot[svg]") from e
 
-    version = importlib.metadata.version("resvg-py")
+    try:
+        version = importlib.metadata.version("resvg-py")
+    except importlib.metadata.PackageNotFoundError as e:
+        raise OptionalDependencyError("SVG logos need the svg extra: pip install sdvplot[svg]") from e
     out = cache_dir() / "rasters" / f"{sha}_{size}_v{version}.png"
 
     # Try to open cached raster; if corrupt, treat as cache miss

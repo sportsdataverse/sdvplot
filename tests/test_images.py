@@ -82,6 +82,11 @@ def test_svg_raster_cache_includes_version(cache, monkeypatch):
     _manifest_with(monkeypatch, SVG, "svg")
     _images.logo_image("LV", "nfl", size=200)
 
+    # After first call, exactly one raster file exists
+    rasters_dir = _cache.cache_dir() / "rasters"
+    rasters_v1 = list(rasters_dir.glob("*_200_v*.png"))
+    assert len(rasters_v1) == 1, f"Expected 1 raster file, got {len(rasters_v1)}"
+
     # Monkeypatch version to simulate an upgrade
     def mock_version(dist):
         return "99.9.9" if dist == "resvg-py" else "0.1.0"
@@ -92,12 +97,21 @@ def test_svg_raster_cache_includes_version(cache, monkeypatch):
     img = _images.logo_image("LV", "nfl", size=200)
     assert img.size == (200, 100)
 
+    # After second call with different version, two raster files exist
+    rasters_v2 = list(rasters_dir.glob("*_200_v*.png"))
+    assert len(rasters_v2) == 2, f"Expected 2 raster files, got {len(rasters_v2)}"
+    # One of the files should contain the new version string
+    assert any("99.9.9" in f.name for f in rasters_v2), (
+        f"Expected a file with version '99.9.9', got {[f.name for f in rasters_v2]}"
+    )
+
 
 def test_malformed_svg_error_names_sha(cache, monkeypatch):
     pytest.importorskip("resvg_py")
     bad_svg = b"<svg>unclosed"
+    sha = hashlib.sha256(bad_svg).hexdigest()
     _manifest_with(monkeypatch, bad_svg, "svg")
-    with pytest.raises(ValueError, match=r"SVG.*\.svg"):
+    with pytest.raises(ValueError, match=sha):
         _images.logo_image("LV", "nfl", size=64)
 
 
@@ -114,11 +128,31 @@ def test_corrupt_cached_raster_is_rerendered(cache, monkeypatch):
     # Find and corrupt the cached raster file
     version = importlib.metadata.version("resvg-py")
     sha = hashlib.sha256(SVG).hexdigest()
-    raster_path = _cache.cache_dir() / "rasters" / f"{sha}_200_v{version}.png"
-    if raster_path.exists():
-        raster_path.write_bytes(b"corrupted garbage data")
+    raster_dir = _cache.cache_dir() / "rasters"
+    raster_files = list(raster_dir.glob(f"{sha}_200_v{version}.png"))
+    assert len(raster_files) == 1, f"Expected cached raster file, got {len(raster_files)}"
+    raster_path = raster_files[0]
+    raster_path.write_bytes(b"corrupted garbage data")
 
     # Second call should detect corruption and re-render
     img2 = _images.logo_image("LV", "nfl", size=200)
     assert img2 is not None
     assert img2.size == (200, 100)
+
+
+def test_missing_resvg_metadata_error_names_extra(cache, monkeypatch):
+    pytest.importorskip("resvg_py")
+    import importlib.metadata
+
+    _manifest_with(monkeypatch, SVG, "svg")
+
+    # Monkeypatch metadata.version to raise PackageNotFoundError
+    def mock_version(dist):
+        if dist == "resvg-py":
+            raise importlib.metadata.PackageNotFoundError(dist)
+        return "0.1.0"
+
+    monkeypatch.setattr("importlib.metadata.version", mock_version)
+
+    with pytest.raises(ImportError, match=r"sdvplot\[svg\]"):
+        _images.logo_image("LV", "nfl", size=64)
