@@ -1,0 +1,32 @@
+name: Wrong team or logo
+description: A value resolved to the wrong team, did not resolve, or the wrong logo came back.
+title: "[team/logo]: "
+labels: ["data-quality"]
+body:
+  - type: input
+    id: league
+    attributes: { label: League, description: "SDV league key, e.g. nfl, cfb, nhl, ohl", placeholder: nfl }
+    validations: { required: true }
+  - type: input
+    id: value
+    attributes: { label: Value you passed, placeholder: "OAK" }
+    validations: { required: true }
+  - type: input
+    id: season
+    attributes: { label: Season (if any), placeholder: "2010" }
+  - type: textarea
+    id: call
+    attributes: { label: The call you made, render: python, placeholder: 'sdvplot.logo_url("OAK", "nfl", season=2010)' }
+    validations: { required: true }
+  - type: textarea
+    id: got
+    attributes: { label: What came back (value, URL, or warning text) }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: What you expected, description: "A source helps (team site, Wikipedia, sdvplotR's answer)." }
+    validations: { required: true }
+  - type: textarea
+    id: versions
+    attributes: { label: "sdvplot.versions() output", render: python }
+    validations: { required: true }

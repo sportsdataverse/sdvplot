@@ -7,3 +7,8 @@ dist/
 .ruff_cache/
 docs/_site/
 docs/reference/
+.env
+docs/node_modules/
+docs/build/
+docs/.docusaurus/
+.superpowers/

@@ -1,0 +1,10 @@
+# CodeRabbit configuration. Keep reviews on hand-written source: the bundled index, the source snapshots, the
+# generated docs reference/tutorials and the lockfiles are machine-written (see CONTRIBUTING.md).
+reviews:
+  path_filters:
+    - "!src/sdvplot/data/**"
+    - "!data-raw/*.csv"
+    - "!docs/docs/reference/**"
+    - "!docs/docs/tutorials/**"
+    - "!docs/yarn.lock"
+    - "!uv.lock"
