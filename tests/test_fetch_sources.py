@@ -138,3 +138,20 @@ def test_sr_codes_are_written_aggregated_per_code():  # F5 (R47): never the per-
         {"league": "mlb", "team_code": "FLA", "team_name": "Miami Marlins", "valid_from": 1993, "valid_to": 2011},
         {"league": "mlb", "team_code": "KCR", "team_name": "Kansas City Royals", "valid_from": 1969, "valid_to": 2025},
     ]
+
+
+def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
+    import os
+    import subprocess
+    import sys
+
+    tool = Path(__file__).parents[1] / "tools" / "fetch_sources.py"
+    code = (
+        "import importlib.util, pathlib, sys;"
+        f"spec = importlib.util.spec_from_file_location('fs', r'{tool}');"
+        "fs = importlib.util.module_from_spec(spec); spec.loader.exec_module(fs);"
+        f"fs._write('t', [{{'league': 'cfb', 'name': 'San Jos\\u00e9 State'}}], ['league', 'name'], pathlib.Path(r'{tmp_path}'))"
+    )
+    env = {**os.environ, "LC_ALL": "C", "LANG": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
+    subprocess.run([sys.executable, "-c", code], check=True, env=env)
+    assert "San José State".encode() in (tmp_path / "t.csv").read_bytes()

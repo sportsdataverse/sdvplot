@@ -50,7 +50,7 @@ def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
         raise RuntimeError(f"{name}: source returned no rows; refusing to write an empty snapshot")
     out.mkdir(exist_ok=True)
     rows = sorted(rows, key=lambda r: tuple(str(r.get(c, "")) for c in columns))
-    with open(out / f"{name}.csv", "w", newline="") as f:
+    with open(out / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
@@ -242,9 +242,10 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
 
     if args.ncaa_xwalk:
-        write("ncaa_cfb_xwalk", ncaa_rows(json.loads(args.ncaa_xwalk.read_text())), ["league", "ncaa_id", "team_id"])
+        xwalk = json.loads(args.ncaa_xwalk.read_text(encoding="utf-8"))
+        write("ncaa_cfb_xwalk", ncaa_rows(xwalk), ["league", "ncaa_id", "team_id"])
     if args.sr_manifest:
-        with open(args.sr_manifest, newline="") as f:
+        with open(args.sr_manifest, newline="", encoding="utf-8") as f:
             sr = list(csv.DictReader(f))
         write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
 

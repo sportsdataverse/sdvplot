@@ -473,7 +473,7 @@ def main(argv: list[str] | None = None) -> int:
             same = (
                 pl.read_parquet(args.out / "teams.parquet").equals(teams)
                 and pl.read_parquet(args.out / "aliases.parquet").equals(aliases)
-                and (args.out / "INDEX_VERSION").read_text().strip() == version
+                and (args.out / "INDEX_VERSION").read_text(encoding="utf-8").strip() == version
             )
         except FileNotFoundError:
             same = False
@@ -482,7 +482,7 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     teams.write_parquet(args.out / "teams.parquet")
     aliases.write_parquet(args.out / "aliases.parquet")
-    (args.out / "INDEX_VERSION").write_text(version + "\n")
+    (args.out / "INDEX_VERSION").write_text(version + "\n", encoding="utf-8")
     print(f"wrote {teams.height} teams, {aliases.height} aliases, index {version}")
     return 0
 

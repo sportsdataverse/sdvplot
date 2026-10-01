@@ -195,3 +195,36 @@ def test_an_adapter_that_returns_a_new_object_instead_of_mutating_passes_the_con
     check_adapter_contract(dummy, make_target=Canvas)
     t = Canvas()
     assert d.add_logos(t, [1.0], [2.0], ["LV"], league="nfl") == [("13", 1.0, 2.0, 0.1)] and t == []
+
+
+def test_a_removed_symbol_inside_an_installed_library_is_not_relabelled(monkeypatch):
+    # An adapter whose import fails with a plain ImportError naming the target package (a symbol removed upstream)
+    # must propagate unchanged; only a ModuleNotFoundError (the library is absent) becomes OptionalDependencyError.
+    real = d.importlib.import_module  # capture before patching: d.importlib IS the importlib module
+
+    def boom(name, *a, **k):
+        if name == "sdvplot_symbol_gone":
+            raise ImportError("cannot import name 'X' from 'fakeplot'", name="fakeplot")
+        return real(name, *a, **k)
+
+    monkeypatch.setattr(d, "ADAPTERS", {})
+    d.register_adapter(d.Adapter("fakeplot", "fakeplot", "sdvplot_symbol_gone", "fakeplot"))
+    monkeypatch.setattr(d.importlib, "import_module", boom)
+    with pytest.raises(ImportError) as exc:
+        d.add_logos(Canvas(), [0], [0], ["LV"], league="nfl")
+    assert not isinstance(exc.value, OptionalDependencyError)
+
+
+def test_a_missing_target_library_still_names_the_extra(monkeypatch):
+    real = d.importlib.import_module
+
+    def gone(name, *a, **k):
+        if name == "sdvplot_lib_missing":
+            raise ModuleNotFoundError("No module named 'fakeplot'", name="fakeplot")
+        return real(name, *a, **k)
+
+    monkeypatch.setattr(d, "ADAPTERS", {})
+    d.register_adapter(d.Adapter("fakeplot", "fakeplot", "sdvplot_lib_missing", "fakeplot"))
+    monkeypatch.setattr(d.importlib, "import_module", gone)
+    with pytest.raises(OptionalDependencyError, match=r"pip install sdvplot\[fakeplot\]"):
+        d.add_logos(Canvas(), [0], [0], ["LV"], league="nfl")
