@@ -11,3 +11,6 @@ team,mlb,7,Kansas City Royals,pro,logo,alt,,,espn,https://x/a.png,aaaaaaaaaaaaaa
 team,mlb,7,Kansas City Royals,pro,wordmark,tie,2000,,espn,https://x/b.png,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,png,100,500,500,https://cdn/bbbb.png,2026-09-26,2026-10-01
 team,mlb,7,Kansas City Royals,pro,wordmark,tie,2010,,espn,https://x/c.png,cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,png,100,500,500,https://cdn/cccc.png,2026-09-26,2026-10-01
 team,nfl,STL,STL,pro,logo,default,,,espn,https://a.espncdn.com/i/teamlogos/nfl/500/stl.png,0000000000000000000000000000000000000000000000000000000000000000,png,100,500,500,https://cdn/0000.png,2026-09-26,2026-10-01
+team,nfl,24,Los Angeles Chargers,pro,wordmark,on_dark,,,espn,https://x/d1.png,d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1,png,100,500,200,https://cdn/d1.png,2026-09-30,2026-10-01
+team,nfl,24,Los Angeles Chargers,pro,wordmark,on_light,,,espn,https://x/d2.png,d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2,png,100,500,200,https://cdn/d2.png,2026-09-29,2026-10-01
+team,nfl,24,Los Angeles Chargers,pro,wordmark,grayscale,,,espn,https://x/d3.png,d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3,png,100,500,200,https://cdn/d3.png,2026-10-01,2026-10-01

@@ -101,3 +101,10 @@ def test_a_zero_d_numpy_array_is_one_team():  # M3: np.array("LV") must not spli
 
     assert _marks.logo_url(np.array("LV"), "nfl") == "https://cdn/1111.png"
     assert _marks.marks(np.array(13), "nfl").height == 4
+
+
+def test_the_any_variant_fallback_keeps_the_requested_polarity():  # F2 (R44): MLB wordmarks are on_light/on_dark
+    # the Chargers' wordmarks: on_dark, on_light and a newer grayscale; no default, no dark
+    assert _marks.logo_url("LAC", "nfl", mark_type="wordmark") == "https://cdn/d2.png"  # on_light
+    assert _marks.logo_url("LAC", "nfl", variant="dark", mark_type="wordmark") == "https://cdn/d1.png"  # on_dark
+    assert _marks.logo_url("LAC", "nfl", variant="grayscale", mark_type="wordmark") == "https://cdn/d3.png"

@@ -104,17 +104,22 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
 def select_mark(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> dict[str, Any] | None:
-    """The best mark: requested variant, then "default", then any variant; season-covering rows first (explicit
-    ranges before open-ended ones), else any row; within a set, official sources and current marks first.
-    An unknown or ambiguous team gives None with the resolver's warning."""
+    """The best mark: the requested variant; then, keeping its polarity (R44), "default" and an on_light variant
+    ("on_light", "*_on_light"), or for "dark" an on_dark variant and then "default"; then any variant. Within each,
+    season-covering rows first (explicit ranges before open-ended ones), else any row; within a set, official
+    sources and current marks first. An unknown or ambiguous team gives None with the resolver's warning."""
     _check_mark_type(mark_type)
     s = norm_season(season)
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
     m = marks(team_id, league, s, id_system="team_id").filter(pl.col("mark_type") == mark_type)
+    v = pl.col("variant")
+    side = "dark" if variant == "dark" else "light"
+    polarity = (v == f"on_{side}") | v.str.ends_with(f"_on_{side}")
+    order = [v == variant, polarity, v == "default"] if side == "dark" else [v == variant, v == "default", polarity]
     # sorted best-first, so the unfiltered frame's first row is the best of any variant
-    for rows in (m.filter(pl.col("variant") == variant), m.filter(pl.col("variant") == "default"), m):
+    for rows in [*(m.filter(e) for e in order), m]:
         if s is not None:
             covering = rows.filter(
                 (pl.col("valid_from").is_null() | (pl.col("valid_from") <= s))
