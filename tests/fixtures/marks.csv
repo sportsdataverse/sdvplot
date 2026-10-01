@@ -1,0 +1,8 @@
+level,league,entity_id,entity_name,program,mark_type,variant,valid_from,valid_to,source,url,sha256,ext,bytes,width,height,archive_url,first_seen,last_seen
+team,nfl,13,Las Vegas Raiders,pro,logo,default,,,espn,https://a.espncdn.com/i/teamlogos/nfl/500/lv.png,1111111111111111111111111111111111111111111111111111111111111111,png,100,500,500,https://cdn/1111.png,2026-09-26,2026-10-01
+team,nfl,13,Las Vegas Raiders,pro,logo,dark,,,espn,https://a.espncdn.com/i/teamlogos/nfl/500-dark/lv.png,2222222222222222222222222222222222222222222222222222222222222222,png,100,500,500,https://cdn/2222.png,2026-09-26,2026-10-01
+team,nfl,13,Oakland Raiders,pro,logo,default,1964,2019,nflverse,https://x/oak.png,3333333333333333333333333333333333333333333333333333333333333333,png,100,500,500,https://cdn/3333.png,2026-09-26,2026-10-01
+team,nfl,13,Las Vegas Raiders,pro,wordmark,default,,,nflverse,https://x/lv_wm.png,4444444444444444444444444444444444444444444444444444444444444444,png,100,500,200,https://cdn/4444.png,2026-09-26,2026-10-01
+team,nfl,14,Los Angeles Rams,pro,logo,default,,,wayback,https://x/rams_old.png,5555555555555555555555555555555555555555555555555555555555555555,png,100,500,500,https://cdn/5555.png,2026-09-30,2026-10-01
+team,nfl,14,Los Angeles Rams,pro,logo,default,,,espn,https://a.espncdn.com/i/teamlogos/nfl/500/lar.png,6666666666666666666666666666666666666666666666666666666666666666,png,100,500,500,https://cdn/6666.png,2026-09-26,2026-10-01
+conference,nfl,8,AFC West,,logo,default,,,espn,https://x/afcw.png,7777777777777777777777777777777777777777777777777777777777777777,png,100,500,500,https://cdn/7777.png,2026-09-26,2026-10-01
