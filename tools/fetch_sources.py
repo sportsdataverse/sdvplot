@@ -128,6 +128,19 @@ def ncaa_rows(xwalk: dict[str, str]) -> list[dict]:
     return [{"league": "cfb", "ncaa_id": str(k), "team_id": str(v)} for k, v in xwalk.items()]
 
 
+SR_COLUMNS = ["league", "team_code", "team_name", "valid_from", "valid_to"]
+
+
+def sr_code_rows(rows: list[dict]) -> list[dict]:
+    """One row per (league, team_code): its latest Sports Reference team name and the seasons SR used it. The
+    per-season capture is private (R47); only this aggregate, all the build needs, is written."""
+    seasons: dict[tuple[str, str], list[tuple[int, str]]] = {}
+    for r in rows:
+        seasons.setdefault((r["league"], r["team_code"]), []).append((int(r["season"]), r["team_name"]))
+    return [{"league": lg, "team_code": code, "team_name": max(s)[1], "valid_from": min(s)[0], "valid_to": max(s)[0]}
+            for (lg, code), s in seasons.items()]
+
+
 def main() -> None:
     import tempfile
 
@@ -233,8 +246,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     if args.sr_manifest:
         with open(args.sr_manifest, newline="") as f:
             sr = list(csv.DictReader(f))
-        write("sr_codes", [{"league": r["league"], "team_code": r["team_code"], "team_name": r["team_name"],
-                             "season": r["season"]} for r in sr], ["league", "team_code", "team_name", "season"])
+        write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
 
 
 if __name__ == "__main__":

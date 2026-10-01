@@ -348,33 +348,24 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
 
 
 def _sr_aliases(sr: pl.DataFrame, espn: pl.DataFrame) -> list[pl.DataFrame]:
-    """Sports Reference codes (pybaseball bref, sportsipy): a code maps to the ESPN team whose display name equals
-    the code's latest SR team name; its range is the seasons SR used it. Defunct franchises do not match and drop."""
-    sr = sr.with_columns(pl.col("season").cast(pl.Int32))
-    latest = (
-        sr.sort("season", "team_name")
-        .group_by("league", "team_code")
-        .agg(
-            pl.col("team_name").last(),
-            pl.col("season").min().alias("valid_from"),
-            pl.col("season").max().alias("valid_to"),
-        )
-    )
+    """Sports Reference codes (pybaseball bref, sportsipy), one row per code (R47): a code maps to the ESPN team whose
+    display name equals the code's latest SR team name; its range is the seasons SR used it. Defunct franchises do
+    not match and drop."""
     names = espn.select("league", "team_id", pl.col("display_name").alias("team_name"))
-    j = latest.join(names, on=["league", "team_name"], how="inner")
-    out = []
-    for system in ("bref", "sportsipy"):
-        out.append(
-            j.select(
-                "league",
-                pl.lit(system).alias("id_system"),
-                pl.col("team_code").alias("value"),
-                "team_id",
-                "valid_from",
-                "valid_to",
-            )
+    j = sr.with_columns(pl.col("valid_from", "valid_to").cast(pl.Int32)).join(
+        names, on=["league", "team_name"], how="inner"
+    )
+    return [
+        j.select(
+            "league",
+            pl.lit(system).alias("id_system"),
+            pl.col("team_code").alias("value"),
+            "team_id",
+            "valid_from",
+            "valid_to",
         )
-    return out
+        for system in ("bref", "sportsipy")
+    ]
 
 
 def stamp(teams: pl.DataFrame, aliases: pl.DataFrame) -> str:

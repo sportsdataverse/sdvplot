@@ -124,3 +124,17 @@ def test_manifest_teams_prefer_the_current_name_not_the_last_row():
     expected = {"307": "Hartford Wolf Pack", "2": "Acadie-Bathurst Titan"}
     for ordered in (rows, rows[::-1]):  # input order must not matter
         assert {r["team_id"]: r["name"] for r in fs.manifest_team_rows(ordered)} == expected
+
+
+def test_sr_codes_are_written_aggregated_per_code():  # F5 (R47): never the per-season private capture
+    sr = [
+        {"league": "mlb", "site": "bref", "team_code": "KCR", "team_name": "Kansas City Royals", "season": "2025"},
+        {"league": "mlb", "site": "bref", "team_code": "KCR", "team_name": "Kansas City Royals", "season": "1969"},
+        {"league": "mlb", "site": "bref", "team_code": "FLA", "team_name": "Florida Marlins", "season": "1993"},
+        {"league": "mlb", "site": "bref", "team_code": "FLA", "team_name": "Florida Marlins", "season": "2011"},
+        {"league": "mlb", "site": "bref", "team_code": "FLA", "team_name": "Miami Marlins", "season": "2011"},
+    ]
+    assert sorted(fs.sr_code_rows(sr), key=lambda r: r["team_code"]) == [
+        {"league": "mlb", "team_code": "FLA", "team_name": "Miami Marlins", "valid_from": 1993, "valid_to": 2011},
+        {"league": "mlb", "team_code": "KCR", "team_name": "Kansas City Royals", "valid_from": 1969, "valid_to": 2025},
+    ]

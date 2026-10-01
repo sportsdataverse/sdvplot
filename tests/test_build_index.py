@@ -248,3 +248,15 @@ def test_mark_espn_abbreviation_rows_outside_nfl_map_only_through_dated_aliases(
         aliases=[("wnba", "espn_abbr", "CHA", "99", None, None), ("wnba", "espn_abbr", "DET", "3", 1998, 2009)],
     )
     assert got == {"espn:CHA": None, "espn:DET": "3"}
+
+
+def test_sr_codes_are_read_in_their_aggregated_form(tmp_path):  # F5 (R47)
+    raw = _raw(tmp_path)
+    (raw / "sr_codes.csv").write_text(
+        "league,team_code,team_name,valid_from,valid_to\n"
+        "mlb,KCR,Kansas City Royals,1969,2025\nmlb,KCA,Kansas City Athletics,1955,1967\n"
+    )
+    _, aliases, _ = bi.build(raw)
+    for system in ("bref", "sportsipy"):  # a defunct franchise (no ESPN team by that name) drops
+        got = aliases.filter(pl.col("id_system") == system).select("value", "team_id", "valid_from", "valid_to")
+        assert got.rows() == [("KCR", "7", 1969, 2025)]
