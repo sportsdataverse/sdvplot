@@ -21,7 +21,7 @@ const builtVersions: string[] = [
   ...allReleasedVersions.slice(0, VERSIONS_TO_KEEP),
 ];
 
-const PLAUSIBLE_ID = ''; // owner: set to the site's pa-<id> (without .js) to enable analytics
+const PLAUSIBLE_ID = 'pa-exaiJ05ZrAXBkCgOonpbc'; // Plausible site sdvplot.sportsdataverse.org ('' disables analytics)
 const analytics = PLAUSIBLE_ID
   ? {
       scripts: [{src: `https://plausible.io/js/${PLAUSIBLE_ID}.js`, async: true}],
