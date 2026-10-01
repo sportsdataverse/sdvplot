@@ -63,7 +63,7 @@ def test_result_aligns_on_frame_assignment_with_filtered_index():  # Controller 
         {"team": ["LV", "LAC", "LAR"], "other": [1, 2, 3]},
         index=[10, 20, 30],
     )
-    filtered = df.iloc[[0, 2]]  # rows at index 10 and 30
+    filtered = df.iloc[[0, 2]].copy()  # rows at index 10 and 30; a copy, so the assignment is not chained
     resolved = resolve(filtered["team"], "nfl")
     filtered["resolved_id"] = resolved
     assert filtered.loc[10, "resolved_id"] == "13"
