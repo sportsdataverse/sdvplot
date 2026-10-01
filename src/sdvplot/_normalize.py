@@ -1,10 +1,13 @@
-"""How raw team values and seasons are compared: one normal form, so 14, "14", 14.0 and " 14 " are equal."""
+"""How raw team values and seasons are compared: one normal form, so 14, "14", 14.0, "14.0" and " 14 " are equal."""
 
 from __future__ import annotations
 
 import math
 import numbers
+import re
 from typing import Any
+
+_FLOAT_ID = re.compile(r"-?\d+\.0+")
 
 
 def _is_na(value: Any) -> bool:
@@ -25,6 +28,8 @@ def norm_value(value: Any) -> str | None:
             return None
         return str(int(f)) if f.is_integer() else str(f)
     s = str(value).strip().casefold()
+    if _FLOAT_ID.fullmatch(s):  # "13.0": an id that went through a float before it became text
+        s = s.split(".")[0]
     return s or None
 
 
