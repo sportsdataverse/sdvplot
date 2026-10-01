@@ -16,7 +16,7 @@ The bundled team index: one row per (league, team_id), with names, abbreviation,
 
 | Name | Type | Description |
 |---|---|---|
-| `league` | `str | None` | An SDV league key such as "nfl"; None returns every league. |
+| `league` | `str \| None` | An SDV league key such as "nfl"; None returns every league. |
 
 ## Returns
 

@@ -21,8 +21,8 @@ adapter takes the same arguments.
 | Name | Type | Description |
 |---|---|---|
 | `target` | `Any` | The plot or table object. Its type picks the adapter. |
-| `*args` | `` | Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and ``teams`` (the team values to draw), in that order. |
-| `**kwargs` | `` | Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team), ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``variant`` (a mark variant, as in ``logo_url``). |
+| `*args` | `Any` | Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and ``teams`` (the team values to draw), in that order. |
+| `**kwargs` | `Any` | Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team), ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``variant`` (a mark variant, as in ``logo_url``). |
 
 ## Returns
 

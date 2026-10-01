@@ -61,6 +61,11 @@ def _see_also(text: str) -> str | None:
     return " ".join((_section(text, "See Also") or "").split()) or None
 
 
+def _cell(text: str) -> str:
+    """GFM splits table cells on an unescaped pipe, even inside a code span."""
+    return text.replace("|", "\\|")
+
+
 def render_function(name: str, fn: object, position: int) -> tuple[str, list[str]]:
     raw = inspect.getdoc(fn) or ""
     doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
@@ -90,14 +95,11 @@ def render_function(name: str, fn: object, position: int) -> tuple[str, list[str
     if doc.params:
         out.append("## Arguments\n\n| Name | Type | Description |\n|---|---|---|")
         for p in doc.params:
-            ann = sig.parameters[p.arg_name].annotation if p.arg_name in sig.parameters else inspect.Parameter.empty
-            typ = (
-                ""
-                if ann is inspect.Parameter.empty
-                else (ann if isinstance(ann, str) else getattr(ann, "__name__", str(ann)))
-            )
-            desc = " ".join((p.description or "").split())
-            out.append(f"| `{p.arg_name}` | `{typ}` | {desc} |")
+            param = sig.parameters.get(p.arg_name.lstrip("*"))
+            ann = param.annotation if param else inspect.Parameter.empty
+            typ = "" if ann is inspect.Parameter.empty else f"`{_cell(inspect.formatannotation(ann))}`"
+            desc = _cell(" ".join((p.description or "").split()))
+            out.append(f"| `{p.arg_name}` | {typ} | {desc} |")
         out.append("")
     if doc.returns:
         typ = f"`{doc.returns.type_name}` — " if doc.returns.type_name else ""

@@ -21,7 +21,7 @@ The team's mark as a PIL image (downloaded once, then cached).
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
 | `mark_type` | `str` | "logo" or "wordmark". |
-| `size` | `int | None` | The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
+| `size` | `int \| None` | The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
 
 ## Returns
 

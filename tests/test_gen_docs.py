@@ -1,4 +1,5 @@
 import importlib.util
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -63,3 +64,34 @@ def test_check_mode_detects_drift(tmp_path):
 
 def test_the_committed_reference_is_current():
     assert gd.main(["--check"]) == 0
+
+
+def optional(size: int | None = None, *names: str, **opts: str) -> str | None:
+    """Pick one.
+
+    Args:
+        size: A size | or nothing.
+        *names: Names.
+        **opts: Options.
+
+    Returns:
+        str | None: The pick.
+
+    Example:
+        ::
+
+            optional()
+    """
+    return None
+
+
+def test_pipes_in_types_and_descriptions_do_not_split_table_cells():
+    page, errors = gd.render_function("optional", optional, position=1)
+    assert errors == []
+    rows = [ln for ln in page.splitlines() if ln.startswith("| `")]
+    assert len(rows) == 3
+    for row in rows:
+        assert len(re.split(r"(?<!\\)\|", row.strip().strip("|"))) == 3, row
+    assert "| `size` | `int \\| None` | A size \\| or nothing. |" in page
+    assert "| `*names` | `str` | Names. |" in page
+    assert "| `**opts` | `str` | Options. |" in page
