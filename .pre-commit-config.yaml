@@ -75,7 +75,7 @@ repos:
     hooks:
       - id: sync-docs-changelog
         name: sync-docs-changelog
-        entry: python -c "import shutil, subprocess; shutil.copy('CHANGELOG.md', 'docs/src/pages/CHANGELOG.md'); subprocess.run(['git', 'add', 'docs/src/pages/CHANGELOG.md'])"
+        entry: uv run --frozen python -c "import shutil, subprocess; shutil.copy('CHANGELOG.md', 'docs/src/pages/CHANGELOG.md'); subprocess.run(['git', 'add', 'docs/src/pages/CHANGELOG.md'])"
         language: system
         files: ^CHANGELOG\.md$
         pass_filenames: false
@@ -83,7 +83,7 @@ repos:
         name: bundled team index is current (tools/build_index.py --check)
         entry: uv run --frozen python tools/build_index.py --check
         language: system
-        files: ^(data-raw/|tools/build_index\.py$|src/sdvplot/_index\.py$)
+        files: ^(data-raw/|tools/(build_index|fetch_sources)\.py$|src/sdvplot/_(index|normalize|resolve)\.py$)
         pass_filenames: false
       - id: gen-docs-check
         name: API reference is current (tools/gen_docs.py --check)
@@ -93,7 +93,7 @@ repos:
         pass_filenames: false
       - id: conventional-commit-no-ai
         name: conventional commit + no AI co-author
-        entry: python tools/hooks/check_commit_msg.py
+        entry: uv run --frozen python tools/hooks/check_commit_msg.py
         language: system
         stages: [commit-msg]
       - id: mypy-prepush

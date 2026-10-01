@@ -42,6 +42,8 @@ uv run pre-commit run --all-files
 
 Run `uv run pre-commit install` to run the hooks on every commit. It refuses when a global `core.hooksPath` is set
 (git then ignores `.git/hooks`); in that case run the command above before you push.
+On git older than 2.31, which lacks `ls-files --deduplicate`, run `uv run pre-commit run --files $(git ls-files)`
+instead.
 
 ## Tests
 
