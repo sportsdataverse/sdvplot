@@ -64,6 +64,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/sdvplot"]
 
+[tool.hatch.build.targets.sdist]
+exclude = ["docs", ".github", ".vscode", "examples", "CLAUDE.md"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["error::sdvplot._errors.SdvplotWarning"]
