@@ -6,6 +6,7 @@ import pytest
 from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
+from sdvplot._errors import SdvplotWarning
 from tests.conftest import FakeResponse, FakeSession
 
 
@@ -156,3 +157,15 @@ def test_missing_resvg_metadata_error_names_extra(cache, monkeypatch):
 
     with pytest.raises(ImportError, match=r"sdvplot\[svg\]"):
         _images.logo_image("LV", "nfl", size=64)
+
+
+def test_a_resolved_team_with_no_mark_gets_one_warning(manifest):  # the Chargers have only wordmarks
+    with pytest.warns(SdvplotWarning, match=r"no logo archived for 'LAC' \(nfl\)") as w:
+        assert _images.logo_image("LAC", "nfl") is None
+    assert len(w) == 1
+
+
+def test_an_unknown_team_gets_only_the_resolver_warning(manifest):
+    with pytest.warns(SdvplotWarning, match="'XXX'") as w:
+        assert _images.logo_image("XXX", "nfl") is None
+    assert len(w) == 1

@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import io
+import warnings
 from pathlib import Path
 from typing import Any
 
 from PIL import Image
 
 from sdvplot._cache import atomic_write, cache_dir, fetch_immutable
-from sdvplot._errors import OptionalDependencyError
-from sdvplot._marks import select_mark
-from sdvplot._resolve import one_team
+from sdvplot._errors import OptionalDependencyError, SdvplotWarning
+from sdvplot._marks import _check_mark_type, select_mark
+from sdvplot._resolve import one_team, resolve
 
 DEFAULT_SVG_SIZE = 512
 
@@ -99,8 +100,13 @@ def logo_image(
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
-    row = select_mark(one_team(team, "logo_image"), league, season, variant, mark_type)
+    _check_mark_type(mark_type)
+    team_id = resolve(one_team(team, "logo_image"), league, season=season)
+    if team_id is None:
+        return None
+    row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
+        warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
         return None
     sha, ext = str(row["sha256"]), str(row["ext"])
     path = fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
