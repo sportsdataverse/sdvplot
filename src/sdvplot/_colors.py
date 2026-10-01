@@ -7,7 +7,7 @@ from typing import Any
 import polars as pl
 
 from sdvplot import _index
-from sdvplot._resolve import _unpack, resolve
+from sdvplot._resolve import _seasons, _unpack, resolve
 
 _COLUMNS = {"primary": "color_primary", "secondary": "color_secondary"}
 
@@ -33,9 +33,13 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
         t = _index.team_table().filter(pl.col("league") == league)
         return {abbr or tid: colors[tid] for tid, abbr in t.select("team_id", "abbr").iter_rows() if tid in colors}
     values, _ = _unpack(teams)
-    distinct = [v for v in dict.fromkeys(values) if v is not None]
-    ids = resolve(distinct, league, season=season)
-    return {v: colors[i] for v, i in zip(distinct, ids, strict=True) if i is not None and i in colors}
+    pairs = [p for p in dict.fromkeys(zip(values, _seasons(season, len(values)), strict=True)) if p[0] is not None]
+    ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs])
+    out: dict[Any, str] = {}
+    for (v, _), i in zip(pairs, ids, strict=True):
+        if i is not None and i in colors:
+            out.setdefault(v, colors[i])  # a value two teams wore across the seasons keeps its first team's color
+    return out
 
 
 def team_colors(teams: Any, league: str, which: str = "primary", season: Any = None) -> Any:
