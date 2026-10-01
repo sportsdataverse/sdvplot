@@ -71,7 +71,10 @@ def build_teams(raw: Path) -> pl.DataFrame:
         _csv(raw, "nflverse_teams.csv")
         .filter(~pl.col("team_abbr").is_in(old.to_list()))
         .with_columns(
-            pl.col("team_logo_espn").str.extract(r"/nfl/500/([a-z]+)\.png", 1).str.to_uppercase().alias("espn_abbr")
+            pl.col("team_logo_espn")
+            .str.extract(r"/nfl/500(?:-dark)?/([a-z]+)\.png", 1)  # CAR's nflverse logo is the 500-dark one
+            .str.to_uppercase()
+            .alias("espn_abbr")
         )
     )
     espn_nfl = espn.filter(pl.col("league") == "nfl").select("team_id", pl.col("abbr").alias("espn_abbr"))
@@ -83,6 +86,8 @@ def build_teams(raw: Path) -> pl.DataFrame:
         _hex("team_color2").alias("nflv_secondary"),
     )
     assert not nflv["team_id"].is_duplicated().any(), f"several current nflverse codes per ESPN team: {nflv}"
+    unmatched = sorted(set(nfl["team_abbr"]) - set(nflv["nflv_abbr"]))
+    assert nflv.height == nfl.height and not unmatched, f"current nflverse teams with no ESPN team: {unmatched}"
     groups = _csv(raw, "groups_latest.csv").select("league", "team_id", "conference_id", "conference")
     t = (
         base.join(espn, on=["league", "team_id"], how="left")

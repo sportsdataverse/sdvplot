@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 
 import polars as pl
+import pytest
 
 from sdvplot import _index
 
@@ -260,3 +261,25 @@ def test_sr_codes_are_read_in_their_aggregated_form(tmp_path):  # F5 (R47)
     for system in ("bref", "sportsipy"):  # a defunct franchise (no ESPN team by that name) drops
         got = aliases.filter(pl.col("id_system") == system).select("value", "team_id", "valid_from", "valid_to")
         assert got.rows() == [("KCR", "7", 1969, 2025)]
+
+
+def _add(raw, name, line):
+    with open(raw / name, "a") as f:
+        f.write(line + "\n")
+
+
+def test_nflverse_dark_logo_urls_join_to_their_espn_team(tmp_path):  # M5: CAR's nflverse logo is /nfl/500-dark/
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "nfl,29,Carolina Panthers,pro")
+    _add(raw, "espn_teams.csv", "nfl,29,CAR,Carolina Panthers,Panthers,Carolina,Panthers,0085ca,000000")
+    _add(raw, "nflverse_teams.csv", "CAR,Carolina Panthers,Panthers,#0085CA,#101820,https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png")
+    teams, _, _ = bi.build(raw)
+    car = teams.filter(pl.col("team_id") == "29").row(0, named=True)
+    assert (car["color_source"], car["color_secondary"]) == ("nflverse", "#101820")
+
+
+def test_a_current_nflverse_team_with_no_espn_team_fails_the_build(tmp_path):  # M5
+    raw = _raw(tmp_path)
+    _add(raw, "nflverse_teams.csv", "CAR,Carolina Panthers,Panthers,#0085CA,#101820,https://example.com/car.png")
+    with pytest.raises(AssertionError, match="CAR"):
+        bi.build(raw)
