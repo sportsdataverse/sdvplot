@@ -27,6 +27,7 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
     """{team: "#hex"} for a league. Without teams, keys are canonical abbreviations; with teams, keys are the
     caller's own values (so they match a seaborn hue column or a Plotly color column exactly)."""
     column = _column(which)
+    _index.check_league(league)
     colors = _colors(league, column)
     if teams is None:
         t = _index.team_table().filter(pl.col("league") == league)
@@ -40,6 +41,7 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
 def team_colors(teams: Any, league: str, which: str = "primary", season: Any = None) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in."""
     column = _column(which)
+    _index.check_league(league)
     colors = _colors(league, column)
     values, wrap = _unpack(teams)
     ids = resolve(values, league, season=season)

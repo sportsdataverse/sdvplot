@@ -45,6 +45,18 @@ def _read(name: str, directory: str) -> pl.DataFrame:
     return pl.read_parquet(Path(directory) / f"{name}.parquet")
 
 
+@functools.cache
+def _leagues(directory: str) -> frozenset[str]:
+    return frozenset(_read("teams", directory)["league"].unique().to_list())
+
+
+def check_league(league: str) -> None:
+    """The one unknown-league error every public function raises."""
+    known = _leagues(str(data_dir()))
+    if league not in known:
+        raise ValueError(f"unknown league {league!r}; known leagues: {sorted(known)}")
+
+
 def on_reload(fn: Callable[[], None]) -> None:
     """Register a cache that must be dropped when the index is reloaded (the resolver's lookup tables)."""
     _RELOAD_HOOKS.append(fn)
@@ -53,6 +65,7 @@ def on_reload(fn: Callable[[], None]) -> None:
 def reload_index() -> None:
     """Forget the loaded index and everything derived from it."""
     _read.cache_clear()
+    _leagues.cache_clear()
     for fn in _RELOAD_HOOKS:
         fn()
 
@@ -73,4 +86,7 @@ def index_version() -> str:
 def teams(league: str | None = None) -> pl.DataFrame:
     """The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors."""
     t = team_table()
-    return t if league is None else t.filter(pl.col("league") == league)
+    if league is None:
+        return t
+    check_league(league)
+    return t.filter(pl.col("league") == league)

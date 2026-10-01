@@ -31,6 +31,14 @@ SOURCE_RANK: dict[str, int] = {
 }
 
 
+MARK_TYPES = ("logo", "wordmark")
+
+
+def _check_mark_type(mark_type: str) -> None:
+    if mark_type not in MARK_TYPES:
+        raise ValueError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
+
+
 def _union(col: str, bound: pl.Expr) -> pl.Expr:
     """One side of the union of several ranges: null (unbounded) if any range is unbounded there."""
     return pl.when(pl.col(col).is_null().any()).then(None).otherwise(bound).alias(f"_alias_{col}")
@@ -99,6 +107,7 @@ def select_mark(
     """The best mark: requested variant, then "default", then any variant; season-covering rows first (explicit
     ranges before open-ended ones), else any row; within a set, official sources and current marks first.
     An unknown or ambiguous team gives None with the resolver's warning."""
+    _check_mark_type(mark_type)
     s = norm_season(season)
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
@@ -124,6 +133,7 @@ def logo_url(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
     """The CDN URL of the team's mark (what web libraries and great_tables embed), or None with a warning."""
+    _check_mark_type(mark_type)
     team_id = resolve(one_team(team, "logo_url"), league, season=season)
     if team_id is None:
         return None

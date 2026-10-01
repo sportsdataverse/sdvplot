@@ -166,9 +166,9 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
     Returns:
         The same shape as values: a str or None, a list, or a Series of the caller's library.
     """
-    known = set(_index.team_table()["league"].unique().to_list())
-    if league not in known:
-        raise ValueError(f"unknown league {league!r}; known leagues: {sorted(known)}")
+    _index.check_league(league)
+    if id_system != "auto" and id_system not in PRIORITY:
+        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY)}")
     systems = PRIORITY if id_system == "auto" else (id_system,)
     items, wrap = _unpack(values)
     seasons = _seasons(season, len(items))
@@ -199,6 +199,7 @@ def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
     similar names can be different teams ("Bethany (KS)" and "Bethany (WV)")."""
     import difflib
 
+    _index.check_league(league)
     key = norm_value(value)
     if key is None:
         return []
