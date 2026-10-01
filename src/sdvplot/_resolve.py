@@ -12,7 +12,7 @@ import polars as pl
 
 from sdvplot import _index
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
-from sdvplot._normalize import norm_season, norm_value
+from sdvplot._normalize import _is_na, norm_season, norm_value
 
 # The order "auto" tries id systems in; the first system with a candidate decides
 PRIORITY: tuple[str, ...] = (
@@ -89,11 +89,21 @@ def _unpack(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
 
 
 def _unpack_series(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
-    raise TypeError(f"resolve() takes a scalar, list or tuple here, got {type(values).__name__}")
+    """A pandas/polars (or any narwhals-supported) Series in; a same-library String Series of results out."""
+    import narwhals as nw
+
+    try:
+        s = nw.from_native(values, series_only=True)
+    except TypeError as e:
+        raise TypeError(
+            f"resolve() takes a scalar, list, tuple, numpy array or a pandas/polars Series, got {type(values).__name__}"
+        ) from e
+    backend = nw.get_native_namespace(s)
+    return s.to_list(), lambda out: nw.new_series(s.name, out, nw.String(), backend=backend).to_native()
 
 
 def _seasons(season: Any, n: int) -> list[int | None]:
-    if season is None or isinstance(season, (str, numbers.Number)):
+    if _is_na(season) or isinstance(season, (str, numbers.Number)):
         return [norm_season(season)] * n
     items, _ = _unpack(season)
     if len(items) != n:
