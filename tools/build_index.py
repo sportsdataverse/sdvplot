@@ -105,8 +105,14 @@ def build_teams(raw: Path) -> pl.DataFrame:
         pl.struct("league", "team_id", "color_primary")
         .map_elements(lambda r: r["color_primary"] or _fallback(r["league"], r["team_id"], 0), return_dtype=pl.String)
         .alias("color_primary"),
-        pl.struct("league", "team_id", "color_secondary")
-        .map_elements(lambda r: r["color_secondary"] or _fallback(r["league"], r["team_id"], 1), return_dtype=pl.String)
+        # R38: a fallback secondary only beside a fallback primary; a source primary keeps a null secondary
+        pl.struct("league", "team_id", "color_secondary", "color_source")
+        .map_elements(
+            lambda r: (
+                _fallback(r["league"], r["team_id"], 1) if r["color_source"] == "fallback" else r["color_secondary"]
+            ),
+            return_dtype=pl.String,
+        )
         .alias("color_secondary"),
     )
     return t.select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
@@ -181,8 +187,12 @@ def mark_aliases(
     )
     dated = pl.col("_from").is_not_null() | pl.col("_to").is_not_null()
     preferred = pl.when(has_range).then(dated & overlaps).otherwise(pl.col("_to").is_null())
-    via = m.join(lookup, on=["league", "id_system", "_key"]).filter(
-        pl.when(has_range).then(overlaps).otherwise(True) & (preferred | ~preferred.any().over("_row"))
+    via = (
+        m.join(lookup, on=["league", "id_system", "_key"])
+        # R40: an abbreviation-keyed ESPN logo outside the NFL maps only through a dated (curated relocation) alias,
+        # never a current espn_abbr: a code a current team now holds would otherwise re-create the R36 tie
+        .filter((pl.col("id_system") != "espn_abbr") | dated)
+        .filter(pl.when(has_range).then(overlaps).otherwise(True) & (preferred | ~preferred.any().over("_row")))
     )
     # R36: a mark reached through a relocation alias (one that ends) carries that alias's range; identity rows,
     # current abbreviations and the NHL crosswalk carry none
@@ -367,14 +377,16 @@ def _sr_aliases(sr: pl.DataFrame, espn: pl.DataFrame) -> list[pl.DataFrame]:
     return out
 
 
+def stamp(teams: pl.DataFrame, aliases: pl.DataFrame) -> str:
+    """INDEX_VERSION (R37): a digest of the built frames, so it moves with the content (build logic included) and
+    not with input bytes such as a Windows autocrlf checkout."""
+    return hashlib.sha256((teams.write_csv() + aliases.write_csv()).encode("utf-8")).hexdigest()[:12]
+
+
 def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     teams = build_teams(raw)
     aliases = build_aliases(raw, teams)
-    digest = hashlib.sha256()
-    for path in sorted(raw.rglob("*.csv")):
-        digest.update(path.relative_to(raw).as_posix().encode())
-        digest.update(path.read_bytes())
-    return teams, aliases, digest.hexdigest()[:12]
+    return teams, aliases, stamp(teams, aliases)
 
 
 def main(argv: list[str] | None = None) -> int:

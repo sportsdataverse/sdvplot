@@ -14,11 +14,13 @@ def _raw(tmp_path):
     raw = tmp_path / "data-raw"
     (raw / "curated").mkdir(parents=True, exist_ok=True)
     files = {
-        "manifest_teams.csv": "league,team_id,name,program\nnfl,13,Las Vegas Raiders,pro\nohl,7,Kitchener Rangers,junior\n",
+        "manifest_teams.csv": "league,team_id,name,program\nnfl,13,Las Vegas Raiders,pro\nohl,7,Kitchener Rangers,junior\n"
+        "mlb,7,Kansas City Royals,pro\n",
         "manifest_marks.csv": "league,source,entity_id,entity_name,valid_from,valid_to\n"
         "nfl,espn,13,Las Vegas Raiders,,\nnfl,nflverse,OAK,Oakland Raiders,,\nnfl,espn,99,Nobody,,\n",
         "espn_teams.csv": "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
-        "nfl,13,LV,Las Vegas Raiders,Raiders,Las Vegas,Raiders,000000,a5acaf\n",
+        "nfl,13,LV,Las Vegas Raiders,Raiders,Las Vegas,Raiders,000000,a5acaf\n"
+        "mlb,7,KC,Kansas City Royals,Royals,Kansas City,Royals,004687,NULL\n",
         "nflverse_teams.csv": "team_abbr,team_name,team_nick,team_color,team_color2,team_logo_espn\n"
         "LV,Las Vegas Raiders,Raiders,#000000,#A5ACAF,https://a.espncdn.com/i/teamlogos/nfl/500/lv.png\n"
         "OAK,Oakland Raiders,Raiders,#000000,#A5ACAF,https://a.espncdn.com/i/teamlogos/nfl/500/lv.png\n",
@@ -61,6 +63,10 @@ def test_teams_without_source_colors_get_a_flagged_deterministic_fallback(tmp_pa
     teams, _, _ = bi.build(_raw(tmp_path))
     kit = teams.filter(pl.col("league") == "ohl").row(0, named=True)
     assert kit["color_source"] == "fallback" and kit["color_primary"].startswith("#")
+    assert kit["color_secondary"].startswith("#") and kit["color_secondary"] != kit["color_primary"]
+    # R38: a source primary never gets an invented secondary
+    kc = teams.filter(pl.col("league") == "mlb").row(0, named=True)
+    assert (kc["color_source"], kc["color_primary"], kc["color_secondary"]) == ("espn", "#004687", None)
     assert bi.build(_raw(tmp_path))[0].equals(teams)  # deterministic
 
 
@@ -218,3 +224,27 @@ def test_mark_key_mapping_to_two_teams_gets_no_alias():
         ],
     )
     assert got == {"nflverse:LA": None, "nwhl.co:9": None}
+
+
+def test_index_version_is_a_digest_of_the_built_frames(tmp_path):
+    # R37: the stamp follows the content, not the input bytes
+    teams, aliases, version = bi.build(_raw(tmp_path))
+    assert version == bi.stamp(teams, aliases) == bi.stamp(teams.clone(), aliases.clone())
+    changed = aliases.with_columns(
+        pl.when(pl.col("value") == "OAK").then(pl.lit(2018)).otherwise("valid_to").alias("valid_to")
+    )
+    assert bi.stamp(teams, changed) != version
+    raw = _raw(tmp_path)
+    for f in raw.rglob("*.csv"):  # a Windows autocrlf checkout: same frames, same stamp
+        f.write_bytes(f.read_bytes().replace(b"\n", b"\r\n"))
+    assert bi.build(raw)[2] == version
+
+
+def test_mark_espn_abbreviation_rows_outside_nfl_map_only_through_dated_aliases():
+    # R40: "CHA" is a current team's abbreviation, but an old CHA logo must not land on it with an open range
+    got = _crosswalk(
+        [("wnba", "espn", "CHA", "CHA", None, None), ("wnba", "espn", "DET", "DET", None, None)],
+        [("wnba", "3"), ("wnba", "99")],
+        aliases=[("wnba", "espn_abbr", "CHA", "99", None, None), ("wnba", "espn_abbr", "DET", "3", 1998, 2009)],
+    )
+    assert got == {"espn:CHA": None, "espn:DET": "3"}

@@ -1,9 +1,10 @@
 league,id_system,value,canonical,valid_from,valid_to
-nfl,nflverse,OAK,LV,,2019
+nfl,nflverse,OAK,LV,1960,1981
+nfl,nflverse,OAK,LV,1995,2019
 nfl,nflverse,LV,LV,2020,
-nfl,nflverse,SD,LAC,,2016
+nfl,nflverse,SD,LAC,1961,2016
 nfl,nflverse,LAC,LAC,2017,
-nfl,nflverse,STL,LA,,2015
+nfl,nflverse,STL,LA,1995,2015
 nfl,nflverse,LA,LA,2016,
 nfl,nflverse,LAR,LA,2016,
 wnba,espn_abbr,DET,DAL,1998,2009
