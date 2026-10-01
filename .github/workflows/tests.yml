@@ -1,0 +1,53 @@
+# Offline tests on a 3.10 + 3.13 matrix; live tests (real network) on main and manual runs only.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      live_tests:
+        description: "Set SDVPLOT_LIVE_TESTS=1 to include live network tests"
+        required: false
+        default: "true"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: pytest (offline, py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "${{ matrix.python }}" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: Run tests (offline)
+        run: uv run --frozen pytest -q --maxfail=10
+
+  live:
+    name: pytest (live, py3.13)
+    # Live endpoints are third-party and flaky; a PR author cannot act on an outage.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: Run tests (live network tests included)
+        env:
+          SDVPLOT_LIVE_TESTS: ${{ github.event.inputs.live_tests != 'false' && '1' || '' }}
+        run: uv run --frozen pytest -q --maxfail=10 --cov=sdvplot --cov-report=term-missing:skip-covered

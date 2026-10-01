@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import io
 
 import polars as pl
 
@@ -29,10 +30,13 @@ REQUIRED_COLUMNS = (
 
 
 def _validate(body: bytes) -> None:
-    header = body.split(b"\n", 1)[0].decode("utf-8").strip().split(",")
-    missing = [c for c in REQUIRED_COLUMNS if c not in header]
+    # parse the whole body the way _read() will, so a ragged or header-only manifest never replaces the cached one
+    m = pl.read_csv(io.BytesIO(body), infer_schema_length=0)
+    missing = [c for c in REQUIRED_COLUMNS if c not in m.columns]
     if missing:
         raise ValueError(f"the logo manifest is missing columns {missing}")
+    if m.is_empty():
+        raise ValueError("the logo manifest has no rows")
 
 
 @functools.cache

@@ -1,0 +1,86 @@
+name: Bug report
+description: Something is broken or behaves incorrectly.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please fill in the fields below — they help us
+        reproduce and prioritize the issue. If you're not sure whether it's a
+        bug or a usage question, prefer [Discussions](https://github.com/sportsdataverse/sdvplot/discussions).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the unexpected behavior.
+      placeholder: |
+        Calling `sdvplot.logo_url("KC", "nfl")` raises X, but I expected Y.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      description: Smallest code snippet that triggers the bug. Include any required env vars or config.
+      render: python
+      placeholder: |
+        import sdvplot
+        sdvplot.logo_url("KC", "nfl")
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Full traceback (if applicable)
+      description: Paste the COMPLETE error output. Don't truncate.
+      render: text
+
+  - type: input
+    id: sdv_version
+    attributes:
+      label: sdvplot version
+      description: Output of `sdvplot.versions()`
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      description: Output of `python --version`
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other (please specify in summary)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I've searched [existing issues](https://github.com/sportsdataverse/sdvplot/issues) and confirmed this isn't a duplicate.
+          required: true
+        - label: I've reproduced this on the latest release (or main, if I'm running from source).
+          required: true

@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 import shutil
-import tempfile
 import time
 import warnings
 from collections.abc import Callable
@@ -52,16 +51,16 @@ def read_meta(relpath: str) -> dict | None:
 def atomic_write(path: Path, data: bytes) -> None:
     """Write to a temp file beside the target, then rename: a reader never sees a partial file."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".part")
+    tmp = path.with_name(f"{path.name}.{os.urandom(8).hex()}.part")
+    # mode 0o666 with the kernel applying the umask: world-readable like any file, and the process umask is never
+    # read or changed (toggling it races between threads)
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o666)
     try:
         with os.fdopen(fd, "wb") as f:
             f.write(data)
-        current_umask = os.umask(0)
-        os.umask(current_umask)
-        os.chmod(tmp, 0o666 & ~current_umask)
         os.replace(tmp, path)
     except BaseException:
-        Path(tmp).unlink(missing_ok=True)
+        tmp.unlink(missing_ok=True)
         raise
 
 
@@ -78,7 +77,7 @@ def _offline_message(url: str) -> str:
     )
 
 
-def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | None = None) -> Path:
+def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
     truncation, a validate() rejection) the previous copy is kept and used with one warning."""
     path = cache_dir() / relpath
@@ -91,13 +90,8 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | 
     try:
         r = SESSION.get(url, headers=headers, timeout=(5, 60))
         if r.status_code == 304 and path.exists():
-            try:
-                atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
-            except (OSError, ValueError) as e:
-                if path.exists():
-                    _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
-                    return path
-                raise
+            # a failed meta write lands in the except below, which keeps the cached copy with one warning
+            atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
             return path
         r.raise_for_status()
         body = r.content
@@ -109,7 +103,10 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | 
         ):
             raise OSError(f"truncated download: {len(body)} of {declared} bytes")
         if validate is not None:
-            validate(body)
+            try:
+                validate(body)
+            except Exception as e:  # any validator error (a polars parse error too) rejects the body: never cache it
+                raise ValueError(f"{type(e).__name__}: {e}") from e
     except (requests.RequestException, OSError, ValueError) as e:
         if path.exists():
             _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
@@ -153,7 +150,24 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
 
 
 def clear_cache() -> None:
-    """Delete everything sdvplot has cached (manifest, images, rasterized SVGs)."""
+    """Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
+
+    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set.
+
+    Returns:
+        None: Nothing; the cache subdirectories are removed.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.clear_cache()   # the next logo_url() / logo_image() re-downloads
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     root = cache_dir()
     for subdir in CACHE_SUBDIRS:
         path = root / subdir

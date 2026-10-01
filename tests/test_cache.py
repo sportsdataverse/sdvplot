@@ -131,6 +131,22 @@ def test_file_mode_is_world_readable(cache, monkeypatch):
     assert actual_mode == expected_mode
 
 
+def test_atomic_write_never_touches_the_process_umask(tmp_path, monkeypatch):
+    """F4: os.umask(0) + restore races between threads and can leave the process umask at 0."""
+    before = os.umask(0o022)
+    os.umask(before)
+
+    def no_umask(mask):
+        raise AssertionError("atomic_write changed the process umask")
+
+    monkeypatch.setattr(os, "umask", no_umask)
+    _cache.atomic_write(tmp_path / "f", b"x")
+    monkeypatch.undo()
+    assert (tmp_path / "f").read_bytes() == b"x" and not list(tmp_path.glob("*.part"))
+    after = os.umask(before)
+    assert after == before
+
+
 def test_repeated_offline_uses_cache_without_request(cache, monkeypatch):
     """R16: After a failing refresh, repeated calls skip the network and don't warn again."""
     import warnings
@@ -194,3 +210,33 @@ def test_fetch_immutable_uses_timeout_5_60(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", s)
     _cache.fetch_immutable("https://x/a.png", f"images/{sha[:2]}/{sha}.png", sha)
     assert s.timeouts[0] == (5, 60)
+
+
+def test_immutable_5xx_is_offline_not_httperror(cache, monkeypatch):
+    """A server error is transient: OfflineError with the cache guidance, unlike a 4xx (R18)."""
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(503)))
+    with pytest.raises(OfflineError, match="HTTP 503"):
+        _cache.fetch_immutable("https://x/a.png", "images/ab/cd.png", "0" * 64)
+
+
+def test_a_304_whose_meta_write_fails_warns_and_uses_the_cached_copy(cache, monkeypatch):
+    monkeypatch.setenv("SDVPLOT_CACHE_TTL", "0")
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"good", {"ETag": '"v1"'})))
+    _cache.fetch_cached("https://x/m.csv", "m.csv")
+
+    def replace_fails(*args, **kwargs):
+        raise OSError("Permission denied")
+
+    monkeypatch.setattr(os, "replace", replace_fails)
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(304)))
+    with pytest.warns(SdvplotWarning, match="using the cached copy") as w:
+        assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"good"
+    assert len(w) == 1
+
+
+def test_a_gzip_body_longer_than_its_content_length_is_not_truncated(cache, monkeypatch):
+    """Content-Length is the compressed size when the server gzips; requests hands over the decoded body."""
+    body = b"a,b\n" + b"1,2\n" * 100
+    headers = {"Content-Length": "40", "Content-Encoding": "gzip"}
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body, headers)))
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == body

@@ -158,19 +158,41 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
 def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
     """Canonical team_id(s) for team values in one league.
 
+    Accepts ids and names from any supported source (ESPN, nflverse, MLB Stats, nba_api, HockeyTech, CFBD, sdvplotR) and
+    returns the bundled index's canonical team_id, in the same container the values came in. Values that do not resolve
+    come back as None with one SdvplotWarning, or raise with ``strict=True``.
+
     Args:
-        values: a scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported
-            id system (ESPN ids/abbreviations, nflverse, MLB Stats, nba_api, HockeyTech, CFBD names, sdvplotR's
-            keys, ...). NHL stats API ids overlap ESPN's, so "auto" never reads a number as one: pass
-            id_system="nhl_id" for them (NHL tri-codes such as "NJD" resolve under "auto").
-        league: the SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different
-            teams in different leagues.
-        season: one season for all values, or one per value. Picks the right team for a reused code.
-        id_system: "auto" (try PRIORITY in order) or one system name (PRIORITY or EXPLICIT_ONLY).
-        strict: raise UnresolvedTeamError instead of warning when a value does not resolve.
+        values: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported id
+            system. NHL stats API ids overlap ESPN's, so "auto" never reads a number as one: pass
+            ``id_system="nhl_id"`` for them (NHL tri-codes such as "NJD" resolve under "auto").
+        league: The SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different teams in
+            different leagues.
+        season: One season for all values, or one per value. Picks the right team for a reused code.
+        id_system: "auto" (try the priority order) or one system name.
+        strict: Raise UnresolvedTeamError instead of warning when a value does not resolve.
 
     Returns:
-        The same shape as values: a str or None, a list, or a Series of the caller's library.
+        str | list | Series | None: The same shape as ``values``: a team_id string (or None), a list, or a Series of the
+        caller's library.
+
+    Raises:
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        ValueError: If ``league`` or ``id_system`` is unknown, or
+            ``season`` is not a year (or a list whose length does not match the teams).
+        UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.resolve("LV", "nfl")                  # '13'
+            sdvplot.resolve(["KC", "SF"], "nfl")          # ['12', '25']
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
     """
     _index.check_league(league)
     if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
@@ -201,8 +223,32 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
 
 
 def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
-    """Up to n (team_id, name) candidates for a value that did not resolve, best first. It never picks one:
-    similar names can be different teams ("Bethany (KS)" and "Bethany (WV)")."""
+    """Up to n (team_id, name) candidates for a value that did not resolve, best first.
+
+    It never picks one for you: similar names can be different teams ("Bethany (KS)" and "Bethany (WV)").
+
+    Args:
+        value: The team value that failed to resolve.
+        league: The SDV league key, e.g. "nfl".
+        n: The most candidates to return.
+
+    Returns:
+        list[tuple[str, str]]: ``(team_id, name)`` pairs, best match first; empty when nothing is close.
+
+    Raises:
+        ValueError: If ``league`` is unknown.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.suggest("Kansas Cty Chiefs", "nfl", n=2)   # [('12', 'Kansas City Chiefs')]
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     import difflib
 
     _index.check_league(league)

@@ -8,6 +8,7 @@ import pytest
 
 import sdvplot
 from sdvplot import _index
+from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY
 
 pytestmark = pytest.mark.real_index
 
@@ -24,12 +25,33 @@ def test_the_readme_and_get_started_examples():
     assert oak.select("team_id", "valid_from", "valid_to").rows() == [("13", 1960, 2019)]
 
 
+def test_palette_never_merges_teams_that_share_an_abbreviation():  # KSU: Kansas State (264), Kennesaw State (307)
+    with pytest.warns(sdvplot.SdvplotWarning, match="KSU, LIN, PAC") as w:
+        p = sdvplot.palette("ncaa_baseball")
+    assert len(w) == 1
+    assert len(p) == sdvplot.teams("ncaa_baseball")["color_primary"].is_not_null().sum()
+    assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#bab0ac"
+
+
+@pytest.mark.parametrize("id_system", PRIORITY + EXPLICIT_ONLY)
+def test_every_id_system_has_aliases(id_system):  # build_index skips an empty or missing source silently
+    assert _index.alias_table().filter(pl.col("id_system") == id_system).height > 0
+
+
 @pytest.mark.parametrize(
     ("code", "season", "team"),
     [
-        ("OAK", None, "13"), ("OAK", 2010, "13"), ("OAK", 1975, "13"), ("LV", 2020, "13"),
-        ("SD", None, "24"), ("SD", 2010, "24"), ("LAC", 2020, "24"),
-        ("STL", None, "14"), ("STL", 2010, "14"), ("LA", 2020, "14"), ("LA", None, "14"),
+        ("OAK", None, "13"),
+        ("OAK", 2010, "13"),
+        ("OAK", 1975, "13"),
+        ("LV", 2020, "13"),
+        ("SD", None, "24"),
+        ("SD", 2010, "24"),
+        ("LAC", 2020, "24"),
+        ("STL", None, "14"),
+        ("STL", 2010, "14"),
+        ("LA", 2020, "14"),
+        ("LA", None, "14"),
     ],
 )
 def test_nfl_relocation_codes_with_and_without_seasons(code, season, team):
@@ -74,7 +96,10 @@ def test_wnba_san_antonio_codes_carry_their_own_eras():  # M6: sdvplotR's Silver
         & pl.col("value").is_in(["SAS", "SA", "espn:SAS", "espn:SA"])
     )
     assert sorted(a.select("value", "team_id", "valid_from", "valid_to").rows()) == [
-        ("SA", "17", 2014, 2017), ("SAS", "17", 2003, 2013), ("espn:SA", "17", 2014, 2017), ("espn:SAS", "17", 2003, 2013)
+        ("SA", "17", 2014, 2017),
+        ("SAS", "17", 2003, 2013),
+        ("espn:SA", "17", 2014, 2017),
+        ("espn:SAS", "17", 2003, 2013),
     ]
 
 

@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import contextlib
 import io
+import warnings
 from pathlib import Path
 from typing import Any
 
 from PIL import Image
 
 from sdvplot._cache import atomic_write, cache_dir, fetch_immutable
-from sdvplot._errors import OptionalDependencyError
-from sdvplot._marks import select_mark
-from sdvplot._resolve import one_team
+from sdvplot._errors import OptionalDependencyError, SdvplotWarning
+from sdvplot._marks import _check_mark_type, select_mark
+from sdvplot._resolve import one_team, resolve
 
 DEFAULT_SVG_SIZE = 512
 
@@ -37,8 +39,9 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
             img.load()
             return img
         except (OSError, Image.UnidentifiedImageError):
-            # Cache miss due to corruption; delete and re-render
-            out.unlink()
+            # Cache miss due to corruption; delete (best effort: the cache may be read-only) and re-render
+            with contextlib.suppress(OSError):
+                out.unlink()
 
     # Render SVG
     try:
@@ -54,8 +57,9 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     except ValueError as e:
         raise ValueError(f"SVG {sha}.{ext}: {e}") from e
 
-    atomic_write(out, png)
-    img = Image.open(out)
+    with contextlib.suppress(OSError):  # a read-only cache still gets the image, just not cached
+        atomic_write(out, png)
+    img = Image.open(io.BytesIO(png))
     img.load()
     return img
 
@@ -68,10 +72,47 @@ def logo_image(
     mark_type: str = "logo",
     size: int | None = None,
 ) -> Image.Image | None:
-    """The team's mark as a PIL image (cached). size is the longest side in pixels: rasters are only scaled down,
-    SVGs are rasterized at it (default 512; needs the svg extra)."""
-    row = select_mark(one_team(team, "logo_image"), league, season, variant, mark_type)
+    """The team's mark as a PIL image (downloaded once, then cached).
+
+    Args:
+        team: One team identifier (abbreviation, name, ESPN id, ...).
+        league: The SDV league key, e.g. "nfl".
+        season: A season year; None picks the current mark.
+        variant: "default", "dark", or a named variant from ``marks()``.
+        mark_type: "logo" or "wordmark".
+        size: The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512).
+
+    Returns:
+        PIL.Image.Image | None: The image, or None when the team does not resolve or has no mark.
+
+    Raises:
+        TypeError: If ``team`` is not a single value.
+        OptionalDependencyError: If the mark is an SVG and the ``svg`` extra is not installed.
+        OfflineError: If the download fails and no cached copy exists.
+        requests.HTTPError: If the CDN refuses the file (a 4xx response).
+        OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
+            (``PIL.UnidentifiedImageError`` subclasses OSError).
+        ValueError: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", or an SVG cannot be parsed.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            img = sdvplot.logo_image("KC", "nfl", size=64)
+            img.size   # (64, 64)
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
+    _check_mark_type(mark_type)
+    team_id = resolve(one_team(team, "logo_image"), league, season=season)
+    if team_id is None:
+        return None
+    row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
+        warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
         return None
     sha, ext = str(row["sha256"]), str(row["ext"])
     path = fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)

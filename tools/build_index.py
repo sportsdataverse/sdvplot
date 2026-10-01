@@ -470,9 +470,10 @@ def main(argv: list[str] | None = None) -> int:
     teams, aliases, version = build(args.raw)
     if args.check:
         try:
+            committed = [pl.read_parquet(args.out / f"{name}.parquet") for name in ("teams", "aliases")]
+            # equals() compares values only (Int32 == Int64), and the stamp carries no dtype: compare schemas too
             same = (
-                pl.read_parquet(args.out / "teams.parquet").equals(teams)
-                and pl.read_parquet(args.out / "aliases.parquet").equals(aliases)
+                all(c.schema == b.schema and c.equals(b) for c, b in zip(committed, (teams, aliases), strict=True))
                 and (args.out / "INDEX_VERSION").read_text(encoding="utf-8").strip() == version
             )
         except FileNotFoundError:

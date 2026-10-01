@@ -85,6 +85,15 @@ def test_check_mode_detects_drift(tmp_path, monkeypatch):
     assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 1
 
 
+def test_check_mode_detects_dtype_only_drift(tmp_path):  # equals() alone calls Int32 == Int64 the same
+    raw = _raw(tmp_path)
+    out = tmp_path / "data"
+    assert bi.main(["--raw", str(raw), "--out", str(out)]) == 0
+    aliases = pl.read_parquet(out / "aliases.parquet")
+    aliases.with_columns(pl.col("valid_from").cast(pl.Int64)).write_parquet(out / "aliases.parquet")
+    assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 1
+
+
 # The mark crosswalk (Ruling R19 build half, R25): one test per source rule
 MARK_COLS = ["league", "source", "entity_id", "entity_name", "valid_from", "valid_to"]
 NHL_COLS = ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name", "franchise_common_name"]
@@ -272,7 +281,11 @@ def test_nflverse_dark_logo_urls_join_to_their_espn_team(tmp_path):  # M5: CAR's
     raw = _raw(tmp_path)
     _add(raw, "manifest_teams.csv", "nfl,29,Carolina Panthers,pro")
     _add(raw, "espn_teams.csv", "nfl,29,CAR,Carolina Panthers,Panthers,Carolina,Panthers,0085ca,000000")
-    _add(raw, "nflverse_teams.csv", "CAR,Carolina Panthers,Panthers,#0085CA,#101820,https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png")
+    _add(
+        raw,
+        "nflverse_teams.csv",
+        "CAR,Carolina Panthers,Panthers,#0085CA,#101820,https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png",
+    )
     teams, _, _ = bi.build(raw)
     car = teams.filter(pl.col("team_id") == "29").row(0, named=True)
     assert (car["color_source"], car["color_secondary"]) == ("nflverse", "#101820")
@@ -289,7 +302,10 @@ def test_nhl_tri_codes_answer_under_auto_and_numeric_ids_only_by_name(tmp_path):
     raw = _raw(tmp_path)
     _add(raw, "manifest_teams.csv", "nhl,11,New Jersey Devils,pro")
     _add(raw, "espn_teams.csv", "nhl,11,NJ,New Jersey Devils,Devils,New Jersey,Devils,ce1126,000000")
-    for row in ("1,23,NJD,New Jersey Devils,New Jersey Devils,Devils", "53,28,ARI,Arizona Coyotes,Arizona Coyotes,Coyotes"):
+    for row in (
+        "1,23,NJD,New Jersey Devils,New Jersey Devils,Devils",
+        "53,28,ARI,Arizona Coyotes,Arizona Coyotes,Coyotes",
+    ):
         _add(raw, "nhl_teams.csv", row)
     _, aliases, _ = bi.build(raw)
     got = aliases.filter(pl.col("id_system").is_in(["nhl", "nhl_id"]))
@@ -304,7 +320,11 @@ def test_sdvplotr_keys_map_through_their_canonical_abbreviation(tmp_path):  # F1
     raw = _raw(tmp_path)
     for tid, abbr, name in (("14", "LAR", "Los Angeles Rams"), ("24", "LAC", "Los Angeles Chargers")):
         _add(raw, "manifest_teams.csv", f"nfl,{tid},{name},pro")
-        _add(raw, "espn_teams.csv", f"nfl,{tid},{abbr},{name},{name.split()[-1]},Los Angeles,{name.split()[-1]},000000,ffffff")
+        _add(
+            raw,
+            "espn_teams.csv",
+            f"nfl,{tid},{abbr},{name},{name.split()[-1]},Los Angeles,{name.split()[-1]},000000,ffffff",
+        )
     (raw / "sdvplotr_abbr_mapping.csv").write_text(
         "sport,key,canon\nnfl,LVR,LV\nnfl,LAS VEGAS,LV\nnfl,XYZ,NOPE\nnfl,LOS ANGELES,LAR\nnba,LVR,LV\n"
     )

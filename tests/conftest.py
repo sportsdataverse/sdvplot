@@ -122,6 +122,35 @@ TEAMS = [
         "#f28e2b",
         "fallback",
     ),
+    # two teams sharing one abbreviation, as in the shipped index: palette() must not pick one
+    (
+        "ncaa_baseball",
+        "264",
+        "KSU",
+        "Kansas State Wildcats",
+        "Kansas St",
+        "Kansas State",
+        "mens",
+        None,
+        None,
+        "#633194",
+        None,
+        "espn",
+    ),
+    (
+        "ncaa_baseball",
+        "307",
+        "KSU",
+        "Kennesaw State Owls",
+        "Kennesaw St",
+        "Kennesaw State",
+        "mens",
+        None,
+        None,
+        "#bab0ac",
+        "#4e79a7",
+        "fallback",
+    ),
 ]
 ALIASES = [
     # league, id_system, value, team_id, valid_from, valid_to
@@ -161,6 +190,10 @@ ALIASES = [
     ("cfb", "name", "Miami", "193", None, None),  # ambiguous on purpose
     ("ohl", "team_id", "7", "7", None, None),
     ("ohl", "hockeytech", "7", "7", None, None),
+    ("ncaa_baseball", "team_id", "264", "264", None, None),
+    ("ncaa_baseball", "team_id", "307", "307", None, None),
+    ("ncaa_baseball", "espn_abbr", "KSU", "264", None, None),
+    ("ncaa_baseball", "espn_abbr", "KSU", "307", None, None),
 ]
 
 

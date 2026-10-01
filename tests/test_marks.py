@@ -1,3 +1,4 @@
+import pandas as pd
 import polars as pl
 import pytest
 
@@ -50,6 +51,12 @@ def test_marks_is_strict_about_the_team():
         _marks.marks("XXX", "nfl")
 
 
+@pytest.mark.parametrize("team", [None, float("nan"), "", pd.NA])
+def test_marks_of_a_null_team_raises(team):
+    with pytest.raises(UnresolvedTeamError, match="needs a team"):
+        _marks.marks(team, "nfl")
+
+
 def test_an_unmapped_foreign_id_row_is_never_returned():
     # nhl source, entity_id "13" collides with ESPN id 13 but has no "mark" alias
     assert "9" * 64 not in set(_marks.marks("LV", "nfl")["sha256"])
@@ -64,8 +71,9 @@ def test_an_unknown_team_returns_none_with_the_resolver_warning():
     with pytest.warns(SdvplotWarning) as w:
         assert _marks.logo_url("XXX", "nfl") is None
     assert len(w) == 1
-    with pytest.warns(SdvplotWarning):
+    with pytest.warns(SdvplotWarning) as w:
         assert _marks.select_mark("XXX", "nfl") is None
+    assert len(w) == 1
 
 
 def test_a_team_with_only_a_non_default_variant_gets_it():

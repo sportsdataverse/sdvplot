@@ -5,6 +5,7 @@ import polars as pl
 import pytest
 
 from sdvplot import _cache, _headshots
+from sdvplot._errors import SdvplotWarning
 from tests.conftest import FakeResponse, FakeSession
 
 
@@ -48,6 +49,15 @@ def test_unsupported_league_is_a_clear_error():
         _headshots.headshot_url(1, "ohl")
 
 
+@pytest.mark.parametrize(
+    ("league", "id_system", "match"),
+    [("ohl", "espn", "no ESPN headshots for league 'ohl'"), ("nfl", "bogus", "id_system must be")],
+)
+def test_a_null_id_still_checks_the_league_and_id_system(league, id_system, match):
+    with pytest.raises(ValueError, match=match):
+        _headshots.headshot_url(None, league, id_system=id_system)
+
+
 def test_gsis_ids_prefer_nfl_headshot_transformed_or_fall_back_to_espn(cache, monkeypatch):
     buf = io.BytesIO()
     pl.DataFrame(
@@ -79,3 +89,22 @@ def test_gsis_ids_prefer_nfl_headshot_transformed_or_fall_back_to_espn(cache, mo
     # (d) Return None for unknown gsis id
     result4 = _headshots.headshot_url("00-0000000", "nfl", id_system="gsis")
     assert result4 is None
+
+
+def test_a_players_table_missing_a_column_keeps_the_cached_copy(cache, monkeypatch):
+    def parquet(**cols):
+        buf = io.BytesIO()
+        pl.DataFrame(cols).write_parquet(buf)
+        return buf.getvalue()
+
+    good = parquet(gsis_id=["00-0033873"], espn_id=["3139477"], headshot=[None])
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, good)))
+    _headshots._players.cache_clear()
+    espn = "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png"
+    assert _headshots.headshot_url("00-0033873", "nfl", id_system="gsis") == espn
+    monkeypatch.setenv("SDVPLOT_CACHE_TTL", "0")
+    bad = parquet(gsis_id=["00-0033873"], espn_id=["3139477"])  # nflverse dropped the headshot column
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, bad)))
+    with pytest.warns(SdvplotWarning, match="using the cached copy") as w:
+        assert _headshots.headshot_url("00-0033873", "nfl", id_system="gsis") == espn
+    assert len(w) == 1
