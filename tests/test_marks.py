@@ -71,8 +71,9 @@ def test_an_unknown_team_returns_none_with_the_resolver_warning():
     with pytest.warns(SdvplotWarning) as w:
         assert _marks.logo_url("XXX", "nfl") is None
     assert len(w) == 1
-    with pytest.warns(SdvplotWarning):
+    with pytest.warns(SdvplotWarning) as w:
         assert _marks.select_mark("XXX", "nfl") is None
+    assert len(w) == 1
 
 
 def test_a_team_with_only_a_non_default_variant_gets_it():

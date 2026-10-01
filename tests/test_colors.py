@@ -34,8 +34,15 @@ def test_team_colors_keeps_the_container():
 
 
 def test_unresolved_teams_get_no_color_and_one_warning():
-    with pytest.warns(SdvplotWarning):
+    with pytest.warns(SdvplotWarning) as w:
         assert team_colors(["LV", "XXX"], "nfl") == ["#000000", None]
+    assert len(w) == 1
+
+
+def test_palette_leaves_out_an_unknown_team_with_one_warning():
+    with pytest.warns(SdvplotWarning, match="'XXX'") as w:
+        assert palette("nfl", teams=["LV", "XXX"]) == {"LV": "#000000"}
+    assert len(w) == 1
 
 
 def test_fallback_colors_are_returned_like_any_other():
