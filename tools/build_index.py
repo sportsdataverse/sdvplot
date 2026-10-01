@@ -1,0 +1,385 @@
+"""Build the bundled team index (src/sdvplot/data) from the data-raw snapshots. Pure and deterministic: the same
+data-raw always gives byte-equal frames. --check exits 1 when the committed index is out of date (run in CI).
+
+Usage: uv run python tools/build_index.py [--check]
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import sys
+from pathlib import Path
+
+import polars as pl
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools")]
+from fetch_sources import IDENTITY_SOURCES  # noqa: E402  (the team universe and the mark crosswalk share it)
+from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
+
+# A colorblind-safe qualitative palette for teams no source gives colors for (flagged color_source="fallback")
+FALLBACK = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac",
+]
+
+
+def _csv(raw: Path, name: str) -> pl.DataFrame:
+    return pl.read_csv(raw / name, infer_schema_length=0)  # all text: ids keep their exact form
+
+
+def _hex(col: str) -> pl.Expr:
+    """A color as "#rrggbb", or null for "NULL", blanks and anything that is not six hex digits."""
+    c = pl.col(col).str.strip_chars().str.strip_chars_start("#").str.to_lowercase()
+    return pl.when(c.str.contains(r"^[0-9a-f]{6}$")).then(pl.lit("#") + c).otherwise(None)
+
+
+def _norm(e: pl.Expr) -> pl.Expr:
+    return e.str.strip_chars().str.to_lowercase()
+
+
+def _fallback(league: str, team_id: str, offset: int) -> str:
+    h = int(hashlib.sha256(f"{league}:{team_id}".encode()).hexdigest(), 16)
+    return FALLBACK[(h + offset) % len(FALLBACK)]
+
+
+def build_teams(raw: Path) -> pl.DataFrame:
+    base = _csv(raw, "manifest_teams.csv")
+    espn = _csv(raw, "espn_teams.csv").select(
+        "league",
+        "team_id",
+        pl.col("abbreviation").alias("abbr"),
+        pl.col("short_display_name").alias("short_name"),
+        "location",
+        _hex("color").alias("espn_primary"),
+        _hex("alternate_color").alias("espn_secondary"),
+    )
+    # nflverse also lists relocated codes (OAK, SD, STL) and LAR on the current team's ESPN logo; the curated file
+    # names their canonical code, so only the current code is kept
+    hist = _csv(raw, "curated/historical_abbrs.csv")
+    old = hist.filter((pl.col("id_system") == "nflverse") & (pl.col("value") != pl.col("canonical")))["value"]
+    nfl = (
+        _csv(raw, "nflverse_teams.csv")
+        .filter(~pl.col("team_abbr").is_in(old.to_list()))
+        .with_columns(
+            pl.col("team_logo_espn").str.extract(r"/nfl/500/([a-z]+)\.png", 1).str.to_uppercase().alias("espn_abbr")
+        )
+    )
+    espn_nfl = espn.filter(pl.col("league") == "nfl").select("team_id", pl.col("abbr").alias("espn_abbr"))
+    nflv = nfl.join(espn_nfl, on="espn_abbr", how="inner").select(
+        pl.lit("nfl").alias("league"),
+        "team_id",
+        pl.col("team_abbr").alias("nflv_abbr"),
+        _hex("team_color").alias("nflv_primary"),
+        _hex("team_color2").alias("nflv_secondary"),
+    )
+    assert not nflv["team_id"].is_duplicated().any(), f"several current nflverse codes per ESPN team: {nflv}"
+    groups = _csv(raw, "groups_latest.csv").select("league", "team_id", "conference_id", "conference")
+    t = (
+        base.join(espn, on=["league", "team_id"], how="left")
+        .join(nflv, on=["league", "team_id"], how="left")
+        .join(groups, on=["league", "team_id"], how="left")
+    )
+    assert not t.select("league", "team_id").is_duplicated().any(), "a source repeats a (league, team_id)"
+    t = t.with_columns(
+        pl.coalesce("nflv_abbr", "abbr").alias("abbr"),
+        pl.when(pl.col("nflv_primary").is_not_null())
+        .then(pl.lit("nflverse"))
+        .when(pl.col("espn_primary").is_not_null())
+        .then(pl.lit("espn"))
+        .otherwise(pl.lit("fallback"))
+        .alias("color_source"),
+        pl.coalesce("nflv_primary", "espn_primary").alias("color_primary"),
+        pl.coalesce("nflv_secondary", "espn_secondary").alias("color_secondary"),
+    )
+    t = t.with_columns(
+        pl.struct("league", "team_id", "color_primary")
+        .map_elements(lambda r: r["color_primary"] or _fallback(r["league"], r["team_id"], 0), return_dtype=pl.String)
+        .alias("color_primary"),
+        pl.struct("league", "team_id", "color_secondary")
+        .map_elements(lambda r: r["color_secondary"] or _fallback(r["league"], r["team_id"], 1), return_dtype=pl.String)
+        .alias("color_secondary"),
+    )
+    return t.select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
+    lg = pl.lit(league) if isinstance(league, str) else league
+    return df.select(
+        lg.alias("league"),
+        pl.lit(system).alias("id_system"),
+        pl.col(value).alias("value"),
+        pl.col(team_id).alias("team_id"),
+        pl.lit(None, pl.Int32).alias("valid_from"),
+        pl.lit(None, pl.Int32).alias("valid_to"),
+    )
+
+
+def mark_aliases(
+    marks: pl.DataFrame, teams: pl.DataFrame, aliases: pl.DataFrame, nhl: pl.DataFrame, espn: pl.DataFrame
+) -> pl.DataFrame:
+    """The `mark` crosswalk (Rulings R19, R25). A manifest row's entity_id is the id of its *source*, so each row maps
+    to a canonical team by its source's rule. One row per (league, source, value="source:entity_id"), with n = the
+    number of teams the key maps to and team_id set only when n == 1."""
+    src, lg = pl.col("source"), pl.col("league")
+    identity = (
+        src.is_in(sorted(IDENTITY_SOURCES)) & ((src != "espn") | pl.col("entity_id").str.contains(r"^\d+$"))
+    ) | ((src == "mlbstatic") & (lg == "milb"))
+    system = (
+        pl.when(identity)
+        .then(pl.lit(None, pl.String))
+        .when((src == "nflverse") | ((src == "espn") & (lg == "nfl")))
+        .then(pl.lit("nflverse"))
+        .when(src == "espn")
+        .then(pl.lit("espn_abbr"))  # abbreviation-keyed ESPN logos (R32): curated espn_abbr rows
+        .when((src == "mlbstatic") & (lg == "mlb"))
+        .then(pl.lit("mlbstats"))
+        .when(src == "nwhl.co")
+        .then(pl.lit("name"))  # an upload id, not a team id: only the name identifies the team
+        .when(src == "nhl")
+        .then(pl.lit("nhl"))
+    )
+    m = marks.with_row_index("_row").with_columns(
+        pl.col("valid_from", "valid_to").cast(pl.Int32),
+        pl.concat_str(src, pl.lit(":"), pl.col("entity_id")).alias("value"),
+        identity.alias("_identity"),
+        system.alias("id_system"),
+        _norm(pl.when(src == "nwhl.co").then(pl.col("entity_name")).otherwise(pl.col("entity_id"))).alias("_key"),
+    )
+    # NHL stats ids (or tri-codes) -> franchise -> the ESPN team with that nickname; franchises ESPN no longer
+    # lists (the Coyotes, the pre-war clubs) find none. Ids are numeric and tri-codes are not, so one lookup holds both.
+    espn_nhl = espn.filter(lg == "nhl").select("team_id", pl.col("nickname").alias("franchise_common_name"))
+    nhl_xw = pl.concat([nhl.select(pl.col(c).alias("value"), "franchise_common_name") for c in ("nhl_id", "tri_code")])
+    nhl_xw = _alias(nhl_xw.join(espn_nhl, on="franchise_common_name"), "nhl", "nhl", "value")
+    known = teams.select("league", "team_id")
+    lookup = (
+        pl.concat([aliases.cast(ALIAS_SCHEMA), nhl_xw.cast(ALIAS_SCHEMA)])
+        .join(known, on=["league", "team_id"], how="semi")
+        .select(
+            "league",
+            "id_system",
+            _norm(pl.col("value")).alias("_key"),
+            "team_id",
+            pl.col("valid_from").alias("_from"),
+            pl.col("valid_to").alias("_to"),
+        )
+    )
+    # R25: a row with a range takes the dated (relocation) aliases over that range, else any alias over it; a row
+    # without one takes the current alias (open-ended), else any. A key whose rows still name several teams gets none.
+    has_range = pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null()
+    overlaps = (pl.col("_from").is_null() | pl.col("valid_to").is_null() | (pl.col("_from") <= pl.col("valid_to"))) & (
+        pl.col("_to").is_null() | pl.col("valid_from").is_null() | (pl.col("_to") >= pl.col("valid_from"))
+    )
+    dated = pl.col("_from").is_not_null() | pl.col("_to").is_not_null()
+    preferred = pl.when(has_range).then(dated & overlaps).otherwise(pl.col("_to").is_null())
+    via = m.join(lookup, on=["league", "id_system", "_key"]).filter(
+        pl.when(has_range).then(overlaps).otherwise(True) & (preferred | ~preferred.any().over("_row"))
+    )
+    ident = m.filter("_identity").with_columns(pl.col("entity_id").alias("team_id"))
+    keys = ["league", "source", "value"]
+    cands = pl.concat([ident.select(*keys, "team_id"), via.select(*keys, "team_id")]).join(
+        known, on=["league", "team_id"], how="semi"
+    )
+    per_key = cands.group_by(keys).agg(pl.col("team_id").n_unique().alias("n"), pl.col("team_id").min())
+    return (
+        m.select(keys)
+        .unique()
+        .join(per_key, on=keys, how="left")
+        .with_columns(pl.col("n").fill_null(0), pl.when(pl.col("n") == 1).then(pl.col("team_id")).alias("team_id"))
+        .sort(keys)
+    )
+
+
+def _report_marks(mk: pl.DataFrame) -> None:
+    print(f"mark aliases: {mk.filter(pl.col('n') == 1).height} of {mk.height} manifest keys map to one team")
+    bad = (
+        mk.filter(pl.col("n") != 1)
+        .group_by("league", "source")
+        .agg(
+            (pl.col("n") == 0).sum().alias("unmapped"),
+            (pl.col("n") > 1).sum().alias("ambiguous"),
+            pl.col("value").sort(),
+        )
+    )
+    for r in bad.sort("league", "source").iter_rows(named=True):
+        shown = ", ".join(r["value"][:8]) + (", ..." if len(r["value"]) > 8 else "")
+        print(f"  {r['league']}/{r['source']}: {r['unmapped']} unmapped, {r['ambiguous']} ambiguous ({shown})")
+
+
+def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
+    espn = _csv(raw, "espn_teams.csv")
+    parts = [
+        _alias(teams, pl.col("league"), "team_id", "team_id"),
+        _alias(espn, pl.col("league"), "espn", "team_id"),
+        _alias(espn, pl.col("league"), "espn_abbr", "abbreviation"),
+        *[_alias(espn, pl.col("league"), "name", c) for c in ("display_name", "short_display_name", "location")],
+        _alias(_csv(raw, "manifest_teams.csv"), pl.col("league"), "name", "name"),
+    ]
+    by_league = {
+        "hockeytech": ["pwhl", "ahl", "echl", "ohl", "whl", "qmjhl", "ushl"],
+        "mlbstats": ["milb"],
+        "pff": ["aaf"],
+        "cricinfo": ["cricket"],
+    }
+    for system, leagues in by_league.items():
+        parts.append(_alias(teams.filter(pl.col("league").is_in(leagues)), pl.col("league"), system, "team_id"))
+    # curated codes (nflverse relocations, ESPN's historical abbreviations): canonical = the team's abbr today
+    hist = _csv(raw, "curated/historical_abbrs.csv").join(
+        teams.select("league", "team_id", "abbr"),
+        left_on=["league", "canonical"],
+        right_on=["league", "abbr"],
+        how="inner",
+    )
+    assert hist.height == _csv(raw, "curated/historical_abbrs.csv").height, "a curated canonical names no single team"
+    parts.append(
+        hist.select(
+            "league",
+            "id_system",
+            "value",
+            "team_id",
+            pl.col("valid_from").cast(pl.Int32),
+            pl.col("valid_to").cast(pl.Int32),
+        )
+    )
+    parts.append(_alias(teams.filter(pl.col("league") == "nfl"), "nfl", "nflverse", "abbr"))
+    # cfbd: CFBD team ids are ESPN ids
+    cfbd = _csv(raw, "cfbd_teams.csv")
+    if cfbd.height:
+        names = cfbd.with_columns(pl.col("alternate_names").str.split("|")).explode(
+            "alternate_names", empty_as_null=True
+        )
+        parts += [
+            _alias(cfbd, "cfb", "cfbd", "school"),
+            _alias(cfbd.drop_nulls("abbreviation"), "cfb", "cfbd", "abbreviation"),
+            _alias(
+                names.drop_nulls("alternate_names").filter(pl.col("alternate_names") != ""),
+                "cfb",
+                "cfbd",
+                "alternate_names",
+            ),
+        ]
+    # nba_api: join on nickname (unique per league; abbreviations differ, e.g. GS vs GSW)
+    nba = _csv(raw, "nba_api_teams.csv")
+    if nba.height:
+        espn_nba = espn.filter(pl.col("league") == "nba").select(
+            "team_id", pl.col("short_display_name").alias("nickname")
+        )
+        j = nba.join(espn_nba, on="nickname", how="inner")
+        assert j.height == nba.height, (
+            f"nba_api teams unmatched by nickname: {sorted(set(nba['nickname']) - set(j['nickname']))}"
+        )
+        parts += [_alias(j, "nba", "nba_api", "nba_api_id"), _alias(j, "nba", "nba_api", "abbreviation")]
+    # MLB Stats API: big-league teams join on the full name (R8: teamName "D-backs" vs ESPN "Diamondbacks");
+    # MiLB ids are the sdv-assets milb team ids
+    mlb = _csv(raw, "mlbstats_teams.csv")
+    if mlb.height:
+        espn_mlb = espn.filter(pl.col("league") == "mlb").select("team_id", pl.col("display_name").alias("name"))
+        mlb1 = mlb.filter(pl.col("sport_id") == "1")
+        big = mlb1.join(espn_mlb, on="name", how="inner")
+        assert big.height == mlb1.height, (
+            f"MLB Stats teams unmatched to ESPN: {sorted(set(mlb1['name']) - set(big['name']))}"
+        )
+        milb = mlb.filter(pl.col("sport_id") != "1").with_columns(pl.col("mlbstats_id").alias("team_id"))
+        for df, lg in ((big, "mlb"), (milb, "milb")):
+            parts += [_alias(df, lg, "mlbstats", c) for c in ("mlbstats_id", "abbreviation", "team_code", "file_code")]
+    fg = _csv(raw, "curated/fangraphs_abbrs.csv")
+    if fg.height:
+        mlb_abbr = teams.filter(pl.col("league") == "mlb").select("team_id", pl.col("abbr").alias("espn_abbr"))
+        j = fg.join(mlb_abbr, on="espn_abbr", how="inner")
+        assert j.height == fg.height, (
+            f"FanGraphs codes with no ESPN team: {sorted(set(fg['espn_abbr']) - set(j['espn_abbr']))}"
+        )
+        parts.append(_alias(j, "mlb", "fangraphs", "fangraphs"))
+    if (raw / "ncaa_cfb_xwalk.csv").exists():
+        parts.append(_alias(_csv(raw, "ncaa_cfb_xwalk.csv"), "cfb", "ncaa", "ncaa_id"))
+    if (raw / "sr_codes.csv").exists():
+        parts += _sr_aliases(_csv(raw, "sr_codes.csv"), espn)
+    known = teams.select("league", "team_id")
+    a = (
+        pl.concat([p.cast(ALIAS_SCHEMA) for p in parts], how="vertical")
+        .drop_nulls(["value", "team_id"])
+        .join(known, on=["league", "team_id"], how="semi")
+    )
+    mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
+    _report_marks(mk)
+    a = pl.concat([a, _alias(mk.filter(pl.col("n") == 1), pl.col("league"), "mark", "value").cast(ALIAS_SCHEMA)])
+    return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
+
+
+def _sr_aliases(sr: pl.DataFrame, espn: pl.DataFrame) -> list[pl.DataFrame]:
+    """Sports Reference codes (pybaseball bref, sportsipy): a code maps to the ESPN team whose display name equals
+    the code's latest SR team name; its range is the seasons SR used it. Defunct franchises do not match and drop."""
+    sr = sr.with_columns(pl.col("season").cast(pl.Int32))
+    latest = (
+        sr.sort("season", "team_name")
+        .group_by("league", "team_code")
+        .agg(
+            pl.col("team_name").last(),
+            pl.col("season").min().alias("valid_from"),
+            pl.col("season").max().alias("valid_to"),
+        )
+    )
+    names = espn.select("league", "team_id", pl.col("display_name").alias("team_name"))
+    j = latest.join(names, on=["league", "team_name"], how="inner")
+    out = []
+    for system in ("bref", "sportsipy"):
+        out.append(
+            j.select(
+                "league",
+                pl.lit(system).alias("id_system"),
+                pl.col("team_code").alias("value"),
+                "team_id",
+                "valid_from",
+                "valid_to",
+            )
+        )
+    return out
+
+
+def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
+    teams = build_teams(raw)
+    aliases = build_aliases(raw, teams)
+    digest = hashlib.sha256()
+    for path in sorted(raw.rglob("*.csv")):
+        digest.update(path.relative_to(raw).as_posix().encode())
+        digest.update(path.read_bytes())
+    return teams, aliases, digest.hexdigest()[:12]
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument("--raw", type=Path, default=ROOT / "data-raw")
+    p.add_argument("--out", type=Path, default=ROOT / "src" / "sdvplot" / "data")
+    p.add_argument("--check", action="store_true")
+    args = p.parse_args(argv)
+    teams, aliases, version = build(args.raw)
+    if args.check:
+        try:
+            same = (
+                pl.read_parquet(args.out / "teams.parquet").equals(teams)
+                and pl.read_parquet(args.out / "aliases.parquet").equals(aliases)
+                and (args.out / "INDEX_VERSION").read_text().strip() == version
+            )
+        except FileNotFoundError:
+            same = False
+        print("index is current" if same else "index is OUT OF DATE: run uv run python tools/build_index.py")
+        return 0 if same else 1
+    args.out.mkdir(parents=True, exist_ok=True)
+    teams.write_parquet(args.out / "teams.parquet")
+    aliases.write_parquet(args.out / "aliases.parquet")
+    (args.out / "INDEX_VERSION").write_text(version + "\n")
+    print(f"wrote {teams.height} teams, {aliases.height} aliases, index {version}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

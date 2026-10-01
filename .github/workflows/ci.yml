@@ -16,3 +16,10 @@ jobs:
       - run: uv run ruff check .
       - run: uv run mypy src
       - run: uv run pytest -q
+  index-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev
+      - run: uv run python tools/build_index.py --check

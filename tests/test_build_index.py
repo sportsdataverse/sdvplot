@@ -1,0 +1,207 @@
+import importlib.util
+from pathlib import Path
+
+import polars as pl
+
+from sdvplot import _index
+
+spec = importlib.util.spec_from_file_location("build_index", Path(__file__).parents[1] / "tools" / "build_index.py")
+bi = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bi)
+
+
+def _raw(tmp_path):
+    raw = tmp_path / "data-raw"
+    (raw / "curated").mkdir(parents=True, exist_ok=True)
+    files = {
+        "manifest_teams.csv": "league,team_id,name,program\nnfl,13,Las Vegas Raiders,pro\nohl,7,Kitchener Rangers,junior\n",
+        "manifest_marks.csv": "league,source,entity_id,entity_name,valid_from,valid_to\n"
+        "nfl,espn,13,Las Vegas Raiders,,\nnfl,nflverse,OAK,Oakland Raiders,,\nnfl,espn,99,Nobody,,\n",
+        "espn_teams.csv": "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
+        "nfl,13,LV,Las Vegas Raiders,Raiders,Las Vegas,Raiders,000000,a5acaf\n",
+        "nflverse_teams.csv": "team_abbr,team_name,team_nick,team_color,team_color2,team_logo_espn\n"
+        "LV,Las Vegas Raiders,Raiders,#000000,#A5ACAF,https://a.espncdn.com/i/teamlogos/nfl/500/lv.png\n"
+        "OAK,Oakland Raiders,Raiders,#000000,#A5ACAF,https://a.espncdn.com/i/teamlogos/nfl/500/lv.png\n",
+        "cfbd_teams.csv": "team_id,school,abbreviation,alternate_names\n",
+        "nba_api_teams.csv": "nba_api_id,abbreviation,nickname,full_name\n",
+        "nhl_teams.csv": "nhl_id,franchise_id,tri_code,full_name,franchise_full_name,franchise_common_name\n",
+        "mlbstats_teams.csv": "sport_id,mlbstats_id,abbreviation,team_code,file_code,team_name,name\n",
+        "groups_latest.csv": "league,team_id,season,conference_id,conference\nnfl,13,2026,nfl:afc-west,AFC West\n",
+        "curated/historical_abbrs.csv": "league,id_system,value,canonical,valid_from,valid_to\nnfl,nflverse,OAK,LV,,2019\n",
+        "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
+    }
+    for name, text in files.items():
+        (raw / name).write_text(text)
+    return raw
+
+
+def test_build_produces_the_runtime_schema_and_resolvable_aliases(tmp_path):
+    teams, aliases, version = bi.build(_raw(tmp_path))
+    assert teams.schema == pl.Schema(_index.TEAM_SCHEMA) and aliases.schema == pl.Schema(_index.ALIAS_SCHEMA)
+    lv = teams.filter(pl.col("team_id") == "13").row(0, named=True)
+    assert (lv["abbr"], lv["color_primary"], lv["color_source"], lv["conference"]) == (
+        "LV",
+        "#000000",
+        "nflverse",
+        "AFC West",
+    )
+    oak = aliases.filter(pl.col("value") == "OAK").row(0, named=True)
+    assert (oak["team_id"], oak["valid_to"]) == ("13", 2019)
+    assert {"team_id", "espn", "espn_abbr", "name", "nflverse", "mark"} <= set(aliases["id_system"])
+    marks = aliases.filter(pl.col("id_system") == "mark")
+    assert sorted(marks.select("value", "team_id").rows()) == [("espn:13", "13"), ("nflverse:OAK", "13")]
+    assert len(version) == 12
+
+
+def test_teams_without_source_colors_get_a_flagged_deterministic_fallback(tmp_path):
+    teams, _, _ = bi.build(_raw(tmp_path))
+    kit = teams.filter(pl.col("league") == "ohl").row(0, named=True)
+    assert kit["color_source"] == "fallback" and kit["color_primary"].startswith("#")
+    assert bi.build(_raw(tmp_path))[0].equals(teams)  # deterministic
+
+
+def test_hex_nulls_placeholders_and_lowercases():
+    df = pl.DataFrame({"c": ["NULL", None, "A5ACAF", "#000000", "zzzzzz", "fff"]})
+    assert df.select(bi._hex("c")).to_series().to_list() == [None, None, "#a5acaf", "#000000", None, None]
+
+
+def test_check_mode_detects_drift(tmp_path, monkeypatch):
+    raw = _raw(tmp_path)
+    out = tmp_path / "data"
+    assert bi.main(["--raw", str(raw), "--out", str(out)]) == 0
+    assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 0
+    (raw / "manifest_teams.csv").write_text("league,team_id,name,program\nnfl,13,Raiders,pro\n")
+    assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 1
+
+
+# The mark crosswalk (Ruling R19 build half, R25): one test per source rule
+MARK_COLS = ["league", "source", "entity_id", "entity_name", "valid_from", "valid_to"]
+NHL_COLS = ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name", "franchise_common_name"]
+
+
+def _text(rows, cols):
+    return pl.DataFrame(rows, schema=dict.fromkeys(cols, pl.String), orient="row")
+
+
+def _crosswalk(marks, teams, aliases=(), nhl=(), espn=()):
+    out = bi.mark_aliases(
+        _text(marks, MARK_COLS),
+        _text(teams, ["league", "team_id"]),
+        pl.DataFrame(list(aliases), schema=_index.ALIAS_SCHEMA, orient="row"),
+        _text(nhl, NHL_COLS),
+        _text(espn, ["league", "team_id", "nickname"]),
+    )
+    return dict(out.select("value", "team_id").rows())
+
+
+def test_mark_identity_rows_map_to_their_own_id_when_the_team_exists():
+    got = _crosswalk(
+        [
+            ("nfl", "espn", "13", "Las Vegas Raiders", None, None),
+            ("milb", "mlbstatic", "102", "Round Rock Express", None, None),
+            ("ohl", "hockeytech", "7", "Kitchener Rangers", None, None),
+            ("nfl", "espn", "99", "Nobody", None, None),
+        ],
+        [("nfl", "13"), ("milb", "102"), ("ohl", "7")],
+    )
+    assert got == {"espn:13": "13", "mlbstatic:102": "102", "hockeytech:7": "7", "espn:99": None}
+
+
+def test_mark_espn_abbreviation_rows_map_through_nflverse_or_curated_espn_abbr():
+    got = _crosswalk(
+        [
+            ("nfl", "espn", "OAK", "OAK", None, None),
+            ("wnba", "espn", "DET", "DET", None, None),
+            ("wnba", "espn", "HOU", "HOU", None, None),
+        ],
+        [("nfl", "13"), ("wnba", "3")],
+        aliases=[("nfl", "nflverse", "OAK", "13", None, 2019), ("wnba", "espn_abbr", "DET", "3", 1998, 2009)],
+    )
+    assert got == {"espn:OAK": "13", "espn:DET": "3", "espn:HOU": None}
+
+
+def test_mark_nflverse_rows_map_through_nflverse_aliases():
+    aliases = [
+        ("nfl", "nflverse", "LV", "13", None, None),
+        ("nfl", "nflverse", "LA", "14", None, None),  # the current abbreviation, as the build writes it
+        ("nfl", "nflverse", "LA", "14", 2016, None),
+        ("nfl", "nflverse", "LA", "13", 1982, 1994),
+        ("nfl", "nflverse", "STL", "14", None, 2015),
+    ]
+    teams = [("nfl", "13"), ("nfl", "14")]
+    # no range: the current abbreviation decides ("LA" today is the Rams)
+    got = _crosswalk([("nfl", "nflverse", c, c, None, None) for c in ("LV", "LA", "STL")], teams, aliases)
+    assert got == {"nflverse:LV": "13", "nflverse:LA": "14", "nflverse:STL": "14"}
+    # a range: the relocation aliases over that range decide
+    assert _crosswalk([("nfl", "nflverse", "LA", "Los Angeles Raiders", "1982", "1994")], teams, aliases) == {
+        "nflverse:LA": "13"
+    }
+
+
+def test_mark_mlbstatic_in_mlb_maps_through_mlbstats_ids_never_raw():
+    got = _crosswalk(
+        [("mlb", "mlbstatic", "147", "New York Yankees", None, None), ("mlb", "mlbstatic", "1", "Nobody", None, None)],
+        [("mlb", "1"), ("mlb", "10")],
+        aliases=[("mlb", "mlbstats", "147", "10", None, None), ("mlb", "mlbstats", "NYY", "10", None, None)],
+    )
+    assert got == {"mlbstatic:147": "10", "mlbstatic:1": None}  # "1" is the Orioles' ESPN id, not an MLB Stats id
+
+
+def test_mark_nhl_rows_map_through_the_franchise_common_name():
+    got = _crosswalk(
+        [
+            ("nhl", "nhl", "1", "NJD", None, None),
+            ("nhl", "nhl", "32", "QUE", None, None),
+            ("nhl", "nhl", "53", "ARI", None, None),
+            ("nhl", "nhl", "EDM", "EDM", None, None),
+        ],
+        [("nhl", "1"), ("nhl", "11"), ("nhl", "17"), ("nhl", "6")],
+        nhl=[
+            ("1", "23", "NJD", "New Jersey Devils", "New Jersey Devils", "Devils"),
+            ("32", "27", "QUE", "Quebec Nordiques", "Colorado Avalanche", "Avalanche"),
+            ("53", "28", "ARI", "Arizona Coyotes", "Arizona Coyotes", "Coyotes"),
+            ("22", "25", "EDM", "Edmonton Oilers", "Edmonton Oilers", "Oilers"),
+        ],
+        espn=[("nhl", "1", "Bruins"), ("nhl", "11", "Devils"), ("nhl", "17", "Avalanche"), ("nhl", "6", "Oilers")],
+    )
+    # NHL id 1 is New Jersey (ESPN 11), never ESPN 1 (Boston); the Coyotes have no ESPN team
+    assert got == {"nhl:1": "11", "nhl:32": "17", "nhl:53": None, "nhl:EDM": "6"}
+
+
+def test_mark_nwhl_rows_map_by_name():
+    got = _crosswalk(
+        [
+            ("phf", "nwhl.co", "6335", "Boston Pride", "2016", "2016"),
+            ("phf", "nwhl.co", "6338", "New York Riveters", "2016", "2016"),
+        ],
+        [("phf", "61638")],
+        aliases=[("phf", "name", "Boston Pride", "61638", None, None)],
+    )
+    assert got == {"nwhl.co:6335": "61638", "nwhl.co:6338": None}
+
+
+def test_mark_unknown_source_gets_no_alias():
+    got = _crosswalk(
+        [("nfl", "somewhere", "13", "Las Vegas Raiders", None, None)],
+        [("nfl", "13")],
+        aliases=[("nfl", "team_id", "13", "13", None, None), ("nfl", "name", "Las Vegas Raiders", "13", None, None)],
+    )
+    assert got == {"somewhere:13": None}
+
+
+def test_mark_key_mapping_to_two_teams_gets_no_alias():
+    got = _crosswalk(
+        [
+            ("nfl", "nflverse", "LA", "Los Angeles Rams", "2016", "2025"),
+            ("nfl", "nflverse", "LA", "Los Angeles Raiders", "1982", "1994"),
+            ("phf", "nwhl.co", "9", "Metropolitan Riveters", None, None),
+        ],
+        [("nfl", "13"), ("nfl", "14"), ("phf", "61636"), ("phf", "124984")],
+        aliases=[
+            ("nfl", "nflverse", "LA", "14", 2016, None),
+            ("nfl", "nflverse", "LA", "13", 1982, 1994),
+            ("phf", "name", "Metropolitan Riveters", "61636", None, None),
+            ("phf", "name", "Metropolitan Riveters", "124984", None, None),
+        ],
+    )
+    assert got == {"nflverse:LA": None, "nwhl.co:9": None}
