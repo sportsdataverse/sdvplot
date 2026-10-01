@@ -109,6 +109,6 @@ def teams(league: str | None = None) -> pl.DataFrame:
     """
     t = team_table()
     if league is None:
-        return t
+        return t.clone()  # never the cached frame: an in-place edit by the caller would leak into the session
     check_league(league)
     return t.filter(pl.col("league") == league)

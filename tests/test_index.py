@@ -10,6 +10,11 @@ def test_teams_returns_the_whole_index_or_one_league():
     assert nfl.schema["team_id"] == pl.String  # ids are strings, never ints
 
 
+def test_editing_the_returned_frame_in_place_leaves_the_index_intact():
+    idx.teams().drop_in_place("abbr")
+    assert "abbr" in idx.teams().columns
+
+
 def test_alias_ranges_are_int32_and_nullable():
     a = idx.alias_table()
     assert a.schema["valid_from"] == pl.Int32
