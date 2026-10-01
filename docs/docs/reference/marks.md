@@ -34,6 +34,7 @@ manifest's, else the mark alias's.
 - `TypeError`: If ``team`` is not a single value.
 - `ValueError`: If ``league`` or ``id_system`` is unknown.
 - `UnresolvedTeamError`: If the team does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
 
 ## Example
 

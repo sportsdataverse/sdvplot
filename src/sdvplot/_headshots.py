@@ -68,6 +68,8 @@ def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | 
 
     Raises:
         ValueError: If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
+        OfflineError: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no
+            cached copy exists.
 
     Example:
         ::

@@ -128,6 +128,7 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
         TypeError: If ``team`` is not a single value.
         ValueError: If ``league`` or ``id_system`` is unknown.
         UnresolvedTeamError: If the team does not resolve.
+        OfflineError: If the logo manifest cannot be downloaded and no cached copy exists.
 
     Example:
         ::
@@ -206,6 +207,7 @@ def logo_url(
     Raises:
         TypeError: If ``team`` is not a single value.
         ValueError: If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+        OfflineError: If the logo manifest cannot be downloaded and no cached copy exists.
 
     Example:
         ::

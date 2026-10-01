@@ -30,7 +30,8 @@ they match a seaborn ``hue`` column or a Plotly color column exactly.
 
 ## Raises
 
-- `ValueError`: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+- `TypeError`: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+- `ValueError`: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or ``season`` is not a year (or a list whose length does not match the teams).
 
 ## Example
 

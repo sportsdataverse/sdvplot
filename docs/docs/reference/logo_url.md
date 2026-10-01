@@ -34,6 +34,7 @@ str | None: The archive URL (content-addressed, immutable), or None when no mark
 
 - `TypeError`: If ``team`` is not a single value.
 - `ValueError`: If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
 
 ## Example
 

@@ -32,7 +32,8 @@ str | list | Series | None: The same shape as ``values``: a team_id string (or N
 
 ## Raises
 
-- `ValueError`: If ``league`` or ``id_system`` is unknown.
+- `TypeError`: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+- `ValueError`: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year (or a list whose length does not match the teams).
 - `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ## Example

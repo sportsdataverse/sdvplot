@@ -39,7 +39,9 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
         dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out.
 
     Raises:
-        ValueError: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+        TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
+            ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::
@@ -81,7 +83,9 @@ def team_colors(teams: Any, league: str, which: str = "primary", season: Any = N
         str | list | Series | None: The hex color for each team, None where a team does not resolve or has no color.
 
     Raises:
-        ValueError: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+        TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
+            ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::

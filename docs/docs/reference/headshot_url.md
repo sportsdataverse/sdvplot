@@ -27,6 +27,7 @@ str | None: The image URL, or None when the id is missing, malformed, or not in 
 ## Raises
 
 - `ValueError`: If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
+- `OfflineError`: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists.
 
 ## Example
 
