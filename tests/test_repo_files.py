@@ -2,7 +2,7 @@
 import subprocess
 from pathlib import Path
 
-import pytest
+import yaml
 
 ROOT = Path(__file__).parents[1]
 
@@ -28,7 +28,6 @@ DOTFILES = [".markdownlint-cli2.yaml", ".coderabbit.yaml", ".yamlfmt", ".python-
 def test_sdv_py_dotfiles_exist_and_parse():
     import json
 
-    yaml = pytest.importorskip("yaml")  # pyyaml joins the lint group in Task 3
     for rel in DOTFILES:
         p = ROOT / rel
         assert p.is_file(), rel
