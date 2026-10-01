@@ -168,3 +168,39 @@ def fixture_index(tmp_path, monkeypatch):
     _index.reload_index()
     yield data
     _index.reload_index()
+
+
+class FakeResponse:
+    def __init__(self, status=200, body=b"", headers=None):
+        self.status_code, self.content, self.headers = status, body, headers or {}
+
+    def raise_for_status(self):
+        import requests
+
+        if self.status_code >= 400:
+            raise requests.HTTPError(f"HTTP {self.status_code}")
+
+
+class FakeSession:
+    """Serves queued responses (or raises queued exceptions) in order and records each request's headers."""
+
+    def __init__(self, *responses):
+        self.responses, self.calls = list(responses), []
+        self.headers = {}
+
+    def get(self, url, headers=None, timeout=None):
+        self.calls.append((url, headers or {}))
+        nxt = self.responses.pop(0)
+        if isinstance(nxt, Exception):
+            raise nxt
+        return nxt
+
+
+@pytest.fixture
+def cache(tmp_path, monkeypatch):
+    from sdvplot import _cache
+
+    root = tmp_path / "cache"
+    monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(root))
+    _cache._warned.clear()
+    return root
