@@ -11,7 +11,7 @@ from sdvplot import _index
 from sdvplot._errors import SdvplotWarning
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
-from sdvplot._resolve import one_team, resolve
+from sdvplot._resolve import _covers, one_team, resolve
 
 # Official sources first, then archived copies, then derived crops (sdv-assets source names)
 SOURCE_RANK: dict[str, int] = {
@@ -63,16 +63,21 @@ def _mark_aliases(league: str) -> pl.DataFrame:
     )
 
 
-def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
-    """Every archived mark for one team, best first (see select_mark for the rule).
+# league -> (the loaded manifest frame, its rows mapped and ranked). _manifest caches that frame per path+mtime, so
+# a refreshed manifest is a new object and rebuilds; an index reload clears it (R45)
+_RANKED: dict[str, tuple[pl.DataFrame, pl.DataFrame]] = {}
+_index.on_reload(_RANKED.clear)
 
-    Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
-    unique mapping are dropped, never matched on the raw id. valid_from/valid_to are each row's effective range:
-    the manifest's, else the mark alias's (R36)."""
-    team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
+
+def _ranked(league: str) -> pl.DataFrame:
+    """Every team-level manifest row of one league that maps to one canonical team, with its effective range,
+    best first; marks() only filters it on team_id."""
+    manifest = load_manifest()
+    hit = _RANKED.get(league)
+    if hit is not None and hit[0] is manifest:
+        return hit[1]
     m = (
-        load_manifest()
-        .filter((pl.col("level") == "team") & (pl.col("league") == league))
+        manifest.filter((pl.col("level") == "team") & (pl.col("league") == league))
         .with_columns(
             pl.concat_str(pl.col("source"), pl.lit(":"), pl.col("entity_id"))
             .str.strip_chars()
@@ -80,14 +85,13 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
             .alias("_key")
         )
         .join(_mark_aliases(league), on="_key", how="inner")
-        .filter(pl.col("team_id") == team_id)
         .with_columns(
             pl.coalesce("valid_from", "_alias_valid_from").alias("valid_from"),
             pl.coalesce("valid_to", "_alias_valid_to").alias("valid_to"),
         )
         .drop("_key", "_alias_valid_from", "_alias_valid_to")
     )
-    return (
+    ranked = (
         m.with_columns(
             pl.col("source").replace_strict(SOURCE_RANK, default=5, return_dtype=pl.Int8).alias("source_rank"),
             pl.col("valid_to").is_null().alias("_open"),
@@ -99,6 +103,18 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
         )
         .drop("_open")
     )
+    _RANKED[league] = (manifest, ranked)
+    return ranked
+
+
+def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
+    """Every archived mark for one team, best first (see select_mark for the rule).
+
+    Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
+    unique mapping are dropped, never matched on the raw id. valid_from/valid_to are each row's effective range:
+    the manifest's, else the mark alias's (R36)."""
+    team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
+    return _ranked(league).filter(pl.col("team_id") == team_id)
 
 
 def select_mark(
@@ -113,24 +129,31 @@ def select_mark(
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
-    m = marks(team_id, league, s, id_system="team_id").filter(pl.col("mark_type") == mark_type)
-    v = pl.col("variant")
+    # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45)
+    rows = [r for r in marks(team_id, league, s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
     side = "dark" if variant == "dark" else "light"
-    polarity = (v == f"on_{side}") | v.str.ends_with(f"_on_{side}")
-    order = [v == variant, polarity, v == "default"] if side == "dark" else [v == variant, v == "default", polarity]
-    # sorted best-first, so the unfiltered frame's first row is the best of any variant
-    for rows in [*(m.filter(e) for e in order), m]:
+
+    def polarity(v: str) -> bool:
+        return v == f"on_{side}" or v.endswith(f"_on_{side}")
+
+    def requested(v: str) -> bool:
+        return v == variant
+
+    def default(v: str) -> bool:
+        return v == "default"
+
+    order = [requested, polarity, default] if side == "dark" else [requested, default, polarity]
+    # sorted best-first, so the first row of any set is its best
+    for keep in [*order, None]:
+        found = [r for r in rows if keep is None or keep(r["variant"])]
         if s is not None:
-            covering = rows.filter(
-                (pl.col("valid_from").is_null() | (pl.col("valid_from") <= s))
-                & (pl.col("valid_to").is_null() | (pl.col("valid_to") >= s))
-            )
-            dated = covering.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
+            covering = [r for r in found if _covers(r["valid_from"], r["valid_to"], s)]
+            dated = [r for r in covering if r["valid_from"] is not None or r["valid_to"] is not None]
             for df in (dated, covering):
-                if df.height:
-                    return df.row(0, named=True)
-        if rows.height:
-            return rows.row(0, named=True)
+                if df:
+                    return df[0]
+        if found:
+            return found[0]
     return None
 
 

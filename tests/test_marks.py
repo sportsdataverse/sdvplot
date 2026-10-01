@@ -108,3 +108,12 @@ def test_the_any_variant_fallback_keeps_the_requested_polarity():  # F2 (R44): M
     assert _marks.logo_url("LAC", "nfl", mark_type="wordmark") == "https://cdn/d2.png"  # on_light
     assert _marks.logo_url("LAC", "nfl", variant="dark", mark_type="wordmark") == "https://cdn/d1.png"  # on_dark
     assert _marks.logo_url("LAC", "nfl", variant="grayscale", mark_type="wordmark") == "https://cdn/d3.png"
+
+
+def test_the_ranked_league_frame_is_built_once_per_manifest_and_index(manifest):  # F3 (R45)
+    from sdvplot import _index
+
+    first = _marks._ranked("nfl")
+    assert _marks._ranked("nfl") is first  # logo_url per point only filters this frame
+    _index.reload_index()
+    assert _marks._ranked("nfl") is not first and _marks._ranked("nfl").equals(first)
