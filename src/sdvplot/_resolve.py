@@ -102,9 +102,8 @@ def _seasons(season: Any, n: int) -> list[int | None]:
 
 
 def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
-    shown = ", ".join(f"{v!r} ({why})" for v, why in list(unresolved.items())[:20])
-    more = " …" if len(unresolved) > 20 else ""
-    msg = f"{len(unresolved)} value(s) did not resolve to a {league} team: {shown}{more}"
+    shown = ", ".join(f"{v!r} ({why})" for v, why in unresolved.items())
+    msg = f"{len(unresolved)} value(s) did not resolve to a {league} team: {shown}"
     if strict:
         raise UnresolvedTeamError(msg)
     warnings.warn(

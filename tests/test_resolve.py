@@ -62,3 +62,13 @@ def test_unknown_league_is_a_clear_error():
 
 def test_lists_and_tuples_keep_their_length_and_order():
     assert resolve(("LAC", "LAR"), "nfl") == ["24", "14"]
+
+
+def test_warning_lists_every_unresolved_value():
+    unknown = [f"U{i}" for i in range(1, 26)]  # 25 distinct unknown values
+    with pytest.warns(SdvplotWarning) as rec:
+        resolve(unknown, "nfl")
+    msg = str(rec[0].message)
+    # Assert the warning message contains all 25 unresolved values
+    for val in unknown:
+        assert f"'{val}'" in msg
