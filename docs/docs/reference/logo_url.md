@@ -45,4 +45,4 @@ sdvplot.logo_url("KC", "nfl")   # 'https://sdv.nyc3.cdn.digitaloceanspaces.com/a
 
 ## See also
 
-sdvplotR ``logo_url``: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/

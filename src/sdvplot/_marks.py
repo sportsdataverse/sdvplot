@@ -215,7 +215,7 @@ def logo_url(
             sdvplot.logo_url("KC", "nfl")   # 'https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3d/3d77....png'
 
     See Also:
-        sdvplotR ``logo_url``: https://sdvplotR.sportsdataverse.org/ ;
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
     _check_mark_type(mark_type)
