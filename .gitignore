@@ -5,8 +5,6 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-docs/_site/
-docs/reference/
 .env
 docs/node_modules/
 docs/build/

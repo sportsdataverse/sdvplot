@@ -50,3 +50,15 @@ def test_sdv_py_dotfiles_exist_and_parse():
             json.loads(p.read_text(encoding="utf-8"))
     assert (ROOT / ".python-version").read_text().strip() == "3.13"
     assert "SDVPLOT_CACHE_DIR" in (ROOT / ".env.example").read_text()
+
+
+def test_docs_changelog_mirrors_the_root_changelog():  # Review Focus 5
+    root = (ROOT / "CHANGELOG.md").read_bytes()
+    assert root.startswith(b"<!-- START doctoc") or root.startswith(b"# Changelog")
+    assert (ROOT / "docs" / "src" / "pages" / "CHANGELOG.md").read_bytes() == root
+
+
+def test_contributor_files_exist():
+    for rel in ("CHANGELOG.md", "CONTRIBUTING.md", "CLAUDE.md", ".github/copilot-instructions.md"):
+        assert (ROOT / rel).is_file(), rel
+    assert "## Unreleased" in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
