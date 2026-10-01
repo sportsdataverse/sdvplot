@@ -40,8 +40,8 @@ Commit a regenerated `uv.lock` together with the `pyproject.toml` change that ca
 uv run pre-commit run --all-files
 ```
 
-`pre-commit install` works unless a global `core.hooksPath` is set (git then ignores `.git/hooks`); in that case
-run the command above before you push.
+Run `uv run pre-commit install` to run the hooks on every commit. It refuses when a global `core.hooksPath` is set
+(git then ignores `.git/hooks`); in that case run the command above before you push.
 
 ## Tests
 
@@ -63,9 +63,11 @@ Generated files are never hand-edited. Change the source, regenerate, and commit
 | --- | --- | --- |
 | `src/sdvplot/data/*` (the bundled index) | `uv run python tools/fetch_sources.py`, then `uv run python tools/build_index.py` | `uv run python tools/build_index.py --check` |
 | `docs/docs/reference/**` (API reference) | `uv run python tools/gen_docs.py` | `uv run python tools/gen_docs.py --check` |
-| `docs/docs/tutorials/**` | `uv run python tools/render_notebooks.py` | none (`--no-execute` renders without running the notebooks) |
+| `docs/docs/tutorials/**` | `uv run python tools/render_notebooks.py` | none (refreshed weekly by `live-tests-cron`) |
 | `docs/src/pages/CHANGELOG.md` | the pre-commit hook copies `CHANGELOG.md` | `uv run pre-commit run --all-files` |
 | `data-raw/sdvplotr_*.csv` (sdvplotR export) | `Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index afterwards |
+
+Do not commit a `render_notebooks.py --no-execute` render: it overwrites the rendered tutorials with output-free pages.
 
 ## Code standards for new modules
 
