@@ -108,7 +108,8 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
 
 ## Release
 
-1. Bump `version` in `pyproject.toml`.
+1. Bump `version` in `pyproject.toml`, run `uv lock`, and commit `uv.lock` with it (the `drift` workflow fails on a
+   stale lock).
 2. In `CHANGELOG.md`, move the `## Unreleased` entries under a new `## X.Y.Z Release: <date>` heading directly below
    an emptied `## Unreleased`, which always stays at the top (a test asserts it).
 3. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
