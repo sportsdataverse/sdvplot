@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import io
 from typing import Any
 
 import polars as pl
@@ -21,11 +22,12 @@ ESPN_HEADSHOT_LEAGUES = {
     "wbb": "womens-college-basketball",
 }
 NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
+PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
 
 
 @functools.cache
 def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]]:
-    p = pl.read_parquet(path, columns=["gsis_id", "espn_id", "headshot"]).drop_nulls("gsis_id")
+    p = pl.read_parquet(path, columns=PLAYER_COLUMNS).drop_nulls("gsis_id")
     return {g: (e, h) for g, e, h in p.iter_rows()}
 
 
@@ -90,7 +92,11 @@ def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | 
     if id_system == "espn":
         return _espn(pid, league)
     if id_system == "gsis" and league == "nfl":
-        path = fetch_cached(NFLVERSE_PLAYERS_URL, "nflverse/players.parquet")
+        path = fetch_cached(
+            NFLVERSE_PLAYERS_URL,
+            "nflverse/players.parquet",
+            validate=lambda body: pl.read_parquet(io.BytesIO(body), columns=PLAYER_COLUMNS),
+        )
         row = _players(str(path), path.stat().st_mtime).get(str(player_id).strip())
         if row is None:
             return None

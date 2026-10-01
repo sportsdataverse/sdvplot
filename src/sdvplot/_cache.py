@@ -78,7 +78,7 @@ def _offline_message(url: str) -> str:
     )
 
 
-def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | None = None) -> Path:
+def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
     truncation, a validate() rejection) the previous copy is kept and used with one warning."""
     path = cache_dir() / relpath
@@ -109,7 +109,10 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | 
         ):
             raise OSError(f"truncated download: {len(body)} of {declared} bytes")
         if validate is not None:
-            validate(body)
+            try:
+                validate(body)
+            except Exception as e:  # any validator error (a polars parse error too) rejects the body: never cache it
+                raise ValueError(f"{type(e).__name__}: {e}") from e
     except (requests.RequestException, OSError, ValueError) as e:
         if path.exists():
             _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
