@@ -9,6 +9,12 @@ def test_palette_for_a_whole_league_is_keyed_by_abbreviation():
     assert palette("nfl") == {"LV": "#000000", "LAR": "#003594", "LAC": "#0080c6"}
 
 
+def test_palette_keys_teams_that_share_an_abbreviation_by_team_id_with_one_warning():  # never guess which KSU
+    with pytest.warns(SdvplotWarning, match="shared by several ncaa_baseball teams are keyed by team_id: KSU") as w:
+        assert palette("ncaa_baseball") == {"264": "#633194", "307": "#bab0ac"}
+    assert len(w) == 1
+
+
 def test_palette_keys_are_the_callers_own_values_for_seaborn_hue():
     assert palette("nfl", teams=["OAK", "Los Angeles Rams"], season=2018) == {
         "OAK": "#000000",

@@ -53,7 +53,9 @@ UNKNOWN_LEAGUE = [
 
 @pytest.mark.parametrize("call", UNKNOWN_LEAGUE)
 def test_an_unknown_league_is_the_same_clear_error_everywhere(call):  # M2
-    with pytest.raises(ValueError, match=r"unknown league 'xfl'; known leagues: \['cfb', 'mlb', 'nfl', 'ohl'\]"):
+    with pytest.raises(
+        ValueError, match=r"unknown league 'xfl'; known leagues: \['cfb', 'mlb', 'ncaa_baseball', 'nfl', 'ohl'\]"
+    ):
         call()
 
 

@@ -12,8 +12,9 @@ palette(league: str, which: str = 'primary', teams: Any = None, season: Any = No
 
 A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
-Without ``teams`` the keys are canonical abbreviations. With ``teams`` the keys are the caller's own values, so
-they match a seaborn ``hue`` column or a Plotly color column exactly.
+Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
+it with another team of the league (never guessing which team an abbreviation means). With ``teams`` the keys are
+the caller's own values, so they match a seaborn ``hue`` column or a Plotly color column exactly.
 
 ## Arguments
 
@@ -26,7 +27,7 @@ they match a seaborn ``hue`` column or a Plotly color column exactly.
 
 ## Returns
 
-`dict` — ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out.
+`dict` — ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out. Without ``teams``, a team whose abbreviation another team of the league shares is keyed by its team_id, with one SdvplotWarning naming the shared abbreviations.
 
 ## Raises
 

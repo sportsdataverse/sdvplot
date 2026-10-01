@@ -24,6 +24,14 @@ def test_the_readme_and_get_started_examples():
     assert oak.select("team_id", "valid_from", "valid_to").rows() == [("13", 1960, 2019)]
 
 
+def test_palette_never_merges_teams_that_share_an_abbreviation():  # KSU: Kansas State (264), Kennesaw State (307)
+    with pytest.warns(sdvplot.SdvplotWarning, match="KSU, LIN, PAC") as w:
+        p = sdvplot.palette("ncaa_baseball")
+    assert len(w) == 1
+    assert len(p) == sdvplot.teams("ncaa_baseball")["color_primary"].is_not_null().sum()
+    assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#bab0ac"
+
+
 @pytest.mark.parametrize(
     ("code", "season", "team"),
     [

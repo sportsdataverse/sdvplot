@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import warnings
+from collections import Counter
 from typing import Any
 
 import polars as pl
 
 from sdvplot import _index
+from sdvplot._errors import SdvplotWarning
 from sdvplot._resolve import _seasons, _unpack, resolve
 
 _COLUMNS = {"primary": "color_primary", "secondary": "color_secondary"}
@@ -26,8 +29,9 @@ def _colors(league: str, column: str) -> dict[str, str]:
 def palette(league: str, which: str = "primary", teams: Any = None, season: Any = None) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
-    Without ``teams`` the keys are canonical abbreviations. With ``teams`` the keys are the caller's own values, so
-    they match a seaborn ``hue`` column or a Plotly color column exactly.
+    Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
+    it with another team of the league (never guessing which team an abbreviation means). With ``teams`` the keys are
+    the caller's own values, so they match a seaborn ``hue`` column or a Plotly color column exactly.
 
     Args:
         league: The SDV league key, e.g. "nfl".
@@ -36,7 +40,9 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
         season: One season, or one per team, for values reused across eras.
 
     Returns:
-        dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out.
+        dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out. Without ``teams``, a team
+        whose abbreviation another team of the league shares is keyed by its team_id, with one SdvplotWarning naming
+        the shared abbreviations.
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
@@ -58,8 +64,15 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
     _index.check_league(league)
     colors = _colors(league, column)
     if teams is None:
-        t = _index.team_table().filter(pl.col("league") == league)
-        return {abbr or tid: colors[tid] for tid, abbr in t.select("team_id", "abbr").iter_rows() if tid in colors}
+        rows = _index.team_table().filter(pl.col("league") == league).select("team_id", "abbr").rows()
+        shared = {a for a, n in Counter(a for _, a in rows if a).items() if n > 1}
+        if shared:
+            warnings.warn(
+                f"abbreviations shared by several {league} teams are keyed by team_id: {', '.join(sorted(shared))}",
+                SdvplotWarning,
+                stacklevel=2,
+            )
+        return {(tid if not abbr or abbr in shared else abbr): colors[tid] for tid, abbr in rows if tid in colors}
     values, _ = _unpack(teams)
     pairs = [p for p in dict.fromkeys(zip(values, _seasons(season, len(values)), strict=True)) if p[0] is not None]
     ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs])

@@ -4,7 +4,7 @@ import sdvplot._index as idx
 
 
 def test_teams_returns_the_whole_index_or_one_league():
-    assert idx.teams().height == 8
+    assert idx.teams().height == 10
     nfl = idx.teams("nfl")
     assert nfl["team_id"].to_list() == ["13", "14", "24"]
     assert nfl.schema["team_id"] == pl.String  # ids are strings, never ints
