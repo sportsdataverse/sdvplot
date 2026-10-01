@@ -178,7 +178,9 @@ class FakeResponse:
         import requests
 
         if self.status_code >= 400:
-            raise requests.HTTPError(f"HTTP {self.status_code}")
+            err = requests.HTTPError(f"HTTP {self.status_code}")
+            err.response = self
+            raise err
 
 
 class FakeSession:

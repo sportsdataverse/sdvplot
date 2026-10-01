@@ -20,6 +20,7 @@ from sdvplot._errors import OfflineError, SdvplotWarning
 CACHE_ENV = "SDVPLOT_CACHE_DIR"
 TTL_ENV = "SDVPLOT_CACHE_TTL"
 DEFAULT_TTL_DAYS = 7.0
+CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse")
 SESSION = requests.Session()
 SESSION.headers["User-Agent"] = "sdvplot (+https://github.com/sportsdataverse/sdvplot)"
 _warned: set[str] = set()
@@ -40,7 +41,12 @@ def _meta_path(path: Path) -> Path:
 
 def read_meta(relpath: str) -> dict | None:
     meta = _meta_path(cache_dir() / relpath)
-    return json.loads(meta.read_text()) if meta.exists() else None
+    if not meta.exists():
+        return None
+    try:
+        return json.loads(meta.read_text())
+    except (OSError, ValueError):
+        return None
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -50,6 +56,9 @@ def atomic_write(path: Path, data: bytes) -> None:
     try:
         with os.fdopen(fd, "wb") as f:
             f.write(data)
+        current_umask = os.umask(0)
+        os.umask(current_umask)
+        os.chmod(tmp, 0o666 & ~current_umask)
         os.replace(tmp, path)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
@@ -62,6 +71,13 @@ def _warn_once(key: str, message: str) -> None:
         warnings.warn(message, SdvplotWarning, stacklevel=4)
 
 
+def _offline_message(url: str) -> str:
+    return (
+        f"could not download {url} and there is no cached copy; connect once, or point {CACHE_ENV} "
+        "at a directory that has one"
+    )
+
+
 def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | None = None) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
     truncation, a validate() rejection) the previous copy is kept and used with one warning."""
@@ -69,11 +85,19 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | 
     meta = read_meta(relpath) or {}
     if path.exists() and time.time() - meta.get("fetched_at", 0) < ttl_seconds():
         return path
+    if url in _warned and path.exists():
+        return path
     headers = {"If-None-Match": meta["etag"]} if path.exists() and meta.get("etag") else {}
     try:
-        r = SESSION.get(url, headers=headers, timeout=60)
+        r = SESSION.get(url, headers=headers, timeout=(5, 60))
         if r.status_code == 304 and path.exists():
-            atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
+            try:
+                atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
+            except (OSError, ValueError) as e:
+                if path.exists():
+                    _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
+                    return path
+                raise
             return path
         r.raise_for_status()
         body = r.content
@@ -90,17 +114,20 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], None] | 
         if path.exists():
             _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
             return path
-        raise OfflineError(
-            f"could not download {url} ({e}) and there is no cached copy; connect once, or point {CACHE_ENV} "
-            "at a directory that has one"
-        ) from e
-    atomic_write(path, body)
-    new_meta = {
-        "etag": r.headers.get("ETag"),
-        "last_modified": r.headers.get("Last-Modified"),
-        "fetched_at": time.time(),
-    }
-    atomic_write(_meta_path(path), json.dumps(new_meta).encode())
+        raise OfflineError(f"{_offline_message(url)} ({e})") from e
+    try:
+        atomic_write(path, body)
+        new_meta = {
+            "etag": r.headers.get("ETag"),
+            "last_modified": r.headers.get("Last-Modified"),
+            "fetched_at": time.time(),
+        }
+        atomic_write(_meta_path(path), json.dumps(new_meta).encode())
+    except (OSError, ValueError) as e:
+        if path.exists():
+            _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
+            return path
+        raise OfflineError(f"{_offline_message(url)} ({e})") from e
     return path
 
 
@@ -110,10 +137,14 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
     if path.exists():
         return path
     try:
-        r = SESSION.get(url, timeout=60)
+        r = SESSION.get(url, timeout=(5, 60))
         r.raise_for_status()
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code < 500:
+            raise
+        raise OfflineError(f"{_offline_message(url)} ({e})") from e
     except requests.RequestException as e:
-        raise OfflineError(f"could not download {url} ({e})") from e
+        raise OfflineError(f"{_offline_message(url)} ({e})") from e
     digest = hashlib.sha256(r.content).hexdigest()
     if digest != sha256:
         raise OSError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
@@ -123,5 +154,9 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
 
 def clear_cache() -> None:
     """Delete everything sdvplot has cached (manifest, images, rasterized SVGs)."""
-    shutil.rmtree(cache_dir(), ignore_errors=True)
+    root = cache_dir()
+    for subdir in CACHE_SUBDIRS:
+        path = root / subdir
+        if path.exists():
+            shutil.rmtree(path)
     _warned.clear()
