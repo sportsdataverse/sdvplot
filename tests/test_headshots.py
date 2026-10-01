@@ -1,10 +1,35 @@
 import io
 
+import numpy as np
 import polars as pl
 import pytest
 
 from sdvplot import _cache, _headshots
 from tests.conftest import FakeResponse, FakeSession
+
+
+@pytest.mark.parametrize(
+    "player_id",
+    [3139477, "3139477", 3139477.0, " 3139477 ", np.int64(3139477)],
+)
+def test_espn_ids_accept_numeric_variants(player_id):
+    """Valid numeric id variants all produce the same URL."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result == "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png"
+
+
+@pytest.mark.parametrize("player_id", [None, float("nan"), ""])
+def test_espn_ids_return_none_for_null_and_empty(player_id):
+    """Null and empty strings return None."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result is None
+
+
+@pytest.mark.parametrize("player_id", ["abc", "1.5", 1.5, True])
+def test_espn_ids_return_none_for_invalid_shapes(player_id):
+    """Non-numeric ids (letters, decimals, bools) return None, matching sdvplotR."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result is None
 
 
 def test_espn_ids_build_the_combiner_url():

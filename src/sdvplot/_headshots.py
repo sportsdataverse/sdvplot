@@ -29,9 +29,16 @@ def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]
     return {g: (e, h) for g, e, h in p.iter_rows()}
 
 
-def _espn(player_id: str, league: str) -> str:
+def _is_valid_espn_id(normalized_id: str) -> bool:
+    """Check if a normalized id is all ASCII digits, matching sdvplotR's shape validation."""
+    return normalized_id.isascii() and normalized_id.isdigit()
+
+
+def _espn(player_id: str, league: str) -> str | None:
     if league not in ESPN_HEADSHOT_LEAGUES:
         raise ValueError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
+    if not _is_valid_espn_id(player_id):
+        return None
     slug = ESPN_HEADSHOT_LEAGUES[league]
     return f"https://a.espncdn.com/combiner/i?img=/i/headshots/{slug}/players/full/{player_id}.png"
 
