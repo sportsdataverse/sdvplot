@@ -32,6 +32,8 @@ PIL.Image.Image | None: The image, or None when the team does not resolve or has
 - `TypeError`: If ``team`` is not a single value.
 - `OptionalDependencyError`: If the mark is an SVG and the ``svg`` extra is not installed.
 - `OfflineError`: If the download fails and no cached copy exists.
+- `requests.HTTPError`: If the CDN refuses the file (a 4xx response).
+- `OSError`: If the download does not match the manifest's sha256, or is not an image PIL can decode (``PIL.UnidentifiedImageError`` subclasses OSError).
 - `ValueError`: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", or an SVG cannot be parsed.
 
 ## Example

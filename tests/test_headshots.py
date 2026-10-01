@@ -49,6 +49,15 @@ def test_unsupported_league_is_a_clear_error():
         _headshots.headshot_url(1, "ohl")
 
 
+@pytest.mark.parametrize(
+    ("league", "id_system", "match"),
+    [("ohl", "espn", "no ESPN headshots for league 'ohl'"), ("nfl", "bogus", "id_system must be")],
+)
+def test_a_null_id_still_checks_the_league_and_id_system(league, id_system, match):
+    with pytest.raises(ValueError, match=match):
+        _headshots.headshot_url(None, league, id_system=id_system)
+
+
 def test_gsis_ids_prefer_nfl_headshot_transformed_or_fall_back_to_espn(cache, monkeypatch):
     buf = io.BytesIO()
     pl.DataFrame(

@@ -37,8 +37,6 @@ def _is_valid_espn_id(normalized_id: str) -> bool:
 
 
 def _espn(player_id: str, league: str) -> str | None:
-    if league not in ESPN_HEADSHOT_LEAGUES:
-        raise ValueError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
     if not _is_valid_espn_id(player_id):
         return None
     slug = ESPN_HEADSHOT_LEAGUES[league]
@@ -86,24 +84,27 @@ def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | 
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
+    # check the arguments first, so a null id never hides a bad league or id_system
+    if id_system == "espn" and league not in ESPN_HEADSHOT_LEAGUES:
+        raise ValueError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
+    if id_system != "espn" and (id_system, league) != ("gsis", "nfl"):
+        raise ValueError(f"id_system must be 'espn' (any league) or 'gsis' (nfl), got {id_system!r} for {league!r}")
     pid = norm_value(player_id)
     if pid is None:
         return None
     if id_system == "espn":
         return _espn(pid, league)
-    if id_system == "gsis" and league == "nfl":
-        path = fetch_cached(
-            NFLVERSE_PLAYERS_URL,
-            "nflverse/players.parquet",
-            validate=lambda body: pl.read_parquet(io.BytesIO(body), columns=PLAYER_COLUMNS),
-        )
-        row = _players(str(path), path.stat().st_mtime).get(str(player_id).strip())
-        if row is None:
-            return None
-        espn_id, headshot = row
-        if headshot:
-            return _transform_nfl_headshot(headshot)
-        if espn_id:
-            return _espn(espn_id, "nfl")
+    path = fetch_cached(
+        NFLVERSE_PLAYERS_URL,
+        "nflverse/players.parquet",
+        validate=lambda body: pl.read_parquet(io.BytesIO(body), columns=PLAYER_COLUMNS),
+    )
+    row = _players(str(path), path.stat().st_mtime).get(str(player_id).strip())
+    if row is None:
         return None
-    raise ValueError(f"id_system must be 'espn' (any league) or 'gsis' (nfl), got {id_system!r} for {league!r}")
+    espn_id, headshot = row
+    if headshot:
+        return _transform_nfl_headshot(headshot)
+    if espn_id:
+        return _espn(espn_id, "nfl")
+    return None
