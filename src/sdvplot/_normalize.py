@@ -5,9 +5,12 @@ from __future__ import annotations
 import math
 import numbers
 import re
+import unicodedata
 from typing import Any
 
 _FLOAT_ID = re.compile(r"-?\d+\.0+")
+# typographic punctuation providers write inconsistently (sdvplotR fold_accents): curly apostrophes, en/em dashes
+_PUNCT = str.maketrans({"\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-"})
 
 
 def _is_na(value: Any) -> bool:
@@ -15,7 +18,8 @@ def _is_na(value: Any) -> bool:
 
 
 def norm_value(value: Any) -> str | None:
-    """A team value as a comparison key: trimmed, case-folded, integral numbers without a decimal point."""
+    """A team value as a comparison key: trimmed, accents and typographic punctuation folded, case-folded,
+    integral numbers without a decimal point."""
     if _is_na(value):
         return None
     if isinstance(value, bool):
@@ -27,7 +31,10 @@ def norm_value(value: Any) -> str | None:
         if math.isnan(f):
             return None
         return str(int(f)) if f.is_integer() else str(f)
-    s = str(value).strip().casefold()
+    s = str(value).strip()
+    if not s.isascii():  # "San José State" == "San Jose State": decompose, then drop the combining accents
+        s = "".join(c for c in unicodedata.normalize("NFKD", s.translate(_PUNCT)) if not unicodedata.combining(c))
+    s = s.casefold()
     if _FLOAT_ID.fullmatch(s):  # "13.0": an id that went through a float before it became text
         s = s.split(".")[0]
     return s or None
