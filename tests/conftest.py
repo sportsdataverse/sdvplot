@@ -1,9 +1,11 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
+from pathlib import Path
+
 import polars as pl
 import pytest
 
-from sdvplot import _index
+from sdvplot import _cache, _index, _manifest
 
 TEAMS = [
     # league, team_id, abbr, name, short_name, location, program, conference_id, conference, primary, secondary, color_source
@@ -207,3 +209,13 @@ def cache(tmp_path, monkeypatch):
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(root))
     _cache._warned.clear()
     return root
+
+
+FIXTURE = Path(__file__).parent / "fixtures" / "marks.csv"
+
+
+@pytest.fixture
+def manifest(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, FIXTURE.read_bytes(), {"ETag": '"m1"'})))
+    _manifest._read.cache_clear()
+    return _manifest.load_manifest()

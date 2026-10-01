@@ -1,20 +1,9 @@
 import os
-from pathlib import Path
 
 import polars as pl
 import pytest
 
-from sdvplot import _cache, _manifest
-from tests.conftest import FakeResponse, FakeSession
-
-FIXTURE = Path(__file__).parent / "fixtures" / "marks.csv"
-
-
-@pytest.fixture
-def manifest(cache, monkeypatch):
-    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, FIXTURE.read_bytes(), {"ETag": '"m1"'})))
-    _manifest._read.cache_clear()
-    return _manifest.load_manifest()
+from sdvplot import _manifest
 
 
 def test_manifest_types(manifest):
@@ -23,6 +12,9 @@ def test_manifest_types(manifest):
 
 
 def test_a_manifest_missing_required_columns_is_rejected(cache, monkeypatch):
+    from sdvplot import _cache
+    from tests.conftest import FakeResponse, FakeSession
+
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"level,league\nteam,nfl\n")))
     _manifest._read.cache_clear()
     with pytest.raises(Exception, match="missing columns"):
