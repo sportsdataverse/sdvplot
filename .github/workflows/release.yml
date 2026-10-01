@@ -1,5 +1,8 @@
-# Build on a GitHub Release (or manual dry run) and publish to PyPI via Trusted
-# Publishing. PyPI trusted publisher: workflow release.yml, environment pypi.
+# Build on a GitHub Release (or manual dry run) and publish to PyPI with an API
+# token held in the repo secrets PYPI_USERNAME (`__token__`) and PYPI_PASSWORD
+# (the `pypi-...` token). Switching to Trusted Publishing later: register the
+# publisher on PyPI, restore `permissions: id-token: write` on the publish job,
+# and drop the user/password inputs.
 name: release
 on:
   release:
@@ -49,7 +52,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/sdvplot
     permissions:
-      id-token: write
+      contents: read
     steps:
       - name: Download build artifacts from the build job
         uses: actions/download-artifact@v8
@@ -60,3 +63,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
+          user: ${{ secrets.PYPI_USERNAME }}
+          password: ${{ secrets.PYPI_PASSWORD }}
