@@ -1,0 +1,41 @@
+# PR preview build: proves the docs site builds. No deploy.
+name: docs-build
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "src/sdvplot/**"
+      - "CHANGELOG.md"
+      - ".github/workflows/docs-build.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: docs/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build site
+        run: yarn build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192

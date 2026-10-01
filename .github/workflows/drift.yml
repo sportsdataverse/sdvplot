@@ -1,0 +1,29 @@
+# Generated artifacts and repo invariants must match their sources.
+name: drift
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  drift:
+    name: generated files + invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: Bundled index drift
+        run: uv run --frozen python tools/build_index.py --check
+      - name: Reference docs drift
+        run: uv run --frozen python tools/gen_docs.py --check
+      - name: Line-ending, mirror and notebook-output invariants
+        run: uv run --frozen pytest -q tests/test_repo_files.py tests/test_notebooks.py

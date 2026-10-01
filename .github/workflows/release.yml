@@ -1,25 +1,62 @@
+# Build on a GitHub Release (or manual dry run) and publish to PyPI via Trusted
+# Publishing. PyPI trusted publisher: workflow release.yml, environment pypi.
 name: release
 on:
-  push:
-    tags: ["v*"]
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  publish:
+  build:
+    name: Build sdist + wheel
     runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - name: tag matches the project version
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: Tag matches the project version
+        if: github.event_name == 'release'
         run: |
           version="$(uv version --short)"
           if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
             echo "tag $GITHUB_REF_NAME does not match the project version $version" >&2
             exit 1
           fi
-      - run: uv sync --all-extras --dev
-      - run: uv run pytest -q
-      - run: uv run python tools/build_index.py --check
-      - run: uv build
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Run tests
+        run: uv run --frozen pytest -q
+      - name: Bundled index drift
+        run: uv run --frozen python tools/build_index.py --check
+      - name: Build sdist + wheel
+        run: uv build
+      - name: Upload build artifacts for the publish job
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # workflow_dispatch builds and uploads artifacts but never publishes.
+    if: github.event_name == 'release'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sdvplot
+    permissions:
+      id-token: write
+    steps:
+      - name: Download build artifacts from the build job
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist

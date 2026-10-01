@@ -1,0 +1,226 @@
+# Weekly drift detector for the live-network tests (SDVPLOT_LIVE_TESTS=1) and the
+# example notebooks. On failure, opens (or updates) a single tracking issue
+# labeled `live-tests:drift`; a green run closes it.
+name: live-tests-cron
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Every Monday at 13:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: write # required to push the tutorials-refresh branch
+  issues: write # required to open / update the drift tracking issue
+  pull-requests: write # required to open the tutorials-refresh PR
+concurrency:
+  group: live-tests-cron
+  cancel-in-progress: false
+jobs:
+  live:
+    name: pytest --live (ubuntu / py3.13)
+    runs-on: ubuntu-latest
+    outputs:
+      pytest_status: ${{ steps.run-pytest.outcome }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: Run live tests
+        id: run-pytest
+        env:
+          SDVPLOT_LIVE_TESTS: "1"
+        # --maxfail=10 keeps the report focused on the first cluster of
+        # failures rather than running through 30+ flaky timeouts.
+        # tee the output so the next step can grep it for the failure
+        # summary that lands in the tracking issue.
+        run: |
+          set -o pipefail
+          uv run --frozen pytest --maxfail=10 -rN 2>&1 | tee pytest-live.log
+      - name: Run example notebooks (nbmake)
+        # The example notebooks hit the same live APIs. Flakiness here shouldn't
+        # mask the core live-test drift signal (the tracking issue keys off the
+        # run-pytest step), so this leg is informational: continue-on-error with a
+        # separate uploaded log. A reproducible notebook break still surfaces here.
+        continue-on-error: true
+        env:
+          SDVPLOT_LIVE_TESTS: "1"
+        run: |
+          set -o pipefail
+          uv run --frozen pytest --nbmake examples/notebooks/ -q -rN 2>&1 | tee pytest-notebooks.log
+      - name: Render notebook tutorials and open refresh PR
+        # Re-execute the example notebooks and render them (with outputs) to
+        # docs/docs/tutorials/. main is branch-protected (PR-only), so we push a
+        # refresh branch and open/update a PR rather than committing to main.
+        # Informational: a live-API flake here shouldn't fail the cron.
+        continue-on-error: true
+        env:
+          SDVPLOT_LIVE_TESTS: "1"
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          # render_notebooks.py exits 1 if ANY of the live notebooks flakes, but
+          # it still writes the pages that DID render. `|| true` keeps that partial
+          # failure from aborting the step here (under `set -o pipefail`) so the
+          # commit/PR below still publishes the refreshed pages — failed notebooks
+          # simply keep their prior page (no diff). Without this, one weekly flake
+          # (near-certain across the live notebooks) skips the refresh entirely.
+          uv run --frozen python tools/render_notebooks.py 2>&1 | tee render-notebooks.log || true
+          if git diff --quiet -- docs/docs/tutorials; then
+            echo "No tutorial changes to publish."
+            exit 0
+          fi
+          branch="auto/tutorials-refresh"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add docs/docs/tutorials
+          git commit -m "docs(tutorials): refresh executed notebook pages"
+          git push -f origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --state open --json number -q '.[0].number')" ]; then
+            gh pr create --head "$branch" --base main \
+              --title "docs(tutorials): weekly refresh of executed notebook pages" \
+              --body "Automated re-execution + render of \`examples/notebooks/\` to \`docs/docs/tutorials/\` by \`render_notebooks.py\` (live-tests-cron). Review the output diffs and merge to refresh the rendered tutorials."
+          fi
+      - name: Upload notebook render log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: render-notebooks-log
+          path: render-notebooks.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Upload notebook execution log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-notebooks-log
+          path: pytest-notebooks.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Upload pytest log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-live-log
+          path: pytest-live.log
+          if-no-files-found: warn
+          retention-days: 30
+      # Open or update the drift tracking issue on failure. One issue
+      # per drift event — subsequent failures comment on the same issue
+      # so we don't fan out into a stream of duplicates. Closing the
+      # issue (e.g. after fixing the regression) resets state.
+      - name: Open / update drift tracking issue
+        if: failure() && steps.run-pytest.outcome == 'failure'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            let logTail = '';
+            try {
+              const log = fs.readFileSync('pytest-live.log', 'utf8');
+              // Last 4 KB of the log -- usually contains the summary lines
+              // plus enough context to identify which assertions failed.
+              logTail = log.slice(-4000);
+            } catch (e) {
+              logTail = `(could not read pytest-live.log: ${e.message})`;
+            }
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const today = new Date().toISOString().slice(0, 10);
+            const body = [
+              `Scheduled live-tests run on **${today}** failed.`,
+              ``,
+              `Run: ${runUrl}`,
+              ``,
+              `<details><summary>Last 4KB of pytest output</summary>`,
+              ``,
+              '```',
+              logTail,
+              '```',
+              ``,
+              `</details>`,
+              ``,
+              `Likely causes:`,
+              `- The sdv-assets manifest changed its columns or URLs.`,
+              `- A CDN asset moved.`,
+              `- nflverse's players or teams release changed.`,
+              `- A team relocated or rebranded, so the bundled index needs a \`tools/fetch_sources.py\` refresh.`,
+              ``,
+              `**Resolve by**: fixing the loader / source, then closing this issue. The next cron run that goes green will leave the issue closed.`,
+            ].join('\n');
+
+            // Find an open drift issue. The label name is the dedup key.
+            const label = 'live-tests:drift';
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              state: 'open',
+              labels: label,
+              per_page: 5,
+            });
+            if (open.data.length > 0) {
+              const issue = open.data[0];
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                body: `Re-occurred on ${today}.\n\n${body}`,
+              });
+              core.info(`Commented on existing drift issue #${issue.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                title: `Live-tests drift detected (${today})`,
+                body:  body,
+                labels: [label],
+              });
+              core.info(`Opened new drift issue #${created.data.number}`);
+            }
+
+      # Close the tracking issue when the run goes green. Without this the
+      # workflow only ever OPENS issues -- the body above promises "the next
+      # cron run that goes green will leave the issue closed", and nothing
+      # executed that, so a fixed drift stayed open indefinitely and the
+      # tracker filled with resolved issues (#416 sat open for a week after
+      # d7a8c7829 fixed it).
+      - name: Close drift tracking issue on green
+        if: success() && steps.run-pytest.outcome == 'success'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const label = 'live-tests:drift';
+            const today = new Date().toISOString().slice(0, 10);
+            // paginate: listForRepo returns ONE page, so a plain call would
+            // leave every drift issue past the page size open.
+            const found = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
+            });
+            // The issues endpoint also returns pull requests. A PR carrying the
+            // drift label is not a tracking issue and must not be closed here.
+            const open = found.filter((i) => !i.pull_request);
+            if (open.length === 0) {
+              core.info('No open drift issue to close.');
+              return;
+            }
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            for (const issue of open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                body: `Live tests went green on ${today} — closing automatically.\n\nRun: ${runUrl}\n\nIf the drift returns, the next failing run reopens tracking by filing a fresh issue with the \`${label}\` label.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              core.info(`Closed drift issue #${issue.number}`);
+            }

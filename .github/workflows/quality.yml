@@ -1,0 +1,29 @@
+# Static quality gate: ruff lint, ruff format check, mypy. No test execution.
+name: quality
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  lint-typecheck:
+    name: ruff + mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Install project + extras + dep groups
+        run: uv sync --all-extras --all-groups --frozen
+      - name: ruff lint
+        run: uv run --frozen ruff check .
+      - name: ruff format check
+        run: uv run --frozen ruff format --check .
+      - name: mypy
+        run: uv run --frozen mypy
