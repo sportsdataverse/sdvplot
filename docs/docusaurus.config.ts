@@ -48,9 +48,8 @@ const config: Config = {
   // generator, never by hand.
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
-  // used only by `yarn deploy`; CI publishes through docs-deploy.yml
-  organizationName: 'sportsdataverse',
-  projectName: 'sdvplot',
+  organizationName: 'SportsDataverse',
+  projectName: 'Sportsdataverse',
   // Docusaurus 3 requires i18n declared explicitly.
   i18n: {
     defaultLocale: 'en',
