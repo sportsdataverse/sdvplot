@@ -11,7 +11,7 @@ from sdvplot import _index
 from sdvplot._errors import SdvplotWarning
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
-from sdvplot._resolve import resolve
+from sdvplot._resolve import one_team, resolve
 
 # Official sources first, then archived copies, then derived crops (sdv-assets source names)
 SOURCE_RANK: dict[str, int] = {
@@ -61,7 +61,7 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
     Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
     unique mapping are dropped, never matched on the raw id. valid_from/valid_to are each row's effective range:
     the manifest's, else the mark alias's (R36)."""
-    team_id = resolve(team, league, season=season, id_system=id_system, strict=True)
+    team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
     m = (
         load_manifest()
         .filter((pl.col("level") == "team") & (pl.col("league") == league))
@@ -100,7 +100,7 @@ def select_mark(
     ranges before open-ended ones), else any row; within a set, official sources and current marks first.
     An unknown or ambiguous team gives None with the resolver's warning."""
     s = norm_season(season)
-    team_id = resolve(team, league, season=s)
+    team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
     m = marks(team_id, league, s, id_system="team_id").filter(pl.col("mark_type") == mark_type)
@@ -124,7 +124,7 @@ def logo_url(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
     """The CDN URL of the team's mark (what web libraries and great_tables embed), or None with a warning."""
-    team_id = resolve(team, league, season=season)
+    team_id = resolve(one_team(team, "logo_url"), league, season=season)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)

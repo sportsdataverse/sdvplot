@@ -72,3 +72,7 @@ def test_warning_lists_every_unresolved_value():
     # Assert the warning message contains all 25 unresolved values
     for val in unknown:
         assert f"'{val}'" in msg
+
+
+def test_a_zero_d_numpy_array_is_a_scalar():  # M3
+    assert resolve(np.array("LV"), "nfl") == "13" and resolve(np.array(13), "nfl") == "13"

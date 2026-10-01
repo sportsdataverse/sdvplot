@@ -11,6 +11,7 @@ from PIL import Image
 from sdvplot._cache import atomic_write, cache_dir, fetch_immutable
 from sdvplot._errors import OptionalDependencyError
 from sdvplot._marks import select_mark
+from sdvplot._resolve import one_team
 
 DEFAULT_SVG_SIZE = 512
 
@@ -69,7 +70,7 @@ def logo_image(
 ) -> Image.Image | None:
     """The team's mark as a PIL image (cached). size is the longest side in pixels: rasters are only scaled down,
     SVGs are rasterized at it (default 512; needs the svg extra)."""
-    row = select_mark(team, league, season, variant, mark_type)
+    row = select_mark(one_team(team, "logo_image"), league, season, variant, mark_type)
     if row is None:
         return None
     sha, ext = str(row["sha256"]), str(row["ext"])

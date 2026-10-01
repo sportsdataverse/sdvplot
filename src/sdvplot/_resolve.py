@@ -77,10 +77,28 @@ def _match(key: str, season: int | None, systems: Sequence[str], table: dict[str
     return None
 
 
+def _scalar(values: Any) -> tuple[bool, Any]:
+    """(True, the value) for one value, 0-d numpy arrays included (np.array("KC") is "KC"); else (False, values)."""
+    if getattr(values, "ndim", None) == 0 and hasattr(values, "item"):
+        values = values.item()
+    # numbers.Number covers numpy scalars such as np.int64
+    one = values is None or isinstance(values, (str, bytes, numbers.Number)) or type(values).__name__ == "NAType"
+    return one, values
+
+
+def one_team(team: Any, fn: str) -> Any:
+    """team as a scalar, or a TypeError naming fn: the mark functions answer for one team at a time."""
+    one, value = _scalar(team)
+    if not one:
+        raise TypeError(f"{fn}() takes one team, got {type(team).__name__}; use resolve() for several")
+    return value
+
+
 def _unpack(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
     """values as a list, plus a function that wraps a same-length result back into the caller's container."""
-    if values is None or isinstance(values, (str, bytes, numbers.Number)) or type(values).__name__ == "NAType":
-        return [values], lambda out: out[0]  # numbers.Number covers numpy scalars such as np.int64
+    one, values = _scalar(values)
+    if one:
+        return [values], lambda out: out[0]
     if isinstance(values, (list, tuple)):
         return list(values), list
     if hasattr(values, "tolist") and not hasattr(values, "to_list"):  # numpy arrays
@@ -114,7 +132,8 @@ def _unpack_series(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
 
 
 def _seasons(season: Any, n: int) -> list[int | None]:
-    if _is_na(season) or isinstance(season, (str, numbers.Number)):
+    one, season = _scalar(season)
+    if one or _is_na(season):
         return [norm_season(season)] * n
     items, _ = _unpack(season)
     if len(items) != n:
