@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import io
 import warnings
 from pathlib import Path
@@ -38,8 +39,9 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
             img.load()
             return img
         except (OSError, Image.UnidentifiedImageError):
-            # Cache miss due to corruption; delete and re-render
-            out.unlink()
+            # Cache miss due to corruption; delete (best effort: the cache may be read-only) and re-render
+            with contextlib.suppress(OSError):
+                out.unlink()
 
     # Render SVG
     try:
@@ -55,8 +57,9 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     except ValueError as e:
         raise ValueError(f"SVG {sha}.{ext}: {e}") from e
 
-    atomic_write(out, png)
-    img = Image.open(out)
+    with contextlib.suppress(OSError):  # a read-only cache still gets the image, just not cached
+        atomic_write(out, png)
+    img = Image.open(io.BytesIO(png))
     img.load()
     return img
 

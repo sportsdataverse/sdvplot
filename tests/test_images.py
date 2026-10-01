@@ -169,3 +169,19 @@ def test_an_unknown_team_gets_only_the_resolver_warning(manifest):
     with pytest.warns(SdvplotWarning, match="'XXX'") as w:
         assert _images.logo_image("XXX", "nfl") is None
     assert len(w) == 1
+
+
+def test_a_read_only_cache_still_returns_the_rasterized_svg(cache, monkeypatch):
+    pytest.importorskip("resvg_py")
+    _manifest_with(monkeypatch, SVG, "svg")
+    assert _images.logo_image("LV", "nfl", size=200).size == (200, 100)  # caches the raster
+    raster = next((_cache.cache_dir() / "rasters").glob("*.png"))
+    raster.write_bytes(b"corrupt")
+
+    def read_only(*args, **kwargs):
+        raise PermissionError("read-only file system")
+
+    monkeypatch.setattr(_images, "atomic_write", read_only)
+    monkeypatch.setattr(type(raster), "unlink", read_only)
+    assert _images.logo_image("LV", "nfl", size=200).size == (200, 100)  # corrupt raster, no unlink, no write
+    assert _images.logo_image("LV", "nfl", size=100).size == (100, 50)  # a new size, no write
