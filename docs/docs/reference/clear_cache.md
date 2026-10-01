@@ -10,7 +10,7 @@ sidebar_position: 15
 clear_cache() -> None
 ```
 
-Delete everything sdvplot has cached (manifest, images, rasterized SVGs).
+Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
 
 The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set.
 

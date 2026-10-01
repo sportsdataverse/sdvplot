@@ -34,7 +34,7 @@ sidebar_position: 0
 ## Housekeeping
 
 - [`versions`](versions.md): What a bug report needs: the package version, the bundled-index version, and the cached manifest's date.
-- [`clear_cache`](clear_cache.md): Delete everything sdvplot has cached (manifest, images, rasterized SVGs).
+- [`clear_cache`](clear_cache.md): Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
 
 ## Errors and warnings
 

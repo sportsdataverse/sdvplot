@@ -153,7 +153,7 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
 
 
 def clear_cache() -> None:
-    """Delete everything sdvplot has cached (manifest, images, rasterized SVGs).
+    """Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
 
     The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set.
 
