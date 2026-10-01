@@ -90,13 +90,8 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] 
     try:
         r = SESSION.get(url, headers=headers, timeout=(5, 60))
         if r.status_code == 304 and path.exists():
-            try:
-                atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
-            except (OSError, ValueError) as e:
-                if path.exists():
-                    _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
-                    return path
-                raise
+            # a failed meta write lands in the except below, which keeps the cached copy with one warning
+            atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
             return path
         r.raise_for_status()
         body = r.content
