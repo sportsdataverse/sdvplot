@@ -1,0 +1,81 @@
+import io
+
+import numpy as np
+import polars as pl
+import pytest
+
+from sdvplot import _cache, _headshots
+from tests.conftest import FakeResponse, FakeSession
+
+
+@pytest.mark.parametrize(
+    "player_id",
+    [3139477, "3139477", 3139477.0, " 3139477 ", np.int64(3139477)],
+)
+def test_espn_ids_accept_numeric_variants(player_id):
+    """Valid numeric id variants all produce the same URL."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result == "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png"
+
+
+@pytest.mark.parametrize("player_id", [None, float("nan"), ""])
+def test_espn_ids_return_none_for_null_and_empty(player_id):
+    """Null and empty strings return None."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result is None
+
+
+@pytest.mark.parametrize("player_id", ["abc", "1.5", 1.5, True])
+def test_espn_ids_return_none_for_invalid_shapes(player_id):
+    """Non-numeric ids (letters, decimals, bools) return None, matching sdvplotR."""
+    result = _headshots.headshot_url(player_id, "nfl")
+    assert result is None
+
+
+def test_espn_ids_build_the_combiner_url():
+    assert (
+        _headshots.headshot_url(3139477, "nfl")
+        == "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png"
+    )
+    assert (
+        _headshots.headshot_url("4433134", "mbb")
+        == "https://a.espncdn.com/combiner/i?img=/i/headshots/mens-college-basketball/players/full/4433134.png"
+    )
+
+
+def test_unsupported_league_is_a_clear_error():
+    with pytest.raises(ValueError, match="no ESPN headshots for league 'ohl'"):
+        _headshots.headshot_url(1, "ohl")
+
+
+def test_gsis_ids_prefer_nfl_headshot_transformed_or_fall_back_to_espn(cache, monkeypatch):
+    buf = io.BytesIO()
+    pl.DataFrame(
+        {
+            "gsis_id": ["00-0033873", "00-0099999", "00-0000001"],
+            "espn_id": ["3139477", "4455678", None],
+            "headshot": [
+                "https://static.www.nfl.com/image/private/f_auto,q_auto/league/abc123",
+                None,
+                None,
+            ],
+        }
+    ).write_parquet(buf)
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, buf.getvalue())))
+    _headshots._players.cache_clear()
+
+    # (a) Prefer transformed NFL.com URL when headshot is present
+    result1 = _headshots.headshot_url("00-0033873", "nfl", id_system="gsis")
+    assert result1 == "https://static.www.nfl.com/image/private/t_headshot_desktop/f_auto/league/abc123.png"
+
+    # (b) Fall back to ESPN combiner URL when no headshot but espn_id exists
+    result2 = _headshots.headshot_url("00-0099999", "nfl", id_system="gsis")
+    assert result2 == "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4455678.png"
+
+    # (c) Return None when neither headshot nor espn_id
+    result3 = _headshots.headshot_url("00-0000001", "nfl", id_system="gsis")
+    assert result3 is None
+
+    # (d) Return None for unknown gsis id
+    result4 = _headshots.headshot_url("00-0000000", "nfl", id_system="gsis")
+    assert result4 is None

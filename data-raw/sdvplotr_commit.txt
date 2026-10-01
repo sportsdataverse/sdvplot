@@ -1,0 +1,3 @@
+sdvplotR commit the sdvplotr_*.csv snapshots and tests/fixtures/sdvplotr_logo_history.csv were exported from
+(tools/export_sdvplotr.R):
+0a6e66d0704bf005ea6ff1fb04b7b4b811754839

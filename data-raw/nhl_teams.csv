@@ -1,0 +1,63 @@
+nhl_id,franchise_id,tri_code,full_name,franchise_full_name,franchise_common_name
+1,23,NJD,New Jersey Devils,New Jersey Devils,Devils
+10,5,TOR,Toronto Maple Leafs,Toronto Maple Leafs,Maple Leafs
+11,35,ATL,Atlanta Thrashers,Winnipeg Jets,Jets
+12,26,CAR,Carolina Hurricanes,Carolina Hurricanes,Hurricanes
+13,33,FLA,Florida Panthers,Florida Panthers,Panthers
+14,31,TBL,Tampa Bay Lightning,Tampa Bay Lightning,Lightning
+15,24,WSH,Washington Capitals,Washington Capitals,Capitals
+16,11,CHI,Chicago Blackhawks,Chicago Blackhawks,Blackhawks
+17,12,DET,Detroit Red Wings,Detroit Red Wings,Red Wings
+18,34,NSH,Nashville Predators,Nashville Predators,Predators
+19,18,STL,St. Louis Blues,St. Louis Blues,Blues
+2,22,NYI,New York Islanders,New York Islanders,Islanders
+20,21,CGY,Calgary Flames,Calgary Flames,Flames
+21,27,COL,Colorado Avalanche,Colorado Avalanche,Avalanche
+22,25,EDM,Edmonton Oilers,Edmonton Oilers,Oilers
+23,20,VAN,Vancouver Canucks,Vancouver Canucks,Canucks
+24,32,ANA,Anaheim Ducks,Anaheim Ducks,Ducks
+25,15,DAL,Dallas Stars,Dallas Stars,Stars
+26,14,LAK,Los Angeles Kings,Los Angeles Kings,Kings
+27,28,PHX,Phoenix Coyotes,Arizona Coyotes,Coyotes
+28,29,SJS,San Jose Sharks,San Jose Sharks,Sharks
+29,36,CBJ,Columbus Blue Jackets,Columbus Blue Jackets,Blue Jackets
+3,10,NYR,New York Rangers,New York Rangers,Rangers
+30,37,MIN,Minnesota Wild,Minnesota Wild,Wild
+31,15,MNS,Minnesota North Stars,Dallas Stars,Stars
+32,27,QUE,Quebec Nordiques,Colorado Avalanche,Avalanche
+33,35,WIN,Winnipeg Jets (1979),Winnipeg Jets,Jets
+34,26,HFD,Hartford Whalers,Carolina Hurricanes,Hurricanes
+35,23,CLR,Colorado Rockies,New Jersey Devils,Devils
+36,3,SEN,Ottawa Senators (1917),St. Louis Eagles,Eagles
+37,4,HAM,Hamilton Tigers,Hamilton Tigers,Tigers
+38,9,PIR,Pittsburgh Pirates,Philadelphia Quakers,Quakers
+39,9,QUA,Philadelphia Quakers,Philadelphia Quakers,Quakers
+4,16,PHI,Philadelphia Flyers,Philadelphia Flyers,Flyers
+40,12,DCG,Detroit Cougars,Detroit Red Wings,Red Wings
+41,2,MWN,Montreal Wanderers,Montreal Wanderers,Wanderers
+42,4,QBD,Quebec Bulldogs,Hamilton Tigers,Tigers
+43,7,MMR,Montreal Maroons,Montreal Maroons,Maroons
+44,8,NYA,New York Americans,Brooklyn Americans,Americans
+45,3,SLE,St. Louis Eagles,St. Louis Eagles,Eagles
+46,13,OAK,Oakland Seals,Cleveland Barons,Barons
+47,21,AFM,Atlanta Flames,Calgary Flames,Flames
+48,23,KCS,Kansas City Scouts,New Jersey Devils,Devils
+49,13,CLE,Cleveland Barons,Cleveland Barons,Barons
+5,17,PIT,Pittsburgh Penguins,Pittsburgh Penguins,Penguins
+50,12,DFL,Detroit Falcons,Detroit Red Wings,Red Wings
+51,8,BRK,Brooklyn Americans,Brooklyn Americans,Americans
+52,35,WPG,Winnipeg Jets,Winnipeg Jets,Jets
+53,28,ARI,Arizona Coyotes,Arizona Coyotes,Coyotes
+54,38,VGK,Vegas Golden Knights,Vegas Golden Knights,Golden Knights
+55,39,SEA,Seattle Kraken,Seattle Kraken,Kraken
+56,13,CGS,California Golden Seals,Cleveland Barons,Barons
+57,5,TAN,Toronto Arenas,Toronto Maple Leafs,Maple Leafs
+58,5,TSP,Toronto St. Patricks,Toronto Maple Leafs,Maple Leafs
+59,40,UTA,Utah Hockey Club,Utah Mammoth,Mammoth
+6,6,BOS,Boston Bruins,Boston Bruins,Bruins
+68,40,UTA,Utah Mammoth,Utah Mammoth,Mammoth
+7,19,BUF,Buffalo Sabres,Buffalo Sabres,Sabres
+70,,TBD,To be determined,,
+8,1,MTL,Montréal Canadiens,Montréal Canadiens,Canadiens
+9,30,OTT,Ottawa Senators,Ottawa Senators,Senators
+99,,NHL,NHL,,

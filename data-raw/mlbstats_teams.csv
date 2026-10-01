@@ -1,0 +1,232 @@
+sport_id,mlbstats_id,abbreviation,team_code,file_code,team_name,name
+1,108,LAA,ana,ana,Angels,Los Angeles Angels
+1,109,AZ,ari,ari,D-backs,Arizona Diamondbacks
+1,110,BAL,bal,bal,Orioles,Baltimore Orioles
+1,111,BOS,bos,bos,Red Sox,Boston Red Sox
+1,112,CHC,chn,chc,Cubs,Chicago Cubs
+1,113,CIN,cin,cin,Reds,Cincinnati Reds
+1,114,CLE,cle,cle,Guardians,Cleveland Guardians
+1,115,COL,col,col,Rockies,Colorado Rockies
+1,116,DET,det,det,Tigers,Detroit Tigers
+1,117,HOU,hou,hou,Astros,Houston Astros
+1,118,KC,kca,kc,Royals,Kansas City Royals
+1,119,LAD,lan,la,Dodgers,Los Angeles Dodgers
+1,120,WSH,was,was,Nationals,Washington Nationals
+1,121,NYM,nyn,nym,Mets,New York Mets
+1,133,ATH,ath,ath,Athletics,Athletics
+1,134,PIT,pit,pit,Pirates,Pittsburgh Pirates
+1,135,SD,sdn,sd,Padres,San Diego Padres
+1,136,SEA,sea,sea,Mariners,Seattle Mariners
+1,137,SF,sfn,sf,Giants,San Francisco Giants
+1,138,STL,sln,stl,Cardinals,St. Louis Cardinals
+1,139,TB,tba,tb,Rays,Tampa Bay Rays
+1,140,TEX,tex,tex,Rangers,Texas Rangers
+1,141,TOR,tor,tor,Blue Jays,Toronto Blue Jays
+1,142,MIN,min,min,Twins,Minnesota Twins
+1,143,PHI,phi,phi,Phillies,Philadelphia Phillies
+1,144,ATL,atl,atl,Braves,Atlanta Braves
+1,145,CWS,cha,cws,White Sox,Chicago White Sox
+1,146,MIA,mia,mia,Marlins,Miami Marlins
+1,147,NYY,nya,nyy,Yankees,New York Yankees
+1,158,MIL,mil,mil,Brewers,Milwaukee Brewers
+11,102,RR,rre,t102,Express,Round Rock Express
+11,105,SAC,src,t105,River Cats,Sacramento River Cats
+11,1410,LHV,lhv,t1410,IronPigs,Lehigh Valley IronPigs
+11,1960,STP,stp,t1960,Saints,St. Paul Saints
+11,2310,RNO,ren,t2310,Aces,Reno Aces
+11,234,DUR,drm,t234,Bulls,Durham Bulls
+11,235,MEM,mrb,t235,Redbirds,Memphis Redbirds
+11,238,OKC,okc,t238,Comets,Oklahoma City Comets
+11,342,ABQ,alb,t342,Isotopes,Albuquerque Isotopes
+11,400,LV,lvg,t400,Aviators,Las Vegas Aviators
+11,416,LOU,lou,t416,Bats,Louisville Bats
+11,422,BUF,buf,t422,Bisons,Buffalo Bisons
+11,431,GWN,gwi,t431,Stripers,Gwinnett Stripers
+11,445,COL,cbs,t445,Clippers,Columbus Clippers
+11,451,IOW,iow,t451,Cubs,Iowa Cubs
+11,484,IND,ind,t484,Indians,Indianapolis Indians
+11,4904,ELP,elp,t4904,Chihuahuas,El Paso Chihuahuas
+11,494,CLT,chr,t494,Knights,Charlotte Knights
+11,512,TOL,tol,t512,Mud Hens,Toledo Mud Hens
+11,529,TAC,tac,t529,Rainiers,Tacoma Rainiers
+11,531,SWB,swb,t531,RailRiders,Scranton/Wilkes-Barre RailRiders
+11,533,WOR,wor,t533,Red Sox,Worcester Red Sox
+11,534,ROC,roc,t534,Red Wings,Rochester Red Wings
+11,541,OMA,oma,t541,Storm Chasers,Omaha Storm Chasers
+11,5434,SUG,sls,t5434,Space Cowboys,Sugar Land Space Cowboys
+11,552,SYR,syr,t552,Mets,Syracuse Mets
+11,556,NAS,nas,t556,Sounds,Nashville Sounds
+11,561,SL,slc,t561,Bees,Salt Lake Bees
+11,564,JAX,jax,t564,Jumbo Shrimp,Jacksonville Jumbo Shrimp
+11,568,NOR,nor,t568,Tides,Norfolk Tides
+12,106,ERI,eri,t106,SeaWolves,Erie SeaWolves
+12,1350,NWA,nwa,t1350,Naturals,Northwest Arkansas Naturals
+12,1956,SOM,som,t1956,Patriots,Somerset Patriots
+12,237,MID,mdl,t237,RockHounds,Midland RockHounds
+12,247,BIR,bir,t247,Barons,Birmingham Barons
+12,260,TUL,tul,t260,Drillers,Tulsa Drillers
+12,3410,RIC,ric,t3410,Flying Squirrels,Richmond Flying Squirrels
+12,3898,WCH,wch,t3898,Wind Surge,Wichita Wind Surge
+12,402,AKR,akr,t402,RubberDucks,Akron RubberDucks
+12,4124,PNS,pen,t4124,Blue Wahoos,Pensacola Blue Wahoos
+12,418,CHE,che,t418,Baysox,Chesapeake Baysox
+12,421,MTG,mon,t421,Biscuits,Montgomery Biscuits
+12,440,SPR,spr,t440,Cardinals,Springfield Cardinals
+12,452,ALT,alt,t452,Curve,Altoona Curve
+12,463,NH,nhm,t463,Fisher Cats,New Hampshire Fisher Cats
+12,482,CC,cor,t482,Hooks,Corpus Christi Hooks
+12,498,CHA,chg,t498,Lookouts,Chattanooga Lookouts
+12,5015,BLX,blx,t5015,Shuckers,Biloxi Shuckers
+12,505,BNG,bin,t505,Rumble Ponies,Binghamton Rumble Ponies
+12,510,SA,san,t510,Missions,San Antonio Missions
+12,522,REA,rea,t522,Fightin Phils,Reading Fightin Phils
+12,5368,AMA,ama,t5368,Sod Poodles,Amarillo Sod Poodles
+12,538,HFD,hfd,t538,Yard Goats,Hartford Yard Goats
+12,540,FRI,fri,t540,RoughRiders,Frisco RoughRiders
+12,546,POR,prt,t546,Sea Dogs,Portland Sea Dogs
+12,547,HBG,hbg,t547,Senators,Harrisburg Senators
+12,553,KNX,knx,t553,Smokies,Knoxville Smokies
+12,559,RCT,rcy,t559,Trash Pandas,Rocket City Trash Pandas
+12,574,ARK,ark,t574,Travelers,Arkansas Travelers
+12,6325,COL,cga,t6325,Clingstones,Columbus Clingstones
+13,2498,BG,bgr,t2498,Hot Rods,Bowling Green Hot Rods
+13,403,EVE,eve,t403,AquaSox,Everett AquaSox
+13,419,HIL,hil,t419,Hops,Hillsboro Hops
+13,426,WIL,wil,t426,Blue Rocks,Wilmington Blue Rocks
+13,427,JS,jer,t427,BlueClaws,Jersey Shore BlueClaws
+13,428,GVL,grn,t428,Drive,Greenville Drive
+13,432,ROM,rom,t432,Emperors,Rome Emperors
+13,435,VAN,van,t435,Canadians,Vancouver Canadians
+13,437,LC,lco,t437,Captains,Lake County Captains
+13,443,PEO,peo,t443,Chiefs,Peoria Chiefs
+13,453,BRK,bro,t453,Cyclones,Brooklyn Cyclones
+13,456,GL,gla,t456,Loons,Great Lakes Loons
+13,459,DAY,dtn,t459,Dragons,Dayton Dragons
+13,460,TRI,tri,t460,Dust Devils,Tri-City Dust Devils
+13,461,EUG,eug,t461,Emeralds,Eugene Emeralds
+13,477,GBO,gbo,t477,Grasshoppers,Greensboro Grasshoppers
+13,486,SPO,spo,t486,Indians,Spokane Indians
+13,492,CR,ced,t492,Kernels,Cedar Rapids Kernels
+13,493,FRE,frd,t493,Keys,Frederick Keys
+13,499,LAN,lns,t499,Lugnuts,Lansing Lugnuts
+13,537,HV,hdv,t537,Renegades,Hudson Valley Renegades
+13,550,SB,sbd,t550,Cubs,South Bend Cubs
+13,554,BEL,bel,t554,Sky Carp,Beloit Sky Carp
+13,565,QC,qcs,t565,River Bandits,Quad Cities River Bandits
+13,572,WIS,wis,t572,Timber Rattlers,Wisconsin Timber Rattlers
+13,573,ASH,ash,t573,Tourists,Asheville Tourists
+13,580,WS,wsm,t580,Dash,Winston-Salem Dash
+13,582,WM,wmi,t582,Whitecaps,West Michigan Whitecaps
+13,584,FW,ftw,t584,TinCaps,Fort Wayne TinCaps
+13,6324,HCS,hcs,t6324,Spartanburgers,Hub City Spartanburgers
+14,103,LE,lke,t103,Storm,Lake Elsinore Storm
+14,233,CHS,csc,t233,RiverDogs,Charleston RiverDogs
+14,249,WIL,wls,t249,Warbirds,Wilson Warbirds
+14,259,FRE,fre,t259,Grizzlies,Fresno Grizzlies
+14,279,PMB,pbc,t279,Cardinals,Palm Beach Cardinals
+14,3390,BRD,bra,t3390,Marauders,Bradenton Marauders
+14,3705,COL,cba,t3705,Fireflies,Columbia Fireflies
+14,3712,FAY,fay,t3712,Woodpeckers,Fayetteville Woodpeckers
+14,401,IE,inl,t401,66ers,Inland Empire 66ers
+14,414,SAL,slm,t414,RidgeYaks,Salem RidgeYaks
+14,424,DUN,dun,t424,Blue Jays,Dunedin Blue Jays
+14,436,FBG,fbg,t436,Nationals,Fredericksburg Nationals
+14,448,HIC,hic,t448,Crawdads,Hickory Crawdads
+14,450,DBT,dta,t450,Tortugas,Daytona Tortugas
+14,476,SJ,snj,t476,Giants,San Jose Giants
+14,478,AUG,aug,t478,GreenJackets,Augusta GreenJackets
+14,479,JUP,jup,t479,Hammerheads,Jupiter Hammerheads
+14,481,HC,hcy,t481,Howlers,Hill City Howlers
+14,487,KAN,kan,t487,Cannon Ballers,Kannapolis Cannon Ballers
+14,507,SLU,slu,t507,Mets,St. Lucie Mets
+14,509,FTM,ftm,t509,Mighty Mussels,Fort Myers Mighty Mussels
+14,516,VIS,vis,t516,Rawhide,Visalia Rawhide
+14,521,MB,myr,t521,Pelicans,Myrtle Beach Pelicans
+14,524,STK,sto,t524,Ports,Stockton Ports
+14,526,RC,rnc,t526,Quakes,Rancho Cucamonga Quakes
+14,548,DEL,del,t548,Shorebirds,Delmarva Shorebirds
+14,566,CLR,clr,t566,Threshers,Clearwater Threshers
+14,570,LAK,lak,t570,Flying Tigers,Lakeland Flying Tigers
+14,587,TAM,tpa,t587,Tarpons,Tampa Tarpons
+14,6482,ONT,ont,t6482,Tower Buzzers,Ontario Tower Buzzers
+16,1270,D-NAT,dna,t1270,DSL Nationals,DSL Nationals
+16,1370,F-CAR,fca,t1370,FCL Cardinals,FCL Cardinals
+16,1390,F-BLU,fbj,t1390,FCL Blue Jays,FCL Blue Jays
+16,1610,D-BJR,djr,t1610,DSL Blue Jays Red,DSL Blue Jays Red
+16,1611,D-RAY,dry,t1611,DSL Rays,DSL Rays
+16,1991,A-DBA,adb,t1991,ACL D-backs,ACL D-backs
+16,1994,A-RCK,aro,t1994,ACL Rockies,ACL Rockies
+16,1997,A-WSX,acw,t1997,ACL White Sox,ACL White Sox
+16,1998,F-AST,fas,t1998,FCL Astros,FCL Astros
+16,2003,F-RAY,fra,t2003,FCL Rays,FCL Rays
+16,2101,D-BWG,dbg,t2101,DSL Brewers Gold,DSL Brewers Gold
+16,2117,D-MEO,dmo,t2117,DSL Mets Orange,DSL Mets Orange
+16,2122,D-PAG,dpg,t2122,DSL Padres Gold,DSL Padres Gold
+16,2127,D-MIA,dmi,t2127,DSL Miami,DSL Miami
+16,2128,D-ROF,drg,t2128,DSL Royals Fortuna,DSL Royals Fortuna
+16,2131,D-COL,dcd,t2131,DSL Colorado,DSL Colorado
+16,2132,D-TI2,dtg,t2132,DSL Tigers 2,DSL Tigers 2
+16,2134,D-GIB,dgb,t2134,DSL Giants Black,DSL Giants Black
+16,2270,D-CUR,dcr,t2270,DSL Cubs Red,DSL Cubs Red
+16,2412,D-ROJ,dre,t2412,DSL Rojos,DSL Rojos
+16,2413,D-RNR,drr,t2413,DSL Rangers Red,DSL Rangers Red
+16,3130,D-ORO,doo,t3130,DSL Orioles Orange,DSL Orioles Orange
+16,3430,A-RED,aci,t3430,ACL Reds,ACL Reds
+16,404,A-ANG,lac,t404,ACL Angels,ACL Angels
+16,406,A-BRW,amb,t406,ACL Brewers,ACL Brewers
+16,407,A-CUB,acc,t407,ACL Cubs,ACL Cubs
+16,408,A-GIA,agb,t408,ACL Giants,ACL Giants
+16,409,A-MRN,asm,t409,ACL Mariners,ACL Mariners
+16,410,A-PAD,asd,t410,ACL Padres,ACL Padres
+16,411,A-RAN,ate,t411,ACL Rangers,ACL Rangers
+16,412,A-ROY,akc,t412,ACL Royals,ACL Royals
+16,4404,D-PIG,dpd,t4404,DSL Pirates Gold,DSL Pirates Gold
+16,464,F-BRV,fbr,t464,FCL Braves,FCL Braves
+16,466,F-NAT,fna,t466,FCL Nationals,FCL Nationals
+16,467,F-MRL,fma,t467,FCL Marlins,FCL Marlins
+16,468,F-MET,fme,t468,FCL Mets,FCL Mets
+16,469,F-PHI,fph,t469,FCL Phillies,FCL Phillies
+16,470,F-PIR,fpi,t470,FCL Pirates,FCL Pirates
+16,471,F-RSX,frs,t471,FCL Red Sox,FCL Red Sox
+16,473,F-TIG,fti,t473,FCL Tigers,FCL Tigers
+16,474,F-TWI,ftn,t474,FCL Twins,FCL Twins
+16,475,F-YAN,fya,t475,FCL Yankees,FCL Yankees
+16,5005,D-ASO,dao,t5005,DSL Astros Orange,DSL Astros Orange
+16,5086,D-TAM,dtb,t5086,DSL Tampa Bay,DSL Tampa Bay
+16,5087,D-ARR,dad,t5087,DSL Arizona Red,DSL Arizona Red
+16,5374,A-GUA,acg,t5374,ACL Guardians,ACL Guardians
+16,5426,A-ATH,aoa,t5426,ACL Athletics,ACL Athletics
+16,5427,A-DOD,ldc,t5427,ACL Dodgers,ACL Dodgers
+16,5506,D-CLG,dgd,t5506,DSL CLE Goryl,DSL CLE Goryl
+16,599,F-ORI,for,t599,FCL Orioles,FCL Orioles
+16,600,D-ANG,dan,t600,DSL Angels,DSL Angels
+16,601,D-ASB,dab,t601,DSL Astros Blue,DSL Astros Blue
+16,602,D-ATH,dat,t602,DSL Athletics,DSL Athletics
+16,604,D-BJB,djb,t604,DSL Blue Jays Blue,DSL Blue Jays Blue
+16,605,D-BRV,dbr,t605,DSL Braves,DSL Braves
+16,607,D-BWB,dbb,t607,DSL Brewers Blue,DSL Brewers Blue
+16,608,D-CAR,dca,t608,DSL Cardinals,DSL Cardinals
+16,609,D-CUB,dcb,t609,DSL Cubs Blue,DSL Cubs Blue
+16,610,D-ARB,dak,t610,DSL Arizona Black,DSL Arizona Black
+16,611,D-LAB,ddo,t611,DSL LAD Bautista,DSL LAD Bautista
+16,612,D-LAM,ddm,t612,DSL LAD Mega,DSL LAD Mega
+16,615,D-GIO,dgo,t615,DSL Giants Orange,DSL Giants Orange
+16,616,D-CLM,dgu,t616,DSL CLE Mendoza,DSL CLE Mendoza
+16,618,D-MRN,dma,t618,DSL Mariners,DSL Mariners
+16,619,D-MRL,dmm,t619,DSL Marlins,DSL Marlins
+16,620,D-MEB,dmb,t620,DSL Mets Blue,DSL Mets Blue
+16,621,D-ORB,dob,t621,DSL Orioles Black,DSL Orioles Black
+16,622,D-PAB,dpb,t622,DSL Padres Brown,DSL Padres Brown
+16,623,D-PHI,dpr,t623,DSL Phillies,DSL Phillies
+16,624,D-PIB,dpk,t624,DSL Pirates Black,DSL Pirates Black
+16,625,D-RNB,drb,t625,DSL Rangers Blue,DSL Rangers Blue
+16,626,D-RSB,drs,t626,DSL Red Sox Blue,DSL Red Sox Blue
+16,627,D-RSR,drx,t627,DSL Red Sox Red,DSL Red Sox Red
+16,628,D-RED,drd,t628,DSL Reds,DSL Reds
+16,629,D-RCK,drk,t629,DSL Rockies,DSL Rockies
+16,630,D-ROV,drl,t630,DSL Royals Ventura,DSL Royals Ventura
+16,631,D-TI1,ddt,t631,DSL Tigers 1,DSL Tigers 1
+16,632,D-TWI,dmt,t632,DSL Twins,DSL Twins
+16,633,D-WSX,dws,t633,DSL White Sox,DSL White Sox
+16,634,D-NYB,dyb,t634,DSL NYY Bombers,DSL NYY Bombers
+16,635,D-NYY,dya,t635,DSL NYY Yankees,DSL NYY Yankees

@@ -1,0 +1,23 @@
+project:
+  type: website
+website:
+  title: sdvplot
+  navbar:
+    left:
+      - href: get-started.qmd
+        text: Get started
+      - href: reference/index.qmd
+        text: Reference
+quartodoc:
+  package: sdvplot
+  sections:
+    - title: Teams
+      contents: [resolve, suggest, teams]
+    - title: Colors
+      contents: [palette, team_colors]
+    - title: Logos and headshots
+      contents: [logo_url, logo_image, marks, headshot_url]
+    - title: Plots and tables
+      contents: [add_logos, add_wordmarks, add_headshots, axis_logos]
+    - title: Housekeeping
+      contents: [versions, clear_cache]
