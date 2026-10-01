@@ -1,0 +1,89 @@
+/* stylelint-disable docusaurus/copyright-header */
+
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+ .heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  --ifm-hero-text-color: #fff;
+}
+
+@media screen and (max-width: 966px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Without wrapping, the two button--lg links total ~470px and cannot fit a
+     phone. `.heroBanner` sets `overflow: hidden`, so instead of scrolling they
+     were silently CLIPPED -- at 320px each lost ~80px, leaving "etting Started"
+     and "Ecosystem & philosoph". Wrap them and let a long label break across
+     lines rather than spill past its own border. */
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.buttons .button {
+  max-width: 100%;
+  /* Infima sets `white-space: nowrap` on buttons; on a narrow screen that pushes
+     the label outside the button box once the box is capped at 100%. */
+  white-space: normal;
+}
+
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.featureImage {
+  height: 200px;
+  width: 200px;
+}
+
+.funcs {
+  margin-bottom: 80px;
+}
+
+.funcSet {
+  margin-bottom: 32px;
+}
+
+.funcSetHeading {
+  margin-bottom: 8px;
+}
+
+.funcSetItems {
+  columns: 2;
+}
+@media screen and (min-width: 500px) {
+  .funcSetItems {
+    columns: 3;
+  }
+}
+@media screen and (min-width: 750px) {
+  .funcSetItems {
+    columns: 4;
+  }
+}
+@media screen and (min-width: 966px) {
+  .funcSetItems {
+    columns: 5;
+  }
+}
+
+
+.funcSetItem {
+  display: block;
+  margin-bottom: 8px;
+  margin-right: 8px;
+}
