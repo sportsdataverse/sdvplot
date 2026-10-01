@@ -7,19 +7,60 @@ spec.loader.exec_module(fs)
 
 
 def test_espn_rows_flatten_the_team_payload():
-    payload = {"sports": [{"leagues": [{"teams": [{"team": {
-        "id": "13", "abbreviation": "LV", "displayName": "Las Vegas Raiders", "shortDisplayName": "Raiders",
-        "location": "Las Vegas", "name": "Raiders", "color": "000000", "alternateColor": "a5acaf"}}]}]}]}
-    assert fs.espn_rows("nfl", payload) == [{
-        "league": "nfl", "team_id": "13", "abbreviation": "LV", "display_name": "Las Vegas Raiders",
-        "short_display_name": "Raiders", "location": "Las Vegas", "nickname": "Raiders",
-        "color": "000000", "alternate_color": "a5acaf"}]
+    payload = {
+        "sports": [
+            {
+                "leagues": [
+                    {
+                        "teams": [
+                            {
+                                "team": {
+                                    "id": "13",
+                                    "abbreviation": "LV",
+                                    "displayName": "Las Vegas Raiders",
+                                    "shortDisplayName": "Raiders",
+                                    "location": "Las Vegas",
+                                    "name": "Raiders",
+                                    "color": "000000",
+                                    "alternateColor": "a5acaf",
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+    assert fs.espn_rows("nfl", payload) == [
+        {
+            "league": "nfl",
+            "team_id": "13",
+            "abbreviation": "LV",
+            "display_name": "Las Vegas Raiders",
+            "short_display_name": "Raiders",
+            "location": "Las Vegas",
+            "nickname": "Raiders",
+            "color": "000000",
+            "alternate_color": "a5acaf",
+        }
+    ]
 
 
 def _row(source, entity_id, name, last_seen, league="nfl", level="team", program="pro", **kw):
-    return {"level": level, "league": league, "source": source, "entity_id": entity_id, "entity_name": name,
-            "program": program, "last_seen": last_seen, "variant": "default", "url": "u", "valid_from": "",
-            "valid_to": "", **kw}
+    return {
+        "level": level,
+        "league": league,
+        "source": source,
+        "entity_id": entity_id,
+        "entity_name": name,
+        "program": program,
+        "last_seen": last_seen,
+        "variant": "default",
+        "url": "u",
+        "valid_from": "",
+        "valid_to": "",
+        **kw,
+    }
 
 
 def test_manifest_teams_keep_the_latest_name_per_team():
@@ -28,7 +69,9 @@ def test_manifest_teams_keep_the_latest_name_per_team():
         _row("espn", "13", "Las Vegas Raiders", "2026-10-01"),
         _row("espn", "8", "AFC West", "2026-10-01", level="conference", program=""),
     ]
-    assert fs.manifest_team_rows(rows) == [{"league": "nfl", "team_id": "13", "name": "Las Vegas Raiders", "program": "pro"}]
+    assert fs.manifest_team_rows(rows) == [
+        {"league": "nfl", "team_id": "13", "name": "Las Vegas Raiders", "program": "pro"}
+    ]
 
 
 def test_manifest_teams_come_from_identity_keyed_sources_only():
@@ -53,19 +96,42 @@ def test_manifest_mark_rows_dedupe_variants_and_skip_non_teams():
         _row("espn", "8", "AFC West", "2026-10-01", level="conference"),
     ]
     assert fs.manifest_mark_rows(rows) == [
-        {"league": "nhl", "source": "nhl", "entity_id": "1", "entity_name": "New Jersey Devils",
-         "valid_from": "", "valid_to": ""},
-        {"league": "nhl", "source": "nhl", "entity_id": "1", "entity_name": "New Jersey Devils",
-         "valid_from": "2000", "valid_to": "2010"},
+        {
+            "league": "nhl",
+            "source": "nhl",
+            "entity_id": "1",
+            "entity_name": "New Jersey Devils",
+            "valid_from": "",
+            "valid_to": "",
+        },
+        {
+            "league": "nhl",
+            "source": "nhl",
+            "entity_id": "1",
+            "entity_name": "New Jersey Devils",
+            "valid_from": "2000",
+            "valid_to": "2010",
+        },
     ]
 
 
 def test_nhl_rows_join_teams_to_franchises():
     teams = {"data": [{"id": 32, "franchiseId": 27, "fullName": "Quebec Nordiques", "triCode": "QUE", "leagueId": 133}]}
-    fran = {"data": [{"id": 27, "fullName": "Colorado Avalanche", "teamCommonName": "Avalanche", "teamPlaceName": "Colorado"}]}
-    assert fs.nhl_rows(teams, fran) == [{
-        "nhl_id": "32", "franchise_id": "27", "tri_code": "QUE", "full_name": "Quebec Nordiques",
-        "franchise_full_name": "Colorado Avalanche", "franchise_common_name": "Avalanche"}]
+    fran = {
+        "data": [
+            {"id": 27, "fullName": "Colorado Avalanche", "teamCommonName": "Avalanche", "teamPlaceName": "Colorado"}
+        ]
+    }
+    assert fs.nhl_rows(teams, fran) == [
+        {
+            "nhl_id": "32",
+            "franchise_id": "27",
+            "tri_code": "QUE",
+            "full_name": "Quebec Nordiques",
+            "franchise_full_name": "Colorado Avalanche",
+            "franchise_common_name": "Avalanche",
+        }
+    ]
 
 
 def test_ncaa_crosswalk_rows():
@@ -118,8 +184,18 @@ def test_manifest_teams_prefer_the_current_name_not_the_last_row():
     rows = [
         _row("hockeytech", "307", "Hartford Wolf Pack", "2026-10-01", league="ahl", valid_from="2013", valid_to=""),
         _row("hockeytech", "307", "Connecticut Whale", "2026-10-01", league="ahl", valid_from="2010", valid_to="2013"),
-        _row("hockeytech", "2", "Acadie-Bathurst Titan", "2026-10-01", league="qmjhl", valid_from="2011", valid_to="2020"),
-        _row("hockeytech", "2", "Acadie-Bathurst, Titan", "2026-10-01", league="qmjhl", valid_from="2000", valid_to="2010"),
+        _row(
+            "hockeytech", "2", "Acadie-Bathurst Titan", "2026-10-01", league="qmjhl", valid_from="2011", valid_to="2020"
+        ),
+        _row(
+            "hockeytech",
+            "2",
+            "Acadie-Bathurst, Titan",
+            "2026-10-01",
+            league="qmjhl",
+            valid_from="2000",
+            valid_to="2010",
+        ),
     ]
     expected = {"307": "Hartford Wolf Pack", "2": "Acadie-Bathurst Titan"}
     for ordered in (rows, rows[::-1]):  # input order must not matter
@@ -158,5 +234,5 @@ def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
 
 
 def test_snapshots_use_lf_line_endings(tmp_path):
-    fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)   # same call shape as Task 0's test
+    fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)  # same call shape as Task 0's test
     assert b"\r\n" not in (tmp_path / "t.csv").read_bytes()

@@ -6,6 +6,7 @@ Usage:
         --sr-manifest /mnt/sdv_repos/sdv-assets-private/manifest/sr_team_seasons.csv \
         --ncaa-xwalk /mnt/sdv_repos/ncaa-mfb-football-raw/mfb/xwalk/espn_team_id.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,18 +27,37 @@ NHL_TEAM_URL = "https://api.nhle.com/stats/rest/en/team"
 NHL_FRANCHISE_URL = "https://api.nhle.com/stats/rest/en/franchise"
 ESPN_HOSTS = ["site.web.api.espn.com", "site.api.espn.com"]
 # manifest sources whose entity_id IS the canonical team id (Ruling R19); mlbstatic counts only in milb
-IDENTITY_SOURCES = {"espn", "ncaa.com", "wayback", "hockeytech", "aaf-strip-crop", "aaf.com", "fox", "cricinfo",
-                    "shiftstats"}
+IDENTITY_SOURCES = {
+    "espn",
+    "ncaa.com",
+    "wayback",
+    "hockeytech",
+    "aaf-strip-crop",
+    "aaf.com",
+    "fox",
+    "cricinfo",
+    "shiftstats",
+}
 NFLVERSE_TEAMS_URL = "https://github.com/nflverse/nflverse-data/releases/download/teams/teams_colors_logos.csv"
-GROUPS_URL = "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/{league}_groups/{league}_{table}.parquet"
+GROUPS_URL = (
+    "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/{league}_groups/{league}_{table}.parquet"
+)
 # (sdv league, ESPN sport, ESPN league) — the sdv-assets ESPN_LEAGUES list plus the college sports
 ESPN_LEAGUES = [
-    ("nfl", "football", "nfl"), ("nba", "basketball", "nba"), ("wnba", "basketball", "wnba"),
-    ("mlb", "baseball", "mlb"), ("nhl", "hockey", "nhl"), ("cfb", "football", "college-football"),
-    ("mbb", "basketball", "mens-college-basketball"), ("wbb", "basketball", "womens-college-basketball"),
-    ("ufl", "football", "ufl"), ("nbagl", "basketball", "nba-development"),
-    ("ncaa_baseball", "baseball", "college-baseball"), ("ncaa_softball", "baseball", "college-softball"),
-    ("ncaa_mhockey", "hockey", "mens-college-hockey"), ("ncaa_whockey", "hockey", "womens-college-hockey"),
+    ("nfl", "football", "nfl"),
+    ("nba", "basketball", "nba"),
+    ("wnba", "basketball", "wnba"),
+    ("mlb", "baseball", "mlb"),
+    ("nhl", "hockey", "nhl"),
+    ("cfb", "football", "college-football"),
+    ("mbb", "basketball", "mens-college-basketball"),
+    ("wbb", "basketball", "womens-college-basketball"),
+    ("ufl", "football", "ufl"),
+    ("nbagl", "basketball", "nba-development"),
+    ("ncaa_baseball", "baseball", "college-baseball"),
+    ("ncaa_softball", "baseball", "college-softball"),
+    ("ncaa_mhockey", "hockey", "mens-college-hockey"),
+    ("ncaa_whockey", "hockey", "womens-college-hockey"),
 ]
 # ncaa_baseball / ncaa_softball are left out: their team_group_seasons parquets key teams with
 # team_id_source == "ncaa_org" (0 ESPN rows). Add them once an ncaa_org -> ESPN id mapping exists.
@@ -60,10 +80,17 @@ def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
 def espn_rows(league: str, payload: dict) -> list[dict]:
     teams = [t["team"] for t in payload["sports"][0]["leagues"][0]["teams"]]
     return [
-        {"league": league, "team_id": str(t["id"]), "abbreviation": t.get("abbreviation"),
-         "display_name": t.get("displayName"), "short_display_name": t.get("shortDisplayName"),
-         "location": t.get("location"), "nickname": t.get("name"), "color": t.get("color"),
-         "alternate_color": t.get("alternateColor")}
+        {
+            "league": league,
+            "team_id": str(t["id"]),
+            "abbreviation": t.get("abbreviation"),
+            "display_name": t.get("displayName"),
+            "short_display_name": t.get("shortDisplayName"),
+            "location": t.get("location"),
+            "nickname": t.get("name"),
+            "color": t.get("color"),
+            "alternate_color": t.get("alternateColor"),
+        }
         for t in teams
     ]
 
@@ -101,8 +128,10 @@ def manifest_team_rows(rows: list[dict]) -> list[dict]:
         key = (r["league"], r["entity_id"])
         if key not in latest or _name_rank(r) > _name_rank(latest[key]):
             latest[key] = r
-    return [{"league": lg, "team_id": tid, "name": r["entity_name"], "program": r["program"]}
-            for (lg, tid), r in sorted(latest.items())]
+    return [
+        {"league": lg, "team_id": tid, "name": r["entity_name"], "program": r["program"]}
+        for (lg, tid), r in sorted(latest.items())
+    ]
 
 
 MARK_COLUMNS = ["league", "source", "entity_id", "entity_name", "valid_from", "valid_to"]
@@ -118,9 +147,16 @@ def nhl_rows(teams_payload: dict, franchise_payload: dict) -> list[dict]:
     out = []
     for t in teams_payload["data"]:
         f = fran.get(t.get("franchiseId"), {})
-        out.append({"nhl_id": str(t["id"]), "franchise_id": str(t.get("franchiseId") or ""),
-                    "tri_code": t.get("triCode"), "full_name": t.get("fullName"),
-                    "franchise_full_name": f.get("fullName"), "franchise_common_name": f.get("teamCommonName")})
+        out.append(
+            {
+                "nhl_id": str(t["id"]),
+                "franchise_id": str(t.get("franchiseId") or ""),
+                "tri_code": t.get("triCode"),
+                "full_name": t.get("fullName"),
+                "franchise_full_name": f.get("fullName"),
+                "franchise_common_name": f.get("teamCommonName"),
+            }
+        )
     return out
 
 
@@ -137,8 +173,10 @@ def sr_code_rows(rows: list[dict]) -> list[dict]:
     seasons: dict[tuple[str, str], list[tuple[int, str]]] = {}
     for r in rows:
         seasons.setdefault((r["league"], r["team_code"]), []).append((int(r["season"]), r["team_name"]))
-    return [{"league": lg, "team_code": code, "team_name": max(s)[1], "valid_from": min(s)[0], "valid_to": max(s)[0]}
-            for (lg, code), s in seasons.items()]
+    return [
+        {"league": lg, "team_code": code, "team_name": max(s)[1], "valid_from": min(s)[0], "valid_to": max(s)[0]}
+        for (lg, code), s in seasons.items()
+    ]
 
 
 def main() -> None:
@@ -184,28 +222,63 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
             raise RuntimeError(f"espn: no teams for {league}")
         espn += got
     print(f"ESPN host used: {hosts[0]}")
-    write("espn_teams", espn, ["league", "team_id", "abbreviation", "display_name", "short_display_name",
-                                "location", "nickname", "color", "alternate_color"])
+    write(
+        "espn_teams",
+        espn,
+        [
+            "league",
+            "team_id",
+            "abbreviation",
+            "display_name",
+            "short_display_name",
+            "location",
+            "nickname",
+            "color",
+            "alternate_color",
+        ],
+    )
 
     nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
-    write("nflverse_teams", nfl,
-           ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])
+    write("nflverse_teams", nfl, ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])
 
     key = os.environ["CFBD_API_KEY"]
     cfbd = _get(s, "https://api.collegefootballdata.com/teams", headers={"Authorization": f"Bearer {key}"}).json()
-    write("cfbd_teams", [{"team_id": str(t["id"]), "school": t["school"], "abbreviation": t.get("abbreviation"),
-                           "alternate_names": "|".join(t.get("alternateNames") or [])} for t in cfbd],
-           ["team_id", "school", "abbreviation", "alternate_names"])
+    write(
+        "cfbd_teams",
+        [
+            {
+                "team_id": str(t["id"]),
+                "school": t["school"],
+                "abbreviation": t.get("abbreviation"),
+                "alternate_names": "|".join(t.get("alternateNames") or []),
+            }
+            for t in cfbd
+        ],
+        ["team_id", "school", "abbreviation", "alternate_names"],
+    )
 
     from nba_api.stats.static import teams as nba_teams
 
-    write("nba_api_teams", [{"nba_api_id": str(t["id"]), "abbreviation": t["abbreviation"], "nickname": t["nickname"],
-                              "full_name": t["full_name"]} for t in nba_teams.get_teams()],
-           ["nba_api_id", "abbreviation", "nickname", "full_name"])
+    write(
+        "nba_api_teams",
+        [
+            {
+                "nba_api_id": str(t["id"]),
+                "abbreviation": t["abbreviation"],
+                "nickname": t["nickname"],
+                "full_name": t["full_name"],
+            }
+            for t in nba_teams.get_teams()
+        ],
+        ["nba_api_id", "abbreviation", "nickname", "full_name"],
+    )
 
     nhl = nhl_rows(_get(s, NHL_TEAM_URL).json(), _get(s, NHL_FRANCHISE_URL).json())
-    write("nhl_teams", nhl, ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name",
-                              "franchise_common_name"])
+    write(
+        "nhl_teams",
+        nhl,
+        ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name", "franchise_common_name"],
+    )
 
     mlb: list[dict] = []
     direct = requests.Session()  # plain http, no proxy (the MLB Stats API https endpoint is blocked here)
@@ -219,26 +292,55 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         if not teams:
             raise RuntimeError(f"mlbstats: no teams for sportId={sport_id}")
         for t in teams:
-            mlb.append({"sport_id": sport_id, "mlbstats_id": str(t["id"]), "abbreviation": t.get("abbreviation"),
-                        "team_code": t.get("teamCode"), "file_code": t.get("fileCode"), "team_name": t.get("teamName"),
-                        "name": t.get("name")})
-    write("mlbstats_teams", mlb,
-           ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"])
+            mlb.append(
+                {
+                    "sport_id": sport_id,
+                    "mlbstats_id": str(t["id"]),
+                    "abbreviation": t.get("abbreviation"),
+                    "team_code": t.get("teamCode"),
+                    "file_code": t.get("fileCode"),
+                    "team_name": t.get("teamName"),
+                    "name": t.get("name"),
+                }
+            )
+    write(
+        "mlbstats_teams",
+        mlb,
+        ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"],
+    )
 
     import polars as pl
 
     groups: list[dict] = []
     for league in GROUP_LEAGUES:
-        tgs, gs = (pl.read_parquet(io.BytesIO(_get(s, GROUPS_URL.format(league=league, table=t), timeout=120).content))
-                   for t in ("team_group_seasons", "group_seasons"))
-        latest = (tgs.filter(pl.col("team_id_source") == "espn").sort("season").group_by("team_id").last()
-                  .join(gs.select("group_id", "season", "name"), left_on=["conference_id", "season"],
-                        right_on=["group_id", "season"], how="left"))
+        tgs, gs = (
+            pl.read_parquet(io.BytesIO(_get(s, GROUPS_URL.format(league=league, table=t), timeout=120).content))
+            for t in ("team_group_seasons", "group_seasons")
+        )
+        latest = (
+            tgs.filter(pl.col("team_id_source") == "espn")
+            .sort("season")
+            .group_by("team_id")
+            .last()
+            .join(
+                gs.select("group_id", "season", "name"),
+                left_on=["conference_id", "season"],
+                right_on=["group_id", "season"],
+                how="left",
+            )
+        )
         if latest.height == 0:
             raise RuntimeError(f"groups: no espn-keyed rows for {league}")
         for r in latest.iter_rows(named=True):
-            groups.append({"league": league, "team_id": r["team_id"], "season": r["season"],
-                           "conference_id": r["conference_id"], "conference": r["name"]})
+            groups.append(
+                {
+                    "league": league,
+                    "team_id": r["team_id"],
+                    "season": r["season"],
+                    "conference_id": r["conference_id"],
+                    "conference": r["name"],
+                }
+            )
     write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
 
     if args.ncaa_xwalk:

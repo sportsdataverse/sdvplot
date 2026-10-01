@@ -130,7 +130,10 @@ def test_rule_2_catches_an_adapter_that_drops_the_name_but_not_the_xy(dummy, mon
         return target
 
     _mutant(dummy, monkeypatch, misaligned)
-    with pytest.raises(AssertionError, match=r"rule 2 \(unknown team: warn and skip\): an unknown team must be skipped with its own x/y"):
+    with pytest.raises(
+        AssertionError,
+        match=r"rule 2 \(unknown team: warn and skip\): an unknown team must be skipped with its own x/y",
+    ):
         check_adapter_contract(dummy, make_target=Canvas)
 
 

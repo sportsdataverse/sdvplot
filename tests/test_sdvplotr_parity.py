@@ -14,11 +14,16 @@ RAW = Path(__file__).parents[1] / "data-raw"
 # The keys that still miss, each with its reason (final-fix-report.md, F1). A new gap fails the test.
 KNOWN_GAPS = {
     # a place several teams share: sdvplotR keeps its first team, sdvplot never guesses
-    ("mlb", "CHICAGO"), ("mlb", "LOS ANGELES"), ("mlb", "NEW YORK"),
-    ("nfl", "LOS ANGELES"), ("nfl", "NEW YORK"), ("nhl", "NEW YORK"),
+    ("mlb", "CHICAGO"),
+    ("mlb", "LOS ANGELES"),
+    ("mlb", "NEW YORK"),
+    ("nfl", "LOS ANGELES"),
+    ("nfl", "NEW YORK"),
+    ("nhl", "NEW YORK"),
     ("cfb", "CHARLOTTE"),  # CFBD names two teams "Charlotte", and cfbd decides before sdvplotr
     # ESPN's teams list has no UTRGV, so its abbreviation names no team in sdvplot
-    ("cfb", "UTRGV"), ("cfb", "TEXAS-RIO GRANDE VALLEY"),
+    ("cfb", "UTRGV"),
+    ("cfb", "TEXAS-RIO GRANDE VALLEY"),
 }
 
 
@@ -58,15 +63,35 @@ def test_historical_keys_resolve_to_the_franchise_today():
 @pytest.mark.parametrize(
     ("league", "value", "name"),
     [
-        *[("nfl", k, n) for k, n in [("BLT", "Baltimore Ravens"), ("CLV", "Cleveland Browns"), ("HST", "Houston Texans"),
-                                     ("ARZ", "Arizona Cardinals"), ("JAC", "Jacksonville Jaguars"),
-                                     ("LVR", "Las Vegas Raiders"), ("WFT", "Washington Commanders")]],
-        *[("nhl", k, n) for k, n in [("NJD", "New Jersey Devils"), ("TBL", "Tampa Bay Lightning"),
-                                     ("LAK", "Los Angeles Kings"), ("SJS", "San Jose Sharks"),
-                                     ("VEG", "Vegas Golden Knights"), ("UTA", "Utah Mammoth")]],
-        ("nba", "SEA", "Oklahoma City Thunder"), ("nba", "NJN", "Brooklyn Nets"),
-        ("mlb", "MON", "Washington Nationals"), ("mlb", "FLA", "Miami Marlins"),
-        ("cfb", "San José State", "San José State Spartans"), ("cfb", "San Jose State", "San José State Spartans"),
+        *[
+            ("nfl", k, n)
+            for k, n in [
+                ("BLT", "Baltimore Ravens"),
+                ("CLV", "Cleveland Browns"),
+                ("HST", "Houston Texans"),
+                ("ARZ", "Arizona Cardinals"),
+                ("JAC", "Jacksonville Jaguars"),
+                ("LVR", "Las Vegas Raiders"),
+                ("WFT", "Washington Commanders"),
+            ]
+        ],
+        *[
+            ("nhl", k, n)
+            for k, n in [
+                ("NJD", "New Jersey Devils"),
+                ("TBL", "Tampa Bay Lightning"),
+                ("LAK", "Los Angeles Kings"),
+                ("SJS", "San Jose Sharks"),
+                ("VEG", "Vegas Golden Knights"),
+                ("UTA", "Utah Mammoth"),
+            ]
+        ],
+        ("nba", "SEA", "Oklahoma City Thunder"),
+        ("nba", "NJN", "Brooklyn Nets"),
+        ("mlb", "MON", "Washington Nationals"),
+        ("mlb", "FLA", "Miami Marlins"),
+        ("cfb", "San José State", "San José State Spartans"),
+        ("cfb", "San Jose State", "San José State Spartans"),
         ("nhl", "Montréal Canadiens", "Montreal Canadiens"),
     ],
 )
@@ -75,15 +100,23 @@ def test_named_examples(league, value, name):
     assert sdvplot.teams(league).filter(pl.col("team_id") == team_id)["name"].to_list() == [name]
 
 
-
-
 # sdvplotR's season logos (sport, key, season probed) that sdvplot picks differently (final-fix-report.md, F1, R50):
 # NHL marks with the same or touching ranges, which the two break differently (two Coyotes marks for 2022-2024,
 # KCS/CLR 1977, TSP/TOR 1927, Utah 2025)
 LOGO_DIFFERENCES = {
-    ("nhl", "ARI", 2022), ("nhl", "CGY", 1987), ("nhl", "CGY", 2007), ("nhl", "DAL", 2017), ("nhl", "KCS", 1975),
-    ("nhl", "KCS", 1977), ("nhl", "MNS", 1988), ("nhl", "TOR", 1927), ("nhl", "TOR", 1985), ("nhl", "TOR", 2002),
-    ("nhl", "TSP", 1927), ("nhl", "UTA", 2025), ("nhl", "UTAH", 2025),
+    ("nhl", "ARI", 2022),
+    ("nhl", "CGY", 1987),
+    ("nhl", "CGY", 2007),
+    ("nhl", "DAL", 2017),
+    ("nhl", "KCS", 1975),
+    ("nhl", "KCS", 1977),
+    ("nhl", "MNS", 1988),
+    ("nhl", "TOR", 1927),
+    ("nhl", "TOR", 1985),
+    ("nhl", "TOR", 2002),
+    ("nhl", "TSP", 1927),
+    ("nhl", "UTA", 2025),
+    ("nhl", "UTAH", 2025),
 }
 
 

@@ -27,9 +27,17 @@ def test_the_readme_and_get_started_examples():
 @pytest.mark.parametrize(
     ("code", "season", "team"),
     [
-        ("OAK", None, "13"), ("OAK", 2010, "13"), ("OAK", 1975, "13"), ("LV", 2020, "13"),
-        ("SD", None, "24"), ("SD", 2010, "24"), ("LAC", 2020, "24"),
-        ("STL", None, "14"), ("STL", 2010, "14"), ("LA", 2020, "14"), ("LA", None, "14"),
+        ("OAK", None, "13"),
+        ("OAK", 2010, "13"),
+        ("OAK", 1975, "13"),
+        ("LV", 2020, "13"),
+        ("SD", None, "24"),
+        ("SD", 2010, "24"),
+        ("LAC", 2020, "24"),
+        ("STL", None, "14"),
+        ("STL", 2010, "14"),
+        ("LA", 2020, "14"),
+        ("LA", None, "14"),
     ],
 )
 def test_nfl_relocation_codes_with_and_without_seasons(code, season, team):
@@ -74,7 +82,10 @@ def test_wnba_san_antonio_codes_carry_their_own_eras():  # M6: sdvplotR's Silver
         & pl.col("value").is_in(["SAS", "SA", "espn:SAS", "espn:SA"])
     )
     assert sorted(a.select("value", "team_id", "valid_from", "valid_to").rows()) == [
-        ("SA", "17", 2014, 2017), ("SAS", "17", 2003, 2013), ("espn:SA", "17", 2014, 2017), ("espn:SAS", "17", 2003, 2013)
+        ("SA", "17", 2014, 2017),
+        ("SAS", "17", 2003, 2013),
+        ("espn:SA", "17", 2014, 2017),
+        ("espn:SAS", "17", 2003, 2013),
     ]
 
 

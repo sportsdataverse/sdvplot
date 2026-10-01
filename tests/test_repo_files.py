@@ -1,4 +1,5 @@
 """Repository-level invariants (line endings, mirrors) that no module test owns."""
+
 import subprocess
 from pathlib import Path
 
@@ -14,15 +15,27 @@ def _tracked() -> list[Path]:
 
 def test_no_committed_text_file_has_crlf():
     binary = {".parquet", ".png", ".ico", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".zip", ".gz", ".woff", ".woff2"}
-    bad = [p.relative_to(ROOT).as_posix() for p in _tracked()
-           if p.is_file() and p.suffix not in binary and b"\r\n" in p.read_bytes()]
+    bad = [
+        p.relative_to(ROOT).as_posix()
+        for p in _tracked()
+        if p.is_file() and p.suffix not in binary and b"\r\n" in p.read_bytes()
+    ]
     assert bad == [], f"CRLF in: {bad[:10]}"
 
 
-DOTFILES = [".markdownlint-cli2.yaml", ".coderabbit.yaml", ".yamlfmt", ".python-version", ".env.example",
-            ".vscode/settings.json", ".github/PULL_REQUEST_TEMPLATE.md", ".github/ISSUE_TEMPLATE/bug_report.yml",
-            ".github/ISSUE_TEMPLATE/feature_request.yml", ".github/ISSUE_TEMPLATE/wrong_team_or_logo.yml",
-            ".github/ISSUE_TEMPLATE/config.yml"]
+DOTFILES = [
+    ".markdownlint-cli2.yaml",
+    ".coderabbit.yaml",
+    ".yamlfmt",
+    ".python-version",
+    ".env.example",
+    ".vscode/settings.json",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+    ".github/ISSUE_TEMPLATE/wrong_team_or_logo.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+]
 
 
 def test_sdv_py_dotfiles_exist_and_parse():
