@@ -76,3 +76,10 @@ def test_warning_lists_every_unresolved_value():
 
 def test_a_zero_d_numpy_array_is_a_scalar():  # M3
     assert resolve(np.array("LV"), "nfl") == "13" and resolve(np.array(13), "nfl") == "13"
+
+
+def test_priority_places_nhl_after_espn_abbr_and_sdvplotr_last_before_name():  # F1 (R43)
+    from sdvplot._resolve import PRIORITY
+
+    assert PRIORITY.index("nhl") == PRIORITY.index("espn_abbr") + 1
+    assert PRIORITY[-2:] == ("sdvplotr", "name")

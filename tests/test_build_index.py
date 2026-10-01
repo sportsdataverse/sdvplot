@@ -283,3 +283,31 @@ def test_a_current_nflverse_team_with_no_espn_team_fails_the_build(tmp_path):  #
     _add(raw, "nflverse_teams.csv", "CAR,Carolina Panthers,Panthers,#0085CA,#101820,https://example.com/car.png")
     with pytest.raises(AssertionError, match="CAR"):
         bi.build(raw)
+
+
+def test_nhl_api_ids_and_tri_codes_are_user_facing_aliases(tmp_path):  # F1 (R43)
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "nhl,11,New Jersey Devils,pro")
+    _add(raw, "espn_teams.csv", "nhl,11,NJ,New Jersey Devils,Devils,New Jersey,Devils,ce1126,000000")
+    for row in ("1,23,NJD,New Jersey Devils,New Jersey Devils,Devils", "53,28,ARI,Arizona Coyotes,Arizona Coyotes,Coyotes"):
+        _add(raw, "nhl_teams.csv", row)
+    _, aliases, _ = bi.build(raw)
+    got = aliases.filter(pl.col("id_system") == "nhl").select("value", "team_id", "valid_from", "valid_to").rows()
+    assert sorted(got) == [("1", "11", None, None), ("NJD", "11", None, None)]  # the Coyotes have no ESPN team
+
+
+def test_sdvplotr_keys_map_through_their_canonical_abbreviation(tmp_path):  # F1 (R43)
+    raw = _raw(tmp_path)
+    for tid, abbr, name in (("14", "LAR", "Los Angeles Rams"), ("24", "LAC", "Los Angeles Chargers")):
+        _add(raw, "manifest_teams.csv", f"nfl,{tid},{name},pro")
+        _add(raw, "espn_teams.csv", f"nfl,{tid},{abbr},{name},{name.split()[-1]},Los Angeles,{name.split()[-1]},000000,ffffff")
+    (raw / "sdvplotr_abbr_mapping.csv").write_text(
+        "sport,key,canon\nnfl,LVR,LV\nnfl,LAS VEGAS,LV\nnfl,XYZ,NOPE\nnfl,LOS ANGELES,LAR\nnba,LVR,LV\n"
+    )
+    (raw / "sdvplotr_historical.csv").write_text("sport,key,canon\nnfl,OAK,LV\nnfl,RAI,LVR\nnfl,LVR,LAC\n")
+    _, aliases, _ = bi.build(raw)
+    got = aliases.filter(pl.col("id_system") == "sdvplotr").select("league", "value", "team_id").rows()
+    # XYZ: no team; LOS ANGELES: two teams by name (sdvplotR keeps the first, sdvplot never guesses); nba: no team;
+    # historical: OAK; RAI through abbr_mapping's LVR; LVR stays abbr_mapping's (sdvplotR's order)
+    assert sorted(got) == [("nfl", "LAS VEGAS", "13"), ("nfl", "LVR", "13"), ("nfl", "OAK", "13"), ("nfl", "RAI", "13")]
+    assert aliases.filter(pl.col("id_system") == "sdvplotr")["valid_from"].is_null().all()

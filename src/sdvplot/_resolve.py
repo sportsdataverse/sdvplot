@@ -19,6 +19,7 @@ PRIORITY: tuple[str, ...] = (
     "team_id",
     "espn",
     "espn_abbr",
+    "nhl",
     "nflverse",
     "mlbstats",
     "nba_api",
@@ -30,6 +31,7 @@ PRIORITY: tuple[str, ...] = (
     "bref",
     "sportsipy",
     "fangraphs",
+    "sdvplotr",  # sdvplotR's clean_team_abbrs keys: after every id system, so it only fills gaps (R43)
     "name",
 )
 _AMBIGUOUS = object()
@@ -156,7 +158,9 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
 
     Args:
         values: a scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported
-            id system (ESPN ids/abbreviations, nflverse, MLB Stats, nba_api, HockeyTech, CFBD names, ...).
+            id system (ESPN ids/abbreviations, nflverse, MLB Stats, nba_api, HockeyTech, CFBD names, sdvplotR's
+            keys, ...). NHL stats API ids overlap ESPN's, so "auto" reads a bare number as the ESPN id: pass
+            id_system="nhl" for them (tri-codes such as "NJD" resolve either way).
         league: the SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different
             teams in different leagues.
         season: one season for all values, or one per value. Picks the right team for a reused code.

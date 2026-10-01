@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools")]
 from fetch_sources import IDENTITY_SOURCES  # noqa: E402  (the team universe and the mark crosswalk share it)
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
+from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
 
 # A colorblind-safe qualitative palette for teams no source gives colors for (flagged color_source="fallback")
 FALLBACK = [
@@ -135,6 +136,57 @@ def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, tea
     )
 
 
+def nhl_aliases(nhl: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
+    """NHL stats API ids and tri-codes (R43): id or tri-code -> franchise -> the ESPN team with that nickname;
+    franchises ESPN no longer lists (the Coyotes, the pre-war clubs) find none. The API gives no seasons, so the
+    range is null."""
+    espn_nhl = espn.filter(pl.col("league") == "nhl").select(
+        "team_id", pl.col("nickname").alias("franchise_common_name")
+    )
+    xw = pl.concat([nhl.select(pl.col(c).alias("value"), "franchise_common_name") for c in ("nhl_id", "tri_code")])
+    return _alias(xw.join(espn_nhl, on="franchise_common_name"), "nhl", "nhl", "value")
+
+
+def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
+    """sdvplotR's keys (R43): clean_team_abbrs()'s abbr_mapping, then resolve_historical_abbr()'s table where
+    abbr_mapping lacks the key, its target looked up in abbr_mapping again (sdvplotR's order). A key goes to the team
+    its canonical abbreviation names today: the current nflverse alias in the NFL, the current espn_abbr alias
+    elsewhere. A canon naming no team or several drops, and so does a key the name system gives several teams:
+    sdvplotR keeps the first of a shared name ("NEW YORK"), sdvplot never guesses."""
+    hist = (
+        hist.join(am, on=["sport", "key"], how="anti")
+        .join(
+            am.select("sport", pl.col("key").alias("canon"), pl.col("canon").alias("_to")),
+            on=["sport", "canon"],
+            how="left",
+        )
+        .select("sport", "key", pl.coalesce("_to", "canon").alias("canon"))
+    )
+    system = pl.when(pl.col("league") == "nfl").then(pl.lit("nflverse")).otherwise(pl.lit("espn_abbr"))
+    canon = (
+        aliases.filter((pl.col("id_system") == system) & pl.col("valid_to").is_null())
+        .group_by("league", pl.col("value").alias("canon"))
+        .agg(pl.col("team_id").unique())
+        .filter(pl.col("team_id").list.len() == 1)
+        .with_columns(pl.col("team_id").list.first())
+    )
+    key = pl.col("value").map_elements(norm_value, return_dtype=pl.String).alias("_key")
+    shared = (
+        aliases.filter(pl.col("id_system") == "name")
+        .group_by("league", key)
+        .agg(pl.col("team_id").n_unique().alias("n"))
+        .filter(pl.col("n") > 1)
+    )
+    out = (
+        pl.concat([am, hist])
+        .rename({"sport": "league", "key": "value"})
+        .join(canon, on=["league", "canon"])
+        .with_columns(key)
+        .join(shared, on=["league", "_key"], how="anti")
+    )
+    return _alias(out, pl.col("league"), "sdvplotr", "value")
+
+
 def mark_aliases(
     marks: pl.DataFrame, teams: pl.DataFrame, aliases: pl.DataFrame, nhl: pl.DataFrame, espn: pl.DataFrame
 ) -> pl.DataFrame:
@@ -166,11 +218,7 @@ def mark_aliases(
         system.alias("id_system"),
         _norm(pl.when(src == "nwhl.co").then(pl.col("entity_name")).otherwise(pl.col("entity_id"))).alias("_key"),
     )
-    # NHL stats ids (or tri-codes) -> franchise -> the ESPN team with that nickname; franchises ESPN no longer
-    # lists (the Coyotes, the pre-war clubs) find none. Ids are numeric and tri-codes are not, so one lookup holds both.
-    espn_nhl = espn.filter(lg == "nhl").select("team_id", pl.col("nickname").alias("franchise_common_name"))
-    nhl_xw = pl.concat([nhl.select(pl.col(c).alias("value"), "franchise_common_name") for c in ("nhl_id", "tri_code")])
-    nhl_xw = _alias(nhl_xw.join(espn_nhl, on="franchise_common_name"), "nhl", "nhl", "value")
+    nhl_xw = nhl_aliases(nhl, espn)
     known = teams.select("league", "team_id")
     lookup = (
         pl.concat([aliases.cast(ALIAS_SCHEMA), nhl_xw.cast(ALIAS_SCHEMA)])
@@ -337,12 +385,16 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
         parts.append(_alias(_csv(raw, "ncaa_cfb_xwalk.csv"), "cfb", "ncaa", "ncaa_id"))
     if (raw / "sr_codes.csv").exists():
         parts += _sr_aliases(_csv(raw, "sr_codes.csv"), espn)
+    parts.append(nhl_aliases(_csv(raw, "nhl_teams.csv"), espn))
     known = teams.select("league", "team_id")
     a = (
         pl.concat([p.cast(ALIAS_SCHEMA) for p in parts], how="vertical")
         .drop_nulls(["value", "team_id"])
         .join(known, on=["league", "team_id"], how="semi")
     )
+    if (raw / "sdvplotr_abbr_mapping.csv").exists():  # last: its keys go through the aliases above
+        sdvr = sdvplotr_aliases(_csv(raw, "sdvplotr_abbr_mapping.csv"), _csv(raw, "sdvplotr_historical.csv"), a)
+        a = pl.concat([a, sdvr.cast(ALIAS_SCHEMA)])
     mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
     _report_marks(mk)
     mark = mk.filter(pl.col("n") == 1).select(
