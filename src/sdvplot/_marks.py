@@ -1,4 +1,4 @@
-"""Choosing a team's mark from the manifest: season, variant, then source preference."""
+"""Choosing a team's mark from the manifest: variant, then season within each variant, then source preference."""
 
 from __future__ import annotations
 
@@ -189,8 +189,9 @@ def logo_url(
 ) -> str | None:
     """The CDN URL of a team's logo or wordmark, chosen for the season.
 
-    Picks the archived mark whose season range covers ``season`` (relocated franchises get their era's mark), then the
-    requested variant, then the most authoritative source. Unknown teams return None with one SdvplotWarning.
+    Picks the requested variant (falling back to a default or polarity variant), then within each variant the archived
+    mark whose season range covers ``season`` (relocated franchises get their era's mark), then the most
+    authoritative source. Unknown teams return None with one SdvplotWarning.
 
     Args:
         team: One team identifier (abbreviation, name, ESPN id, ...).

@@ -45,8 +45,9 @@ const FeatureList: FeatureItem[] = [
     title: 'Headshots',
     description: (
       <>
-        ESPN athlete ids for every league, and NFL gsis ids through the nflverse
-        player table, matching sdvplotR.
+        ESPN athlete ids for the NFL, NBA, WNBA, MLB, NHL and college football and
+        basketball, and NFL gsis ids through the nflverse player table, matching
+        sdvplotR.
       </>
     ),
   },

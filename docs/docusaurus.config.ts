@@ -10,10 +10,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // always stay under versioned_docs/ in git; this only controls what's built/served.
 //
 // Default 3: the rolling `current`/`main` tree plus the latest 3 release snapshots
-// = 4 versions built/served. This is the OOM-safe default on the production Vercel
-// container (the `current + latest 3` shape only OOMed the *smaller* pre-upgrade
-// container; production has headroom for 4). Rolling cap, so older snapshots stop
-// building as versions.json grows — raise only with verified container headroom.
+// = 4 versions built/served. Rolling cap, so older snapshots stop building as
+// versions.json grows.
 const VERSIONS_TO_KEEP = 3;
 const allReleasedVersions: string[] = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'versions.json'), 'utf-8'),
@@ -33,9 +31,7 @@ const analytics = PLAUSIBLE_ID
   : {scripts: [], headTags: []};
 
 const config: Config = {
-  // Rspack/SWC build pipeline (@docusaurus/faster). Adopted when the 0.0.72
-  // snapshot doubled the built page count (current + one full release tree)
-  // and the webpack build started OOM-SIGKILLing the Vercel container.
+  // Rspack/SWC build pipeline (@docusaurus/faster).
   future: {
     v4: true,
     faster: true,
@@ -59,10 +55,9 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  // Detect MDX vs CommonMark per-file. Sphinx-emitted pages stay on
-  // CommonMark (`.md`) so MDX 3's stricter parser doesn't trip on
-  // bare braces in API signatures; hand-authored MDX files
-  // (`.mdx`) keep the full MDX feature set.
+  // Detect MDX vs CommonMark per-file: `.md` pages (the generated reference
+  // and tutorials) stay on CommonMark so bare braces in signatures don't trip
+  // MDX; `.mdx` files keep the full MDX feature set.
   markdown: {
     format: 'detect',
     hooks: {
@@ -78,7 +73,12 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/sportsdataverse/sdvplot/edit/main/docs/',
+          // Generated pages (reference/, tutorials/) have no edit link: fix them in
+          // their generator, never by hand.
+          editUrl: ({docPath}) =>
+            /^(reference|tutorials)\//.test(docPath)
+              ? undefined
+              : `https://github.com/sportsdataverse/sdvplot/edit/main/docs/docs/${docPath}`,
           // Versioning policy: the unversioned tree under docs/docs/ (the generated
           // reference + tutorials and the hand-written pages) is the live
           // DEFAULT served at the root URL (`lastVersion: 'current'`), so every
@@ -91,7 +91,7 @@ const config: Config = {
           lastVersion: 'current',
           // `current` + the latest 3 release snapshots (see builtVersions above).
           // Auto-derived from versions.json so new releases never re-break the
-          // Vercel build by accumulating versioned-docs copies.
+          // build by accumulating versioned-docs copies.
           onlyIncludeVersions: builtVersions,
           versions: {
             current: {

@@ -12,8 +12,9 @@ logo_url(team: Any, league: str, season: Any = None, variant: str = 'default', m
 
 The CDN URL of a team's logo or wordmark, chosen for the season.
 
-Picks the archived mark whose season range covers ``season`` (relocated franchises get their era's mark), then the
-requested variant, then the most authoritative source. Unknown teams return None with one SdvplotWarning.
+Picks the requested variant (falling back to a default or polarity variant), then within each variant the archived
+mark whose season range covers ``season`` (relocated franchises get their era's mark), then the most
+authoritative source. Unknown teams return None with one SdvplotWarning.
 
 ## Arguments
 
