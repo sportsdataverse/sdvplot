@@ -3,16 +3,15 @@ import os
 import polars as pl
 import pytest
 
-from sdvplot import _manifest
+from sdvplot import _cache, _manifest
 
 
 def test_manifest_types(manifest):
     assert manifest.schema["entity_id"] == pl.String and manifest.schema["valid_from"] == pl.Int32
-    assert manifest.height == 7
+    assert manifest.height == 11
 
 
 def test_a_manifest_missing_required_columns_is_rejected(cache, monkeypatch):
-    from sdvplot import _cache
     from tests.conftest import FakeResponse, FakeSession
 
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"level,league\nteam,nfl\n")))

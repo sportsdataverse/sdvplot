@@ -4,6 +4,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+import requests
 
 from sdvplot import _cache, _index, _manifest
 
@@ -137,11 +138,17 @@ ALIASES = [
     ("nfl", "nflverse", "STL", "14", None, 2015),
     ("nfl", "nflverse", "LA", "14", 2016, None),
     ("nfl", "nflverse", "LA", "13", 1982, 1994),  # the Los Angeles Raiders: "LA" needs a season
+    ("nfl", "mark", "espn:13", "13", None, None),
+    ("nfl", "mark", "nflverse:OAK", "13", None, None),
+    ("nfl", "mark", "nflverse:LV", "13", None, None),
+    ("nfl", "mark", "wayback:14", "14", None, None),
+    ("nfl", "mark", "espn:14", "14", None, None),
     ("nfl", "name", "Las Vegas Raiders", "13", None, None),
     ("nfl", "name", "Los Angeles Rams", "14", None, None),
     ("mlb", "team_id", "7", "7", None, None),
     ("mlb", "espn_abbr", "KC", "7", None, None),
     ("mlb", "fangraphs", "KCR", "7", None, None),
+    ("mlb", "mark", "espn:7", "7", None, None),
     ("cfb", "team_id", "333", "333", None, None),
     ("cfb", "team_id", "2390", "2390", None, None),
     ("cfb", "team_id", "193", "193", None, None),
@@ -177,8 +184,6 @@ class FakeResponse:
         self.status_code, self.content, self.headers = status, body, headers or {}
 
     def raise_for_status(self):
-        import requests
-
         if self.status_code >= 400:
             err = requests.HTTPError(f"HTTP {self.status_code}")
             err.response = self
@@ -203,8 +208,6 @@ class FakeSession:
 
 @pytest.fixture
 def cache(tmp_path, monkeypatch):
-    from sdvplot import _cache
-
     root = tmp_path / "cache"
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(root))
     _cache._warned.clear()

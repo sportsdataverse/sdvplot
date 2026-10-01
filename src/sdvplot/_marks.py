@@ -7,8 +7,10 @@ from typing import Any
 
 import polars as pl
 
+from sdvplot import _index
 from sdvplot._errors import SdvplotWarning
 from sdvplot._manifest import load_manifest
+from sdvplot._normalize import norm_season
 from sdvplot._resolve import resolve
 
 # Official sources first, then archived copies, then derived crops (sdv-assets source names)
@@ -29,11 +31,37 @@ SOURCE_RANK: dict[str, int] = {
 }
 
 
-def marks(team: Any, league: str, *, id_system: str = "auto") -> pl.DataFrame:
-    """Every archived mark for one team, best first (see select_mark for the rule)."""
-    team_id = resolve(team, league, id_system=id_system, strict=True)
-    m = load_manifest().filter(
-        (pl.col("level") == "team") & (pl.col("league") == league) & (pl.col("entity_id") == team_id)
+def _mark_aliases(league: str) -> pl.DataFrame:
+    """key ("source:entity_id", normalized like every alias value) -> canonical team_id, unique mappings only."""
+    return (
+        _index.alias_table()
+        .filter((pl.col("league") == league) & (pl.col("id_system") == "mark"))
+        .select(pl.col("value").str.strip_chars().str.to_lowercase().alias("_key"), "team_id")
+        .group_by("_key")
+        .agg(pl.col("team_id").first(), pl.col("team_id").n_unique().alias("_n"))
+        .filter(pl.col("_n") == 1)
+        .drop("_n")
+    )
+
+
+def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
+    """Every archived mark for one team, best first (see select_mark for the rule).
+
+    Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
+    unique mapping are dropped, never matched on the raw id."""
+    team_id = resolve(team, league, season=season, id_system=id_system, strict=True)
+    m = (
+        load_manifest()
+        .filter((pl.col("level") == "team") & (pl.col("league") == league))
+        .with_columns(
+            pl.concat_str(pl.col("source"), pl.lit(":"), pl.col("entity_id"))
+            .str.strip_chars()
+            .str.to_lowercase()
+            .alias("_key")
+        )
+        .join(_mark_aliases(league), on="_key", how="inner")
+        .filter(pl.col("team_id") == team_id)
+        .drop("_key")
     )
     return (
         m.with_columns(
@@ -41,8 +69,8 @@ def marks(team: Any, league: str, *, id_system: str = "auto") -> pl.DataFrame:
             pl.col("valid_to").is_null().alias("_open"),
         )
         .sort(
-            by=["source_rank", "_open", "valid_to", "first_seen"],
-            descending=[False, True, True, True],
+            by=["source_rank", "_open", "valid_to", "first_seen", "valid_from", "sha256"],
+            descending=[False, True, True, True, True, False],
             nulls_last=True,
         )
         .drop("_open")
@@ -52,14 +80,16 @@ def marks(team: Any, league: str, *, id_system: str = "auto") -> pl.DataFrame:
 def select_mark(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> dict[str, Any] | None:
-    """The best mark: requested variant then "default"; season-covering rows first (explicit ranges before
-    open-ended ones), else any row; within a set, official sources and current marks first."""
-    from sdvplot._normalize import norm_season
-
+    """The best mark: requested variant, then "default", then any variant; season-covering rows first (explicit
+    ranges before open-ended ones), else any row; within a set, official sources and current marks first.
+    An unknown or ambiguous team gives None with the resolver's warning."""
     s = norm_season(season)
-    m = marks(team, league).filter(pl.col("mark_type") == mark_type)
-    for v in dict.fromkeys([variant, "default"]):
-        rows = m.filter(pl.col("variant") == v)
+    team_id = resolve(team, league, season=s)
+    if team_id is None:
+        return None
+    m = marks(team_id, league, s, id_system="team_id").filter(pl.col("mark_type") == mark_type)
+    # sorted best-first, so the unfiltered frame's first row is the best of any variant
+    for rows in (m.filter(pl.col("variant") == variant), m.filter(pl.col("variant") == "default"), m):
         if s is not None:
             covering = rows.filter(
                 (pl.col("valid_from").is_null() | (pl.col("valid_from") <= s))
@@ -78,7 +108,10 @@ def logo_url(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
     """The CDN URL of the team's mark (what web libraries and great_tables embed), or None with a warning."""
-    row = select_mark(team, league, season, variant, mark_type)
+    team_id = resolve(team, league, season=season)
+    if team_id is None:
+        return None
+    row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
         warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
         return None

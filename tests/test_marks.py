@@ -1,3 +1,4 @@
+import polars as pl
 import pytest
 
 from sdvplot import _marks
@@ -5,7 +6,7 @@ from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 
 
 @pytest.fixture(autouse=True)
-def _manifest(manifest):  # the fixture manifest from tests/test_manifest.py, via conftest re-export
+def _manifest(manifest):  # the fixture manifest from tests/conftest.py
     return manifest
 
 
@@ -47,3 +48,30 @@ def test_no_mark_at_all_returns_none_with_a_warning():
 def test_marks_is_strict_about_the_team():
     with pytest.raises(UnresolvedTeamError):
         _marks.marks("XXX", "nfl")
+
+
+def test_an_unmapped_foreign_id_row_is_never_returned():
+    # nhl source, entity_id "13" collides with ESPN id 13 but has no "mark" alias
+    assert "9" * 64 not in set(_marks.marks("LV", "nfl")["sha256"])
+    assert _marks.logo_url("LV", "nfl", season=2010) == "https://cdn/3333.png"
+
+
+def test_the_season_reaches_the_resolver():
+    assert _marks.logo_url("LA", "nfl", season=1990) == "https://cdn/3333.png"
+
+
+def test_an_unknown_team_returns_none_with_the_resolver_warning():
+    with pytest.warns(SdvplotWarning) as w:
+        assert _marks.logo_url("XXX", "nfl") is None
+    assert len(w) == 1
+    with pytest.warns(SdvplotWarning):
+        assert _marks.select_mark("XXX", "nfl") is None
+
+
+def test_a_team_with_only_a_non_default_variant_gets_it():
+    assert _marks.logo_url("KC", "mlb") == "https://cdn/aaaa.png"
+
+
+def test_ties_break_on_the_later_valid_from():
+    m = _marks.marks("KC", "mlb").filter(pl.col("variant") == "tie")
+    assert m["valid_from"].to_list() == [2010, 2000]
