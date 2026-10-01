@@ -82,7 +82,8 @@ const config: Config = {
           // Versioning policy: the unversioned tree under docs/docs/ (the generated
           // reference + tutorials and the hand-written pages) is the live
           // DEFAULT served at the root URL (`lastVersion: 'current'`), so every
-          // push republishes it via Vercel and it can never drift from the code
+          // push to main republishes it (docs-deploy.yml builds and publishes to
+          // gh-pages, which Vercel serves) and it can never drift from the code
           // (`tools/gen_docs.py --check` keeps the reference pages == the docstrings).
           // It is labelled `main` — a rolling, collision-proof label — so that the
           // per-release snapshots cut at release time (`yarn version:docs x.y.z`,
