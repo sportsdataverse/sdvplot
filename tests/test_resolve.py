@@ -83,3 +83,4 @@ def test_priority_places_nhl_after_espn_abbr_and_sdvplotr_last_before_name():  #
 
     assert PRIORITY.index("nhl") == PRIORITY.index("espn_abbr") + 1
     assert PRIORITY[-2:] == ("sdvplotr", "name")
+    assert "nhl_id" not in PRIORITY  # R49: NHL stats ids answer only when named

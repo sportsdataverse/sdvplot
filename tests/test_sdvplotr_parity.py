@@ -75,10 +75,6 @@ def test_named_examples(league, value, name):
     assert sdvplot.teams(league).filter(pl.col("team_id") == team_id)["name"].to_list() == [name]
 
 
-def test_nhl_api_ids_need_their_id_system():
-    # NHL stats API id 1 is the Devils; "auto" reads a bare number as the ESPN id first (1 = Boston)
-    assert sdvplot.resolve(1, "nhl", id_system="nhl") == sdvplot.resolve("NJD", "nhl") == "11"
-    assert sdvplot.resolve(1, "nhl") == "1"
 
 
 # sdvplotR's season logos that sdvplot picks differently (final-fix-report.md, F1): the Coyotes' codes resolve to

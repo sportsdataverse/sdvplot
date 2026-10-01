@@ -285,15 +285,19 @@ def test_a_current_nflverse_team_with_no_espn_team_fails_the_build(tmp_path):  #
         bi.build(raw)
 
 
-def test_nhl_api_ids_and_tri_codes_are_user_facing_aliases(tmp_path):  # F1 (R43)
+def test_nhl_tri_codes_answer_under_auto_and_numeric_ids_only_by_name(tmp_path):  # F1 (R43), R49
     raw = _raw(tmp_path)
     _add(raw, "manifest_teams.csv", "nhl,11,New Jersey Devils,pro")
     _add(raw, "espn_teams.csv", "nhl,11,NJ,New Jersey Devils,Devils,New Jersey,Devils,ce1126,000000")
     for row in ("1,23,NJD,New Jersey Devils,New Jersey Devils,Devils", "53,28,ARI,Arizona Coyotes,Arizona Coyotes,Coyotes"):
         _add(raw, "nhl_teams.csv", row)
     _, aliases, _ = bi.build(raw)
-    got = aliases.filter(pl.col("id_system") == "nhl").select("value", "team_id", "valid_from", "valid_to").rows()
-    assert sorted(got) == [("1", "11", None, None), ("NJD", "11", None, None)]  # the Coyotes have no ESPN team
+    got = aliases.filter(pl.col("id_system").is_in(["nhl", "nhl_id"]))
+    # the Coyotes have no ESPN team; NHL id 1 is another team's ESPN id, so it sits in nhl_id, outside PRIORITY
+    assert sorted(got.select("id_system", "value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("nhl", "NJD", "11", None, None),
+        ("nhl_id", "1", "11", None, None),
+    ]
 
 
 def test_sdvplotr_keys_map_through_their_canonical_abbreviation(tmp_path):  # F1 (R43)

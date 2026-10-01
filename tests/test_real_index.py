@@ -76,3 +76,13 @@ def test_wnba_san_antonio_codes_carry_their_own_eras():  # M6: sdvplotR's Silver
     assert sorted(a.select("value", "team_id", "valid_from", "valid_to").rows()) == [
         ("SA", "17", 2014, 2017), ("SAS", "17", 2003, 2013), ("espn:SA", "17", 2014, 2017), ("espn:SAS", "17", 2003, 2013)
     ]
+
+
+def test_nhl_stats_ids_answer_only_when_named():  # R49: NHL ids 1-28 are other teams' ESPN ids
+    with pytest.warns(sdvplot.SdvplotWarning, match="'24'"):
+        assert sdvplot.resolve(24, "nhl") is None  # ESPN 24, the inactive Coyotes: never Anaheim (NHL id 24)
+    with pytest.warns(sdvplot.SdvplotWarning):
+        assert sdvplot.resolve([1, 6, 52, 55], "nhl") == ["1", "6", None, None]  # ESPN ids, as before R43
+    assert sdvplot.resolve(1, "nhl", id_system="nhl_id") == "11"  # NHL id 1: the Devils
+    assert sdvplot.resolve([1, 6, 52, 55], "nhl", id_system="nhl_id") == ["11", "1", "28", "124292"]
+    assert sdvplot.resolve("NJD", "nhl") == "11"  # tri-codes stay under auto

@@ -137,14 +137,14 @@ def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, tea
 
 
 def nhl_aliases(nhl: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
-    """NHL stats API ids and tri-codes (R43): id or tri-code -> franchise -> the ESPN team with that nickname;
-    franchises ESPN no longer lists (the Coyotes, the pre-war clubs) find none. The API gives no seasons, so the
-    range is null."""
+    """NHL stats API tri-codes (id_system "nhl", in PRIORITY) and numeric ids ("nhl_id", only when named: NHL ids
+    1-28 are other teams' ESPN ids, R49): -> franchise -> the ESPN team with that nickname (R43). Franchises ESPN no
+    longer lists (the Coyotes, the pre-war clubs) find none. The API gives no seasons, so the range is null."""
     espn_nhl = espn.filter(pl.col("league") == "nhl").select(
         "team_id", pl.col("nickname").alias("franchise_common_name")
     )
-    xw = pl.concat([nhl.select(pl.col(c).alias("value"), "franchise_common_name") for c in ("nhl_id", "tri_code")])
-    return _alias(xw.join(espn_nhl, on="franchise_common_name"), "nhl", "nhl", "value")
+    j = nhl.join(espn_nhl, on="franchise_common_name")
+    return pl.concat([_alias(j, "nhl", "nhl", "tri_code"), _alias(j, "nhl", "nhl_id", "nhl_id")])
 
 
 def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
@@ -208,8 +208,10 @@ def mark_aliases(
         .then(pl.lit("mlbstats"))
         .when(src == "nwhl.co")
         .then(pl.lit("name"))  # an upload id, not a team id: only the name identifies the team
+        .when((src == "nhl") & pl.col("entity_id").str.contains(r"^\d+$"))
+        .then(pl.lit("nhl_id"))
         .when(src == "nhl")
-        .then(pl.lit("nhl"))
+        .then(pl.lit("nhl"))  # a tri-code
     )
     m = marks.with_row_index("_row").with_columns(
         pl.col("valid_from", "valid_to").cast(pl.Int32),

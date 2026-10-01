@@ -34,6 +34,8 @@ PRIORITY: tuple[str, ...] = (
     "sdvplotr",  # sdvplotR's clean_team_abbrs keys: after every id system, so it only fills gaps (R43)
     "name",
 )
+# Systems "auto" never tries, only an explicit id_system: NHL stats API ids 1-28 are other teams' ESPN ids (R49)
+EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id",)
 _AMBIGUOUS = object()
 Candidates = list[tuple[str, int | None, int | None]]
 
@@ -159,20 +161,20 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
     Args:
         values: a scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported
             id system (ESPN ids/abbreviations, nflverse, MLB Stats, nba_api, HockeyTech, CFBD names, sdvplotR's
-            keys, ...). NHL stats API ids overlap ESPN's, so "auto" reads a bare number as the ESPN id: pass
-            id_system="nhl" for them (tri-codes such as "NJD" resolve either way).
+            keys, ...). NHL stats API ids overlap ESPN's, so "auto" never reads a number as one: pass
+            id_system="nhl_id" for them (NHL tri-codes such as "NJD" resolve under "auto").
         league: the SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different
             teams in different leagues.
         season: one season for all values, or one per value. Picks the right team for a reused code.
-        id_system: "auto" (try PRIORITY in order) or one system name.
+        id_system: "auto" (try PRIORITY in order) or one system name (PRIORITY or EXPLICIT_ONLY).
         strict: raise UnresolvedTeamError instead of warning when a value does not resolve.
 
     Returns:
         The same shape as values: a str or None, a list, or a Series of the caller's library.
     """
     _index.check_league(league)
-    if id_system != "auto" and id_system not in PRIORITY:
-        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY)}")
+    if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
+        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
     systems = PRIORITY if id_system == "auto" else (id_system,)
     items, wrap = _unpack(values)
     seasons = _seasons(season, len(items))
