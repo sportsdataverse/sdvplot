@@ -1,0 +1,56 @@
+[project]
+name = "sdvplot"
+version = "0.1.0.dev0"
+description = "Team logos, wordmarks, headshots and colors for Python plots and tables (SportsDataverse)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Saiem Gilani" }]
+dependencies = [
+  "narwhals>=2.0",
+  "polars>=1.0,<2",
+  "Pillow>=10",
+  "platformdirs>=4",
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+svg = ["resvg-py>=0.2"]
+mpl = ["matplotlib>=3.7"]
+plotnine = ["plotnine>=0.13"]
+plotly = ["plotly>=5"]
+altair = ["altair>=5"]
+bokeh = ["bokeh>=3"]
+holoviews = ["holoviews>=1.18"]
+tables = ["great_tables>=0.10"]
+folium = ["folium>=0.15"]
+surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
+all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,folium,surfaces]"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sdvplot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["error::sdvplot._errors.SdvplotWarning"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
