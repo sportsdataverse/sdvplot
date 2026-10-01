@@ -1,0 +1,103 @@
+# See https://pre-commit.com for more information
+# Install all three stages with `pre-commit install` (the local commit-msg and
+# pre-push hooks below need their stages wired, not just pre-commit).
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Kept in sync with the ``ruff`` pin in the lint dependency group of pyproject.toml.
+    rev: v0.15.12
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+        # Fixtures and bundled data are byte-faithful; never rewrite them.
+        exclude: ^(tests/fixtures/|data-raw/.*\.csv$|src/sdvplot/data/)
+      - id: check-merge-conflict
+      - id: check-ast
+      - id: check-toml
+      - id: check-json
+      - id: check-yaml
+      - id: check-symlinks
+      - id: end-of-file-fixer
+        exclude: ^(tests/fixtures/|data-raw/.*\.csv$|src/sdvplot/data/)
+      - id: check-added-large-files
+        args: [--maxkb=10000]
+      - id: debug-statements
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-use-type-annotations
+      - id: python-no-eval
+      - id: python-no-log-warn
+      - id: rst-backticks
+      - id: rst-directive-colons
+      - id: rst-inline-touching-normal
+      - id: text-unicode-replacement-char
+      - id: python-check-mock-methods
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+  - repo: https://github.com/pre-commit/sync-pre-commit-deps
+    rev: v0.0.3
+    hooks:
+      - id: sync-pre-commit-deps
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.36.1
+    hooks:
+      - id: check-github-workflows
+        args: ["--verbose"]
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.10
+    hooks:
+      - id: actionlint
+  - repo: https://github.com/thlorenz/doctoc
+    rev: "v2.2.0"
+    hooks:
+      - id: doctoc
+        # Docusaurus pages carry YAML frontmatter that must stay first; the
+        # CHANGELOG mirror under docs/src/ is a copy of the (already doctoc'd) root file.
+        exclude: ^(docs/(docs|versioned_docs|src)|\.claude)/
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--config", ".markdownlint-cli2.yaml"]
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+  - repo: local
+    hooks:
+      - id: sync-docs-changelog
+        name: sync-docs-changelog
+        entry: python -c "import shutil, subprocess; shutil.copy('CHANGELOG.md', 'docs/src/pages/CHANGELOG.md'); subprocess.run(['git', 'add', 'docs/src/pages/CHANGELOG.md'])"
+        language: system
+        files: ^CHANGELOG\.md$
+        pass_filenames: false
+      - id: build-index-check
+        name: bundled team index is current (tools/build_index.py --check)
+        entry: uv run --frozen python tools/build_index.py --check
+        language: system
+        files: ^(data-raw/|tools/build_index\.py$|src/sdvplot/_index\.py$)
+        pass_filenames: false
+      - id: gen-docs-check
+        name: API reference is current (tools/gen_docs.py --check)
+        entry: uv run --frozen python tools/gen_docs.py --check
+        language: system
+        files: ^(src/sdvplot/|tools/gen_docs\.py$|docs/docs/reference/)
+        pass_filenames: false
+      - id: conventional-commit-no-ai
+        name: conventional commit + no AI co-author
+        entry: python tools/hooks/check_commit_msg.py
+        language: system
+        stages: [commit-msg]
+      - id: mypy-prepush
+        name: mypy (pre-push)
+        entry: uv run --frozen mypy
+        language: system
+        files: ^src/sdvplot/.*\.py$
+        pass_filenames: false
+        stages: [pre-push]
