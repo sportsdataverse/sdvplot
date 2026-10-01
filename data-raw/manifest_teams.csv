@@ -7,12 +7,12 @@ aaf,723,Orlando Apollos,pro
 aaf,724,Salt Lake Stallions,pro
 aaf,725,San Antonio Commanders,pro
 aaf,726,San Diego Fleet,pro
-ahl,307,Connecticut Whale,pro
+ahl,307,Hartford Wolf Pack,pro
 ahl,309,Providence Bruins,pro
 ahl,310,Portland Pirates,pro
 ahl,311,Lowell Lock Monsters,pro
 ahl,312,Springfield Falcons,pro
-ahl,313,Adirondack Phantoms,pro
+ahl,313,Lehigh Valley Phantoms,pro
 ahl,314,Norfolk Admirals,pro
 ahl,315,Binghamton Senators,pro
 ahl,316,Wilkes-Barre/Scranton Penguins,pro
@@ -60,7 +60,7 @@ ahl,406,Stockton Heat,pro
 ahl,411,Springfield Thunderbirds,pro
 ahl,412,Tucson Roadrunners,pro
 ahl,413,Belleville Senators,pro
-ahl,414,Albany Devils,pro
+ahl,414,Binghamton Devils,pro
 ahl,415,Laval Rocket,pro
 ahl,419,Colorado Eagles,pro
 ahl,437,Henderson Silver Knights,pro
@@ -886,7 +886,7 @@ echl,19,Stockton Thunder,pro
 echl,2,Augusta Lynx,pro
 echl,20,Texas Wildcatters,pro
 echl,21,Toledo Walleye,pro
-echl,22,Trenton Devils,pro
+echl,22,Trenton Titans,pro
 echl,23,Utah Grizzlies,pro
 echl,24,Victoria Salmon Kings,pro
 echl,25,Wheeling Nailers,pro
@@ -2685,9 +2685,6 @@ nfl,6,Dallas Cowboys,pro
 nfl,7,Denver Broncos,pro
 nfl,8,Detroit Lions,pro
 nfl,9,Green Bay Packers,pro
-nfl,OAK,OAK,
-nfl,SD,SD,
-nfl,STL,STL,
 nhl,1,Boston Bruins,pro
 nhl,10,Montreal Canadiens,pro
 nhl,11,New Jersey Devils,pro
@@ -2767,21 +2764,21 @@ pwhl,5,Ottawa Charge,pro
 pwhl,6,Toronto Sceptres,pro
 pwhl,8,Seattle Torrent,pro
 pwhl,9,Vancouver Goldeneyes,pro
-qmjhl,1,"Moncton, Alpines",junior
+qmjhl,1,"Moncton, Wildcats",junior
 qmjhl,10,"Chicoutimi, Saguenéens",junior
-qmjhl,11,"Montréal, Bleu-Blanc-Rouge",junior
+qmjhl,11,"Rouyn-Noranda, Huskies",junior
 qmjhl,12,"Gatineau, Olympiques",junior
-qmjhl,13,"Shawinigan, Bruins",junior
+qmjhl,13,"Shawinigan, Cataractes",junior
 qmjhl,14,"Drummondville, Voltigeurs",junior
 qmjhl,15,"Val-d'Or, Foreurs",junior
 qmjhl,16,"Baie-Comeau, Drakkar",junior
-qmjhl,17,"Longueuil, Chevaliers",junior
+qmjhl,17,"Victoriaville, Tigres",junior
 qmjhl,18,"Rimouski, Océanic",junior
 qmjhl,19,"Blainville-Boisbriand, Armada",junior
-qmjhl,2,"Acadie-Bathurst, Titan",junior
+qmjhl,2,"Newfoundland, Regiment",junior
 qmjhl,3,"Cape Breton, Eagles",junior
 qmjhl,4,"Lewiston, MAINEiacs",junior
-qmjhl,46,"Longueuil, Collège Français",junior
+qmjhl,46,"Verdun, Collège Français",junior
 qmjhl,47,"Drummondville, Rangers",junior
 qmjhl,48,"St-Jérôme, Alouettes",junior
 qmjhl,49,"Cornwall, Royals",junior
@@ -2796,7 +2793,7 @@ qmjhl,64,"Plattsburgh, Pioneers",junior
 qmjhl,66,"- Peterborough, Petes (OHL) -",junior
 qmjhl,7,"Charlottetown, Islanders",junior
 qmjhl,8,"Saint John, Sea Dogs",junior
-qmjhl,9,"Beauport, Harfangs",junior
+qmjhl,9,"Québec, Remparts",junior
 soccer,10,Huracán,
 soccer,10000,Deportivo Maldonado,
 soccer,10052,Villa San Carlos,
@@ -5420,7 +5417,7 @@ soccer,9983,Jong PSV,
 soccer,9987,GVVV,
 soccer,9999,Boston River,
 ufl,112646,DC DEFENDERS,pro
-ufl,112647,Arlington Renegades,pro
+ufl,112647,Dallas Renegades,pro
 ufl,112651,St. Louis Battlehawks,pro
 ufl,125957,Michigan Panthers,pro
 ufl,126073,Birmingham Stallions,pro
@@ -5840,7 +5837,7 @@ whl,217,Tri-City Americans,junior
 whl,222,Wenatchee Wild,junior
 whl,223,Vancouver Giants,junior
 whl,226,Everett Silvertips,junior
-whl,227,Chilliwack Bruins,junior
+whl,227,Victoria Royals,junior
 whl,228,Edmonton Oil Kings,junior
 whl,277,Penticton Vees,junior
 wnba,11,Phoenix Mercury,pro
@@ -5858,20 +5855,13 @@ wnba,5,Indiana Fever,pro
 wnba,6,Los Angeles Sparks,pro
 wnba,8,Minnesota Lynx,pro
 wnba,9,New York Liberty,pro
-wnba,CHA,CHA,
-wnba,DET,DET,
-wnba,HOU,HOU,
-wnba,SA,SA,
-wnba,SAC,SAC,
-wnba,SAS,SAS,
-wnba,TUL,TUL,
 xfl,112646,DC Defenders,pro
 xfl,112647,Arlington Renegades,pro
 xfl,112648,Houston Roughnecks,pro
 xfl,112649,Los Angeles Wildcats,pro
 xfl,112650,New York Guardians,pro
 xfl,112651,St. Louis Battlehawks,pro
-xfl,112652,Seattle Dragons,pro
+xfl,112652,Seattle Sea Dragons,pro
 xfl,112653,Tampa Bay Vipers,pro
 xfl,126746,San Antonio Brahmas,pro
 xfl,126747,Vegas Vipers,pro

@@ -70,3 +70,57 @@ def test_nhl_rows_join_teams_to_franchises():
 
 def test_ncaa_crosswalk_rows():
     assert fs.ncaa_rows({"113180": "2657"}) == [{"league": "cfb", "ncaa_id": "113180", "team_id": "2657"}]
+
+
+def test_write_refuses_an_empty_snapshot(tmp_path):
+    import pytest
+
+    with pytest.raises(RuntimeError, match="espn_teams"):
+        fs._write("espn_teams", [], ["a"], tmp_path)
+    assert not list(tmp_path.glob("*.csv"))
+
+
+def test_a_failed_run_leaves_the_committed_snapshots_untouched(tmp_path, monkeypatch):
+    import argparse
+
+    import pytest
+
+    out = tmp_path / "data-raw"
+    out.mkdir()
+    (out / "espn_teams.csv").write_text("old\n")
+
+    def boom(args, stage):
+        fs._write("manifest_teams", [{"a": "1"}], ["a"], stage)  # an early source succeeded...
+        raise RuntimeError("nhl: 404")  # ...a later one failed
+
+    monkeypatch.setattr(fs, "OUT", out)
+    monkeypatch.setattr(fs, "fetch_all", boom)
+    monkeypatch.setattr(argparse.ArgumentParser, "parse_args", lambda self: argparse.Namespace())
+    with pytest.raises(RuntimeError, match="nhl"):
+        fs.main()
+    assert (out / "espn_teams.csv").read_text() == "old\n"
+    assert [f.name for f in out.glob("*.csv")] == ["espn_teams.csv"]
+
+
+def test_manifest_teams_espn_identity_needs_a_numeric_id():
+    rows = [
+        _row("espn", "13", "Las Vegas Raiders", "2026-10-01"),
+        _row("espn", "OAK", "OAK", "2026-10-01"),
+        _row("fox", "bandits", "Birmingham Stallions", "2026-10-01", league="usfl"),
+    ]
+    assert fs.manifest_team_rows(rows) == [
+        {"league": "nfl", "team_id": "13", "name": "Las Vegas Raiders", "program": "pro"},
+        {"league": "usfl", "team_id": "bandits", "name": "Birmingham Stallions", "program": "pro"},
+    ]
+
+
+def test_manifest_teams_prefer_the_current_name_not_the_last_row():
+    rows = [
+        _row("hockeytech", "307", "Hartford Wolf Pack", "2026-10-01", league="ahl", valid_from="2013", valid_to=""),
+        _row("hockeytech", "307", "Connecticut Whale", "2026-10-01", league="ahl", valid_from="2010", valid_to="2013"),
+        _row("hockeytech", "2", "Acadie-Bathurst Titan", "2026-10-01", league="qmjhl", valid_from="2011", valid_to="2020"),
+        _row("hockeytech", "2", "Acadie-Bathurst, Titan", "2026-10-01", league="qmjhl", valid_from="2000", valid_to="2010"),
+    ]
+    expected = {"307": "Hartford Wolf Pack", "2": "Acadie-Bathurst Titan"}
+    for ordered in (rows, rows[::-1]):  # input order must not matter
+        assert {r["team_id"]: r["name"] for r in fs.manifest_team_rows(ordered)} == expected

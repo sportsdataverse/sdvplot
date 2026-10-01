@@ -14,6 +14,7 @@ import datetime as dt
 import io
 import json
 import os
+import shutil
 from pathlib import Path
 
 import requests
@@ -38,14 +39,18 @@ ESPN_LEAGUES = [
     ("ncaa_baseball", "baseball", "college-baseball"), ("ncaa_softball", "baseball", "college-softball"),
     ("ncaa_mhockey", "hockey", "mens-college-hockey"), ("ncaa_whockey", "hockey", "womens-college-hockey"),
 ]
-GROUP_LEAGUES = ["nfl", "nba", "wnba", "mlb", "nhl", "cfb", "mbb", "wbb", "ncaa_baseball", "ncaa_softball"]
+# ncaa_baseball / ncaa_softball are left out: their team_group_seasons parquets key teams with
+# team_id_source == "ncaa_org" (0 ESPN rows). Add them once an ncaa_org -> ESPN id mapping exists.
+GROUP_LEAGUES = ["nfl", "nba", "wnba", "mlb", "nhl", "cfb", "mbb", "wbb"]
 MILB_SPORT_IDS = [11, 12, 13, 14, 16]
 
 
-def _write(name: str, rows: list[dict], columns: list[str]) -> None:
-    OUT.mkdir(exist_ok=True)
+def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
+    if not rows:
+        raise RuntimeError(f"{name}: source returned no rows; refusing to write an empty snapshot")
+    out.mkdir(exist_ok=True)
     rows = sorted(rows, key=lambda r: tuple(str(r.get(c, "")) for c in columns))
-    with open(OUT / f"{name}.csv", "w", newline="") as f:
+    with open(out / f"{name}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
@@ -63,18 +68,38 @@ def espn_rows(league: str, payload: dict) -> list[dict]:
     ]
 
 
+def publish_staged(stage: Path, out: Path) -> None:
+    """Move every staged snapshot into `out` (only called once every source has succeeded)."""
+    out.mkdir(exist_ok=True)
+    for f in sorted(stage.glob("*.csv")):
+        shutil.move(str(f), out / f.name)  # stage is on /tmp: a different filesystem, so no os.replace
+
+
+def _get(s: requests.Session, url: str, **kw) -> requests.Response:
+    r = s.get(url, timeout=kw.pop("timeout", 60), **kw)
+    r.raise_for_status()
+    return r
+
+
 def _is_team_row(r: dict) -> bool:
     return r["level"] == "team"
+
+
+def _name_rank(r: dict) -> tuple:
+    """Current name wins: open-ended valid_to, then latest valid_to, latest last_seen, then the name."""
+    return (r["valid_to"] == "", r["valid_to"], r["last_seen"], r["entity_name"])
 
 
 def manifest_team_rows(rows: list[dict]) -> list[dict]:
     latest: dict[tuple[str, str], dict] = {}
     for r in rows:
         identity = r["source"] in IDENTITY_SOURCES or (r["source"] == "mlbstatic" and r["league"] == "milb")
+        if r["source"] == "espn" and not r["entity_id"].isdigit():
+            identity = False  # abbreviation-keyed historic logo rows: marks only, not teams
         if not _is_team_row(r) or not identity:
             continue
         key = (r["league"], r["entity_id"])
-        if key not in latest or r["last_seen"] > latest[key]["last_seen"]:
+        if key not in latest or _name_rank(r) > _name_rank(latest[key]):
             latest[key] = r
     return [{"league": lg, "team_id": tid, "name": r["entity_name"], "program": r["program"]}
             for (lg, tid), r in sorted(latest.items())]
@@ -104,17 +129,31 @@ def ncaa_rows(xwalk: dict[str, str]) -> list[dict]:
 
 
 def main() -> None:
+    import tempfile
+
     p = argparse.ArgumentParser()
     p.add_argument("--sr-manifest", type=Path, help="sdv-assets-private manifest/sr_team_seasons.csv")
     p.add_argument("--ncaa-xwalk", type=Path, help="ncaa-mfb-football-raw mfb/xwalk/espn_team_id.json")
     args = p.parse_args()
+    stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
+    try:
+        fetch_all(args, stage)
+        publish_staged(stage, OUT)  # all sources succeeded
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
+def fetch_all(args: argparse.Namespace, stage: Path) -> None:
+    def write(name: str, rows: list[dict], columns: list[str]) -> None:
+        _write(name, rows, columns, stage)
+
     s = requests.Session()
     s.headers.update(UA)
 
-    text = s.get(MANIFEST_URL, timeout=120).text
+    text = _get(s, MANIFEST_URL, timeout=120).text
     manifest = list(csv.DictReader(io.StringIO(text)))
-    _write("manifest_teams", manifest_team_rows(manifest), ["league", "team_id", "name", "program"])
-    _write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
+    write("manifest_teams", manifest_team_rows(manifest), ["league", "team_id", "name", "program"])
+    write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
 
     espn: list[dict] = []
     hosts = list(ESPN_HOSTS)  # R7: site.web.* may 403 from some networks; fall back to site.api.*
@@ -127,30 +166,32 @@ def main() -> None:
                 continue
             break
         r.raise_for_status()
-        espn += espn_rows(league, r.json())
+        got = espn_rows(league, r.json())
+        if not got:
+            raise RuntimeError(f"espn: no teams for {league}")
+        espn += got
     print(f"ESPN host used: {hosts[0]}")
-    _write("espn_teams", espn, ["league", "team_id", "abbreviation", "display_name", "short_display_name",
+    write("espn_teams", espn, ["league", "team_id", "abbreviation", "display_name", "short_display_name",
                                 "location", "nickname", "color", "alternate_color"])
 
-    nfl = list(csv.DictReader(io.StringIO(s.get(NFLVERSE_TEAMS_URL, timeout=60).text)))
-    _write("nflverse_teams", nfl,
+    nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
+    write("nflverse_teams", nfl,
            ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])
 
     key = os.environ["CFBD_API_KEY"]
-    cfbd = s.get("https://api.collegefootballdata.com/teams", headers={"Authorization": f"Bearer {key}"},
-                 timeout=60).json()
-    _write("cfbd_teams", [{"team_id": str(t["id"]), "school": t["school"], "abbreviation": t.get("abbreviation"),
+    cfbd = _get(s, "https://api.collegefootballdata.com/teams", headers={"Authorization": f"Bearer {key}"}).json()
+    write("cfbd_teams", [{"team_id": str(t["id"]), "school": t["school"], "abbreviation": t.get("abbreviation"),
                            "alternate_names": "|".join(t.get("alternateNames") or [])} for t in cfbd],
            ["team_id", "school", "abbreviation", "alternate_names"])
 
     from nba_api.stats.static import teams as nba_teams
 
-    _write("nba_api_teams", [{"nba_api_id": str(t["id"]), "abbreviation": t["abbreviation"], "nickname": t["nickname"],
+    write("nba_api_teams", [{"nba_api_id": str(t["id"]), "abbreviation": t["abbreviation"], "nickname": t["nickname"],
                               "full_name": t["full_name"]} for t in nba_teams.get_teams()],
            ["nba_api_id", "abbreviation", "nickname", "full_name"])
 
-    nhl = nhl_rows(s.get(NHL_TEAM_URL, timeout=60).json(), s.get(NHL_FRANCHISE_URL, timeout=60).json())
-    _write("nhl_teams", nhl, ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name",
+    nhl = nhl_rows(_get(s, NHL_TEAM_URL).json(), _get(s, NHL_FRANCHISE_URL).json())
+    write("nhl_teams", nhl, ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name",
                               "franchise_common_name"])
 
     mlb: list[dict] = []
@@ -161,33 +202,38 @@ def main() -> None:
     for sport_id in [1, *MILB_SPORT_IDS]:
         r = direct.get(f"http://statsapi.mlb.com/api/v1/teams?sportId={sport_id}&season={season}", timeout=60)
         r.raise_for_status()
-        for t in r.json().get("teams", []):
+        teams = r.json().get("teams", [])
+        if not teams:
+            raise RuntimeError(f"mlbstats: no teams for sportId={sport_id}")
+        for t in teams:
             mlb.append({"sport_id": sport_id, "mlbstats_id": str(t["id"]), "abbreviation": t.get("abbreviation"),
                         "team_code": t.get("teamCode"), "file_code": t.get("fileCode"), "team_name": t.get("teamName"),
                         "name": t.get("name")})
-    _write("mlbstats_teams", mlb,
+    write("mlbstats_teams", mlb,
            ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"])
 
     import polars as pl
 
     groups: list[dict] = []
     for league in GROUP_LEAGUES:
-        tgs = pl.read_parquet(GROUPS_URL.format(league=league, table="team_group_seasons"))
-        gs = pl.read_parquet(GROUPS_URL.format(league=league, table="group_seasons"))
+        tgs, gs = (pl.read_parquet(io.BytesIO(_get(s, GROUPS_URL.format(league=league, table=t), timeout=120).content))
+                   for t in ("team_group_seasons", "group_seasons"))
         latest = (tgs.filter(pl.col("team_id_source") == "espn").sort("season").group_by("team_id").last()
                   .join(gs.select("group_id", "season", "name"), left_on=["conference_id", "season"],
                         right_on=["group_id", "season"], how="left"))
+        if latest.height == 0:
+            raise RuntimeError(f"groups: no espn-keyed rows for {league}")
         for r in latest.iter_rows(named=True):
             groups.append({"league": league, "team_id": r["team_id"], "season": r["season"],
                            "conference_id": r["conference_id"], "conference": r["name"]})
-    _write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
+    write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
 
     if args.ncaa_xwalk:
-        _write("ncaa_cfb_xwalk", ncaa_rows(json.loads(args.ncaa_xwalk.read_text())), ["league", "ncaa_id", "team_id"])
+        write("ncaa_cfb_xwalk", ncaa_rows(json.loads(args.ncaa_xwalk.read_text())), ["league", "ncaa_id", "team_id"])
     if args.sr_manifest:
         with open(args.sr_manifest, newline="") as f:
             sr = list(csv.DictReader(f))
-        _write("sr_codes", [{"league": r["league"], "team_code": r["team_code"], "team_name": r["team_name"],
+        write("sr_codes", [{"league": r["league"], "team_code": r["team_code"], "team_name": r["team_name"],
                              "season": r["season"]} for r in sr], ["league", "team_code", "team_name", "season"])
 
 
