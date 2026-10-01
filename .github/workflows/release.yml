@@ -11,5 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+      - name: tag matches the project version
+        run: |
+          version="$(uv version --short)"
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "tag $GITHUB_REF_NAME does not match the project version $version" >&2
+            exit 1
+          fi
+      - run: uv sync --all-extras --dev
+      - run: uv run pytest -q
+      - run: uv run python tools/build_index.py --check
       - run: uv build
       - uses: pypa/gh-action-pypi-publish@release/v1
