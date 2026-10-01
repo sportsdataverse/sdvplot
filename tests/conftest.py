@@ -165,7 +165,13 @@ ALIASES = [
 
 
 @pytest.fixture(autouse=True)
-def fixture_index(tmp_path, monkeypatch):
+def fixture_index(request, tmp_path, monkeypatch):
+    """The fixture index, unless the test is marked real_index (tests/test_real_index.py): then the shipped one."""
+    if request.node.get_closest_marker("real_index"):
+        _index.reload_index()
+        yield _index.data_dir()
+        _index.reload_index()
+        return
     data = tmp_path / "index"
     data.mkdir()
     pl.DataFrame(TEAMS, schema=list(_index.TEAM_SCHEMA), orient="row").cast(_index.TEAM_SCHEMA).write_parquet(
