@@ -65,3 +65,5 @@ jobs:
           packages-dir: dist
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
+          # a re-run after a partial upload skips the files already on PyPI instead of failing on them
+          skip-existing: true
