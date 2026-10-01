@@ -129,7 +129,7 @@ def mark_aliases(
 ) -> pl.DataFrame:
     """The `mark` crosswalk (Rulings R19, R25). A manifest row's entity_id is the id of its *source*, so each row maps
     to a canonical team by its source's rule. One row per (league, source, value="source:entity_id"), with n = the
-    number of teams the key maps to and team_id set only when n == 1."""
+    number of teams the key maps to; team_id and the season range (R36) are set only when n == 1."""
     src, lg = pl.col("source"), pl.col("league")
     identity = (
         src.is_in(sorted(IDENTITY_SOURCES)) & ((src != "espn") | pl.col("entity_id").str.contains(r"^\d+$"))
@@ -184,17 +184,36 @@ def mark_aliases(
     via = m.join(lookup, on=["league", "id_system", "_key"]).filter(
         pl.when(has_range).then(overlaps).otherwise(True) & (preferred | ~preferred.any().over("_row"))
     )
-    ident = m.filter("_identity").with_columns(pl.col("entity_id").alias("team_id"))
-    keys = ["league", "source", "value"]
-    cands = pl.concat([ident.select(*keys, "team_id"), via.select(*keys, "team_id")]).join(
-        known, on=["league", "team_id"], how="semi"
+    # R36: a mark reached through a relocation alias (one that ends) carries that alias's range; identity rows,
+    # current abbreviations and the NHL crosswalk carry none
+    historic = pl.col("_to").is_not_null()
+    via = via.with_columns(
+        pl.when(historic).then(pl.col("_from")).alias("_mfrom"), pl.when(historic).then(pl.col("_to")).alias("_mto")
     )
-    per_key = cands.group_by(keys).agg(pl.col("team_id").n_unique().alias("n"), pl.col("team_id").min())
+    ident = m.filter("_identity").with_columns(
+        pl.col("entity_id").alias("team_id"),
+        pl.lit(None, pl.Int32).alias("_mfrom"),
+        pl.lit(None, pl.Int32).alias("_mto"),
+    )
+    keys = ["league", "source", "value"]
+    cols = [*keys, "team_id", "_mfrom", "_mto"]
+    cands = pl.concat([ident.select(cols), via.select(cols)]).join(known, on=["league", "team_id"], how="semi")
+    # one key, several ranges for its one team: their union (null = unbounded)
+    per_key = cands.group_by(keys).agg(
+        pl.col("team_id").n_unique().alias("n"),
+        pl.col("team_id").min(),
+        pl.when(pl.col("_mfrom").is_null().any()).then(None).otherwise(pl.col("_mfrom").min()).alias("valid_from"),
+        pl.when(pl.col("_mto").is_null().any()).then(None).otherwise(pl.col("_mto").max()).alias("valid_to"),
+    )
+    one = pl.col("n") == 1
     return (
         m.select(keys)
         .unique()
         .join(per_key, on=keys, how="left")
-        .with_columns(pl.col("n").fill_null(0), pl.when(pl.col("n") == 1).then(pl.col("team_id")).alias("team_id"))
+        .with_columns(
+            pl.col("n").fill_null(0),
+            *[pl.when(one).then(pl.col(c)).alias(c) for c in ("team_id", "valid_from", "valid_to")],
+        )
         .sort(keys)
     )
 
@@ -311,7 +330,10 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     )
     mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
     _report_marks(mk)
-    a = pl.concat([a, _alias(mk.filter(pl.col("n") == 1), pl.col("league"), "mark", "value").cast(ALIAS_SCHEMA)])
+    mark = mk.filter(pl.col("n") == 1).select(
+        "league", pl.lit("mark").alias("id_system"), "value", "team_id", "valid_from", "valid_to"
+    )
+    a = pl.concat([a, mark.cast(ALIAS_SCHEMA)])
     return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
 
 

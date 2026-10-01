@@ -143,6 +143,7 @@ ALIASES = [
     ("nfl", "mark", "nflverse:LV", "13", None, None),
     ("nfl", "mark", "wayback:14", "14", None, None),
     ("nfl", "mark", "espn:14", "14", None, None),
+    ("nfl", "mark", "espn:STL", "14", None, 2015),  # an old-abbreviation logo, dated by its relocation alias (R36)
     ("nfl", "name", "Las Vegas Raiders", "13", None, None),
     ("nfl", "name", "Los Angeles Rams", "14", None, None),
     ("mlb", "team_id", "7", "7", None, None),

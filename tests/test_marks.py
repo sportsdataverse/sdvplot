@@ -75,3 +75,12 @@ def test_a_team_with_only_a_non_default_variant_gets_it():
 def test_ties_break_on_the_later_valid_from():
     m = _marks.marks("KC", "mlb").filter(pl.col("variant") == "tie")
     assert m["valid_from"].to_list() == [2010, 2000]
+
+
+def test_a_mark_alias_range_dates_an_open_ended_row():
+    # R36: espn:STL and espn:14 are both open-ended espn rows; the STL row's alias ends in 2015
+    assert _marks.logo_url("LAR", "nfl") == "https://cdn/6666.png"
+    assert _marks.logo_url("LAR", "nfl", season=2010) == "https://cdn/0000.png"
+    assert _marks.logo_url("LAR", "nfl", season=2024) == "https://cdn/6666.png"
+    stl = _marks.marks("LAR", "nfl").filter(pl.col("entity_id") == "STL").row(0, named=True)
+    assert (stl["valid_from"], stl["valid_to"]) == (None, 2015)  # marks() shows the effective range

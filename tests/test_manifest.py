@@ -8,7 +8,7 @@ from sdvplot import _cache, _manifest
 
 def test_manifest_types(manifest):
     assert manifest.schema["entity_id"] == pl.String and manifest.schema["valid_from"] == pl.Int32
-    assert manifest.height == 11
+    assert manifest.height == 12
 
 
 def test_a_manifest_missing_required_columns_is_rejected(cache, monkeypatch):

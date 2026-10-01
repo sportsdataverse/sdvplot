@@ -49,7 +49,11 @@ def test_build_produces_the_runtime_schema_and_resolvable_aliases(tmp_path):
     assert (oak["team_id"], oak["valid_to"]) == ("13", 2019)
     assert {"team_id", "espn", "espn_abbr", "name", "nflverse", "mark"} <= set(aliases["id_system"])
     marks = aliases.filter(pl.col("id_system") == "mark")
-    assert sorted(marks.select("value", "team_id").rows()) == [("espn:13", "13"), ("nflverse:OAK", "13")]
+    # R36: a relocation-derived mark alias carries the curated range; an identity one has none
+    assert sorted(marks.select("value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("espn:13", "13", None, None),
+        ("nflverse:OAK", "13", None, 2019),
+    ]
     assert len(version) == 12
 
 
@@ -83,7 +87,7 @@ def _text(rows, cols):
     return pl.DataFrame(rows, schema=dict.fromkeys(cols, pl.String), orient="row")
 
 
-def _crosswalk(marks, teams, aliases=(), nhl=(), espn=()):
+def _crosswalk(marks, teams, aliases=(), nhl=(), espn=(), ranges=False):
     out = bi.mark_aliases(
         _text(marks, MARK_COLS),
         _text(teams, ["league", "team_id"]),
@@ -91,6 +95,8 @@ def _crosswalk(marks, teams, aliases=(), nhl=(), espn=()):
         _text(nhl, NHL_COLS),
         _text(espn, ["league", "team_id", "nickname"]),
     )
+    if ranges:
+        return {r[0]: r[1:] for r in out.select("value", "team_id", "valid_from", "valid_to").rows()}
     return dict(out.select("value", "team_id").rows())
 
 
@@ -118,6 +124,10 @@ def test_mark_espn_abbreviation_rows_map_through_nflverse_or_curated_espn_abbr()
         aliases=[("nfl", "nflverse", "OAK", "13", None, 2019), ("wnba", "espn_abbr", "DET", "3", 1998, 2009)],
     )
     assert got == {"espn:OAK": "13", "espn:DET": "3", "espn:HOU": None}
+    # R36: one key, two ranges for the same team -> their union
+    split = [("wnba", "espn_abbr", "DET", "3", 1998, 2003), ("wnba", "espn_abbr", "DET", "3", 2004, 2009)]
+    got = _crosswalk([("wnba", "espn", "DET", "DET", None, None)], [("wnba", "3")], aliases=split, ranges=True)
+    assert got == {"espn:DET": ("3", 1998, 2009)}
 
 
 def test_mark_nflverse_rows_map_through_nflverse_aliases():
@@ -132,6 +142,9 @@ def test_mark_nflverse_rows_map_through_nflverse_aliases():
     # no range: the current abbreviation decides ("LA" today is the Rams)
     got = _crosswalk([("nfl", "nflverse", c, c, None, None) for c in ("LV", "LA", "STL")], teams, aliases)
     assert got == {"nflverse:LV": "13", "nflverse:LA": "14", "nflverse:STL": "14"}
+    # R36: current abbreviations keep a null range; a relocation code carries its alias range
+    got = _crosswalk([("nfl", "nflverse", c, c, None, None) for c in ("LA", "STL")], teams, aliases, ranges=True)
+    assert got == {"nflverse:LA": ("14", None, None), "nflverse:STL": ("14", None, 2015)}
     # a range: the relocation aliases over that range decide
     assert _crosswalk([("nfl", "nflverse", "LA", "Los Angeles Raiders", "1982", "1994")], teams, aliases) == {
         "nflverse:LA": "13"

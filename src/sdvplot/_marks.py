@@ -31,14 +31,25 @@ SOURCE_RANK: dict[str, int] = {
 }
 
 
+def _union(col: str, bound: pl.Expr) -> pl.Expr:
+    """One side of the union of several ranges: null (unbounded) if any range is unbounded there."""
+    return pl.when(pl.col(col).is_null().any()).then(None).otherwise(bound).alias(f"_alias_{col}")
+
+
 def _mark_aliases(league: str) -> pl.DataFrame:
-    """key ("source:entity_id", normalized like every alias value) -> canonical team_id, unique mappings only."""
+    """key ("source:entity_id", normalized like every alias value) -> canonical team_id, unique mappings only, with
+    the season range of the mapping (R36: an old-abbreviation mark is dated by its relocation alias)."""
     return (
         _index.alias_table()
         .filter((pl.col("league") == league) & (pl.col("id_system") == "mark"))
-        .select(pl.col("value").str.strip_chars().str.to_lowercase().alias("_key"), "team_id")
+        .with_columns(pl.col("value").str.strip_chars().str.to_lowercase().alias("_key"))
         .group_by("_key")
-        .agg(pl.col("team_id").first(), pl.col("team_id").n_unique().alias("_n"))
+        .agg(
+            pl.col("team_id").first(),
+            pl.col("team_id").n_unique().alias("_n"),
+            _union("valid_from", pl.col("valid_from").min()),
+            _union("valid_to", pl.col("valid_to").max()),
+        )
         .filter(pl.col("_n") == 1)
         .drop("_n")
     )
@@ -48,7 +59,8 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
     """Every archived mark for one team, best first (see select_mark for the rule).
 
     Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
-    unique mapping are dropped, never matched on the raw id."""
+    unique mapping are dropped, never matched on the raw id. valid_from/valid_to are each row's effective range:
+    the manifest's, else the mark alias's (R36)."""
     team_id = resolve(team, league, season=season, id_system=id_system, strict=True)
     m = (
         load_manifest()
@@ -61,7 +73,11 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
         )
         .join(_mark_aliases(league), on="_key", how="inner")
         .filter(pl.col("team_id") == team_id)
-        .drop("_key")
+        .with_columns(
+            pl.coalesce("valid_from", "_alias_valid_from").alias("valid_from"),
+            pl.coalesce("valid_to", "_alias_valid_to").alias("valid_to"),
+        )
+        .drop("_key", "_alias_valid_from", "_alias_valid_to")
     )
     return (
         m.with_columns(
