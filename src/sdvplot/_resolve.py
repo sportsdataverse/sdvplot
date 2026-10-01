@@ -99,7 +99,18 @@ def _unpack_series(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
             f"resolve() takes a scalar, list, tuple, numpy array or a pandas/polars Series, got {type(values).__name__}"
         ) from e
     backend = nw.get_native_namespace(s)
-    return s.to_list(), lambda out: nw.new_series(s.name, out, nw.String(), backend=backend).to_native()
+    # Capture the original index for pandas-like Series
+    original_input = values
+    idx = nw.maybe_get_index(s)
+
+    def wrap_result(out: list[Any]) -> Any:
+        result = nw.new_series(s.name, out, nw.String(), backend=backend).to_native()
+        # Restore the index for pandas-like objects
+        if idx is not None and hasattr(result, "index"):
+            result.index = original_input.index
+        return result
+
+    return s.to_list(), wrap_result
 
 
 def _seasons(season: Any, n: int) -> list[int | None]:
