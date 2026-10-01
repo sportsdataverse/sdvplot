@@ -49,6 +49,6 @@ tests should pass without it.
 
 ## Checklist
 
-- [ ] My code follows the project's [code standards](../CONTRIBUTING.md#code-standards-for-new-modules).
+- [ ] My code follows the project's [code standards](https://github.com/sportsdataverse/sdvplot/blob/main/CONTRIBUTING.md#code-standards-for-new-modules).
 - [ ] I have NOT included AI agents (Claude, Copilot, GPT, etc.) as commit co-authors.
 - [ ] I have searched existing PRs to confirm this isn't a duplicate.
