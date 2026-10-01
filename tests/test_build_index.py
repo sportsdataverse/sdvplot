@@ -85,6 +85,15 @@ def test_check_mode_detects_drift(tmp_path, monkeypatch):
     assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 1
 
 
+def test_check_mode_detects_dtype_only_drift(tmp_path):  # equals() alone calls Int32 == Int64 the same
+    raw = _raw(tmp_path)
+    out = tmp_path / "data"
+    assert bi.main(["--raw", str(raw), "--out", str(out)]) == 0
+    aliases = pl.read_parquet(out / "aliases.parquet")
+    aliases.with_columns(pl.col("valid_from").cast(pl.Int64)).write_parquet(out / "aliases.parquet")
+    assert bi.main(["--raw", str(raw), "--out", str(out), "--check"]) == 1
+
+
 # The mark crosswalk (Ruling R19 build half, R25): one test per source rule
 MARK_COLS = ["league", "source", "entity_id", "entity_name", "valid_from", "valid_to"]
 NHL_COLS = ["nhl_id", "franchise_id", "tri_code", "full_name", "franchise_full_name", "franchise_common_name"]
