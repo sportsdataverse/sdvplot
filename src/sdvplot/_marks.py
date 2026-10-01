@@ -8,7 +8,7 @@ from typing import Any
 import polars as pl
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
 from sdvplot._resolve import _covers, one_team, resolve
@@ -127,7 +127,7 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
     Raises:
         TypeError: If ``team`` is not a single value.
         ValueError: If ``league`` or ``id_system`` is unknown.
-        UnresolvedTeamError: If the team does not resolve.
+        UnresolvedTeamError: If the team is null or does not resolve.
         OfflineError: If the logo manifest cannot be downloaded and no cached copy exists.
 
     Example:
@@ -142,6 +142,8 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
         sdv-py: https://py.sportsdataverse.org/
     """
     team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
+    if team_id is None:  # a null team: strict resolve() lets nulls through as None
+        raise UnresolvedTeamError(f"marks() needs a team, got {team!r}")
     return _ranked(league).filter(pl.col("team_id") == team_id)
 
 

@@ -1,3 +1,4 @@
+import pandas as pd
 import polars as pl
 import pytest
 
@@ -48,6 +49,12 @@ def test_no_mark_at_all_returns_none_with_a_warning():
 def test_marks_is_strict_about_the_team():
     with pytest.raises(UnresolvedTeamError):
         _marks.marks("XXX", "nfl")
+
+
+@pytest.mark.parametrize("team", [None, float("nan"), "", pd.NA])
+def test_marks_of_a_null_team_raises(team):
+    with pytest.raises(UnresolvedTeamError, match="needs a team"):
+        _marks.marks(team, "nfl")
 
 
 def test_an_unmapped_foreign_id_row_is_never_returned():
