@@ -51,7 +51,7 @@ def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
     out.mkdir(exist_ok=True)
     rows = sorted(rows, key=lambda r: tuple(str(r.get(c, "")) for c in columns))
     with open(out / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
+        w = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore", lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     print(f"{name}.csv: {len(rows)} rows")

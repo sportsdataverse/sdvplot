@@ -155,3 +155,8 @@ def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
     env = {**os.environ, "LC_ALL": "C", "LANG": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
     subprocess.run([sys.executable, "-c", code], check=True, env=env)
     assert "San José State".encode() in (tmp_path / "t.csv").read_bytes()
+
+
+def test_snapshots_use_lf_line_endings(tmp_path):
+    fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)   # same call shape as Task 0's test
+    assert b"\r\n" not in (tmp_path / "t.csv").read_bytes()
