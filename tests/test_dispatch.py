@@ -105,7 +105,7 @@ def test_rule_1_catches_an_adapter_that_draws_the_wrong_team(dummy, monkeypatch)
         return working(target, x, y, [list(teams)[0]] * len(list(teams)), league=league, **kw)  # same team twice
 
     _mutant(dummy, monkeypatch, wrong)
-    with pytest.raises(AssertionError, match="rule 1"):
+    with pytest.raises(AssertionError, match=r"rule 1 \(resolution\): expected marks"):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
@@ -118,7 +118,7 @@ def test_rule_2_catches_an_adapter_that_crashes_on_unknown_teams(dummy, monkeypa
         return working(target, x, y, teams, league=league, **kw)
 
     _mutant(dummy, monkeypatch, fragile)
-    with pytest.raises(AssertionError, match="rule 2"):
+    with pytest.raises(AssertionError, match=r"rule 2 \(unknown team: warn and skip\): add_logos raised KeyError"):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
@@ -130,7 +130,7 @@ def test_rule_2_catches_an_adapter_that_drops_the_name_but_not_the_xy(dummy, mon
         return target
 
     _mutant(dummy, monkeypatch, misaligned)
-    with pytest.raises(AssertionError, match="rule 2"):
+    with pytest.raises(AssertionError, match=r"rule 2 \(unknown team: warn and skip\): an unknown team must be skipped with its own x/y"):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
@@ -142,7 +142,7 @@ def test_rule_3_catches_an_adapter_that_indexes_pandas_by_label(dummy, monkeypat
         return target
 
     _mutant(dummy, monkeypatch, by_label)
-    with pytest.raises(AssertionError, match="rule 3"):
+    with pytest.raises(AssertionError, match=r"rule 3 \(pandas/polars parity\): add_logos raised KeyError"):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
@@ -153,7 +153,7 @@ def test_rule_4_catches_an_adapter_that_ignores_height(dummy, monkeypatch):
         return working(target, x, y, teams, league=league, height=0.1, **kw)  # always draws 0.1
 
     _mutant(dummy, monkeypatch, fixed)
-    with pytest.raises(AssertionError, match="rule 4"):
+    with pytest.raises(AssertionError, match=r"rule 4 \(height semantics\): height=0.25 must be the height"):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
@@ -166,5 +166,32 @@ def test_rule_4_catches_an_adapter_that_accepts_a_height_above_one(dummy, monkey
         return working(target, x, y, teams, league=league, height=min(height, 1), **kw)
 
     _mutant(dummy, monkeypatch, lax)
-    with pytest.raises(AssertionError, match="rule 4"):
+    with pytest.raises(AssertionError, match=r"rule 4 \(height semantics\): height=1.5 must raise ValueError"):
         check_adapter_contract(dummy, make_target=Canvas)
+
+
+@pytest.mark.parametrize("name", ["x_x", "y_x", "row_position"])
+def test_rule_1_catches_wrong_coordinates(dummy, monkeypatch, name):
+    def broken(target, x, y, teams, *, league, height=0.1, **kw):
+        for i, (xi, yi, team_id) in enumerate(zip(list(x), list(y), resolve(list(teams), league), strict=True)):
+            if team_id is not None:
+                px, py = {"x_x": (xi, xi), "y_x": (yi, xi), "row_position": (i, i)}[name]
+                target.append((team_id, px, py, height))
+        return target
+
+    _mutant(dummy, monkeypatch, broken)
+    with pytest.raises(AssertionError, match=r"rule 1 \(resolution\): expected marks"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_an_adapter_that_returns_a_new_object_instead_of_mutating_passes_the_contract(dummy, monkeypatch):
+    working = dummy.add_logos
+
+    def immutable(target, x, y, teams, *, league, **kw):
+        drawn = working(Canvas(), x, y, teams, league=league, **kw)  # draw on a fresh canvas, leave target alone
+        return Canvas([*target, *drawn])
+
+    monkeypatch.setattr(dummy, "add_logos", immutable)
+    check_adapter_contract(dummy, make_target=Canvas)
+    t = Canvas()
+    assert d.add_logos(t, [1.0], [2.0], ["LV"], league="nfl") == [("13", 1.0, 2.0, 0.1)] and t == []

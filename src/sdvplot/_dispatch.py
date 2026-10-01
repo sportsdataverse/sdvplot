@@ -10,6 +10,10 @@ add_headshots and axis_logos as in the plan, plus the test hook
 which returns one (team_id, x, y, height) tuple per image the adapter drew, in draw order. team_id is the
 canonical string id, x/y are the position values passed in (positional, never index labels), and height is the
 fraction of the plot height the adapter actually used.
+
+add_logos must return the object that was drawn on: the target itself when the library mutates in place
+(matplotlib), or the new object when it builds one (plotnine, altair, tables). The harness reads drawn_marks from
+the returned object when it is not None, and from the target otherwise.
 """
 
 from __future__ import annotations
