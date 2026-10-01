@@ -8,6 +8,7 @@ import pytest
 
 import sdvplot
 from sdvplot import _index
+from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY
 
 pytestmark = pytest.mark.real_index
 
@@ -30,6 +31,11 @@ def test_palette_never_merges_teams_that_share_an_abbreviation():  # KSU: Kansas
     assert len(w) == 1
     assert len(p) == sdvplot.teams("ncaa_baseball")["color_primary"].is_not_null().sum()
     assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#bab0ac"
+
+
+@pytest.mark.parametrize("id_system", PRIORITY + EXPLICIT_ONLY)
+def test_every_id_system_has_aliases(id_system):  # build_index skips an empty or missing source silently
+    assert _index.alias_table().filter(pl.col("id_system") == id_system).height > 0
 
 
 @pytest.mark.parametrize(
