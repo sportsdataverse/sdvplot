@@ -17,8 +17,6 @@ jobs:
   live:
     name: pytest --live (ubuntu / py3.13)
     runs-on: ubuntu-latest
-    outputs:
-      pytest_status: ${{ steps.run-pytest.outcome }}
     steps:
       - uses: actions/checkout@v5
       - name: Install uv
@@ -50,8 +48,8 @@ jobs:
           uv run --frozen pytest --nbmake examples/notebooks/ -q -rN 2>&1 | tee pytest-notebooks.log
       - name: Render notebook tutorials and open refresh PR
         # Re-execute the example notebooks and render them (with outputs) to
-        # docs/docs/tutorials/. main is branch-protected (PR-only), so we push a
-        # refresh branch and open/update a PR rather than committing to main.
+        # docs/docs/tutorials/. we push a refresh branch and open/update
+        # a PR rather than committing to main.
         # Informational: a live-API flake here shouldn't fail the cron.
         continue-on-error: true
         env:
@@ -181,9 +179,7 @@ jobs:
       # Close the tracking issue when the run goes green. Without this the
       # workflow only ever OPENS issues -- the body above promises "the next
       # cron run that goes green will leave the issue closed", and nothing
-      # executed that, so a fixed drift stayed open indefinitely and the
-      # tracker filled with resolved issues (#416 sat open for a week after
-      # d7a8c7829 fixed it).
+      # would execute that, so a fixed drift would stay open indefinitely.
       - name: Close drift tracking issue on green
         if: success() && steps.run-pytest.outcome == 'success'
         uses: actions/github-script@v9
