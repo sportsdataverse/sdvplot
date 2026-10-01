@@ -1,4 +1,3 @@
-# src/sdvplot/_errors.py
 """Warning and exception types. Each subclasses the builtin a caller would already catch."""
 
 
