@@ -68,8 +68,36 @@ def logo_image(
     mark_type: str = "logo",
     size: int | None = None,
 ) -> Image.Image | None:
-    """The team's mark as a PIL image (cached). size is the longest side in pixels: rasters are only scaled down,
-    SVGs are rasterized at it (default 512; needs the svg extra)."""
+    """The team's mark as a PIL image (downloaded once, then cached).
+
+    Args:
+        team: One team identifier (abbreviation, name, ESPN id, ...).
+        league: The SDV league key, e.g. "nfl".
+        season: A season year; None picks the current mark.
+        variant: "default", "dark", or a named variant from ``marks()``.
+        mark_type: "logo" or "wordmark".
+        size: The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512).
+
+    Returns:
+        PIL.Image.Image | None: The image, or None when the team does not resolve or has no mark.
+
+    Raises:
+        TypeError: If ``team`` is not a single value.
+        OptionalDependencyError: If the mark is an SVG and the ``svg`` extra is not installed.
+        OfflineError: If the download fails and no cached copy exists.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            img = sdvplot.logo_image("KC", "nfl", size=64)
+            img.size   # (64, 64)
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     row = select_mark(one_team(team, "logo_image"), league, season, variant, mark_type)
     if row is None:
         return None

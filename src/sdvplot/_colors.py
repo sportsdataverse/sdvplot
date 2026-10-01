@@ -24,8 +24,34 @@ def _colors(league: str, column: str) -> dict[str, str]:
 
 
 def palette(league: str, which: str = "primary", teams: Any = None, season: Any = None) -> dict[Any, str]:
-    """{team: "#hex"} for a league. Without teams, keys are canonical abbreviations; with teams, keys are the
-    caller's own values (so they match a seaborn hue column or a Plotly color column exactly)."""
+    """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
+
+    Without ``teams`` the keys are canonical abbreviations. With ``teams`` the keys are the caller's own values, so
+    they match a seaborn ``hue`` column or a Plotly color column exactly.
+
+    Args:
+        league: The SDV league key, e.g. "nfl".
+        which: "primary" or "secondary".
+        teams: Team values to key the dict by; None returns the whole league.
+        season: One season, or one per team, for values reused across eras.
+
+    Returns:
+        dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out.
+
+    Raises:
+        ValueError: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.palette("nfl", teams=["KC", "SF"])   # {'KC': '#e31837', 'SF': '#aa0000'}
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     column = _column(which)
     _index.check_league(league)
     colors = _colors(league, column)
@@ -43,7 +69,32 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
 
 
 def team_colors(teams: Any, league: str, which: str = "primary", season: Any = None) -> Any:
-    """One "#hex" (or None) per team value, in the same container the values came in."""
+    """One "#hex" (or None) per team value, in the same container the values came in.
+
+    Args:
+        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
+        league: The SDV league key, e.g. "nfl".
+        which: "primary" or "secondary".
+        season: One season, or one per team, for values reused across eras.
+
+    Returns:
+        str | list | Series | None: The hex color for each team, None where a team does not resolve or has no color.
+
+    Raises:
+        ValueError: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.team_colors(["KC", "SF"], "nfl")      # ['#e31837', '#aa0000']
+            sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     column = _column(which)
     _index.check_league(league)
     colors = _colors(league, column)

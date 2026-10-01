@@ -108,11 +108,38 @@ def _ranked(league: str) -> pl.DataFrame:
 
 
 def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
-    """Every archived mark for one team, best first (see select_mark for the rule).
+    """Every archived mark for one team, best first.
 
-    Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a
-    unique mapping are dropped, never matched on the raw id. valid_from/valid_to are each row's effective range:
-    the manifest's, else the mark alias's (R36)."""
+    Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a unique
+    mapping are dropped, never matched on the raw id. ``valid_from``/``valid_to`` are each row's effective range: the
+    manifest's, else the mark alias's.
+
+    Args:
+        team: One team identifier (abbreviation, name, ESPN id, ...).
+        league: The SDV league key, e.g. "nfl".
+        season: A season year, used to resolve a reused code.
+        id_system: "auto" or one id-system name, as in ``resolve``.
+
+    Returns:
+        polars.DataFrame: One row per archived mark (logos and wordmarks, every variant and source) with its
+        ``variant``, ``mark_type``, ``archive_url`` and ``source_rank``.
+
+    Raises:
+        TypeError: If ``team`` is not a single value.
+        ValueError: If ``league`` or ``id_system`` is unknown.
+        UnresolvedTeamError: If the team does not resolve.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.marks("KC", "nfl").shape   # (19, 21)
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
     return _ranked(league).filter(pl.col("team_id") == team_id)
 
@@ -160,7 +187,36 @@ def select_mark(
 def logo_url(
     team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
-    """The CDN URL of the team's mark (what web libraries and great_tables embed), or None with a warning."""
+    """The CDN URL of a team's logo or wordmark, chosen for the season.
+
+    Picks the archived mark whose season range covers ``season`` (relocated franchises get their era's mark), then the
+    requested variant, then the most authoritative source. Unknown teams return None with one SdvplotWarning.
+
+    Args:
+        team: One team identifier (abbreviation, name, ESPN id, ...).
+        league: The SDV league key, e.g. "nfl", "cfb", "nhl".
+        season: A season year; None picks the current mark.
+        variant: "default", "dark", or a named variant from ``marks()``.
+        mark_type: "logo" or "wordmark".
+
+    Returns:
+        str | None: The archive URL (content-addressed, immutable), or None when no mark exists.
+
+    Raises:
+        TypeError: If ``team`` is not a single value.
+        ValueError: If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.logo_url("KC", "nfl")   # 'https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3d/3d77....png'
+
+    See Also:
+        sdvplotR ``logo_url``: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     _check_mark_type(mark_type)
     team_id = resolve(one_team(team, "logo_url"), league, season=season)
     if team_id is None:

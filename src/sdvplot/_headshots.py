@@ -55,9 +55,33 @@ def _transform_nfl_headshot(url: str) -> str:
 
 
 def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | None:
-    """A headshot URL for one player. id_system "espn" (ESPN athlete id, all ESPN leagues)
-    or "gsis" (NFL only, mapped to ESPN through nflverse's player table, preferring
-    nflverse's own headshot)."""
+    """A headshot URL for one player.
+
+    Args:
+        player_id: One player id: an ESPN athlete id, or an nflverse gsis id.
+        league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only.
+        id_system: "espn" (ESPN athlete id, any ESPN league) or "gsis" (mapped to ESPN through nflverse's player table,
+            preferring nflverse's own headshot).
+
+    Returns:
+        str | None: The image URL, or None when the id is missing, malformed, or not in the player table.
+
+    Raises:
+        ValueError: If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.headshot_url("3139477", "nfl")
+            # 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png'
+            sdvplot.headshot_url("00-0033873", "nfl", id_system="gsis")   # Patrick Mahomes, an nfl.com URL ending .png
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     pid = norm_value(player_id)
     if pid is None:
         return None

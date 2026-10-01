@@ -153,7 +153,24 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
 
 
 def clear_cache() -> None:
-    """Delete everything sdvplot has cached (manifest, images, rasterized SVGs)."""
+    """Delete everything sdvplot has cached (manifest, images, rasterized SVGs).
+
+    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set.
+
+    Returns:
+        None: Nothing; the cache subdirectories are removed.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            sdvplot.clear_cache()   # the next logo_url() / logo_image() re-downloads
+
+    See Also:
+        sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
+        sdv-py: https://py.sportsdataverse.org/
+    """
     root = cache_dir()
     for subdir in CACHE_SUBDIRS:
         path = root / subdir
