@@ -1,4 +1,17 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [CLAUDE.md — sdvplot Development Guide](#claudemd--sdvplot-development-guide)
+  - [Purpose](#purpose)
+  - [Layout (`src/sdvplot/`)](#layout-srcsdvplot)
+  - [Commands](#commands)
+  - [Generated files — never hand-edit](#generated-files--never-hand-edit)
+  - [Identity rules](#identity-rules)
+  - [Marks](#marks)
+  - [Test gates](#test-gates)
+  - [Docstring standard](#docstring-standard)
+  - [Commits](#commits)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # CLAUDE.md — sdvplot Development Guide

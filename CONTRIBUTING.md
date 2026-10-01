@@ -1,4 +1,18 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Contributing to sdvplot](#contributing-to-sdvplot)
+  - [Development setup](#development-setup)
+    - [pre-commit](#pre-commit)
+  - [Tests](#tests)
+  - [Generated files](#generated-files)
+  - [Code standards for new modules](#code-standards-for-new-modules)
+  - [Notebooks](#notebooks)
+  - [Changelog](#changelog)
+  - [Commits](#commits)
+  - [Documentation and the docs site](#documentation-and-the-docs-site)
+  - [Release](#release)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Contributing to sdvplot

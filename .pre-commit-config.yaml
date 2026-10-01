@@ -37,6 +37,8 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
+        # Source data carries upstream mojibake (e.g. a team name); data is never rewritten.
+        exclude: ^(tests/fixtures/|data-raw/.*\.csv$|src/sdvplot/data/)
       - id: python-check-mock-methods
       - id: python-check-blanket-noqa
       - id: python-check-blanket-type-ignore
@@ -59,7 +61,7 @@ repos:
       - id: doctoc
         # Docusaurus pages carry YAML frontmatter that must stay first; the
         # CHANGELOG mirror under docs/src/ is a copy of the (already doctoc'd) root file.
-        exclude: ^(docs/(docs|versioned_docs|src)|\.claude)/
+        exclude: ^(docs/(docs|versioned_docs|src)|\.claude)/|^\.github/PULL_REQUEST_TEMPLATE\.md$
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.20.0
     hooks:

@@ -1,4 +1,13 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [sdvplot Copilot Instructions](#sdvplot-copilot-instructions)
+  - [Project Context](#project-context)
+  - [Repository Workflow](#repository-workflow)
+  - [Commit Convention](#commit-convention)
+  - [Code Style](#code-style)
+  - [Generated Files](#generated-files)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # sdvplot Copilot Instructions

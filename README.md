@@ -1,4 +1,14 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [sdvplot](#sdvplot)
+  - [Installation](#installation)
+  - [Get started](#get-started)
+  - [Environment variables](#environment-variables)
+  - [Documentation](#documentation)
+  - [Companion packages](#companion-packages)
+  - [Citations](#citations)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # sdvplot

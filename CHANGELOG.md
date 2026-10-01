@@ -1,4 +1,11 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Changelog](#changelog)
+  - [Unreleased](#unreleased)
+    - [Added — core (team identity, colors, logos, cache, adapter contract)](#added--core-team-identity-colors-logos-cache-adapter-contract)
+    - [Added — repository standards](#added--repository-standards)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Changelog
