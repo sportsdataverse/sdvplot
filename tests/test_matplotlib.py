@@ -199,3 +199,12 @@ def test_axis_logos_keep_a_configured_label_pad(mark_images):
         sdvplot.axis_logos(ax, "x", league="nfl", height=0.1)
     image_points = 0.1 * ax.bbox.height * 72 / ax.figure.dpi
     assert ax.xaxis.get_major_ticks()[0].get_pad() == pytest.approx(10 + 2 + image_points)
+
+
+def test_a_matplotlib_transform_places_logos_in_its_coordinates(mark_images):
+    ax = _axes()
+    sdvplot.add_logos(ax, [0.25], [0.75], ["LV"], league="nfl", transform=ax.transAxes)
+    ax.figure.canvas.draw()
+    ext = ax.artists[0].offsetbox.get_window_extent(ax.figure.canvas.get_renderer())
+    cx, cy = ax.transAxes.inverted().transform(((ext.x0 + ext.x1) / 2, (ext.y0 + ext.y1) / 2))
+    assert (cx, cy) == pytest.approx((0.25, 0.75), abs=1e-3)
