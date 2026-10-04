@@ -16,11 +16,12 @@ import sys
 import tempfile
 import warnings
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from os import PathLike
 from pathlib import Path
 from typing import Any
 
+import htmltools
 import narwhals as nw
 from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
@@ -400,3 +401,356 @@ def gt_save_batch(
     if not quiet:
         print(f"Wrote {len(paths)} file(s) to {dir}", file=sys.stderr)
     return paths
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Composition (sdvplotR's utils-style.R *_style lists and the shared header/footer)
+
+_STYLE_KEYS = (
+    "font",
+    "size",
+    "color",
+    "weight",
+    "italic",
+    "spacing",
+    "transform",
+    "align",
+    "line_height",
+    "margin_top",
+    "margin_bottom",
+    "padding_top",
+    "padding_bottom",
+)
+_CSS_PROPS = (
+    ("size", "font-size"),
+    ("color", "color"),
+    ("weight", "font-weight"),
+    ("spacing", "letter-spacing"),
+    ("transform", "text-transform"),
+    ("align", "text-align"),
+    ("line_height", "line-height"),
+    ("margin_top", "margin-top"),
+    ("margin_bottom", "margin-bottom"),
+    ("padding_top", "padding-top"),
+    ("padding_bottom", "padding-bottom"),
+)
+_LENGTHS = {"size", "spacing", "margin_top", "margin_bottom", "padding_top", "padding_bottom"}
+_FONT_FALLBACK = "system-ui, -apple-system, sans-serif"
+_STYLE_DEFAULTS: dict[str, dict[str, Any]] = {
+    "title": {"size": "28px", "weight": 700, "color": "#111111", "align": "center", "margin_bottom": 4},
+    "subtitle": {"size": "16px", "weight": 400, "color": "#666666", "align": "center", "margin_bottom": 12},
+    "caption": {"size": "12px", "weight": 400, "color": "#8A8A8A", "align": "center", "margin_top": 10},
+    "source_note": {"size": "12px", "weight": 400, "color": "#8A8A8A", "align": "right", "margin_top": 6},
+    "label": {"size": "12px", "weight": 600, "color": "#555555", "align": "left", "margin_bottom": 6},
+}
+
+
+def _style(kind: str, user: Mapping[str, Any] | None) -> dict[str, Any]:
+    user = dict(user or {})
+    unknown = sorted(set(user) - set(_STYLE_KEYS))
+    if unknown:
+        raise ValueError(f"{kind}_style has unknown key(s) {unknown}; recognized: {', '.join(_STYLE_KEYS)}")
+    return {**_STYLE_DEFAULTS[kind], **user}
+
+
+def _css_len(value: Any) -> str:
+    return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
+
+
+def _css(style: Mapping[str, Any]) -> str:
+    """A style dict -> inline CSS, in sdvplotR's .style_css() order; composed HTML always sets a font stack."""
+    font = style.get("font")
+    out = [f"font-family:'{font}', {_FONT_FALLBACK};" if font is not None else f"font-family:{_FONT_FALLBACK};"]
+    for key, prop in _CSS_PROPS:
+        value = style.get(key)
+        if value is not None:
+            out.append(f"{prop}:{_css_len(value) if key in _LENGTHS else value};")
+        if key == "weight" and style.get("italic") is True:
+            out.append("font-style:italic;")
+    return "".join(out)
+
+
+def _text(value: Any) -> htmltools.HTML:
+    """A title or caption: md() renders as markdown, html() and plain strings are HTML (as in sdvplotR)."""
+    return htmltools.HTML(value.to_html() if hasattr(value, "to_html") else str(value))
+
+
+def _font_link(styles: Sequence[Mapping[str, Any]]) -> htmltools.Tag | None:
+    """composed HTML never runs through great_tables' google_font(), so a named font is fetched here."""
+    fonts = list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
+    if not fonts:
+        return None
+    families = "&".join(f"family={f.replace(' ', '+')}:wght@100..900" for f in fonts)
+    return htmltools.tags.link(rel="stylesheet", href=f"https://fonts.googleapis.com/css2?{families}&display=swap")
+
+
+def _tables(tables: Any) -> list[GT]:
+    if isinstance(tables, GT):
+        raise TypeError("tables must be a list of GT objects; wrap a single table as [gt]")
+    items = [] if tables is None else list(tables.values()) if isinstance(tables, Mapping) else list(tables)
+    if not items:
+        raise ValueError("tables must be a non-empty list of GT objects")
+    bad = [i for i, t in enumerate(items) if not isinstance(t, GT)]
+    if bad:
+        raise TypeError(f"tables must contain only GT objects; item(s) {bad} are not")
+    return items
+
+
+def _table_html(gt: GT) -> htmltools.Tag:
+    return htmltools.div(htmltools.HTML(gt.as_raw_html()))
+
+
+def _compose(
+    body: htmltools.Tag,
+    *,
+    title: Any,
+    subtitle: Any,
+    caption: Any,
+    source_note: Any,
+    caption_rule: bool,
+    title_style: Mapping[str, Any] | None,
+    subtitle_style: Mapping[str, Any] | None,
+    caption_style: Mapping[str, Any] | None,
+    source_note_style: Mapping[str, Any] | None,
+    more_styles: Sequence[Mapping[str, Any]] = (),
+) -> htmltools.Tag:
+    """The shared heading and footer around a grid or stack, in a shrink-to-fit wrapper (sdvplotR's layout)."""
+    s_title, s_subtitle = _style("title", title_style), _style("subtitle", subtitle_style)
+    s_caption, s_source = _style("caption", caption_style), _style("source_note", source_note_style)
+    # with no subtitle the title carries the gap the subtitle would have held
+    if subtitle is None and "margin_bottom" not in (title_style or {}):
+        s_title["margin_bottom"] = _STYLE_DEFAULTS["subtitle"]["margin_bottom"]
+    if caption_rule and "padding_bottom" not in (caption_style or {}):
+        s_caption["padding_bottom"] = 6
+    link = _font_link([s_title, s_subtitle, s_caption, s_source, *more_styles])
+
+    has_header = title is not None or subtitle is not None
+    has_footer = caption is not None or source_note is not None
+    if not (has_header or has_footer):
+        return htmltools.div(link, body) if link is not None else body
+    rule = f"border-bottom:1px solid {s_caption['color']};" if caption_rule else ""
+    header = footer = None
+    if has_header:
+        header = htmltools.div(
+            htmltools.div(_text(title), style=_css(s_title)) if title is not None else None,
+            htmltools.div(_text(subtitle), style=_css(s_subtitle)) if subtitle is not None else None,
+        )
+    if has_footer:
+        footer = htmltools.div(
+            htmltools.div(_text(caption), style=_css(s_caption) + rule) if caption is not None else None,
+            htmltools.div(_text(source_note), style=_css(s_source)) if source_note is not None else None,
+        )
+    # inner wrapper shrinks to the tables, outer one recenters it; "safe" centering plus overflow-x keeps a sheet
+    # wider than a phone scrollable
+    return htmltools.div(
+        link,
+        htmltools.div(header, body, footer, style="display: inline-block;"),
+        style="display: flex; justify-content: center; justify-content: safe center; overflow-x: auto;",
+    )
+
+
+def _save_composed(
+    composed: htmltools.Tag, file: str | PathLike[str], bg: str, whitespace: int, zoom: float
+) -> str | PathLike[str]:
+    # the wrapper, not the page, is captured: it is bg on every edge, so trimming is even on all four sides
+    page = htmltools.div(
+        composed, id="sdvplot-page", style=f"display: inline-block; padding: 8px; background-color: {bg};"
+    )
+    html = f'<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>{page}</body></html>'
+    _pad(_trim(_render_html(html, zoom)), bg, whitespace).save(file, quality=_JPEG_QUALITY)
+    return file
+
+
+def gt_grid(
+    tables: Sequence[GT] | Mapping[Any, GT] | None = None,
+    ncol: int = 2,
+    labels: Any = None,
+    label_style: Mapping[str, Any] | None = None,
+    title: Any = None,
+    subtitle: Any = None,
+    caption: Any = None,
+    source_note: Any = None,
+    caption_rule: bool = False,
+    title_style: Mapping[str, Any] | None = None,
+    subtitle_style: Mapping[str, Any] | None = None,
+    caption_style: Mapping[str, Any] | None = None,
+    source_note_style: Mapping[str, Any] | None = None,
+    gap: float = 24,
+    align: str = "top",
+    file: str | PathLike[str] | None = None,
+    bg: str = "white",
+    whitespace: int = 50,
+    zoom: float = 2,
+) -> Any:
+    """Arrange several tables in a grid of rows and columns, as small multiples.
+
+    The grid is HTML, not a ``GT``: each table keeps its own columns and header, so this is a last step after every
+    table is themed. Give ``file`` to write it straight to an image.
+
+    Args:
+        tables: A list of ``GT`` objects (a dict's values are used in order, so ``gt_theme_preview()``'s dict works).
+        ncol: The number of tables across.
+        labels: A caption above each table, recycled across ``tables``: a string, ``md()``/``html()`` text, or a list
+            of them. Plain strings are HTML.
+        label_style: Style for the labels (see ``title_style``).
+        title: A heading above the whole grid (string, ``md()`` or ``html()``).
+        subtitle: A line below ``title``.
+        caption: A note below the grid.
+        source_note: A second line below ``caption``, right-aligned by default.
+        caption_rule: Draw a hairline between ``caption`` and ``source_note``.
+        title_style: A dict of any of ``font`` (a Google font name), ``size``, ``color``, ``weight``, ``italic``,
+            ``spacing``, ``transform``, ``align``, ``line_height``, ``margin_top``, ``margin_bottom``,
+            ``padding_top``, ``padding_bottom``. Lengths take a number (pixels) or a CSS string; keys left out keep
+            their defaults.
+        subtitle_style: As ``title_style``, for the subtitle.
+        caption_style: As ``title_style``, for the caption.
+        source_note_style: As ``title_style``, for the source note.
+        gap: The space between tables, in pixels.
+        align: How tables of differing height line up in a row: ``"top"``, ``"center"`` or ``"bottom"``.
+        file: A path to write an image to; ``None`` returns the HTML.
+        bg: The background color when saving.
+        whitespace: Padding, in pixels, around the grid when saving.
+        zoom: The rendering zoom when saving.
+
+    Returns:
+        htmltools.Tag | str | os.PathLike: The grid as HTML (it displays in a notebook), or ``file`` after writing it.
+
+    Raises:
+        TypeError: If ``tables`` holds anything but ``GT`` objects.
+        ValueError: If ``tables`` is empty, ``ncol`` is below 1, ``align`` or a style key is unknown, or (when saving)
+            ``bg``, ``whitespace`` or the extension of ``file`` is invalid.
+        nokap.ChromeNotFoundError: If saving and no Chrome or Chromium is installed.
+
+    Example:
+        ::
+
+            from sdvplot.great_tables import gt_grid
+
+            gt_grid([east, west, north, south], ncol=2, title="Division leaders", caption="Data: ESPN")
+            gt_grid([east, west], file="divisions.png", bg="#FBFAF7")
+
+    See Also:
+        gt_stack_tables: a vertical stack.
+        Ported from sdvplotR ``gt_grid()``: https://sdvplotR.sportsdataverse.org/reference/gt_grid.html
+    """
+    items = _tables(tables)
+    if isinstance(ncol, bool) or not isinstance(ncol, numbers.Integral) or ncol < 1:
+        raise ValueError(f"ncol must be an integer of at least 1, got {ncol!r}")
+    places = {"top": "start", "center": "center", "bottom": "end"}
+    if align not in places:
+        raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
+    s_label = _style("label", label_style)
+    pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
+
+    if labels is None:
+        cells = [_table_html(t) for t in items]
+    else:
+        labs = [labels] if isinstance(labels, str) or hasattr(labels, "to_html") else list(labels)
+        cells = [
+            htmltools.div(htmltools.div(_text(labs[i % len(labs)]), style=_css(s_label)), _table_html(t))
+            for i, t in enumerate(items)
+        ]
+    grid = htmltools.div(
+        *cells,
+        style=f"display: grid; grid-template-columns: repeat({ncol}, max-content); gap: {gap}px; "
+        f"align-items: {places[align]}; justify-content: center;",
+    )
+    composed = _compose(
+        grid,
+        title=title,
+        subtitle=subtitle,
+        caption=caption,
+        source_note=source_note,
+        caption_rule=caption_rule,
+        title_style=title_style,
+        subtitle_style=subtitle_style,
+        caption_style=caption_style,
+        source_note_style=source_note_style,
+        more_styles=[s_label] if labels is not None else [],
+    )
+    return composed if file is None else _save_composed(composed, file, bg, pad, zoom)
+
+
+def gt_stack_tables(
+    tables: Sequence[GT] | Mapping[Any, GT] | None = None,
+    gap: float = 16,
+    align: str = "center",
+    title: Any = None,
+    subtitle: Any = None,
+    caption: Any = None,
+    source_note: Any = None,
+    caption_rule: bool = False,
+    title_style: Mapping[str, Any] | None = None,
+    subtitle_style: Mapping[str, Any] | None = None,
+    caption_style: Mapping[str, Any] | None = None,
+    source_note_style: Mapping[str, Any] | None = None,
+    file: str | PathLike[str] | None = None,
+    bg: str = "white",
+    whitespace: int = 50,
+    zoom: float = 2,
+) -> Any:
+    """Stack several tables vertically in one block, with an optional shared heading and footer.
+
+    The stack is HTML, not a ``GT``: each table keeps its own columns, widths and header. Give ``file`` to write it
+    straight to an image.
+
+    Args:
+        tables: A list of ``GT`` objects (a dict's values are used in order).
+        gap: The space between tables, in pixels.
+        align: How tables of differing width line up: ``"center"``, ``"left"`` or ``"right"``.
+        title: A heading above the stack (string, ``md()`` or ``html()``).
+        subtitle: A line below ``title``.
+        caption: A note below the stack.
+        source_note: A second line below ``caption``, right-aligned by default.
+        caption_rule: Draw a hairline between ``caption`` and ``source_note``.
+        title_style: A style dict, with the keys of ``gt_grid``'s ``title_style``.
+        subtitle_style: As ``title_style``, for the subtitle.
+        caption_style: As ``title_style``, for the caption.
+        source_note_style: As ``title_style``, for the source note.
+        file: A path to write an image to; ``None`` returns the HTML.
+        bg: The background color when saving.
+        whitespace: Padding, in pixels, around the stack when saving.
+        zoom: The rendering zoom when saving.
+
+    Returns:
+        htmltools.Tag | str | os.PathLike: The stack as HTML (it displays in a notebook), or ``file`` after writing it.
+
+    Raises:
+        TypeError: If ``tables`` holds anything but ``GT`` objects.
+        ValueError: If ``tables`` is empty, ``align`` or a style key is unknown, or (when saving) ``bg``,
+            ``whitespace`` or the extension of ``file`` is invalid.
+        nokap.ChromeNotFoundError: If saving and no Chrome or Chromium is installed.
+
+    Example:
+        ::
+
+            from sdvplot.great_tables import gt_stack_tables
+
+            gt_stack_tables([offense, defense], title="Two tables", title_style={"font": "Oswald", "size": 30})
+
+    See Also:
+        gt_grid: tables side by side.
+        Ported from sdvplotR ``gt_stack_tables()``: https://sdvplotR.sportsdataverse.org/reference/gt_stack_tables.html
+    """
+    items = _tables(tables)
+    places = {"left": "flex-start", "center": "center", "right": "flex-end"}
+    if align not in places:
+        raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
+    pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
+    stack = htmltools.div(
+        *[_table_html(t) for t in items],
+        style=f"display: flex; flex-direction: column; gap: {gap}px; align-items: {places[align]};",
+    )
+    composed = _compose(
+        stack,
+        title=title,
+        subtitle=subtitle,
+        caption=caption,
+        source_note=source_note,
+        caption_rule=caption_rule,
+        title_style=title_style,
+        subtitle_style=subtitle_style,
+        caption_style=caption_style,
+        source_note_style=source_note_style,
+    )
+    return composed if file is None else _save_composed(composed, file, bg, pad, zoom)
