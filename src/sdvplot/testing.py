@@ -34,6 +34,24 @@ coordinates that are not row positions (x=[10, 20], y=[-3, -7]) so swapped, shar
 7. Axis logos: known team categories become images in tick order, an unknown one warns and stays readable text;
    or, without axis support, axis_logos raises TypeError.
 8. Alpha: alpha outside [0, 1] raises ValueError.
+
+Table adapters (great_tables) have rows, columns and pixel heights instead, so they get their own harness,
+check_table_adapter_contract(), with rules T0-T6 (messages start with "rule T<n>"). A table adapter's add_* take
+(table, columns, *, league, height=<pixels>) and return the new table, and it exposes two hooks:
+
+    drawn_cells(table) -> list[tuple]   # (team_id, row, column, height_px[, src]) per image, in display order
+    rendered_html(table) -> str         # the table as it renders
+
+In drawn_cells, row is the 0-based display row of a body cell and -1 for a column label.
+
+T0. Registration: the front door routes the table to this adapter.
+T1. Resolution: a column ["LV", "LAR"] renders both teams' canonical ids at rows 0 and 1 (and their own marks).
+T2. Warn and keep: ["XXX", "LV"] renders LV at row 1, keeps "XXX" as text, warns once when called and never when
+    rendered; all-unknown input renders no image.
+T3. pandas/polars parity: a pandas frame with a non-default index renders the same cells as a polars frame.
+T4. Height: height=24 is 24 px on every image; 0, negative and non-numeric heights raise ValueError.
+T5. Wordmarks: add_wordmarks satisfies T1-T4.
+T6. Headshots: add_headshots satisfies T1-T4 for player ids.
 """
 
 from __future__ import annotations
@@ -259,3 +277,141 @@ def check_adapter_contract(
             pass
         else:
             _fail(r8, f"alpha={bad} must raise ValueError (alpha is an opacity in [0, 1])")
+
+
+def _table_call(
+    adapter: ModuleType, verb: str, make_table: Callable[[Any], Any], rule: str, frame: Any, **kw: Any
+) -> tuple[list[tuple[Any, ...]], int, int, str]:
+    """Run adapter.<verb> on the "team" column of a table built from frame; return (cells, warnings when called,
+    warnings when rendered, rendered html). A raise becomes a named AssertionError."""
+    t = make_table(frame)
+    with warnings.catch_warnings(record=True) as called:
+        warnings.simplefilter("always")
+        try:
+            out = getattr(adapter, verb)(t, "team", **kw)
+        except Exception as e:  # noqa: BLE001
+            raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
+    drawn = t if out is None else out
+    with warnings.catch_warnings(record=True) as rendered:
+        warnings.simplefilter("always")
+        cells = [tuple(c) for c in adapter.drawn_cells(drawn)]
+        text = adapter.rendered_html(drawn)
+    count = sum(issubclass(w.category, SdvplotWarning) for w in called)
+    late = sum(issubclass(w.category, SdvplotWarning) for w in rendered)
+    return cells, count, late, text
+
+
+def _check_table_verb(
+    adapter: ModuleType,
+    verb: str,
+    make_table: Callable[[Any], Any],
+    league: str,
+    pair: Sequence[str],
+    ids: Sequence[str],
+    unknown: str,
+    urls: dict[str, Callable[[], str | None]],
+    rules: tuple[str, str, str, str],
+) -> None:
+    """Rules T1-T4 (named by ``rules``) for one verb."""
+    import pandas as pd
+    import polars as pl
+
+    r1, r2, r3, r4 = rules
+    a, b = pair
+    want = [(ids[0], 0, "team"), (ids[1], 1, "team")]
+
+    cells, _, _, _ = _table_call(adapter, verb, make_table, r1, pl.DataFrame({"team": [a, b], "v": [1, 2]}),
+                                 league=league)  # fmt: skip
+    if [c[:3] for c in cells] != want:
+        _fail(r1, f"expected cells {want}, rendered {[c[:3] for c in cells]}")
+    _check_urls(r1, cells, urls)
+
+    frame = pl.DataFrame({"team": [unknown, a], "v": [1, 2]})
+    cells, count, late, text = _table_call(adapter, verb, make_table, r2, frame, league=league)
+    if [c[:3] for c in cells] != [(ids[0], 1, "team")]:
+        _fail(r2, f"expected only [({ids[0]!r}, 1, 'team')], rendered {[c[:3] for c in cells]}")
+    if count != 1:
+        _fail(r2, f"an unknown value must warn exactly once when called, warned {count} times")
+    if late:
+        _fail(r2, "rendering must not warn: unknown values are reported when the function is called")
+    if unknown not in text:
+        _fail(r2, f"an unknown value must stay as text, {unknown!r} is not in the rendered table")
+    frame = pl.DataFrame({"team": [unknown, unknown + "2"], "v": [1, 2]})
+    cells, count, _, _ = _table_call(adapter, verb, make_table, r2, frame, league=league)
+    if cells or not count:
+        _fail(r2, f"all-unknown input must render no image and warn, rendered {cells}")
+
+    pcells, _, _, _ = _table_call(adapter, verb, make_table, r3,
+                                  pd.DataFrame({"team": [a, b], "v": [1, 2]}, index=[5, 6]), league=league)  # fmt: skip
+    lcells, _, _, _ = _table_call(adapter, verb, make_table, r3, pl.DataFrame({"team": [a, b], "v": [1, 2]}),
+                                  league=league)  # fmt: skip
+    if pcells != lcells or [c[:3] for c in lcells] != want:
+        _fail(r3, f"pandas (index [5, 6]) rendered {pcells}, polars rendered {lcells}, expected {want}")
+
+    cells, _, _, _ = _table_call(adapter, verb, make_table, r4, pl.DataFrame({"team": [a, b]}), league=league,
+                                 height=24)  # fmt: skip
+    if len(cells) != 2 or not all(math.isclose(c[3], 24) for c in cells):
+        _fail(r4, f"height=24 must be 24 px on every image, rendered heights {[c[3] for c in cells]}")
+    for bad in (0, -5, "30px"):
+        try:
+            getattr(adapter, verb)(make_table(pl.DataFrame({"team": [a]})), "team", league=league, height=bad)
+        except ValueError:
+            pass
+        else:
+            _fail(r4, f"height={bad!r} must raise ValueError (height is a number of pixels > 0)")
+
+
+def check_table_adapter_contract(
+    adapter: ModuleType,
+    make_table: Callable[[Any], Any],
+    *,
+    league: str = "nfl",
+    known: tuple[str, str] = ("LV", "LAR"),
+    known_wordmarks: tuple[str, str] = ("LV", "LAC"),
+    players: tuple[str, str] = ("3139477", "4241479"),
+) -> None:
+    """Raise an AssertionError naming the broken rule (T0-T6) if a table adapter breaks the table contract.
+
+    ``make_table(frame)`` builds the adapter's table from a pandas or polars DataFrame (for great_tables: ``GT``).
+    The rules and hooks are in this module's docstring.
+    """
+    import polars as pl
+
+    from sdvplot._dispatch import adapter_for
+    from sdvplot._headshots import headshot_url
+    from sdvplot._marks import logo_url
+
+    r0 = "rule T0 (registration)"
+    try:
+        routed = adapter_for(make_table(pl.DataFrame({"team": list(known)})))
+    except Exception as e:  # noqa: BLE001
+        raise AssertionError(f"{r0}: sdvplot cannot route this table: {e!r}") from e
+    if routed is not adapter:
+        _fail(r0, f"sdvplot routes this table to {routed.__name__}, not {adapter.__name__}")
+
+    a, b = known
+    ids = resolve([a, b], league)
+    _check_table_verb(
+        adapter, "add_logos", make_table, league, known, ids, "XXX",
+        {ids[0]: lambda: logo_url(a, league), ids[1]: lambda: logo_url(b, league)},
+        ("rule T1 (resolution)", "rule T2 (unknown value: warn and keep)", "rule T3 (pandas/polars parity)",
+         "rule T4 (height in pixels)"),
+    )  # fmt: skip
+
+    wa, wb = known_wordmarks
+    wids = resolve([wa, wb], league)
+    _check_table_verb(
+        adapter, "add_wordmarks", make_table, league, known_wordmarks, wids, "XXX",
+        {wids[0]: lambda: logo_url(wa, league, mark_type="wordmark"),
+         wids[1]: lambda: logo_url(wb, league, mark_type="wordmark")},
+        ("rule T5 (wordmarks: resolution)", "rule T5 (wordmarks: warn and keep)", "rule T5 (wordmarks: parity)",
+         "rule T5 (wordmarks: height)"),
+    )  # fmt: skip
+
+    p, q = players
+    _check_table_verb(
+        adapter, "add_headshots", make_table, league, players, players, "not-an-id",
+        {p: lambda: headshot_url(p, league), q: lambda: headshot_url(q, league)},
+        ("rule T6 (headshots: resolution)", "rule T6 (headshots: warn and keep)", "rule T6 (headshots: parity)",
+         "rule T6 (headshots: height)"),
+    )  # fmt: skip

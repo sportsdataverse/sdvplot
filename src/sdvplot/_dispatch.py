@@ -229,6 +229,7 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
 register_adapter(Adapter("matplotlib", "matplotlib", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("seaborn", "seaborn", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("plotnine", "plotnine", "sdvplot.plotnine", "plotnine"))
+register_adapter(Adapter("great_tables", "great_tables", "sdvplot.great_tables", "tables"))
 register_adapter(Adapter("plotly", "plotly", "sdvplot.plotly", "plotly"))
 register_adapter(Adapter("altair", "altair", "sdvplot.altair", "altair"))
 register_adapter(Adapter("bokeh", "bokeh", "sdvplot.bokeh", "bokeh"))
