@@ -1,5 +1,6 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
+import hashlib
 from pathlib import Path
 
 import polars as pl
@@ -263,3 +264,42 @@ def manifest(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, FIXTURE.read_bytes(), {"ETag": '"m1"'})))
     _manifest._read.cache_clear()
     return _manifest.load_manifest()
+
+
+def seed_image(path, size=(50, 50), color=(200, 30, 40, 255)):
+    """Write a solid PNG at path (a cache location), so the code under test finds it without downloading."""
+    from PIL import Image
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGBA", size, color).save(path, format="PNG")
+    return path
+
+
+@pytest.fixture
+def mark_images(manifest, cache):
+    """Every fixture-manifest mark as a cached PNG, 1/10 of the manifest's width and height (so aspect ratios hold)."""
+    rows = pl.read_csv(FIXTURE, schema_overrides={"entity_id": pl.Utf8})
+    for sha, ext, w, h in rows.select("sha256", "ext", "width", "height").iter_rows():
+        tint = hashlib.md5(sha.encode()).digest()[:3]  # a color per mark, so a swapped logo shows in baselines
+        seed_image(cache / "images" / sha[:2] / f"{sha}.{ext}", size=(w // 10, h // 10), color=(*tint, 255))
+    return cache
+
+
+PLAYERS = ("3139477", "4241479")  # ESPN athlete ids used by the headshot tests
+
+
+@pytest.fixture
+def headshot_images(cache):
+    """The PLAYERS' NFL headshots as cached, fresh PNGs (4:3, like ESPN's), so add_headshots never downloads."""
+    import hashlib
+    import json
+    import time
+
+    from sdvplot._headshots import headshot_url
+
+    for pid in PLAYERS:
+        url = headshot_url(pid, "nfl")
+        key = hashlib.sha256(url.encode()).hexdigest()
+        path = seed_image(cache / "urlimages" / key[:2] / key, size=(40, 30))
+        _cache._meta_path(path).write_text(json.dumps({"fetched_at": time.time()}))
+    return cache
