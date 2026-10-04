@@ -39,7 +39,8 @@ holoviews = ["holoviews>=1.18"]
 tables = ["great_tables>=0.10"]
 folium = ["folium>=0.15"]
 surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
-all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,folium,surfaces]"]
+plottable = ["plottable>=0.1.5"]
+all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,folium,surfaces,plottable]"]
 
 [project.urls]
 Homepage = "https://sdvplot.sportsdataverse.org/"

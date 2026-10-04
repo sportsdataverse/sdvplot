@@ -3202,6 +3202,25 @@ wheels = [
 ]
 
 [[package]]
+name = "plottable"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pandas", version = "3.0.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/3e/15137d0dde8eb6721d2a42b8d45359f37c2fc76dd688903d04c6bdbf43c7/plottable-0.1.5.tar.gz", hash = "sha256:235d762a31c82129dc5bf74205c103a14b1e4393d0f921cc0231be5de884041d", size = 21616, upload-time = "2022-11-13T09:31:08.981Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/cf/23ea4b6f9460312604ed67b74e7db3e702fcaefc04743224ef1cdda663f4/plottable-0.1.5-py3-none-any.whl", hash = "sha256:5c5d1128d90065fc940e5c8445b2603d253909745bb0cee0c9828651b812441c", size = 24734, upload-time = "2022-11-13T09:31:01.102Z" },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4255,6 +4274,7 @@ all = [
     { name = "mplsoccer" },
     { name = "plotly" },
     { name = "plotnine" },
+    { name = "plottable" },
     { name = "resvg-py" },
     { name = "sportypy" },
 ]
@@ -4280,6 +4300,9 @@ plotly = [
 ]
 plotnine = [
     { name = "plotnine" },
+]
+plottable = [
+    { name = "plottable" },
 ]
 surfaces = [
     { name = "mplsoccer" },
@@ -4365,13 +4388,14 @@ requires-dist = [
     { name = "platformdirs", specifier = ">=4" },
     { name = "plotly", marker = "extra == 'plotly'", specifier = ">=5" },
     { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.15" },
+    { name = "plottable", marker = "extra == 'plottable'", specifier = ">=0.1.5" },
     { name = "polars", specifier = ">=1.0,<2" },
     { name = "requests", specifier = ">=2.31" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2" },
-    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces"], marker = "extra == 'all'" },
+    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "plottable"], marker = "extra == 'all'" },
     { name = "sportypy", marker = "extra == 'surfaces'", specifier = ">=1.0" },
 ]
-provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "all"]
+provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "plottable", "all"]
 
 [package.metadata.requires-dev]
 dev = [

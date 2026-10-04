@@ -1,0 +1,86 @@
+"""plottable columns of team logos, wordmarks and player headshots."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from plottable import ColumnDefinition
+
+from sdvplot._placement import place
+from sdvplot.matplotlib import _image
+
+
+def _cell(kind: str, league: str, season: Any, variant: str, id_system: str) -> Any:
+    def draw(ax: Any, value: Any, **_: Any) -> None:
+        ax.set_axis_off()
+        placements = place([0.0], [0.0], [value], league=league, season=season, kind=kind, variant=variant,
+                           id_system=id_system)  # fmt: skip
+        if placements:
+            ax.imshow(_image(placements[0]))
+            ax.set_aspect("equal")
+            ax._sdvplot_cell = placements[0].team_id
+
+    return draw
+
+
+def logo_column(
+    name: str,
+    *,
+    league: str,
+    season: Any = None,
+    variant: str = "default",
+    mark_type: str = "logo",
+    id_system: str = "auto",
+    **column_definition_kwargs: Any,
+) -> ColumnDefinition:
+    """A plottable column that shows each row's team as its logo (or wordmark).
+
+    Args:
+        name: The data column holding the teams.
+        league: The SDV league key, e.g. "nfl".
+        season: One season for every row.
+        variant: "default", "dark", or a named variant from ``marks()``.
+        mark_type: "logo" or "wordmark".
+        id_system: The id system of the column's values.
+        **column_definition_kwargs: Passed to ``plottable.ColumnDefinition`` (``title``, ``width``, ``group``, ...).
+
+    Returns:
+        plottable.ColumnDefinition: The column definition; an unknown team leaves its cell blank, with an
+        SdvplotWarning.
+
+    Example:
+        ::
+
+            from plottable import Table
+            from sdvplot.plottable import logo_column
+
+            Table(df, column_definitions=[logo_column("team", league="nfl", title="")])
+
+    See Also:
+        plottable: https://plottable.readthedocs.io/
+    """
+    draw = _cell(mark_type, league, season, variant, id_system)
+    return ColumnDefinition(name=name, plot_fn=draw, **column_definition_kwargs)
+
+
+def headshot_column(
+    name: str, *, league: str, id_system: str = "espn", **column_definition_kwargs: Any
+) -> ColumnDefinition:
+    """A plottable column that shows each row's player as a headshot.
+
+    Args:
+        name: The data column holding the player ids.
+        league: The SDV league key, e.g. "nfl".
+        id_system: "espn" or "gsis" (NFL), as in ``headshot_url``.
+        **column_definition_kwargs: Passed to ``plottable.ColumnDefinition``.
+
+    Returns:
+        plottable.ColumnDefinition: The column definition; an unknown id leaves its cell blank, with an SdvplotWarning.
+
+    Example:
+        ::
+
+            Table(df, column_definitions=[headshot_column("espn_id", league="nfl", title="")])
+    """
+    draw = _cell("headshot", league, None, "default", id_system)
+    return ColumnDefinition(name=name, plot_fn=draw, **column_definition_kwargs)
