@@ -38,6 +38,8 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_placement.py` | `Placement`, `place`, `check_height`, `check_alpha`: the step every adapter shares |
 | `_contrast.py` | WCAG contrast and readable ink (surfaces, table themes) |
 | `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
+| `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `image_src`, `image_sources`: what the web adapters share |
+| `plotly.py`, `altair.py`, `bokeh.py`, `holoviews.py`, `folium.py` | the web adapters (public submodules) |
 | `_surface.py` | `surface` (sportypy) |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
@@ -90,6 +92,8 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 - The `real_index` marker runs a test against the shipped index instead of the hand-written fixture
   (`tests/conftest.py`).
 - `filterwarnings` turns `SdvplotWarning` into errors in tests; assert expected warnings with `pytest.warns`.
+- The `render` marker renders Plotly (kaleido, needs Chrome) and Altair (vl-convert) and measures pixels;
+  `SDVPLOT_RENDER_TESTS=1` makes a missing Chrome fail instead of skip.
 
 ## Docstring standard
 

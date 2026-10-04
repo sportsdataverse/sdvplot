@@ -41,3 +41,13 @@
 - `surface()`: sportypy playing surfaces in team colors, the port of sdvplotR's `sdv_surface()`.
 - plottable `logo_column` and `headshot_column` (`sdvplot.plottable`, new `[plottable]` extra).
 - The adapter contract (`sdvplot.testing`) now covers wordmarks, headshots, axis logos and alpha (rules 0-8).
+
+### Added — web family
+
+- `add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` work on Plotly figures (`sdvplot.plotly`; sdvplot
+  pins the axis ranges so `height` is a fraction of the plot area) and Altair charts (`sdvplot.altair`, plus the
+  native `logo_layer`).
+- `add_logos`, `add_wordmarks` and `add_headshots` on Bokeh figures (`sdvplot.bokeh`), HoloViews elements through a
+  Bokeh plot hook (`sdvplot.holoviews`) and Folium maps (`sdvplot.folium`, `x` longitude and `y` latitude).
+- `embed=True` inlines the images as data URIs, for HTML that renders offline and for static export.
+- The `[holoviews]` extra now installs Bokeh 3 as well.
