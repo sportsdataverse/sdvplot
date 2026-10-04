@@ -4364,7 +4364,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=10" },
     { name = "platformdirs", specifier = ">=4" },
     { name = "plotly", marker = "extra == 'plotly'", specifier = ">=5" },
-    { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.13" },
+    { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.15" },
     { name = "polars", specifier = ">=1.0,<2" },
     { name = "requests", specifier = ">=2.31" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2" },

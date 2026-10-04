@@ -31,7 +31,7 @@ dependencies = [
 [project.optional-dependencies]
 svg = ["resvg-py>=0.2"]
 mpl = ["matplotlib>=3.7"]
-plotnine = ["plotnine>=0.13"]
+plotnine = ["plotnine>=0.15"]
 plotly = ["plotly>=5"]
 altair = ["altair>=5"]
 bokeh = ["bokeh>=3"]

@@ -229,3 +229,4 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
 # The adapters sdvplot ships. Registering imports nothing: the adapter module loads on first use.
 register_adapter(Adapter("matplotlib", "matplotlib", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("seaborn", "seaborn", "sdvplot.matplotlib", "mpl"))
+register_adapter(Adapter("plotnine", "plotnine", "sdvplot.plotnine", "plotnine"))
