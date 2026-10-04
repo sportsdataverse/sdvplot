@@ -26,7 +26,13 @@ def _figure(target: Any) -> Any:
 
 def reference_height(fig: Any) -> float:
     """The pixel height ``height`` is a fraction of: ``frame_height`` when set, else the figure's ``height``."""
-    return float(fig.frame_height or fig.height)
+    h = fig.frame_height or fig.height
+    if not h:  # a responsive figure (e.g. a HoloViews plot with responsive=True) has neither
+        raise ValueError(
+            "sdvplot sizes images from the figure's pixel height, but it has none; set frame_height (or height), "
+            "e.g. figure(frame_height=400) or .opts(frame_height=400) in HoloViews"
+        )
+    return float(h)
 
 
 def draw(fig: Any, placements: list[Placement], sources: list[str], *, kind: str, height: float, alpha: float) -> Any:
@@ -107,7 +113,8 @@ def add_logos(
         object: ``target`` itself, with one ``image_url`` renderer named ``sdvplot_logo`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
+            pixel height (neither ``frame_height`` nor ``height`` is set).
         TypeError: If ``target`` is not a Bokeh figure.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
@@ -164,7 +171,8 @@ def add_wordmarks(
         object: ``target`` itself, with one renderer named ``sdvplot_wordmark`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
+            pixel height (neither ``frame_height`` nor ``height`` is set).
         TypeError: If ``target`` is not a Bokeh figure.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
@@ -216,7 +224,8 @@ def add_headshots(
         object: ``target`` itself, with one renderer named ``sdvplot_headshot`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
+            pixel height (neither ``frame_height`` nor ``height`` is set).
         TypeError: If ``target`` is not a Bokeh figure.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 

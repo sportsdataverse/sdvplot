@@ -56,6 +56,23 @@ def _vals(trace: Any, letter: str) -> list[Any]:
     return [] if values is None else [v for v in values if v is not None]
 
 
+def _column(trace: Any, letter: str) -> list[Any]:
+    """A trace's x or y values point by point; without them, where Plotly draws it: x0 + i * dx (y0 + i * dy)."""
+    values = getattr(trace, letter)
+    if values is not None:
+        return list(values)
+    other = getattr(trace, "y" if letter == "x" else "x")
+    start, step = getattr(trace, f"{letter}0"), getattr(trace, f"d{letter}")
+    return [(start or 0) + i * (1 if step is None else step) for i in range(0 if other is None else len(other))]
+
+
+def _unmeasurable(what: str, ref: str, letter: str) -> ValueError:
+    return ValueError(
+        f"cannot work out the {ref} range of {what}; set it first, "
+        f"e.g. fig.update_{letter}axes(range=[lo, hi]), then add the marks"
+    )
+
+
 def _value_kind(v: Any) -> str:
     if isinstance(v, str):
         try:
@@ -105,22 +122,42 @@ def _categories(fig: go.Figure, letter: str, ref: str) -> list[Any]:
 def _extent(fig: go.Figure, letter: str, ref: str, coords: list[float], index: dict[Any, int] | None) -> list[float]:
     """Every coordinate the axis' traces span, plus the new marks: the data Plotly's autorange would fit."""
     out = list(coords)
+    across = "y" if letter == "x" else "x"
+    stacked = fig.layout.barmode in ("stack", "relative")
+    ends: dict[tuple[Any, ...], float] = {}  # where each bar stack ends so far: Plotly stacks bars in trace order
+    filled: set[tuple[str, str]] = set()  # subplots that already have a scatter trace, for fill="tonext..."
     for t in _traces(fig, letter, ref):
         if t.type not in _READABLE:
-            raise ValueError(
-                f"cannot work out the {ref} range of a {t.type} trace; set it first, "
-                f"e.g. fig.update_{letter}axes(range=[lo, hi]), then add the marks"
-            )
-        values = _vals(t, letter)
-        nums = [index[v] for v in values if v in index] if index is not None else [float(v) for v in values]
-        out += nums
-        value_axis = "x" if t.type == "bar" and t.orientation == "h" else "y"
-        if (t.type == "bar" and letter == value_axis) or (t.type != "bar" and t.fill == f"tozero{letter}"):
-            out.append(0.0)  # bars and filled areas start at zero
-        elif t.type == "bar" and index is None and nums:  # a bar is as wide as the gap between bars
-            spots = sorted(set(nums))
+            raise _unmeasurable(f"a {t.type} trace", ref, letter)
+        subplot = (t.xaxis or "x", t.yaxis or "y")
+        along = letter == ("x" if getattr(t, "orientation", None) == "h" else "y")  # bar lengths and stacks run along
+        nums: list[float | None]
+        if index is not None and getattr(t, letter) is not None:
+            nums = [index.get(v) for v in _column(t, letter)]
+        else:  # numbers; a trace without values sits at Plotly's default positions (on a category axis, as indices)
+            nums = [None if v is None else float(v) for v in _column(t, letter)]
+        if t.type == "bar" and along:
+            if t.base is not None or fig.layout.barnorm or (stacked and t.offsetgroup):
+                raise _unmeasurable("bars with a base, barnorm or stacked offsetgroups", ref, letter)
+            out.append(0.0)  # bars start at zero
+            if stacked:  # a bar starts where the stack at its position ends ("relative": one stack per sign)
+                for p, v in zip(_column(t, across), nums, strict=False):
+                    if v is not None and not math.isnan(v):
+                        key = (subplot, p, fig.layout.barmode == "relative" and v < 0)
+                        ends[key] = ends.get(key, 0.0) + v
+                        out.append(ends[key])
+                continue
+        out += [v for v in nums if v is not None]
+        if t.type == "bar" and index is None and not along:  # a bar is as wide as the gap between bars
+            spots = sorted({v for v in nums if v is not None})
             half = min((b - a for a, b in zip(spots, spots[1:], strict=False)), default=1.0) / 2
-            out += [spots[0] - half, spots[-1] + half]
+            out += [spots[0] - half, spots[-1] + half] if spots else []
+        elif t.type != "bar":
+            if getattr(t, "stackgroup", None) and along:
+                raise _unmeasurable("stacked scatter traces (stackgroup)", ref, letter)
+            if t.fill == f"tozero{letter}" or (t.fill == f"tonext{letter}" and subplot not in filled):
+                out.append(0.0)  # a filled area from zero; "tonext" fills to zero when no trace comes before it
+            filled.add(subplot)
     if index is not None:
         out += [-0.5, len(index) - 0.5]  # a category axis shows every category's band
     return [v for v in out if not math.isnan(v)]
@@ -228,10 +265,10 @@ def add_logos(
 ) -> Any:
     """Draw each team's logo centred on its (x, y) point of a Plotly figure, as layout images.
 
-    Call it after adding the traces: an axis range that is not set is worked out from the scatter and bar traces and
-    the new points, with half a logo of room at each end (Plotly clips images at the plot edge), and pinned, because a
-    data-placed image is sized in axis units. The logos then zoom with the data. Linear and category axes are
-    supported (a category is placed at its index).
+    Call it after adding the traces: an axis range that is not set is worked out from the scatter and bar traces
+    (stacked bars included) and the new points, with half a logo of room at each end (Plotly clips images at the plot
+    edge), and pinned, because a data-placed image is sized in axis units. The logos then zoom with the data. Linear
+    and category axes are supported (a category is placed at its index).
 
     Args:
         target: A ``plotly.graph_objects.Figure`` (or ``FigureWidget``).
@@ -255,7 +292,8 @@ def add_logos(
 
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, an axis is a log or date
-            axis, or the range must be worked out from a trace type other than scatter or bar (set the range first).
+            axis, or the range must be worked out from a trace type other than scatter or bar, stacked scatter traces
+            (``stackgroup``), or bars with a ``base``, ``barnorm`` or stacked ``offsetgroup`` (set the range first).
         TypeError: If the target is not a Plotly ``Figure``.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 

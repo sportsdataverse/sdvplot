@@ -73,7 +73,9 @@ def add_logos(
     """Draw each team's logo centred on its (x, y) point of a HoloViews element (Bokeh backend).
 
     Returns a copy of the element with a Bokeh plot hook; the logos appear when it renders (``hv.render``, a notebook,
-    ``hv.save``). Sizing is the Bokeh adapter's: a fraction of the plot's ``frame_height`` when set, else its height.
+    ``hv.save``). Sizing is the Bokeh adapter's: a fraction of the plot's ``frame_height`` when set, else its height;
+    a responsive plot has neither, so give it a ``frame_height`` (without one, HoloViews logs the hook's ValueError and
+    draws no marks).
 
     Args:
         element: A HoloViews element or overlay (``hv.Scatter``, ``hv.Points * hv.Curve``, ...).

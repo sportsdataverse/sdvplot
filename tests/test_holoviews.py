@@ -52,6 +52,13 @@ def test_warnings_come_at_call_time_not_at_render_time(mark_images):
         assert [m[0] for m in shv.drawn_marks(out)] == ["13"]
 
 
+def test_a_responsive_plot_without_a_frame_height_says_to_set_one(mark_images, caplog):
+    out = sdvplot.add_logos(hv.Scatter([(0, -10), (30, 0)]).opts(responsive=True), [10], [-3], ["LV"], league="nfl")
+    fig = hv.render(out, backend="bokeh")  # HoloViews logs a plot hook's error instead of raising it
+    assert "set frame_height (or height)" in caplog.text
+    assert not [r for r in fig.renderers if (r.name or "").startswith("sdvplot_")]
+
+
 def test_a_backend_other_than_bokeh_is_a_type_error(mark_images):
     pytest.importorskip("matplotlib")
     import holoviews.plotting.mpl  # noqa: F401

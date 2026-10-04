@@ -70,6 +70,73 @@ def test_a_bar_chart_keeps_zero_and_whole_bars_in_the_pinned_ranges(mark_images)
     assert lo < 0.5 and hi > 3.5  # numeric bars are as wide as the gap between them
 
 
+@pytest.mark.parametrize("barmode", ["stack", "relative"])
+def test_stacked_bars_keep_every_whole_stack_in_the_pinned_range(mark_images, barmode):
+    # px.bar's default: barmode="relative", and rows at the same x stack, within a trace and across traces
+    fig = go.Figure([go.Bar(x=["a", "a", "b"], y=[5, 5, -5]), go.Bar(x=["a", "b"], y=[5, -5])])
+    fig.update_layout(barmode=barmode)
+    sdvplot.add_logos(fig, ["a"], [2], ["LV"], league="nfl")
+    lo, hi = fig.layout.yaxis.range
+    assert lo <= -10 and hi >= 15  # no single bar reaches past 5, the stacks reach -10 and 15
+
+
+def test_relative_bars_stack_each_sign_on_its_own(mark_images):
+    def fig(barmode):
+        f = go.Figure([go.Bar(x=["a"], y=[5]), go.Bar(x=["a"], y=[-3]), go.Bar(x=["a"], y=[5])])
+        f.update_layout(barmode=barmode)
+        sdvplot.add_logos(f, ["a"], [1], ["LV"], league="nfl")
+        return f.layout.yaxis.range
+
+    lo, hi = fig("relative")
+    assert lo <= -3 and hi >= 10  # 5 + 5 above zero, -3 below
+    lo, hi = fig("stack")
+    assert -3 < lo <= 0 and 7 <= hi < 10  # 5, then 5 - 3 = 2, then 2 + 5 = 7
+
+
+@pytest.mark.parametrize(
+    ("traces", "layout", "what"),
+    [
+        ([go.Bar(x=["a"], y=[5], base=[2])], {}, "base"),
+        ([go.Bar(x=["a"], y=[5]), go.Bar(x=["a"], y=[5])], {"barnorm": "percent"}, "barnorm"),
+        ([go.Bar(x=["a"], y=[5], offsetgroup="1"), go.Bar(x=["a"], y=[5], offsetgroup="2")],
+         {"barmode": "stack"}, "offsetgroup"),
+        ([go.Scatter(x=["a", "b"], y=[1, 2], stackgroup="one"), go.Scatter(x=["a", "b"], y=[1, 2], stackgroup="one")],
+         {}, "stackgroup"),
+    ],
+)  # fmt: skip
+def test_stacking_sdvplot_does_not_work_out_needs_the_range_set_first(mark_images, traces, layout, what):
+    fig = go.Figure(traces, layout=layout)
+    with pytest.raises(ValueError, match=f"{what}.*set it first"):
+        sdvplot.add_logos(fig, ["a"], [1], ["LV"], league="nfl")
+    fig.update_yaxes(range=[0, 20])
+    sdvplot.add_logos(fig, ["a"], [1], ["LV"], league="nfl")  # the other axis is still worked out
+    assert fig.layout.xaxis.range is not None
+
+
+def test_a_fill_to_the_next_trace_fills_to_zero_only_on_the_first_trace(mark_images):
+    fig = go.Figure(go.Scatter(x=[0, 1], y=[5, 6], fill="tonexty"))  # no trace before it: Plotly fills to zero
+    sdvplot.add_logos(fig, [0], [5], ["LV"], league="nfl")
+    assert fig.layout.yaxis.range[0] <= 0
+    fig = go.Figure([go.Scatter(x=[0, 1], y=[100, 101]), go.Scatter(x=[0, 1], y=[110, 111], fill="tonexty")])
+    sdvplot.add_logos(fig, [0], [105], ["LV"], league="nfl")
+    assert fig.layout.yaxis.range[0] > 90  # a band between two traces, not down to zero
+
+
+@pytest.mark.parametrize(
+    ("trace", "covers"),
+    [
+        (go.Scatter(y=[1, 2, 3]), (0, 2)),  # Plotly draws a trace without x at 0, 1, 2, ...
+        (go.Scatter(y=[1, 2, 3], x0=10, dx=5), (10, 20)),  # ... or at x0 + i * dx
+        (go.Bar(y=[3, 2, 1]), (-0.5, 2.5)),  # whole bars
+    ],
+)
+def test_a_trace_without_x_spans_plotlys_own_default_positions(mark_images, trace, covers):
+    fig = go.Figure(trace)
+    sdvplot.add_logos(fig, [1 if covers[0] < 1 else 15], [2], ["LV"], league="nfl")
+    lo, hi = fig.layout.xaxis.range
+    assert lo <= covers[0] and hi >= covers[1]
+
+
 def test_category_order_follows_the_axis(mark_images):
     fig = go.Figure(go.Bar(x=["LV", "LAR"], y=[3, 2]))
     fig.update_xaxes(categoryorder="array", categoryarray=["LAR", "LV"])

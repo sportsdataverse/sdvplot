@@ -40,6 +40,13 @@ def test_without_a_frame_height_the_figure_height_is_the_reference(mark_images):
     assert _renderer(p, "sdvplot_logo").data_source.data["h"] == [50]
 
 
+def test_a_figure_without_a_pixel_height_says_to_set_frame_height(mark_images):
+    p = _fig(sizing_mode="stretch_both")
+    p.height = None  # a responsive figure (e.g. a HoloViews plot with responsive=True) has no pixel height
+    with pytest.raises(ValueError, match="frame_height"):
+        sdvplot.add_logos(p, [10], [-3], ["LV"], league="nfl")
+
+
 def test_a_wordmark_keeps_its_aspect_ratio(mark_images):
     p = _fig(frame_height=300)
     sdvplot.add_wordmarks(p, [10], [-3], ["LV"], league="nfl", height=0.1)

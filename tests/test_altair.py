@@ -109,6 +109,52 @@ def test_logo_layer_is_a_native_layer(mark_images):
     assert salt.drawn_marks(out) == [("13", 10, -3, pytest.approx(0.1), "https://cdn/1111.png")]
 
 
+@pytest.mark.parametrize("chart_height", [0, -100, float("nan"), float("inf")])
+def test_logo_layer_needs_a_positive_chart_height(mark_images, chart_height):
+    with pytest.raises(ValueError, match="chart_height"):
+        salt.logo_layer([10], [-3], ["LV"], league="nfl", chart_height=chart_height)
+
+
+def test_a_chart_height_that_is_not_a_positive_number_of_pixels_raises(mark_images):
+    with pytest.raises(ValueError, match="height"):
+        sdvplot.add_logos(_chart(height=0), [10], [-3], ["LV"], league="nfl")
+
+
+@pytest.mark.parametrize(
+    ("x", "y", "key"),
+    [("a:Q", "mean(b):Q", "aggregate='mean'"), (alt.X("a:Q", bin=True), "b:Q", "bin=True")],
+)
+def test_an_aggregated_or_binned_axis_raises_naming_the_key(mark_images, x, y, key):
+    chart = alt.Chart(alt.Data(values=[{"a": 0, "b": -10}])).mark_bar().encode(x=x, y=y)
+    with pytest.raises(ValueError, match=key):
+        sdvplot.add_logos(chart, [10], [-3], ["LV"], league="nfl")
+
+
+def test_a_time_unit_is_copied_so_logos_sit_on_their_points(mark_images):
+    vlc = pytest.importorskip("vl_convert")
+    days = pd.to_datetime(["2025-09-14", "2025-10-20"])
+    df = pd.DataFrame({"day": days, "v": [1, 2]})
+    chart = alt.Chart(df).mark_point().encode(x=alt.X("yearmonth(day):T"), y="v:Q")
+    out = sdvplot.add_logos(chart, pd.Series(days), [1, 2], ["LV", "LAR"], league="nfl")
+    assert _layer(out, "sdvplot_logo")["encoding"]["x"]["timeUnit"] == "yearmonth"
+    xs: dict[str, list[float]] = {}
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("marktype") in ("symbol", "image"):  # a symbol's x is its centre, an image's its left edge
+                xs.setdefault(node["marktype"], []).extend(
+                    i["x"] + i.get("width", 0) / 2 for i in node.get("items", [])
+                )
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+
+    walk(vlc.vegalite_to_scenegraph(out.to_json()))
+    assert sorted(xs["image"]) == pytest.approx(sorted(xs["symbol"]))  # at yearmonth(day), as the points are
+
+
 def test_dates_are_written_as_iso_strings(mark_images):
     days = pd.to_datetime(["2025-09-07", "2025-09-14"])
     chart = alt.Chart(pd.DataFrame({"day": days, "v": [1, 2]})).mark_line().encode(x="day:T", y="v:Q")

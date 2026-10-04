@@ -8,6 +8,8 @@ new ``LayerChart`` (Altair charts are immutable values); grammar users can layer
 from __future__ import annotations
 
 import json
+import math
+import numbers
 import re
 from typing import Any
 
@@ -66,21 +68,27 @@ def _unit(spec: dict[str, Any], channel: str) -> tuple[dict[str, Any], dict[str,
     return {}, {}
 
 
+def _pixels(h: Any, name: str) -> float:
+    """``h`` as a float, or ValueError unless it is a finite number of pixels above zero."""
+    if not isinstance(h, numbers.Real) or isinstance(h, bool) or not math.isfinite(h) or h <= 0:
+        raise ValueError(
+            f"sdvplot sizes marks from the chart height; {name} must be a positive number of pixels, not {h!r}"
+        )
+    return float(h)
+
+
 def _chart_height(spec: dict[str, Any]) -> float:
     """The chart's plot height in pixels: its own, else the theme's (or Vega-Lite's) continuous view height."""
     for u in _units(spec):
         h = u.get("height")
-        if isinstance(h, (int, float)) and not isinstance(h, bool):
-            return float(h)
         if h is not None:
-            raise ValueError(
-                f"sdvplot sizes marks from the chart height in pixels; set .properties(height=...), not {h!r}"
-            )
+            return _pixels(h, ".properties(height=...)")
     if _unit(spec, "y")[1].get("type") in _DISCRETE:
         raise ValueError(
             "a discrete y axis is sized by its step; set the chart height in pixels: .properties(height=...)"
         )
-    return float(spec.get("config", {}).get("view", {}).get("continuousHeight", VEGA_LITE_DEFAULT_HEIGHT))
+    h = spec.get("config", {}).get("view", {}).get("continuousHeight", VEGA_LITE_DEFAULT_HEIGHT)
+    return _pixels(h, "config.view.continuousHeight")
 
 
 def _sort(enc: dict[str, Any], channel: str) -> Any:
@@ -101,11 +109,23 @@ def _sort(enc: dict[str, Any], channel: str) -> Any:
 
 
 def _encodings(spec: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """The x and y encodings the image layer copies from the chart: field name, type and (discrete) sort."""
+    """The x and y encodings the image layer copies from the chart: field name, type, time unit and (discrete) sort.
+
+    A time unit is copied (the layer applies it to its own positions, as the chart does); an aggregate or a bin is
+    not, as it would be computed over the layer's few rows, so it raises.
+    """
     out = {}
     for ch in ("x", "y"):
         enc = _unit(spec, ch)[1]
+        for key in ("aggregate", "bin"):
+            if enc.get(key) not in (None, False, "binned"):
+                raise ValueError(
+                    f"the chart's {ch} encoding has {key}={enc[key]!r}, which the logo layer cannot copy; compute it "
+                    "in the data first (e.g. with pandas), encode the result, then add the marks"
+                )
         e: dict[str, Any] = {"field": enc.get("field", ch), "type": enc.get("type", "quantitative")}
+        if "timeUnit" in enc:
+            e["timeUnit"] = enc["timeUnit"]
         if e["type"] in _DISCRETE and "sort" in enc:
             e["sort"] = _sort(enc, ch)
         out[ch] = e
@@ -164,7 +184,7 @@ def logo_layer(
         league: The SDV league key, e.g. "nfl".
         season: One season, or one per point, to pick each team's mark for that era.
         height: The logo height as a fraction of the chart height, in (0, 1].
-        chart_height: The chart's height in pixels; None means Vega-Lite's default (300).
+        chart_height: The chart's height in pixels (a positive number); None means Vega-Lite's default (300).
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
         x_type: The Vega-Lite type of the chart's x axis ("quantitative", "nominal", "ordinal", "temporal").
@@ -177,7 +197,8 @@ def logo_layer(
         altair.Chart: The image layer.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If ``height`` or ``alpha`` is out of range, ``chart_height`` is not a positive number of pixels,
+            or the inputs differ in length.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
@@ -198,7 +219,8 @@ def logo_layer(
     h, a = check_height(height), check_alpha(alpha)
     placements = place(x, y, teams, league=league, season=season, kind="logo", variant=variant, id_system=id_system)
     return _layer(
-        placements, kind="logo", height=h, chart_height=float(chart_height or VEGA_LITE_DEFAULT_HEIGHT), alpha=a,
+        placements, kind="logo", height=h, alpha=a,
+        chart_height=VEGA_LITE_DEFAULT_HEIGHT if chart_height is None else _pixels(chart_height, "chart_height"),
         x={"field": "x", "type": x_type}, y={"field": "y", "type": y_type}, embed=embed,
     )  # fmt: skip
 
@@ -244,8 +266,9 @@ def add_logos(
 ) -> alt.LayerChart:
     """Layer each team's logo, centred on its (x, y) point, onto an Altair chart.
 
-    The image layer reuses the chart's x/y field names, types and sort, so a nominal axis stays nominal and the axis
-    titles stay as they were.
+    The image layer reuses the chart's x/y field names, types, time units and sort, so a nominal axis stays nominal,
+    a logo on ``yearmonth(date)`` sits on its month, and the axis titles stay as they were. An aggregated or binned
+    axis is not copied: aggregate or bin in the data first.
 
     Args:
         chart: An ``altair.Chart`` or ``LayerChart`` (facet, concat and repeat charts: pass one of their charts).
@@ -265,8 +288,9 @@ def add_logos(
 
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the chart is a facet,
-            concat or repeat chart, its height is not in pixels where it must be, or a discrete axis is sorted in a
-            way Vega-Lite drops once layers share the axis.
+            concat or repeat chart, its height is not a positive number of pixels where it must be, its x or y
+            encoding aggregates or bins, or a discrete axis is sorted in a way Vega-Lite drops once layers share the
+            axis.
         TypeError: If the target is not an Altair ``Chart`` or ``LayerChart``.
         OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
