@@ -2748,9 +2748,8 @@ name = "morethemes"
 version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "pyfonts" },
+    { name = "pyfonts", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0a/4d/81fe6b6be8b289f81b5f73bed914b802894ae0ccebfce011e5b00cd55abb/morethemes-0.8.0.tar.gz", hash = "sha256:d0866dbe02f7d86b057152f201a367220241427316230e032bf48647a70811e7", size = 3264095, upload-time = "2026-09-02T14:30:40.89Z" }
 wheels = [
@@ -5415,7 +5414,7 @@ compat = [
     { name = "geopandas", marker = "python_full_version >= '3.11'" },
     { name = "geoplot", marker = "python_full_version >= '3.11'" },
     { name = "highlight-text" },
-    { name = "morethemes" },
+    { name = "morethemes", marker = "python_full_version >= '3.11'" },
     { name = "networkx", version = "3.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pyfonts" },
     { name = "pypalettes" },
@@ -5437,7 +5436,7 @@ dev = [
     { name = "ipykernel", version = "7.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "jinja2" },
     { name = "kaleido" },
-    { name = "morethemes" },
+    { name = "morethemes", marker = "python_full_version >= '3.11'" },
     { name = "mypy" },
     { name = "nba-api" },
     { name = "nbclient" },
@@ -5538,7 +5537,7 @@ compat = [
     { name = "geopandas", marker = "python_full_version >= '3.11'", specifier = ">=1.2" },
     { name = "geoplot", marker = "python_full_version >= '3.11'", specifier = ">=0.5.1" },
     { name = "highlight-text", specifier = ">=0.2" },
-    { name = "morethemes", specifier = ">=0.8" },
+    { name = "morethemes", marker = "python_full_version >= '3.11'", specifier = ">=0.8" },
     { name = "networkx", marker = "python_full_version >= '3.12'", specifier = ">=3.7" },
     { name = "pyfonts", specifier = ">=1.4" },
     { name = "pypalettes", specifier = ">=0.2.1" },
@@ -5559,7 +5558,7 @@ dev = [
     { name = "ipykernel", specifier = ">=6" },
     { name = "jinja2", specifier = ">=3" },
     { name = "kaleido", specifier = ">=1.0" },
-    { name = "morethemes", specifier = ">=0.8" },
+    { name = "morethemes", marker = "python_full_version >= '3.11'", specifier = ">=0.8" },
     { name = "mypy", specifier = ">=1.10" },
     { name = "nba-api", specifier = ">=1.5" },
     { name = "nbclient", specifier = ">=0.10" },

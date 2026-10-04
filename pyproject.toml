@@ -67,7 +67,7 @@ compat = [
   "flexitext>=0.4",
   "drawarrow>=0.1",
   "pypalettes>=0.2.1",
-  "morethemes>=0.8",
+  "morethemes>=0.8; python_version >= '3.11'",  # imports matplotlib.typing.RcKeyType (matplotlib 3.11+)
   "pyfonts>=1.4",
   "wordcloud>=1.9.6",
 ]

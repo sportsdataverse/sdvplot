@@ -124,5 +124,5 @@ and date above when you do.
 
 `tests/test_compat_matrix.py` checks that every test this page names exists. The `tests/test_compat_*.py` tests are
 offline (except pyfonts, live only) and skip when their package is missing. Their packages are the `compat` dependency
-group in `pyproject.toml`, which `uv sync --all-groups` installs; the geospatial ones and NetworkX need Python 3.11 or
+group in `pyproject.toml`, which `uv sync --all-groups` installs; the geospatial ones, morethemes (it needs matplotlib 3.11) and NetworkX need Python 3.11 or
 3.12, so the 3.10 CI job skips those tests.
