@@ -24,6 +24,8 @@ from sdvplot.great_tables._marks import (
     gt_sdv_headshots,
     gt_sdv_logos,
     gt_sdv_wordmarks,
+    gt_theme_sdv,
+    gt_theme_sdv_team,
 )
 
 SUPPORTS_AXIS_LOGOS = False
@@ -98,4 +100,6 @@ __all__ = [
     "gt_sdv_headshots",
     "gt_sdv_logos",
     "gt_sdv_wordmarks",
+    "gt_theme_sdv",
+    "gt_theme_sdv_team",
 ]

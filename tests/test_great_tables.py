@@ -11,13 +11,16 @@ import sdvplot  # noqa: E402
 import sdvplot.great_tables as sgt  # noqa: E402
 from sdvplot import _placement  # noqa: E402
 from sdvplot._dispatch import adapter_for  # noqa: E402
-from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot._errors import SdvplotWarning, UnresolvedTeamError  # noqa: E402
 from sdvplot.great_tables import (  # noqa: E402
+    _marks,
     gt_merge_stack_team_color,
     gt_sdv_cols_label,
     gt_sdv_headshots,
     gt_sdv_logos,
     gt_sdv_wordmarks,
+    gt_theme_sdv,
+    gt_theme_sdv_team,
 )
 
 LV_IMG = (
@@ -197,3 +200,78 @@ def test_merge_stack_greys_an_unknown_team_and_escapes_text():
     assert "color:grey;font-size:12px'>&lt;b&gt;Nobody&lt;/b&gt;</span>" in gt.as_raw_html()
     with pytest.raises(ValueError, match="'nope' is not a column"):
         gt_merge_stack_team_color(GT(df), "team", "nope", "team", league="nfl")
+
+
+def _theme_css(html):
+    return html[: html.index("</style>")]
+
+
+@FRAMES
+def test_the_light_theme(kind):
+    gt = GT(_frame(kind, {"team": ["LV"], "w": [1]})).tab_header("AFC West", "Standings").tab_source_note("ESPN")
+    html = gt_theme_sdv(gt).as_raw_html()
+    tid = re.search(r'<div id="([^"]+)"', html).group(1)
+    assert f'#{tid} thead::after {{content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; ' in html
+    assert "background: linear-gradient(90deg, #3346F0, #7FE6DC);}" in html
+    assert f"#{tid} td {{ font-variant-numeric: tabular-nums; }}" in html
+    assert "family=Chivo" in html and "family=Lato" in html
+    assert re.search(r'gt_title[^>]*style="color: #0B1A33;font-family: Chivo;font-size: 22px;font-weight: 800;"', html)
+    assert "background-color: #FFFFFF" in _theme_css(html)
+
+
+def test_spanners_are_set_like_column_labels():
+    gt = GT(pl.DataFrame({"a": [1], "b": [2]})).tab_spanner("Record", ["a", "b"]).with_id("sp")
+    css = _theme_css(gt_theme_sdv(gt).as_raw_html())
+    rule = "#sp .gt_column_spanner {font-family: Chivo, sans-serif; font-weight: 500; font-size: 13px; color: #16305C;}"
+    assert rule in css and css.rindex("#sp .gt_column_spanner") == css.index(rule)  # ours is the last rule, so it wins
+
+
+def test_the_dark_theme_sets_the_table_on_navy():
+    html = gt_theme_sdv(GT(pl.DataFrame({"w": [1]})).tab_header("T"), style="dark").as_raw_html()
+    assert "background-color: #0B1A33" in _theme_css(html)
+    assert re.search(r'gt_title[^>]*style="color: #FFFFFF;', html)
+
+
+def test_density_scales_type_and_padding():
+    social = gt_theme_sdv(GT(pl.DataFrame({"w": [1]})).tab_header("T"), density="social").as_raw_html()
+    assert "font-size: 28.8px" in social  # title 22px * 34/26
+    compact = _theme_css(gt_theme_sdv(GT(pl.DataFrame({"w": [1]})), density="compact").as_raw_html())
+    assert "padding-top: 3.5px" in compact  # data rows 7px * 3/6
+    with pytest.raises(ValueError, match="density"):
+        gt_theme_sdv(GT(pl.DataFrame({"w": [1]})), density="roomy")
+    with pytest.raises(ValueError, match="style"):
+        gt_theme_sdv(GT(pl.DataFrame({"w": [1]})), style="sepia")
+
+
+def test_tab_options_override_the_theme_and_an_existing_id_is_kept():
+    html = gt_theme_sdv(GT(pl.DataFrame({"w": [1]})).with_id("mine"), table_font_size="20px").as_raw_html()
+    assert "#mine thead::after" in html and "font-size: 20px" in _theme_css(html)
+
+
+def test_the_team_theme_wears_the_teams_colors():
+    html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})).tab_header("Rams", "2024"), "LAR", league="nfl").as_raw_html()
+    css = _theme_css(html)
+    assert "background-color: #003594" in css  # the title block, primary
+    assert "background: #ffa300;}" in html  # the line, secondary
+    assert re.search(r'gt_title[^>]*style="color: #ffffff;', html)  # readable ink on the primary
+    sub = re.search(r'gt_subtitle[^>]*style="color: (#[0-9a-f]{6});', html).group(1)
+    assert sub not in ("#ffffff", "#003594") and _marks.contrast(sub, "#003594") >= 4.5
+
+
+def test_a_pale_secondary_gives_way_to_the_primary_for_the_line():
+    html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), "Alabama", league="cfb").as_raw_html()
+    assert "background: #9e1b32;}" in html  # Alabama's secondary is white
+
+
+def test_the_team_theme_without_a_team_and_its_errors(monkeypatch):
+    # navy title block; the cyan secondary is too pale on white (1.47:1 < 1.5), so the line is navy too, as in R
+    html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), league="nfl").as_raw_html()
+    assert "background-color: #0B1A33" in _theme_css(html) and "background: #0B1A33;}" in html
+    with pytest.raises(UnresolvedTeamError):
+        gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), "XXX", league="nfl")
+    with pytest.raises(TypeError, match="one team"):
+        gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), ["LV", "LAR"], league="nfl")
+    monkeypatch.setattr(_marks, "team_colors", lambda *a, **k: None)
+    with pytest.warns(SdvplotWarning, match="no colors on file"):
+        html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), "LV", league="nfl").as_raw_html()
+    assert "background: #0B1A33;}" in html

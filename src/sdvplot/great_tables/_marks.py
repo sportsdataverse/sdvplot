@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import html
+import warnings
 from collections.abc import Callable
 from typing import Any
 
 import narwhals as nw
-from great_tables import GT, loc
+from great_tables import GT, google_font, loc, px, random_id, style
 from great_tables import html as gt_html
 
 from sdvplot._colors import team_colors
+from sdvplot._contrast import contrast, mix, on_color
+from sdvplot._errors import SdvplotWarning
 from sdvplot._placement import KINDS, _missing
+from sdvplot._resolve import one_team, resolve
 from sdvplot._tables import check_px, mark_html
 
 
@@ -306,3 +310,244 @@ def gt_merge_stack_team_color(
         # one fmt() per row keeps it simple; group identical cells into one call if long tables get slow
         gt = gt.fmt(_constant(cell), columns=col1, rows=[row])
     return gt.cols_hide(col2)
+
+
+# --- themes (R/gt_theme_sdv.R) ---
+
+DENSITY = {  # sdvplotR's .theme_density(): type sizes and row padding per density
+    "comfortable": {"body": 14, "pad": 6, "title": 26, "subtitle": 15, "label": 10, "group": 11, "source": 11},
+    "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
+    "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},
+}
+# great_tables' default paddings that sdvplotR's density also scales (gt has the same defaults)
+_DEFAULT_PADDING = {
+    "row_group_padding": 8,
+    "source_notes_padding": 4,
+    "summary_row_padding": 8,
+    "grand_summary_row_padding": 8,
+}
+SDV_NAVY, SDV_CYAN = "#0B1A33", "#7FE6DC"
+SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
+
+
+def _table_id(gt: GT) -> tuple[GT, str]:
+    """The table's id (the theme's CSS is scoped to it), assigning a random one when it has none."""
+    table_id = gt._options.table_id.value
+    if table_id:
+        return gt, str(table_id)
+    table_id = random_id()
+    return gt.with_id(table_id), table_id
+
+
+def _light_palette(horizon: str) -> dict[str, str]:
+    return {
+        "bg": "#FFFFFF",
+        "heading_bg": "#FFFFFF",
+        "title": SDV_NAVY,
+        "muted": "#4A5A75",
+        "label": "#16305C",
+        "text": SDV_NAVY,
+        "rule": "#E3E8F1",
+        "group_bg": "#EEF3FA",
+        "horizon": horizon,
+    }
+
+
+def _dark_palette() -> dict[str, str]:
+    return {
+        "bg": SDV_NAVY,
+        "heading_bg": SDV_NAVY,
+        "title": "#FFFFFF",
+        "muted": "#A9B8D0",
+        "label": "#9CCBFF",
+        "text": "#EAEBEC",
+        "rule": "#1D3A66",
+        "group_bg": "#16305C",
+        "horizon": SDV_HORIZON,
+    }
+
+
+def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
+    """Muted but legible: ``fg`` blended toward ``bg`` as far as still clears ``target`` contrast (sdvplotR)."""
+    for i in range(12):  # weights 0.45, 0.50, ..., 1.00 of fg
+        cand = mix(bg, fg, round(0.45 + 0.05 * i, 2))
+        if contrast(cand, bg) >= target:
+            return cand
+    return fg
+
+
+def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[str, Any]) -> GT:
+    """sdvplotR's .sdv_theme_build(): fonts, styles, options and the scoped CSS, at ``density``."""
+    if density not in DENSITY:
+        raise ValueError(f"density must be one of {list(DENSITY)}, got {density!r}")
+    k = {role: DENSITY[density][role] / DENSITY["comfortable"][role] for role in DENSITY["comfortable"]}
+
+    def size(n: float, role: str) -> str:
+        return f"{round(n * k[role], 1):g}px"
+
+    gt, tid = _table_id(gt)
+    chivo, lato = google_font("Chivo"), google_font("Lato")
+    weight: Any = "800"  # CSS numeric weights; great_tables types only the keywords
+    medium: Any = "500"
+    gt = (
+        gt.opt_table_font(font=lato)
+        .tab_style(style.text(font=chivo, weight=weight, size=size(22, "title"), color=pal["title"]), loc.title())
+        .tab_style(
+            style.text(font=lato, size=size(14, "subtitle"), color=pal.get("subtitle", pal["muted"])), loc.subtitle()
+        )
+        .tab_style(
+            style.text(font=chivo, weight=medium, size=size(13, "label"), color=pal["label"]), loc.column_labels()
+        )
+        .tab_style(
+            [
+                style.text(font=chivo, weight=medium, size=size(13, "group"), color=pal["label"]),
+                style.fill(color=pal["group_bg"]),
+            ],
+            loc.row_groups(),
+        )
+        .tab_style(style.text(size=size(12, "source"), color=pal["muted"]), [loc.source_notes(), loc.footnotes()])
+    )
+    padding: dict[str, Any] = {}
+    if density != "comfortable":  # sdvplotR scales great_tables' default paddings too
+        padding = {option: size(v, "pad") for option, v in _DEFAULT_PADDING.items()}
+    gt = gt.tab_options(
+        table_background_color=pal["bg"],
+        table_font_color=pal["text"],
+        table_font_size=size(15, "body"),
+        heading_align="left",
+        heading_background_color=pal["heading_bg"],
+        heading_padding=size(4, "pad"),
+        heading_border_bottom_style="none",
+        column_labels_background_color=pal["bg"],
+        column_labels_border_top_style="none",
+        column_labels_border_bottom_style="none",
+        column_labels_padding=size(6, "pad"),
+        table_body_hlines_color=pal["rule"],
+        table_body_hlines_width=px(1),
+        table_body_border_top_style="none",
+        table_body_border_bottom_style="none",
+        row_group_border_top_style="none",
+        row_group_border_bottom_style="none",
+        data_row_padding=size(7, "pad"),
+        table_border_top_style="none",
+        table_border_bottom_style="none",
+        source_notes_border_bottom_style="none",  # great_tables 1.0 has no footnotes border options
+        **padding,
+    )
+    s = f"#{tid}"
+    css = [
+        # the horizon: one line under the column labels, drawn over the thead so a gradient spans the whole table
+        f"{s} thead {{position: relative;}}",
+        f'{s} thead::after {{content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; '
+        f"background: {pal['horizon']};}}",
+        f"{s} .gt_col_headings th {{padding-bottom: 10px;}}",
+        # spanners as column labels (great_tables 1.0's loc.spanner_labels() needs explicit ids)
+        f"{s} .gt_column_spanner {{font-family: Chivo, sans-serif; font-weight: 500; font-size: {size(13, 'label')}; "
+        f"color: {pal['label']};}}",
+        # one 14px inset shared by the heading, the outer columns and the notes
+        f"{s} .gt_heading, {s} .gt_sourcenote, {s} .gt_footnote, {s} .gt_col_headings th:first-child, "
+        f"{s} tbody td:first-child {{padding-left: 14px !important;}}",
+        f"{s} .gt_heading, {s} .gt_sourcenote, {s} .gt_footnote, {s} .gt_col_headings th:last-child, "
+        f"{s} tbody td:last-child {{padding-right: 14px !important;}}",
+        f"{s} .gt_title {{padding-top: 12px !important;}}",
+        f"{s} .gt_subtitle {{padding-bottom: 12px !important;}}",
+        f"{s} tbody tr:last-child {{border-bottom: 2px solid {pal['bg']};}}",  # no double rule under the last row
+        f"{s} td {{ font-variant-numeric: tabular-nums; }}",  # digits line up between rows
+    ]
+    gt = gt.opt_css("\n".join(css))
+    return gt.tab_options(**tab_options) if tab_options else gt  # the caller's options last, so they win
+
+
+def gt_theme_sdv(gt: GT, style: str = "light", density: str = "comfortable", **tab_options: Any) -> GT:
+    """The SportsDataverse house table: Chivo labels, a Lato body, and the SDV gradient under the column labels.
+
+    Args:
+        gt: A great_tables ``GT``.
+        style: "light" (a white table) or "dark" (the SportsDataverse navy).
+        density: "comfortable" (as set), "compact" (smaller type and padding) or "social" (larger, for saved images).
+        **tab_options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new, themed table. The gradient line is CSS (``thead::after``) scoped to the table's id; an id is
+        assigned when the table has none.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables GT.
+        ValueError: If ``style`` or ``density`` is unknown.
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot.great_tables import gt_sdv_logos, gt_theme_sdv
+
+            gt_theme_sdv(gt_sdv_logos(GT(df), "team", league="nfl").tab_header("AFC West"))
+            gt_theme_sdv(GT(df), style="dark", density="social")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_sdv()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_sdv.html
+    """
+    _check_gt(gt)
+    if style not in ("light", "dark"):
+        raise ValueError(f"style must be 'light' or 'dark', got {style!r}")
+    pal = _dark_palette() if style == "dark" else _light_palette(SDV_HORIZON)
+    return _build_theme(gt, pal, density, tab_options)
+
+
+def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "comfortable", **tab_options: Any) -> GT:
+    """``gt_theme_sdv`` in one team's colors: a title block in the primary color, the line in the secondary.
+
+    Ink on the title block is black or white, whichever reads better, and the subtitle is blended toward it while it
+    keeps 4.5:1 contrast. A secondary color too pale for a white table gives way to the primary for the line, and a
+    primary too light to read on white gives way to the SportsDataverse navy for the column labels.
+
+    Args:
+        gt: A great_tables ``GT``.
+        team: One team (an abbreviation, name or provider id); None for the SportsDataverse navy and cyan.
+        league: The SDV league key, e.g. "nfl".
+        density: "comfortable", "compact" or "social", as in ``gt_theme_sdv``.
+        **tab_options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new, themed table. A team with no colors on file gets the SportsDataverse colors, with an
+        SdvplotWarning.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables GT, or ``team`` is not one value.
+        UnresolvedTeamError: If ``team`` does not resolve to one team of ``league``.
+        ValueError: If ``density`` is unknown.
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot.great_tables import gt_theme_sdv_team
+
+            gt_theme_sdv_team(GT(df).tab_header("Chiefs leaders"), "KC", league="nfl")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_sdv_team()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_sdv_team.html
+    """
+    _check_gt(gt)
+    primary, secondary = SDV_NAVY, SDV_CYAN
+    if team is not None:
+        team_id = resolve(one_team(team, "gt_theme_sdv_team"), league, strict=True)
+        p, s = team_colors(team_id, league, "primary"), team_colors(team_id, league, "secondary")
+        if p:
+            primary, secondary = p, s or p
+        else:
+            warnings.warn(
+                f"no colors on file for {league} team {team!r}; using the SportsDataverse colors",
+                SdvplotWarning,
+                stacklevel=2,
+            )
+    title = on_color(primary)
+    pal = _light_palette(secondary if contrast(secondary, "#ffffff") >= 1.5 else primary)
+    pal.update(
+        heading_bg=primary,
+        title=title,
+        subtitle=_secondary_on(primary, title),
+        label=primary if contrast(primary, "#ffffff") >= 3 else SDV_NAVY,
+    )
+    return _build_theme(gt, pal, density, tab_options)
