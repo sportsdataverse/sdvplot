@@ -17,6 +17,25 @@ from sdvplot._normalize import norm_season
 from sdvplot._placement import place
 
 
+def _position(row: Any) -> Any:
+    return int(row) if isinstance(row, numbers.Integral) and not isinstance(row, bool) else row
+
+
+def row_positions(rows: Any) -> Any:
+    """A great_tables row selection with numpy integers made plain ``int``s.
+
+    great_tables' row resolver silently skips any position that is not an ``int``, so ``rows=[np.int64(1)]`` (or a
+    numpy array of positions) would select nothing. Expressions, callables and ``None`` pass through unchanged.
+    """
+    if isinstance(rows, numbers.Integral) and not isinstance(rows, bool):
+        return [int(rows)]
+    if getattr(rows, "ndim", None) == 1 and hasattr(rows, "tolist"):  # a numpy array of positions
+        rows = rows.tolist()
+    if isinstance(rows, (list, tuple)):
+        return [_position(r) for r in rows]
+    return rows
+
+
 def check_px(height: Any) -> float:
     """``height`` as a float, or ValueError unless it is a positive, finite number of pixels."""
     if isinstance(height, bool) or not isinstance(height, numbers.Real) or not math.isfinite(height) or height <= 0:
