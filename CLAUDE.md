@@ -41,6 +41,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_surface.py` | `surface` (sportypy) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
+| `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
