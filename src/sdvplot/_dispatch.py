@@ -229,3 +229,4 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
 register_adapter(Adapter("matplotlib", "matplotlib", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("seaborn", "seaborn", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("plotnine", "plotnine", "sdvplot.plotnine", "plotnine"))
+register_adapter(Adapter("plotly", "plotly", "sdvplot.plotly", "plotly"))
