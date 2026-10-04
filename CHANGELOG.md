@@ -10,6 +10,7 @@
     - [Added — table themes](#added--table-themes)
     - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
     - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
+    - [Added — web family](#added--web-family)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -91,3 +92,13 @@
   block or image. Ports of the sdvplotR functions of the same names; differences are in `docs/PARITY_TABLES.md`.
 - `[tables]` names `htmltools` and `nokap`, which great_tables 1.0 already installs. Saving needs Chrome or Chromium
   (set `CHROME_PATH` for a non-standard install); no selenium.
+
+### Added — web family
+
+- `add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` work on Plotly figures (`sdvplot.plotly`; sdvplot
+  pins the axis ranges so `height` is a fraction of the plot area) and Altair charts (`sdvplot.altair`, plus the
+  native `logo_layer`).
+- `add_logos`, `add_wordmarks` and `add_headshots` on Bokeh figures (`sdvplot.bokeh`), HoloViews elements through a
+  Bokeh plot hook (`sdvplot.holoviews`) and Folium maps (`sdvplot.folium`, `x` longitude and `y` latitude).
+- `embed=True` inlines the images as data URIs, for HTML that renders offline and for static export.
+- The `[holoviews]` extra now installs Bokeh 3 as well.

@@ -38,6 +38,8 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_placement.py` | `Placement`, `place`, `check_height`, `check_alpha`: the step every adapter shares |
 | `_contrast.py` | WCAG contrast and readable ink (surfaces, table themes) |
 | `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
+| `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `image_src`, `image_sources`: what the web adapters share |
+| `plotly.py`, `altair.py`, `bokeh.py`, `holoviews.py`, `folium.py` | the web adapters (public submodules) |
 | `_surface.py` | `surface` (sportypy) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
@@ -96,8 +98,9 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 - The `real_index` marker runs a test against the shipped index instead of the hand-written fixture
   (`tests/conftest.py`).
 - `filterwarnings` turns `SdvplotWarning` into errors in tests; assert expected warnings with `pytest.warns`.
-- The `render` marker: tests that start a headless Chrome (great_tables `gtsave`, nokap). They skip when no browser
-  can start; `-m "not render"` deselects them.
+- The `render` marker: tests that render through a headless Chrome (Plotly kaleido, great_tables `gtsave`, nokap) or
+  vl-convert (Altair) and measure the output. They skip when no browser can start (`SDVPLOT_RENDER_TESTS=1` makes a
+  missing Chrome fail the web render tests instead); `-m "not render"` deselects them.
 
 ## Docstring standard
 

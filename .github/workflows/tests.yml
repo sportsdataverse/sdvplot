@@ -33,6 +33,8 @@ jobs:
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
       - name: Run tests (offline)
+        env:
+          SDVPLOT_RENDER_TESTS: "1"   # ubuntu-latest ships Chrome: a render test that cannot render fails
         # The image baselines are rendered with the newest matplotlib, which py3.13 resolves. py3.10 resolves an older
         # matplotlib (3.10.x) whose image-edge antialiasing differs, so only the py3.13 job compares images.
         run: uv run --frozen pytest -q --maxfail=10 ${{ matrix.python == '3.13' && '--mpl --mpl-results-path=mpl-results' || '' }}

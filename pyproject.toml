@@ -35,7 +35,7 @@ plotnine = ["plotnine>=0.15"]
 plotly = ["plotly>=5"]
 altair = ["altair>=5"]
 bokeh = ["bokeh>=3"]
-holoviews = ["holoviews>=1.18"]
+holoviews = ["holoviews>=1.18", "bokeh>=3"]
 tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.15"]
@@ -51,7 +51,7 @@ Repository = "https://github.com/sportsdataverse/sdvplot"
 Changelog = "https://sdvplot.sportsdataverse.org/CHANGELOG"
 
 [dependency-groups]
-test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5", "seaborn>=0.13"]
+test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5", "seaborn>=0.13", "kaleido>=1.0", "vl-convert-python>=1.6"]
 lint = ["ruff==0.15.12", "mypy>=1.10", "types-requests", "pyyaml>=6"]
 docs = ["docstring_parser>=0.16", "nbclient>=0.10", "nbconvert>=7", "nbformat>=5", "ipykernel>=6", "jinja2>=3", "seaborn>=0.13"]
 dev = [{ include-group = "test" }, { include-group = "lint" }, { include-group = "docs" }, "pre-commit>=3.7", "nbstripout>=0.7"]
@@ -77,7 +77,7 @@ filterwarnings = [
 ]
 markers = [
   "real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)",
-  "render: renders through a headless Chrome (great_tables gtsave / nokap); skipped when none can start",
+  "render: renders through a headless Chrome (Plotly kaleido, great_tables gtsave / nokap) or vl-convert (Altair, no Chrome); skipped when Chrome cannot start",
 ]
 
 [tool.ruff]

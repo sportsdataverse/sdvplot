@@ -118,13 +118,19 @@ def logo_image(
     return load_mark_image(row, size)
 
 
+def mark_file(row: dict[str, Any]) -> Path:
+    """The cached file of one manifest row's image, downloaded once and checked against its sha256."""
+    sha, ext = str(row["sha256"]), str(row["ext"])
+    return fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
+
+
 def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
     """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
 
     ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
     """
     sha, ext = str(row["sha256"]), str(row["ext"])
-    path = fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
+    path = mark_file(row)
     if ext == "svg":
         return _rasterize(path, sha, size or DEFAULT_SVG_SIZE, ext)
     img: Image.Image = Image.open(path)
@@ -139,10 +145,16 @@ def _check_image(body: bytes) -> None:
     Image.open(io.BytesIO(body)).verify()
 
 
+def url_file(url: str) -> Path:
+    """The cached file of an image that is not content-addressed (a headshot): keyed by sha256(url), refreshed after
+    SDVPLOT_CACHE_TTL, non-images rejected."""
+    key = hashlib.sha256(url.encode()).hexdigest()
+    return fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image)
+
+
 def load_url_image(url: str) -> Image.Image:
     """An image that is not content-addressed (a headshot): cached by sha256(url), refreshed after SDVPLOT_CACHE_TTL."""
-    key = hashlib.sha256(url.encode()).hexdigest()
-    path = fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image)
+    path = url_file(url)
     img: Image.Image = Image.open(path)
     img.load()
     return img
