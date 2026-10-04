@@ -30,3 +30,13 @@
 - Example notebooks, executed by `tools/render_notebooks.py` into the tutorials.
 - CI, a release workflow, and pre-commit hooks, in sdv-py's layout.
 - `CONTRIBUTING.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, issue and pull-request templates, and sdv-py's dotfiles.
+
+### Added — matplotlib family
+
+- `add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` work on matplotlib Axes, one-Axes Figures and seaborn
+  grids (`sdvplot.matplotlib`); `height` is a fraction of the Axes height at any dpi or figure size.
+- plotnine: `geom_sdv_logos`, `geom_sdv_wordmarks`, `geom_sdv_headshots`, `axis_logos` and the team color scales
+  `scale_color_sdv` / `scale_fill_sdv` (`sdvplot.plotnine`).
+- `surface()`: sportypy playing surfaces in team colors, the port of sdvplotR's `sdv_surface()`.
+- plottable `logo_column` and `headshot_column` (`sdvplot.plottable`, new `[plottable]` extra).
+- The adapter contract (`sdvplot.testing`) now covers wordmarks, headshots, axis logos and alpha (rules 0-8).

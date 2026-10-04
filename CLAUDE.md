@@ -35,6 +35,10 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_cache.py` | the download cache, `clear_cache` |
 | `_dispatch.py` | `add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the adapter registry |
 | `testing.py` | `check_adapter_contract`, the shared adapter harness |
+| `_placement.py` | `Placement`, `place`, `check_height`, `check_alpha`: the step every adapter shares |
+| `_contrast.py` | WCAG contrast and readable ink (surfaces, table themes) |
+| `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
+| `_surface.py` | `surface` (sportypy) |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
