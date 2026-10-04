@@ -8,6 +8,7 @@
     - [Added — matplotlib family](#added--matplotlib-family)
     - [Added — tables, wave A (marks and team identity)](#added--tables-wave-a-marks-and-team-identity)
     - [Added — table themes](#added--table-themes)
+    - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -71,3 +72,13 @@
 - `pal_midnight`: sdvplotR's five-color rank palette for dark grounds (every step clears 4.5:1 on midnight and terminal).
 - `gt_theme_preview()`: the same rows in every theme, as `{theme name: GT}`.
 - Theme fonts load every weight from Google Fonts, over gt's fallback stack.
+
+### Added — tables wave C1 (cell styling and formatting)
+
+- 17 sdvplotR cell helpers in `sdvplot.great_tables`, with R's names and arguments: `gt_538_caption`,
+  `gt_bold_rows`, `gt_border_bars_bottom`, `gt_border_bars_top`, `gt_border_grid`, `gt_color_pills`,
+  `gt_color_ranks`, `gt_color_results`, `gt_column_subheaders`, `gt_cutline`, `gt_delta`, `gt_fmt_rank`,
+  `gt_fmt_tally`, `gt_group_stripes`, `gt_highlight_cells`, `gt_highlight_na` and `gt_indicator_boxes`. They take
+  tables built from pandas or polars data.
+- `gt_color_pills` and `gt_color_ranks` record their color scale for `gt_legend_continuous`.
+- `docs/PARITY_TABLES.md` lists where they differ from R.
