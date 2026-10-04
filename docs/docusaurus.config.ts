@@ -30,6 +30,13 @@ const analytics = PLAUSIBLE_ID
     }
   : {scripts: [], headTags: []};
 
+// Preload the two self-hosted faces above the fold: Inter (body) and Barlow Condensed 700 (the page
+// title). The hrefs must equal the @font-face urls in src/css/sdv-theme.css or the browser fetches twice.
+const fontPreloads = ['inter-latin-wght-normal', 'barlow-condensed-latin-700-normal'].map((name) => ({
+  tagName: 'link',
+  attributes: {rel: 'preload', href: `/fonts/${name}.woff2`, as: 'font', type: 'font/woff2', crossorigin: 'anonymous'},
+}));
+
 const config: Config = {
   // Rspack/SWC build pipeline (@docusaurus/faster).
   future: {
@@ -65,8 +72,9 @@ const config: Config = {
     },
   },
   // Plausible script plus its init stub (queues calls until the async script
-  // loads); nothing is emitted while PLAUSIBLE_ID is empty.
-  ...analytics,
+  // loads); nothing is emitted while PLAUSIBLE_ID is empty. Then the font preloads.
+  scripts: analytics.scripts,
+  headTags: [...analytics.headTags, ...fontPreloads],
   presets: [
     [
       'classic',
@@ -105,7 +113,8 @@ const config: Config = {
         // No blog: release notes live on the CHANGELOG page (navbar "News").
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
+          // The shared family theme first, then what only this site needs.
+          customCss: ['./src/css/sdv-theme.css', './src/css/custom.css'],
         },
       } satisfies Preset.Options,
     ],
@@ -150,6 +159,8 @@ const config: Config = {
     ],
     navbar: {
       hideOnScroll: true,
+      // Navy in both color modes, like sportsdataverse.org; sdv-theme.css sets the colors.
+      style: 'dark',
       title: 'sdvplot',
       logo: {
         alt: 'sdvplot logo',
