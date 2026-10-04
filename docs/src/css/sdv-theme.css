@@ -283,3 +283,53 @@ html[data-theme='light'] .navbar__title {
 .markdown {
   --ifm-link-decoration: underline;
 }
+
+/* ---- code blocks: a hairline edge instead of a shadow (the surface color comes from the Prism theme) ---- */
+.theme-code-block {
+  border: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
+}
+
+/* the copy and wrap buttons stay visible where nothing can hover */
+@media (hover: none) {
+  .theme-code-block button {
+    opacity: 1;
+  }
+}
+
+/* Rendered output, wrapped in .sdv-output by the generators (sub-projects 2 and 3): the page background and a
+   dashed edge instead of a raised code surface, so output does not read as more input. */
+.sdv-output .theme-code-block,
+.sdv-output pre {
+  background: var(--ifm-background-color);
+}
+
+.sdv-output .theme-code-block {
+  border-style: dashed;
+}
+
+/* ---- a fade at the right edge while a code block or a table has more to scroll ----
+   The scroll timeline is inactive when nothing overflows, so content that fits is never faded, and the
+   mask drops once the scroller reaches its end. Browsers without scroll-driven animations show no fade. */
+@keyframes sdv-more-right {
+  0%,
+  96% {
+    mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  }
+  100% {
+    mask-image: none;
+  }
+}
+
+.theme-code-block pre,
+.markdown table {
+  animation: sdv-more-right linear both;
+  animation-timeline: scroll(self inline);
+}
+
+/* ---- images: in dark mode a plot sits on a light card (add .sdv-img-dark to an image that is already dark) ---- */
+html[data-theme='dark'] .markdown p > img:only-child:not(.sdv-img-dark) {
+  background: #e9eef6;
+  padding: 0.5rem;
+  border-radius: var(--ifm-global-radius);
+}
