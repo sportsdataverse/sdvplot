@@ -352,9 +352,10 @@ def axis_logos(
         FixedFormatter(["" if loc in drawn else lab for loc, lab in zip(locs, labels, strict=True)])
     )
     tick = which.get_major_ticks()[0] if which.get_major_ticks() else None
-    offset = (tick.get_tick_padding() if tick is not None else 0) + 2  # points past the tick marks
+    offset = (tick.get_tick_padding() if tick is not None else 0) + 2  # images start this many points past the axis
     image_points = h * ax.bbox.height * 72 / ax.figure.dpi
-    which.set_tick_params(pad=image_points + offset)  # move unknown labels and the axis label past the images
+    if tick is not None:  # keep the configured label pad, plus room for the images below/left of the tick marks
+        which.set_tick_params(pad=tick.get_pad() + 2 + image_points)
     images: dict[str, np.ndarray] = {}
     for p in placements:
         loc = p.x if axis == "x" else p.y

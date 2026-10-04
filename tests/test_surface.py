@@ -76,3 +76,10 @@ def test_a_missing_sportypy_names_the_extra(monkeypatch):
     monkeypatch.setattr(_surface.importlib, "import_module", gone)
     with pytest.raises(OptionalDependencyError, match=r"pip install sdvplot\[surfaces\]"):
         sdvplot.surface("nfl")
+
+
+def test_the_center_logo_draws_above_every_surface_feature(mark_images):
+    ax = sdvplot.surface("nfl", "LV", center_logo=True)
+    (logo,) = [a for a in ax.artists if hasattr(a, "_sdvplot_mark")]
+    others = [a.get_zorder() for a in ax.get_children() if a is not logo]
+    assert logo.get_zorder() > max(others)

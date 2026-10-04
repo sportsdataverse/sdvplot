@@ -189,3 +189,13 @@ def test_axis_logos_skip_ticks_outside_the_view(mark_images):
     ax.set_xlim(-0.5, 1.5)  # LAC (no logo archived) sits outside the view: no image and no warning for it
     sdvplot.axis_logos(ax, "x", league="nfl")
     assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 1.0)]
+
+
+def test_axis_logos_keep_a_configured_label_pad(mark_images):
+    _, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    ax.bar(["LV", "XXX"], [1, 2])
+    ax.tick_params(axis="x", pad=10)
+    with pytest.warns(SdvplotWarning):
+        sdvplot.axis_logos(ax, "x", league="nfl", height=0.1)
+    image_points = 0.1 * ax.bbox.height * 72 / ax.figure.dpi
+    assert ax.xaxis.get_major_ticks()[0].get_pad() == pytest.approx(10 + 2 + image_points)

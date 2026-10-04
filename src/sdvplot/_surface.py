@@ -133,6 +133,7 @@ def surface(
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 
-        add_logos(drawn, [0.0], [0.0], [team], league=league, season=season,
+        top = max((a.get_zorder() for a in drawn.get_children()), default=0)
+        add_logos(drawn, [0.0], [0.0], [team], league=league, season=season, zorder=top + 1,
                   height=0.25 if center_logo is True else float(center_logo))  # fmt: skip
     return drawn
