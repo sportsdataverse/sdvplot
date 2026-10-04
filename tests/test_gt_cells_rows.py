@@ -1,3 +1,4 @@
+import numpy as np
 import polars as pl
 import pytest
 
@@ -181,3 +182,19 @@ def test_group_stripes_warn_on_a_table_without_groups(lib):
     gt = GT(frame(lib, TEAMS))
     with pytest.warns(SdvplotWarning, match="row groups"):
         assert gt_group_stripes(gt) is gt
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [[np.int64(0), np.int64(2)], (0, np.int32(2)), np.array([0, 2])],
+    ids=["numpy-ints", "tuple", "array"],
+)
+def test_bold_rows_takes_numpy_integer_positions(lib, rows):
+    # great_tables' resolver silently skips positions that are not plain ints; they must still select their rows
+    got = styles(gt_bold_rows(GT(frame(lib, CARS)), rows=rows))
+    assert ["font-weight: bold" in row[0] for row in got] == [True, False, True]
+
+
+def test_bold_rows_takes_a_numpy_integer_scalar(lib):
+    got = styles(gt_bold_rows(GT(frame(lib, CARS)), rows=np.int64(1)))
+    assert ["font-weight: bold" in row[0] for row in got] == [False, True, False]

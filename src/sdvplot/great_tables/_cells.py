@@ -28,6 +28,7 @@ from great_tables._text import _process_text
 
 from sdvplot._contrast import hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
+from sdvplot._tables import row_positions
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -66,8 +67,8 @@ def _values(gt: GT, column: str) -> list[Any]:
 
 
 def _row_indices(gt: GT, rows: Any) -> list[int]:
-    """0-based row positions for a great_tables row selection (``None`` means every row)."""
-    return [i for _, i in resolve_rows_i(gt, rows)]
+    """0-based row positions for a great_tables row selection (``None`` means every row; numpy integers count)."""
+    return [i for _, i in resolve_rows_i(gt, row_positions(rows))]
 
 
 def _kept_rows(gt: GT, rows: Any) -> list[int] | None:

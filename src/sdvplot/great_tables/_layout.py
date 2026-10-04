@@ -30,6 +30,7 @@ from great_tables._locations import resolve_cols_c, resolve_rows_i
 
 from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
+from sdvplot._tables import row_positions
 
 _STYLE_KEYS = (
     "font",
@@ -127,11 +128,7 @@ def _rows(gt: GT, rows: Any) -> list[int]:
 
     numpy integers count as positions: great_tables' resolver silently skips anything that is not an ``int``.
     """
-    if isinstance(rows, numbers.Integral) and not isinstance(rows, bool):
-        rows = [int(rows)]
-    elif isinstance(rows, list):
-        rows = [int(r) if isinstance(r, numbers.Integral) and not isinstance(r, bool) else r for r in rows]
-    return [i for _, i in resolve_rows_i(gt, rows)]
+    return [i for _, i in resolve_rows_i(gt, row_positions(rows))]
 
 
 def _frame(gt: GT) -> nw.DataFrame[Any]:
