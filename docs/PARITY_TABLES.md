@@ -4,6 +4,7 @@
 - [great_tables and reactable parity with sdvplotR](#great_tables-and-reactable-parity-with-sdvplotr)
   - [Wave A: marks and team identity](#wave-a-marks-and-team-identity)
   - [Wave B: table themes](#wave-b-table-themes)
+  - [Wave C1: cell styling and formatting](#wave-c1-cell-styling-and-formatting)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -71,3 +72,31 @@ HTML bytes.
 | all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())` | ported |
 | all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color raises `ValueError` naming the argument | ported (stricter) |
 | all 18 themes | `...` to `tab_options()`, last | `**options` to `tab_options()`, last (great_tables' snake_case names) | ported |
+
+## Wave C1: cell styling and formatting
+
+All 17 functions are ported, in `sdvplot.great_tables` (`_cells.py`). Throughout the wave: the table argument is
+`gt`; rows are great_tables row selections (0-based positions, a polars expression, or a callable for pandas data)
+instead of R's data-masked expressions and 1-based indices; positions in other arguments are 0-based; palettes are
+lists of hex colors (paletteer's `"pkg::palette"` strings are not supported); warnings are `SdvplotWarning`; and a
+table that is not a `GT` raises `TypeError`.
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_538_caption` | `tab_footnote()` on the column labels, `opt_css()` on `.gt_footnote` and `.gt_sourcenote` | great_tables renders source notes above footnotes | approximated: both captions are source notes, the rule and size inline on the top one (the rule spans the cell's content, inside its 5px padding); R's unused `...` dropped; `align` must be left, center or right (R pastes any string into CSS); the auto rule color skips `background-color` and `border-*-color` (R's `(?<=color:\s)` lookbehind also matches them) |
+| `gt_bold_rows` | `tab_style(cells_body(rows = <expr>))` | `tab_style(loc.body(rows=))` | ported; the deprecated `row` and `filter_statement` arguments are not ported |
+| `gt_border_bars_bottom` | `tab_source_note(html())`, `opt_css()`, `google_font()` | the same | ported; no Google Fonts import when the source notes have no font (R imports a family named `inherit`); `bar_align`, `img_align` and `text_align` are validated (R falls back to center, and pastes e.g. an invalid `padding-center`) |
+| `gt_border_bars_top` | `tab_caption()` | none (`tab_header(preheader=)` is stored, never rendered) | approximated: the bars open the heading, inside the table's top border, with the existing title re-wrapped under them; call it after `tab_header`; the alignments are validated as in `gt_border_bars_bottom` |
+| `gt_border_grid` | `gtExtras::gt_add_divider(columns = -last_col())`, `opt_css()` | `tab_style(style.borders(sides="right"), loc.body / loc.column_labels)` | ported; "every column but the last" counts visible body columns (R: data columns, so a stub or hidden last column shifted it) |
+| `gt_color_pills` | `scales::col_numeric()` (CIELAB), `text_transform()` through `.fmt_rows()`, `...` to `col_numeric` | `_contrast.mix` sRGB ramp, `fmt()` per distinct HTML string | approximated colors (sRGB, as great_tables' `data_color`; scales interpolates in CIELAB); `...` not ported; out-of-domain values grey `#808080` with one warning (scales' NA color); records `_sdvplot_scale` |
+| `gt_color_ranks` | `data_color(rows =)`, paletteer | `data_color(rows=)` | ported; hex palettes only; records `_sdvplot_scale` |
+| `gt_color_results` | `tab_style()` per result | the same | ported; `result_type` is validated; `"binary"` compares numbers (R also matches the strings `"1"`/`"0"`) |
+| `gt_column_subheaders` | `cols_label(html())` per column, `...` of lists | one `cols_label(cases=)` | ported; per-column `**subheaders` dicts; a name that is not a column raises (R ignores it); the deprecated `gt_table` argument is not ported; `font` is written as `&quot;<font>&quot;` (R's `'<font>'` ends the single-quoted style attribute early, so the font and anything after it are lost) |
+| `gt_cutline` | `tab_style(cell_borders())`, `opt_css()` with an inline SVG label | `tab_style(style.borders())`, `opt_css()` | ported; the SVG label is byte-identical to R's; `style` must be dashed, solid or dotted; `after` must be whole numbers (numpy integers accepted; R has no whole-number check) |
+| `gt_delta` | `cols_add()`, `vec_fmt_number()` / `vec_fmt_percent()` | no `cols_add` in great_tables 1.0; `vals.fmt_number` / `vals.fmt_percent` | implemented through GT internals (`_tbl_data`, `_body`, `_boxhead`; pinned by a test); `from` is `from_` (a Python keyword); `after` positions are 0-based |
+| `gt_fmt_rank` | `text_transform()` | `text_transform()` | ported |
+| `gt_fmt_tally` | `.fmt_rows()` (`fmt()` with a vectorized constant), `cols_hide()`, `vec_fmt_percent()` | `fmt()` per distinct string, `cols_hide()`, `vals.fmt_percent` | ported; `share_of` is 0-based (default `0`, R's `1`) |
+| `gt_group_stripes` | `_row_groups`, `_stub_df` | `GT._stub.group_rows` (render order) | ported |
+| `gt_highlight_cells` | an rlang formula or function per column, or a logical matrix | a callable on each column's pandas/polars Series, or a DataFrame or 2-D sequence mask | ported |
+| `gt_highlight_na` | `tab_style()` + `text_transform()` for `missing_text` | `tab_style()` + `fmt()` (`text_transform` skips null cells) | ported; `columns=None` means every column (R: `everything()`) |
+| `gt_indicator_boxes` | `text_transform()` with a vectorized rule over the rendered text | `fmt()` per data value; the rule is called per value (and column name) | approximated: a rule that needs the whole column (`x > mean(x)`) must be computed beforehand; `show_only` is validated |

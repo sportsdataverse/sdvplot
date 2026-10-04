@@ -18,6 +18,25 @@ from typing import Any
 
 from great_tables import GT
 
+from sdvplot.great_tables._cells import (
+    gt_538_caption,
+    gt_bold_rows,
+    gt_border_bars_bottom,
+    gt_border_bars_top,
+    gt_border_grid,
+    gt_color_pills,
+    gt_color_ranks,
+    gt_color_results,
+    gt_column_subheaders,
+    gt_cutline,
+    gt_delta,
+    gt_fmt_rank,
+    gt_fmt_tally,
+    gt_group_stripes,
+    gt_highlight_cells,
+    gt_highlight_na,
+    gt_indicator_boxes,
+)
 from sdvplot.great_tables._marks import (
     gt_merge_stack_team_color,
     gt_sdv_cols_label,
@@ -117,6 +136,23 @@ def drawn_cells(gt: GT) -> list[tuple[str, int, str, float, str]]:
 
 
 __all__ = [
+    "gt_538_caption",
+    "gt_bold_rows",
+    "gt_border_bars_bottom",
+    "gt_border_bars_top",
+    "gt_border_grid",
+    "gt_color_pills",
+    "gt_color_ranks",
+    "gt_color_results",
+    "gt_column_subheaders",
+    "gt_cutline",
+    "gt_delta",
+    "gt_fmt_rank",
+    "gt_fmt_tally",
+    "gt_group_stripes",
+    "gt_highlight_cells",
+    "gt_highlight_na",
+    "gt_indicator_boxes",
     "gt_merge_stack_team_color",
     "gt_sdv_cols_label",
     "gt_sdv_headshots",
