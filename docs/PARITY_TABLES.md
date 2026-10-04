@@ -3,6 +3,7 @@
 
 - [great_tables and reactable parity with sdvplotR](#great_tables-and-reactable-parity-with-sdvplotr)
   - [Wave A: marks and team identity](#wave-a-marks-and-team-identity)
+  - [Wave D: image export and composition](#wave-d-image-export-and-composition)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -34,3 +35,13 @@ HTML bytes.
 | `reactable_sdv_cols_label` | a named list of `colDef(header = "<img>")` | `list[Column(id=name, name="", header="<img>", html=True)]` | ported. Column names that do not resolve are left out with one warning (R drops them silently) |
 | `reactable_sdv_team_color_bar` | `colDef(style = function(value, index, name))` returning CSS text | `Column(style=fn(CellInfo) -> dict)` | ported. `which=` for `type=`; `na_color` defaults to `#b3b3b3` (R's `grey70`) |
 | `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color |
+
+## Wave D: image export and composition
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_save_crop` | `gtExtras::gtsave_extra(zoom, expand)`; magick `image_trim`, `image_border`, `image_resize` | `GT.gtsave(zoom=, expand=)` (headless Chrome through nokap); Pillow ports of the magick steps, measured against ImageMagick 6.9 | ported. `file=None` returns a `PIL.Image` (R: the encoded bytes). JPEG is written at magick's quality 92. A one-color render comes back untrimmed (magick raises). |
+| `gt_social_crop` | as `gt_save_crop`, plus `magick::image_extent(gravity=)` | a Pillow canvas with ImageMagick's gravity offsets (measured) | ported. A three-part ratio (`"1:2:3"`) or an infinite one raises (R reads the first two parts, or passes `Inf` on to magick). |
+| `gt_save_batch` | a tidyselect `group`; `cli` progress messages; `gtsave_extra(zoom)`; magick | a column name; progress lines on stderr; `GT.gtsave`; Pillow | ported. `fn` gets the caller's frame type (pandas or polars, through narwhals). Two values that make the same file name raise before anything renders (R overwrites one). A browser that cannot start raises at the first group (R records it as a failure of every group). |
+| `gt_grid` | an `htmltools` CSS grid; `webshot2::webshot(selector = "body")`; magick | a py-htmltools `Tag` (a great_tables dependency); `nokap.from_html` capturing the page wrapper; Pillow | ported. Returns an `htmltools.Tag` (R: `browsable()`); `tables` may be a dict (its values). A misspelled style key raises (R ignores it). A label font loads without a heading too (R drops the link). The capture is the `bg`-colored wrapper, so a non-white `bg` trims evenly (capturing the page body, as R does, leaves uneven `bg` padding: the even-trim render test fails with it). |
+| `gt_stack_tables` | an `htmltools` flex column; `webshot2::webshot(selector = "body")`; magick | as `gt_grid` | ported, with `gt_grid`'s notes on the return value, dict input, style keys and the even trim. |

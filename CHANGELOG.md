@@ -7,6 +7,7 @@
     - [Added — repository standards](#added--repository-standards)
     - [Added — matplotlib family](#added--matplotlib-family)
     - [Added — tables, wave A (marks and team identity)](#added--tables-wave-a-marks-and-team-identity)
+    - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -59,3 +60,11 @@
 - `sdvplot.testing.check_table_adapter_contract` (rules T0-T6) for table adapters.
 - `docs/PARITY_TABLES.md`: how each sdvplotR table function maps to sdvplot.
 - The `[tables]` extra now needs great_tables 1.0 or later.
+
+### Added — tables, wave D (image export and composition)
+
+- `sdvplot.great_tables`: `gt_save_crop`, `gt_social_crop` and `gt_save_batch` save tables as trimmed, padded images
+  (great_tables' `GT.gtsave`, headless Chrome); `gt_grid` and `gt_stack_tables` compose several tables into one HTML
+  block or image. Ports of the sdvplotR functions of the same names; differences are in `docs/PARITY_TABLES.md`.
+- `[tables]` names `htmltools` and `nokap`, which great_tables 1.0 already installs. Saving needs Chrome or Chromium
+  (set `CHROME_PATH` for a non-standard install); no selenium.

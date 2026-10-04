@@ -41,6 +41,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_surface.py` | `surface` (sportypy) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
+| `great_tables/_export.py` | `gt_save_crop`, `gt_social_crop`, `gt_save_batch`, `gt_grid`, `gt_stack_tables`: rendering through `GT.gtsave` / nokap, Pillow ports of sdvplotR's magick trim and pad |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
@@ -93,6 +94,8 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 - The `real_index` marker runs a test against the shipped index instead of the hand-written fixture
   (`tests/conftest.py`).
 - `filterwarnings` turns `SdvplotWarning` into errors in tests; assert expected warnings with `pytest.warns`.
+- The `render` marker: tests that start a headless Chrome (great_tables `gtsave`, nokap). They skip when no browser
+  can start; `-m "not render"` deselects them.
 
 ## Docstring standard
 
