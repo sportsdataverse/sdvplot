@@ -4289,6 +4289,7 @@ folium = [
     { name = "folium" },
 ]
 holoviews = [
+    { name = "bokeh" },
     { name = "holoviews" },
 ]
 mpl = [
@@ -4380,6 +4381,7 @@ test = [
 requires-dist = [
     { name = "altair", marker = "extra == 'altair'", specifier = ">=5" },
     { name = "bokeh", marker = "extra == 'bokeh'", specifier = ">=3" },
+    { name = "bokeh", marker = "extra == 'holoviews'", specifier = ">=3" },
     { name = "folium", marker = "extra == 'folium'", specifier = ">=0.15" },
     { name = "great-tables", marker = "extra == 'tables'", specifier = ">=0.10" },
     { name = "holoviews", marker = "extra == 'holoviews'", specifier = ">=1.18" },
