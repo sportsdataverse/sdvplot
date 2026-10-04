@@ -3,6 +3,7 @@
 
 - [great_tables and reactable parity with sdvplotR](#great_tables-and-reactable-parity-with-sdvplotr)
   - [Wave A: marks and team identity](#wave-a-marks-and-team-identity)
+  - [Wave B: table themes](#wave-b-table-themes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
