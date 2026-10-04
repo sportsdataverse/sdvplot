@@ -6,6 +6,7 @@
   - [Wave B: table themes](#wave-b-table-themes)
   - [Wave C1: cell styling and formatting](#wave-c1-cell-styling-and-formatting)
   - [Wave D: image export and composition](#wave-d-image-export-and-composition)
+  - [Wave C2: legends, layout and annotation (`sdvplot.great_tables._layout`)](#wave-c2-legends-layout-and-annotation-sdvplotgreat_tables_layout)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -111,3 +112,36 @@ table that is not a `GT` raises `TypeError`.
 | `gt_save_batch` | a tidyselect `group`; `cli` progress messages; `gtsave_extra(zoom)`; magick | a column name; progress lines on stderr; `GT.gtsave`; Pillow | ported. `fn` gets the caller's frame type (pandas or polars, through narwhals). Two values that make the same file name raise before anything renders (R overwrites one). A browser that cannot start raises at the first group (R records it as a failure of every group). |
 | `gt_grid` | an `htmltools` CSS grid; `webshot2::webshot(selector = "body")`; magick | a py-htmltools `Tag` (a great_tables dependency); `nokap.from_html` capturing the page wrapper; Pillow | ported. Returns an `htmltools.Tag` (R: `browsable()`); `tables` may be a dict (its values). A misspelled style key raises (R ignores it). A label font loads without a heading too (R drops the link). The capture is the `bg`-colored wrapper, so a non-white `bg` trims evenly (capturing the page body, as R does, leaves uneven `bg` padding: the even-trim render test fails with it). Deliberate divergence: a plain string in `title`, `subtitle`, `caption`, `source_note` or `labels` is escaped, as great_tables escapes text; `html()` and `md()` pass through as markup. R inserts plain strings as raw HTML (`htmltools::HTML(as.character(x))`), so `"Wins < 5"` loses its tail there. `gap` must be a non-negative number and `zoom` a positive one, and `labels` a non-empty text or list of text (R puts any `gap` into the CSS and hands any `zoom` to webshot). |
 | `gt_stack_tables` | an `htmltools` flex column; `webshot2::webshot(selector = "body")`; magick | as `gt_grid` | ported, with `gt_grid`'s notes on the return value, dict input, style keys, the even trim, escaped plain strings and the `gap` / `zoom` checks. |
+
+## Wave C2: legends, layout and annotation (`sdvplot.great_tables._layout`)
+
+All 17 functions keep sdvplotR's names, argument names, order and defaults, with these rules for the whole wave:
+`gt_object` is `gt`; an R style `list()` is a `dict` (default `None`), and an unknown style key raises `ValueError`
+(R ignores it); `columns`/`rows` take anything great_tables accepts (names, lists, polars selectors; 0-based positions,
+polars expressions, functions of a pandas frame) where R takes tidyselect and data-masked expressions with 1-based
+indices; colors that feed contrast or ramps must be hex (`#rgb`, `#rrggbb`), where R also takes color names; R's
+`cli` warnings are `SdvplotWarning`, its aborts `ValueError`/`TypeError`.
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_legend_continuous` | `scales::col_numeric` ramp (CIELAB interpolation) | piecewise-linear sRGB ramp between evenly spaced stops, the same as `GT.data_color` | ported; segment colors match great_tables' `data_color` cells exactly and R's slightly (different color space) |
+| `gt_legend_continuous` | `.recorded_scale()` R attribute; `missing()` for recorded arguments | `_sdvplot_scale` instance attribute on a `copy.copy` of the GT; arguments default to `None`, meaning "recorded, else R's default" | ported |
+| `gt_legend_continuous` | paletteer `"pkg::palette"` strings, `pal_type` registry | none (no paletteer in Python) | not ported: palettes are lists of hex colors; `pal_type` is accepted and recorded only |
+| `gt_legend_continuous` | `format(round(x, digits), big.mark = ",")` | `f"{x:,.{digits}f}"` | approximated: Python always prints `digits` decimals (R drops trailing zeros shared by every label) |
+| `gt_legend_discrete` | `.recorded_key()`; named vector or data frame `key_info` | `_sdvplot_key` attribute; a `{label: color}` mapping or a pandas/polars frame (via narwhals) | ported |
+| `gt_marginalia` | `cols_width()` formulas, `cell_text`, `cell_borders` | `cols_width(cases=)`, `style.text`, `style.borders` | ported |
+| `gt_outliers` | `stats::quantile` (type 7), `stats::sd` | own type-7 quantile and sample standard deviation | ported |
+| `gt_percentile_bar` | `gt::fmt(rows =, fns =)` one constant per row | `GT.fmt(fn, columns, rows)` with a value-to-HTML function bound per column (`functools.partial`) | ported |
+| `gt_row_accent` | `cells_stub`/`cells_body` borders; `sort()` of the key levels | `loc.stub`/`loc.body` + `style.borders`; the stub found through the private `GT._boxhead` | ported; levels sort by code point (R's sort is locale-aware) |
+| `gt_scale_note` | `fmt_number(scale_by =)`, labels from `_boxhead` | `fmt_number(scale_by=)`, labels from the private `GT._boxhead` | ported |
+| `gt_set_font` | one `tab_style` over every `cells_*`; deprecated `gt_table` argument | one `tab_style` over `loc.title`, `loc.subtitle`, `loc.stubhead`, `loc.spanner_labels(ids=...)` (ids from the private `GT._spanners`), `loc.column_labels`, `loc.row_groups`, `loc.stub`, `loc.body`, `loc.footnotes`, `loc.source_notes` | ported; `gt_table` (deprecated in R) not ported |
+| `gt_significance` | `text_transform` per distinct mark | `text_transform` per distinct mark, functions bound with `functools.partial` | ported |
+| `gt_snake` | rebuild with `gt()`, copy `_heading`/`_source_notes`, edit the `_styles` tibble, `random_id()` | rebuild with `GT(..., id=)`, `GT._replace(_heading=, _source_notes=, _styles=)` with `StyleInfo` dataclass edits (private), own 10-letter id | ported; only the padding rows of the last block are blanked (R blanks every missing cell of the last block) |
+| `gt_snake_align` | `as.data.frame(x)`, matrices accepted | pandas or polars frame in, the same kind out | ported; matrices not accepted |
+| `gt_social_tag` | `fontawesome::fa()` icons | `faicons.icon_svg()` (a great_tables dependency) | ported; faicons 0.2.2 lacks `x-twitter`, `bluesky`, `threads` and `substack`: `x`/`twitter` fall back to the Twitter bird, the others raise naming the faicons version (as R does); `align` must be left, center or right (R pastes any string into CSS) |
+| `gt_social_tag` | `gt_538_caption(..., ...)` for a caption | wave C1's `gt_538_caption(gt, top_caption=, bottom_caption=, **kwargs)` | ported |
+| `gt_spotlight` | data-masked `rows` | great_tables row selection | ported; numpy integer positions count as positions here and in `gt_percentile_bar` / `gt_row_accent` (great_tables' own resolver silently skips them) |
+| `gt_tiers` | `gt_theme_tier()`, `fmt_image()`, `sub_missing()`, `cols_label(everything() ~ "")`, `.record_key()` | wave B's `gt_theme_tier()`, `fmt_image()`, `sub_missing()`, `cols_label(cases=)`, `_sdvplot_key` | ported |
+| `gt_title_header` | `tab_header(html())`, fonts on `cells_title("title")`, `Date` | `tab_header(html())`, fonts on `loc.title()`, `datetime.date` | ported |
+| `gt_watermark` | `opt_css` scoped by `.table_id()`, `base64enc`, `URLencode` | `opt_css` scoped by `GT.with_id()`, `base64`, `urllib.parse.quote` | ported; `font` and `color` are escaped inside the SVG's attributes (R pastes them, so a quoted font list such as `"Helvetica Neue", Arial` breaks R's SVG) |
+| `gt_wrap_labels` | `strwrap()` (lines shorter than `width`) | `textwrap.wrap(width - 1)` without word or hyphen breaks | ported |

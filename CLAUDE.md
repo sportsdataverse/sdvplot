@@ -47,6 +47,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |
 | `great_tables/_cells.py` | the cell styling and formatting helpers (tables wave C1); the `_sdvplot_scale` record legends read |
 | `great_tables/_export.py` | `gt_save_crop`, `gt_social_crop`, `gt_save_batch`, `gt_grid`, `gt_stack_tables`: rendering through `GT.gtsave` / nokap, Pillow ports of sdvplotR's magick trim and pad |
+| `great_tables/_layout.py` | wave C2: legends (`gt_legend_*`), `gt_percentile_bar`, `gt_tiers`, row emphasis, notes, `gt_snake`; reads the `_sdvplot_scale` / `_sdvplot_key` records |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
