@@ -8,9 +8,13 @@ positions, a polars expression (polars data) or a callable that takes the data a
 
 from __future__ import annotations
 
+import copy
+import inspect
+import math
 import re
 import warnings
 from collections.abc import Callable, Sequence
+from decimal import Decimal
 from typing import Any, cast
 from urllib.parse import quote
 
@@ -19,6 +23,7 @@ from great_tables import GT, google_font, html, loc, md, random_id, style
 from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
 
+from sdvplot._contrast import hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -844,3 +849,467 @@ def gt_cutline(
                 f"background-repeat: no-repeat; background-position: {pos}; }}"
             )
     return out.opt_css("\n".join(css)) if css else out
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# color scales, pills and boxes
+
+
+def _number(v: Any) -> float | None:
+    """R's ``as.numeric`` without the warning: numbers, booleans and numeric strings; anything else is None."""
+    if _is_na(v) or (isinstance(v, str) and not v.strip()):
+        return None
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(f) else f
+
+
+def _natural(v: float, big: bool = False) -> str:
+    """R's ``format(v, trim = TRUE, scientific = FALSE)``: up to 7 significant digits, never scientific."""
+    if math.isinf(v):
+        return "Inf" if v > 0 else "-Inf"
+    exponent = Decimal(f"{v:.7g}").normalize().as_tuple().exponent
+    decimals = max(0, -exponent) if isinstance(exponent, int) else 0
+    return f"{v:{',' if big else ''}.{decimals}f}"
+
+
+def _format_value(value: float | None, digits: int | None, format_type: str, suffix: str) -> str:
+    """sdvplotR's pill and box label for an already-scaled value: ``number``, ``comma``, ``currency`` or ``percent``.
+
+    A missing value prints as ``NA``, as R's ``format(NA)`` does.
+    """
+    big = format_type in ("comma", "currency")
+    if value is None:
+        core = "NA"
+    elif digits is None:
+        core = _natural(value, big)
+    else:
+        core = f"{value:{',' if big else ''}.{digits}f}"
+    if format_type == "currency":
+        core = "$" + core
+    elif format_type == "percent":
+        core += "%"
+    return core + suffix
+
+
+_FORMAT_TYPES = ("number", "comma", "currency", "percent")
+
+
+def _fmt_rows(gt: GT, column: str, cells: dict[int, str]) -> GT:
+    """Put per-row HTML into a column (sdvplotR's ``.fmt_rows``).
+
+    great_tables formatters see a cell's value, not its row, so this adds one ``fmt`` per distinct string, over the
+    rows that carry it. Formatting by data row keeps row groups and sorting from scrambling the cells.
+    """
+    by_html: dict[str, list[int]] = {}
+    for row, text in cells.items():
+        by_html.setdefault(text, []).append(row)
+    for text, rows in by_html.items():
+        gt = gt.fmt(_constant(text), columns=column, rows=rows)
+    return gt
+
+
+def _palette(palette: Sequence[str], pal_type: str) -> list[str]:
+    """The palette as ``#rrggbb`` strings; a ``str`` (a named or paletteer palette) is refused."""
+    if pal_type not in ("discrete", "continuous"):
+        raise ValueError(f'pal_type must be "discrete" or "continuous", got {pal_type!r}')
+    if isinstance(palette, str):
+        raise ValueError(f"palette must be a list of hex colors; named palettes like {palette!r} are not supported")
+    colors = [hex6(c) for c in palette]
+    if not colors:
+        raise ValueError("palette needs at least one color")
+    return colors
+
+
+def _ramp(palette: list[str], domain: tuple[float, float]) -> Callable[[float], str | None]:
+    """Piecewise-linear sRGB between evenly spaced stops over ``domain``, as great_tables' ``data_color``.
+
+    Returns ``None`` for a value outside the domain.
+    """
+    lo, hi = domain
+    k = len(palette) - 1
+
+    def color(v: float) -> str | None:
+        if not lo <= v <= hi:
+            return None
+        if k == 0:
+            return palette[0]
+        t = 0.5 if hi == lo else (v - lo) / (hi - lo)
+        i = min(int(t * k), k - 1)
+        return mix(palette[i], palette[i + 1], t * k - i)
+
+    return color
+
+
+def _ranks(values: list[float | None], descending: bool) -> list[float | None]:
+    """R's ``rank(ties.method = "average", na.last = "keep")``, flipped so the largest value ranks 1 when descending."""
+    order = sorted((v, i) for i, v in enumerate(values) if v is not None)
+    ranks: list[float | None] = [None] * len(values)
+    j = 0
+    while j < len(order):
+        k = j
+        while k + 1 < len(order) and order[k + 1][0] == order[j][0]:
+            k += 1
+        for t in range(j, k + 1):
+            ranks[order[t][1]] = (j + k) / 2 + 1
+        j = k + 1
+    if descending and order:
+        top = max(r for r in ranks if r is not None)
+        ranks = [None if r is None else top - r + 1 for r in ranks]
+    return ranks
+
+
+def _domain(columns: dict[str, list[float | None]], domain: Sequence[float] | None) -> tuple[float, float]:
+    if domain is not None:
+        return float(domain[0]), float(domain[1])
+    present = [v for values in columns.values() for v in values if v is not None]
+    if not present:
+        raise ValueError("the columns hold no numeric values to color; pass domain")
+    return min(present), max(present)
+
+
+def _record_scale(
+    gt: GT, columns: list[str], palette: Sequence[str], domain: tuple[float, float], reverse: bool, pal_type: str
+) -> GT:
+    """Leave the scale on a copy of the table for ``gt_legend_continuous`` (the shared ``_sdvplot_scale`` record)."""
+    out = copy.copy(gt)
+    out.__dict__["_sdvplot_scale"] = {
+        "columns": list(columns),
+        "palette": list(palette),
+        "domain": domain,
+        "reverse": reverse,
+        "pal_type": pal_type,
+    }
+    return out
+
+
+def gt_color_pills(
+    gt: GT,
+    columns: Any,
+    rows: Any = None,
+    palette: Sequence[str] = ("#C84630", "#5DA271"),
+    fill_type: str = "continuous",
+    rank_order: str = "desc",
+    digits: int | None = None,
+    domain: Sequence[float] | None = None,
+    format_type: str = "number",
+    scale_percent: bool = True,
+    suffix: str = "",
+    reverse: bool = False,
+    outline_color: str | None = None,
+    outline_width: float = 0.25,
+    pal_type: str = "discrete",
+    pill_height: float = 25,
+    text_color: str | None = None,
+    na_color: str | None = None,
+) -> GT:
+    """Show values as rounded pills filled from a palette, by value or by rank.
+
+    Several columns share one ``domain`` (taken from them all when unset, with a warning) so their colors compare;
+    pill width is set per column. With ``fill_type="rank"`` each column is ranked against itself (average ties).
+    The text is black or white, whichever reads better on the fill, unless ``text_color`` is set. A value outside
+    ``domain`` is drawn grey (``#808080``) with one warning. The scale is recorded for ``gt_legend_continuous``.
+
+    Args:
+        gt: The table.
+        columns: The columns to fill.
+        rows: The rows to fill, as great_tables' ``loc.body(rows=)`` takes them; the rest keep their value.
+            ``None`` fills every row.
+        palette: Hex colors, low to high.
+        fill_type: ``"continuous"`` (by value) or ``"rank"``.
+        rank_order: ``"desc"`` (the largest value ranks 1) or ``"asc"``, for ``fill_type="rank"``.
+        digits: Decimal places of the printed value; ``None`` prints it naturally.
+        domain: ``(low, high)`` mapped onto the palette; ``None`` uses the observed range and warns.
+        format_type: ``"number"``, ``"comma"``, ``"currency"`` or ``"percent"``.
+        scale_percent: Multiply by 100 for ``format_type="percent"``.
+        suffix: Appended to each printed value, such as ``"M"``.
+        reverse: Reverse the palette.
+        outline_color: A border color around each pill; ``None`` for none.
+        outline_width: The border width in pixels.
+        pal_type: ``"discrete"`` or ``"continuous"``; recorded for the legend only (sdvplotR uses it to look up
+            paletteer palettes, which Python does not have).
+        pill_height: Pill height in pixels.
+        text_color: The pill text color; ``None`` picks black or white per pill.
+        na_color: A hex color for a pill over a missing value; ``None`` leaves the cell blank.
+
+    Returns:
+        GT: A new table with pills, recording ``_sdvplot_scale``; ``gt`` itself, with one SdvplotWarning, when
+        ``rows`` matches nothing.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: ``columns`` matches nothing; the palette is not a list of hex colors; an option is not one
+            of its listed values; or there is no ``domain`` and no numeric value to derive one from.
+
+    Example:
+        ::
+
+            gt_color_pills(GT(df), ["disp", "hp"], domain=(50, 500))
+            gt_color_pills(GT(df), "hp", fill_type="rank", domain=(1, 6), digits=0)
+
+    See Also:
+        Ported from sdvplotR ``gt_color_pills()``; ``gt_color_ranks`` fills the whole cell.
+    """
+    _check_gt(gt)
+    cols = _columns(gt, columns)
+    if not cols:
+        raise ValueError("columns matched no columns")
+    for name, value, allowed in (
+        ("fill_type", fill_type, ("continuous", "rank")),
+        ("rank_order", rank_order, ("asc", "desc")),
+        ("format_type", format_type, _FORMAT_TYPES),
+    ):
+        if value not in allowed:
+            raise ValueError(f"{name} must be one of {allowed}, got {value!r}")
+    pal = _palette(palette, pal_type)
+    keep = _kept_rows(gt, rows)
+    if keep is None:
+        return gt
+
+    numbers = {c: [_number(v) for v in _values(gt, c)] for c in cols}
+    scaled = {c: _ranks(v, rank_order == "desc") if fill_type == "rank" else v for c, v in numbers.items()}
+    lo, hi = _domain(scaled, domain)
+    if domain is None:
+        _warn(
+            f"no domain given, so the colors span the observed range ({_natural(lo)} to {_natural(hi)}); "
+            "set domain to compare colors across tables or columns"
+        )
+    ramp = _ramp(pal[::-1] if reverse else pal, (lo, hi))
+    outline = f"border: {outline_width}px solid {outline_color};" if outline_color is not None else ""
+
+    def label(v: float | None) -> str:
+        if v is not None and format_type == "percent" and scale_percent:
+            v *= 100
+        return _format_value(v, digits, format_type, suffix)
+
+    out, outside = gt, 0
+    for c in cols:
+        width = max((len(label(numbers[c][i])) for i in keep), default=1)
+        cells: dict[int, str] = {}
+        for i in keep:
+            s = scaled[c][i]
+            if s is None:
+                if na_color is None:
+                    cells[i] = ""
+                    continue
+                fill, text = na_color, ""
+            else:
+                ramped = ramp(s)
+                if ramped is None:
+                    outside += 1
+                fill, text = ramped or "#808080", label(numbers[c][i])
+            ink = text_color or on_color(fill)
+            cells[i] = (
+                f"<span style='display: inline-block; width: {width}ch; padding-left: 3px; padding-right: 3px; "
+                f"height: {pill_height}px; line-height: {pill_height}px; background-color: {fill}; color: {ink}; "
+                f"border-radius: 10px; text-align: center; {outline}'>{text}</span>"
+            )
+        out = _fmt_rows(out, c, cells)
+    if outside:
+        _warn(f"{outside} value(s) fall outside the domain ({_natural(lo)} to {_natural(hi)}) and are drawn grey")
+    return _record_scale(out, cols, palette, (lo, hi), reverse, pal_type)
+
+
+def gt_color_ranks(
+    gt: GT,
+    columns: Any,
+    rows: Any = None,
+    palette: Sequence[str] = ("#3D8B6E", "#9DC5A7", "#EDE0CC", "#DB9070", "#BE4D3A"),
+    domain: Sequence[float] | None = None,
+    reverse: bool = False,
+    na_color: str = "white",
+    autocolor_text: bool = True,
+    pal_type: str = "discrete",
+    **data_color_kwargs: Any,
+) -> GT:
+    """Fill the cells of columns that already hold ranks (1 is best), green to red by default.
+
+    A shorthand around great_tables' ``data_color``: the values are colored as they are, no ranking is computed.
+    The domain is shared across the columns (rank 1 and the largest rank present anchor the ends) unless given.
+    The scale is recorded for ``gt_legend_continuous``.
+
+    Args:
+        gt: The table.
+        columns: The columns to color.
+        rows: The rows to color, as great_tables' ``loc.body(rows=)`` takes them; ``None`` colors every row.
+        palette: Hex colors, low to high.
+        domain: ``(low, high)`` mapped onto the palette; ``None`` uses the selected columns' range.
+        reverse: Reverse the palette.
+        na_color: The fill of missing values.
+        autocolor_text: Set each cell's text to black or white for contrast.
+        pal_type: ``"discrete"`` or ``"continuous"``; recorded for the legend only.
+        **data_color_kwargs: Passed to ``GT.data_color`` (``alpha``, ``truncate``).
+
+    Returns:
+        GT: A new table, recording ``_sdvplot_scale``; ``gt`` itself, with one SdvplotWarning, when ``rows``
+        matches nothing.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: ``columns`` matches nothing, the palette is not a list of hex colors, or there is no
+            ``domain`` and no numeric value to derive one from.
+
+    Example:
+        ::
+
+            gt_color_ranks(GT(ranked), ["off_rank", "def_rank"])
+
+    See Also:
+        Ported from sdvplotR ``gt_color_ranks()``; ``gt_color_pills`` draws pills instead.
+    """
+    _check_gt(gt)
+    cols = _columns(gt, columns)
+    if not cols:
+        raise ValueError("columns matched no columns")
+    _palette(palette, pal_type)
+    keep = _kept_rows(gt, rows)
+    if keep is None:
+        return gt
+    lo, hi = _domain({c: [_number(v) for v in _values(gt, c)] for c in cols}, domain)
+    out = gt.data_color(
+        columns=cols,
+        rows=keep,
+        palette=list(palette),
+        domain=[lo, hi],
+        na_color=na_color,
+        reverse=reverse,
+        autocolor_text=autocolor_text,
+        **data_color_kwargs,
+    )
+    return _record_scale(out, cols, palette, (lo, hi), reverse, pal_type)
+
+
+def _takes_column(rule: Callable[..., Any]) -> bool:
+    """Whether an indicator rule takes the column name as a second argument (R: ``length(formals(rule)) == 2``)."""
+    try:
+        return len(inspect.signature(rule).parameters) == 2
+    except (TypeError, ValueError):
+        return False
+
+
+def _box_label(v: float | None, digits: int | None, format_type: str, suffix: str) -> str:
+    # sdvplotR's indicator boxes round before scaling a percent (the pills scale first)
+    if v is not None and digits is not None:
+        v = round(v, digits)
+    if v is not None and format_type == "percent":
+        v *= 100
+    return _format_value(v, digits, format_type, suffix)
+
+
+def gt_indicator_boxes(
+    gt: GT,
+    columns: Any = None,
+    key_columns: Any = None,
+    indicator_vals: Sequence[float] = (0, 1),
+    indicator_rule: Callable[..., Any] | None = None,
+    color_yes: str = "#FCCF10",
+    color_no: str = "#EEEEEE",
+    show_na_as_na: bool = False,
+    show_text: bool = False,
+    show_only: str | None = None,
+    per_column_formats: dict[str, dict[str, Any]] | None = None,
+    color_na: str | None = None,
+    border_color: str | None = None,
+    border_width: float = 0.25,
+    box_width: float = 20,
+    box_height: float = 20,
+    text_size: float = 12,
+    text_weight: str = "bold",
+) -> GT:
+    """Replace values with colored boxes: filled when a value meets a rule, neutral otherwise.
+
+    By default a box is filled when its value equals ``indicator_vals[1]``. Name the columns to convert with
+    ``columns``, or the ones to leave alone with ``key_columns`` (not both); with neither, every body column is
+    converted. Values are read as numbers, so text becomes missing. Converted columns are centered.
+
+    Args:
+        gt: The table.
+        columns: The columns to convert.
+        key_columns: The columns to leave alone (every other body column is converted).
+        indicator_vals: The ``(no, yes)`` values.
+        indicator_rule: A function deciding when a box is filled, called with each cell's numeric value (and the
+            column name, when it takes two arguments); ``None`` tests equality with ``indicator_vals[1]``.
+        color_yes: Fill of boxes meeting the rule (hex).
+        color_no: Fill of the others (hex).
+        show_na_as_na: Print ``NA`` in a missing value's box instead of leaving it blank.
+        show_text: Print the formatted value inside each box (boxes then widen to fit).
+        show_only: Print text in only one class of box: ``"yes"``, ``"no"`` or ``"NA"``; ``None`` prints all.
+        per_column_formats: ``{column: {"digits": ..., "format_type": ..., "suffix": ...}}``.
+        color_na: Fill of missing values' boxes (hex); ``None`` uses ``color_no``.
+        border_color: A border color around each box; ``None`` for none.
+        border_width: The border width in pixels.
+        box_width: Box width in pixels when ``show_text`` is off.
+        box_height: Box height in pixels.
+        text_size: Box text size in pixels.
+        text_weight: Box text weight.
+
+    Returns:
+        GT: A new table with the columns shown as boxes.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: Both ``columns`` and ``key_columns`` were given, no column is left to convert, or
+            ``show_only`` is unknown.
+
+    Example:
+        ::
+
+            gt_indicator_boxes(GT(roster), key_columns="player", show_text=True, border_color="#333333")
+
+    See Also:
+        Ported from sdvplotR ``gt_indicator_boxes()``.
+    """
+    _check_gt(gt)
+    if columns is not None and key_columns is not None:
+        raise ValueError(
+            "give either columns (the columns to convert to boxes) or key_columns (the ones to leave alone), not both"
+        )
+    if show_only not in (None, "yes", "no", "NA"):
+        raise ValueError(f'show_only must be None, "yes", "no" or "NA", got {show_only!r}')
+    if columns is not None:
+        cols = _columns(gt, columns)
+    else:
+        keys = set(_columns(gt, key_columns)) if key_columns is not None else set()
+        cols = [c for c in _columns(gt, None) if c not in keys]
+    if not cols:
+        raise ValueError("no columns left to convert to boxes")
+    yes_value = indicator_vals[1]
+    rule: Callable[..., Any] = indicator_rule if indicator_rule is not None else (lambda x: x == yes_value)
+    with_column = _takes_column(rule)
+    na_fill = color_na or color_no
+    border = f"border: {border_width}px solid {border_color};" if border_color is not None else ""
+
+    out = gt
+    for c in cols:
+        spec = (per_column_formats or {}).get(c, {})
+        digits, format_type, suffix = spec.get("digits"), spec.get("format_type", "number"), spec.get("suffix", "")
+        numbers = [_number(v) for v in _values(gt, c)]
+        labels = [_box_label(x, digits, format_type, suffix) for x in numbers]
+        width = max((len(s) for s in labels), default=0) * 10 if show_text else box_width
+        cells: dict[int, str] = {}
+        for i, (x, text) in enumerate(zip(numbers, labels, strict=True)):
+            if x is None:
+                color = na_fill
+            else:
+                hit = rule(x, c) if with_column else rule(x)
+                color = color_yes if _flags([hit])[0] else color_no
+            if not show_text:
+                content = ""
+            elif show_only == "yes":
+                content = text if color == color_yes else ""
+            elif show_only == "no":
+                content = text if color == color_no else ""
+            elif show_only == "NA":
+                content = "NA" if x is None and show_na_as_na else ""
+            else:
+                content = "" if x is None and not show_na_as_na else text
+            cells[i] = (
+                f"<span style='display:inline-block; width:{width}px; height:{box_height}px; "
+                f"line-height:{box_height}px; background-color: {color}; color: {on_color(color)}; "
+                f"vertical-align:middle; margin:4px 1px; font-size: {text_size}px; font-weight: {text_weight}; "
+                f"text-align:center; {border}'>{content}</span>"
+            )
+        out = _fmt_rows(out, c, cells)
+    return out.cols_align(align="center", columns=cols)
