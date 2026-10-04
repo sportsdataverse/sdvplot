@@ -5,6 +5,7 @@
   - [Development setup](#development-setup)
     - [pre-commit](#pre-commit)
   - [Tests](#tests)
+    - [Image baselines](#image-baselines)
   - [Generated files](#generated-files)
   - [Code standards for new modules](#code-standards-for-new-modules)
   - [Notebooks](#notebooks)
@@ -62,7 +63,9 @@ marker (`tests/test_real_index.py`).
 `tests/test_images_baseline.py` compares figures against `tests/baseline/*.png` (pytest-mpl). CI runs `pytest --mpl`.
 After an intended visual change, regenerate on Linux (the CI image) and look at every changed PNG before committing:
 
-    uv run pytest tests/test_images_baseline.py --mpl-generate-path=tests/baseline
+```sh
+uv run pytest tests/test_images_baseline.py --mpl-generate-path=tests/baseline
+```
 
 ## Generated files
 

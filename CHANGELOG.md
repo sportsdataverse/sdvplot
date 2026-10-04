@@ -5,6 +5,7 @@
   - [Unreleased](#unreleased)
     - [Added — core (team identity, colors, logos, cache, adapter contract)](#added--core-team-identity-colors-logos-cache-adapter-contract)
     - [Added — repository standards](#added--repository-standards)
+    - [Added — matplotlib family](#added--matplotlib-family)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
