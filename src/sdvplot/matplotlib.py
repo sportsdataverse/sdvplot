@@ -173,6 +173,7 @@ def add_logos(
         id_system: The id system of ``teams``; "auto" tries each in order.
         transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
             ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
+            A mark whose position falls outside the Axes is not drawn, whatever the transform.
 
     Returns:
         object: ``target`` itself, drawn on.
@@ -241,6 +242,7 @@ def add_wordmarks(
         id_system: The id system of ``teams``; "auto" tries each in order.
         transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
             ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
+            A mark whose position falls outside the Axes is not drawn, whatever the transform.
 
     Returns:
         object: ``target`` itself, drawn on.
@@ -294,6 +296,7 @@ def add_headshots(
         id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
         transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
             ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
+            A mark whose position falls outside the Axes is not drawn, whatever the transform.
 
     Returns:
         object: ``target`` itself, drawn on.

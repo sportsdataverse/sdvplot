@@ -16,6 +16,7 @@ from pygal.style import Style
 
 from sdvplot._colors import team_colors
 from sdvplot._placement import check_alpha, check_height, place
+from sdvplot._resolve import _unpack
 from sdvplot._web import aspect, image_src
 
 SUPPORTS_AXIS_LOGOS = False
@@ -105,6 +106,9 @@ def add_logos(
 ) -> Any:
     """Draw each team's logo centred on its (x, y) point of a pygal XY chart, in every render of the chart.
 
+    The logos belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
+    hands the copied filter only the SVG tree, not the copy. Call add_logos again on the copy.
+
     Args:
         chart: A pygal ``XY`` chart (``XY(stroke=False)`` for a scatter) or a ``DateTimeLine``/``DateLine``/
             ``TimeLine``/``TimeDeltaLine``.
@@ -163,6 +167,9 @@ def add_wordmarks(
 ) -> Any:
     """Draw each team's wordmark centred on its (x, y) point of a pygal XY chart, in every render of the chart.
 
+    The wordmarks belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
+    hands the copied filter only the SVG tree, not the copy. Call add_wordmarks again on the copy.
+
     Args:
         chart: A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...).
         x: The points' x positions in the chart's units (read by position).
@@ -215,6 +222,9 @@ def add_headshots(
     id_system: str = "espn",
 ) -> Any:
     """Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart.
+
+    The headshots belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
+    hands the copied filter only the SVG tree, not the copy. Call add_headshots again on the copy.
 
     Args:
         chart: A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...).
@@ -291,7 +301,8 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
     other series keep theirs.
 
     Args:
-        teams: One team per series, in series order, in any id system ``resolve()`` understands.
+        teams: One team per series, in series order (or one team, for one series), in any id system ``resolve()``
+            understands.
         league: The SDV league key, e.g. "nfl".
         which: "primary" or "secondary".
         season: One season, or one per team.
@@ -318,7 +329,7 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
         pygal styles: https://www.pygal.org/en/stable/documentation/styles.html
     """
     defaults = Style.colors
-    colors = team_colors(list(teams), league, which=which, season=season)
+    colors = team_colors(_unpack(teams)[0], league, which=which, season=season)  # a bare "KC" is one team
     return Style(colors=tuple(c or defaults[i % len(defaults)] for i, c in enumerate(colors)), **style_kwargs)
 
 

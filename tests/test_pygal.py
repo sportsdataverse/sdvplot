@@ -1,9 +1,11 @@
 import base64
+import copy
 import datetime as dt
 import hashlib
 import io
 import xml.etree.ElementTree as ET
 
+import numpy as np
 import pytest
 
 pygal = pytest.importorskip("pygal")
@@ -85,6 +87,26 @@ def test_datetime_logos_sit_on_pygals_dots(mark_images):
     want = [(float(d.get("cx")), float(d.get("cy"))) for d in _dots(root)]
     assert len(want) == 2
     assert [_center(img) for img in _images(root)] == [pytest.approx(w, abs=1e-3) for w in want]
+
+
+def test_a_numpy_datetime64_array_places_logos_on_pygals_dots(mark_images):
+    days = [dt.datetime(2025, 9, 7, 13), dt.datetime(2025, 9, 14, 16)]
+    chart = pygal.DateTimeLine(stroke=False, show_legend=False)
+    chart.add("games", list(zip(days, [3, 7], strict=True)))
+    spg.add_logos(chart, np.array(days, dtype="datetime64[ns]"), [3, 7], ["LV", "LAR"], league="nfl")  # pandas' dtype
+    root = chart.render_tree()
+    want = [(float(d.get("cx")), float(d.get("cy"))) for d in _dots(root)]
+    assert [_center(img) for img in _images(root)] == [pytest.approx(w, abs=1e-3) for w in want]
+
+
+def test_a_copied_chart_draws_its_marks_only_after_its_own_add_call(mark_images):
+    chart = _chart()
+    spg.add_logos(chart, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
+    copied = copy.deepcopy(chart)
+    assert _images(copied.render_tree()) == []  # the copied filter still reads the original chart's render
+    spg.add_logos(copied, [10], [-3], ["LV"], league="nfl")
+    assert [img.get(HREF) for img in _images(copied.render_tree())] == ["https://cdn/1111.png"]
+    assert len(_images(chart.render_tree())) == 2  # the original keeps its own marks
 
 
 def _svg(chart, how, tmp_path):
@@ -202,6 +224,10 @@ def test_team_style_colors_series_in_order(mark_images):
     assert style.colors == ("#000000", "#003594")
     assert style.background == "transparent"
     assert spg.team_style(["LAR"], league="nfl", which="secondary").colors == ("#ffa300",)
+
+
+def test_team_style_takes_one_team_as_a_scalar(mark_images):
+    assert spg.team_style("LAR", league="nfl").colors == ("#003594",)  # not one color per character of "LAR"
 
 
 def test_team_style_keeps_the_default_color_for_an_unknown_team(mark_images):

@@ -1,3 +1,4 @@
+import datetime as dt
 import math
 
 import numpy as np
@@ -43,6 +44,19 @@ def test_place_reads_pandas_by_position_not_label(manifest):
     assert [(p.team_id, p.x, p.y) for p in out] == [("13", 10.0, -3.0), ("14", 20.0, -7.0)]
     lout = place(pl.Series([10.0, 20.0]), pl.Series([-3.0, -7.0]), pl.Series(["LV", "LAR"]), league="nfl")
     assert [(p.team_id, p.x, p.y) for p in lout] == [("13", 10.0, -3.0), ("14", 20.0, -7.0)]
+
+
+def test_place_reads_numpy_datetimes_as_python_datetimes(manifest):
+    days = [dt.datetime(2025, 9, 7, 13), dt.datetime(2025, 9, 14, 16)]
+    out = place(np.array(days, dtype="datetime64[ns]"), [3, 7], ["LV", "LAR"], league="nfl")
+    assert [p.x for p in out] == days  # ndarray.tolist() alone gives integer nanoseconds
+    gaps = [dt.timedelta(hours=1), dt.timedelta(hours=2)]
+    assert [p.x for p in place(np.array(gaps, dtype="timedelta64[ns]"), [3, 7], ["LV", "LAR"], league="nfl")] == gaps
+    dates = place(np.array(days, dtype="datetime64[D]"), [3, 7], ["LV", "LAR"], league="nfl")
+    assert [p.x for p in dates] == [d.date() for d in days]  # a day-unit array stays dates
+    with pytest.warns(SdvplotWarning, match="missing x or y"):
+        out = place(np.array([days[0], "NaT"], dtype="datetime64[ns]"), [3, 7], ["LV", "LAR"], league="nfl")
+    assert [p.x for p in out] == [days[0]]
 
 
 def test_place_takes_the_aspect_from_the_manifest(manifest):
