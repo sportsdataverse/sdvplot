@@ -100,3 +100,36 @@ table that is not a `GT` raises `TypeError`.
 | `gt_highlight_cells` | an rlang formula or function per column, or a logical matrix | a callable on each column's pandas/polars Series, or a DataFrame or 2-D sequence mask | ported |
 | `gt_highlight_na` | `tab_style()` + `text_transform()` for `missing_text` | `tab_style()` + `fmt()` (`text_transform` skips null cells) | ported; `columns=None` means every column (R: `everything()`) |
 | `gt_indicator_boxes` | `text_transform()` with a vectorized rule over the rendered text | `fmt()` per data value; the rule is called per value (and column name) | approximated: a rule that needs the whole column (`x > mean(x)`) must be computed beforehand; `show_only` is validated |
+
+## Wave C2: legends, layout and annotation (`sdvplot.great_tables._layout`)
+
+All 17 functions keep sdvplotR's names, argument names, order and defaults, with these rules for the whole wave:
+`gt_object` is `gt`; an R style `list()` is a `dict` (default `None`), and an unknown style key raises `ValueError`
+(R ignores it); `columns`/`rows` take anything great_tables accepts (names, lists, polars selectors; 0-based positions,
+polars expressions, functions of a pandas frame) where R takes tidyselect and data-masked expressions with 1-based
+indices; colors that feed contrast or ramps must be hex (`#rgb`, `#rrggbb`), where R also takes color names; R's
+`cli` warnings are `SdvplotWarning`, its aborts `ValueError`/`TypeError`.
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_legend_continuous` | `scales::col_numeric` ramp (CIELAB interpolation) | piecewise-linear sRGB ramp between evenly spaced stops, the same as `GT.data_color` | ported; segment colors match great_tables' `data_color` cells exactly and R's slightly (different color space) |
+| `gt_legend_continuous` | `.recorded_scale()` R attribute; `missing()` for recorded arguments | `_sdvplot_scale` instance attribute on a `copy.copy` of the GT; arguments default to `None`, meaning "recorded, else R's default" | ported |
+| `gt_legend_continuous` | paletteer `"pkg::palette"` strings, `pal_type` registry | none (no paletteer in Python) | not ported: palettes are lists of hex colors; `pal_type` is accepted and recorded only |
+| `gt_legend_continuous` | `format(round(x, digits), big.mark = ",")` | `f"{x:,.{digits}f}"` | approximated: Python always prints `digits` decimals (R drops trailing zeros shared by every label) |
+| `gt_legend_discrete` | `.recorded_key()`; named vector or data frame `key_info` | `_sdvplot_key` attribute; a `{label: color}` mapping or a pandas/polars frame (via narwhals) | ported |
+| `gt_marginalia` | `cols_width()` formulas, `cell_text`, `cell_borders` | `cols_width(cases=)`, `style.text`, `style.borders` | ported |
+| `gt_outliers` | `stats::quantile` (type 7), `stats::sd` | own type-7 quantile and sample standard deviation | ported |
+| `gt_percentile_bar` | `gt::fmt(rows =, fns =)` one constant per row | `GT.fmt(fn, columns, rows)` with a value-to-HTML function bound per column (`functools.partial`) | ported |
+| `gt_row_accent` | `cells_stub`/`cells_body` borders; `sort()` of the key levels | `loc.stub`/`loc.body` + `style.borders`; the stub found through the private `GT._boxhead` | ported; levels sort by code point (R's sort is locale-aware) |
+| `gt_scale_note` | `fmt_number(scale_by =)`, labels from `_boxhead` | `fmt_number(scale_by=)`, labels from the private `GT._boxhead` | ported |
+| `gt_set_font` | one `tab_style` over every `cells_*`; deprecated `gt_table` argument | one `tab_style` over `loc.title`, `loc.subtitle`, `loc.stubhead`, `loc.spanner_labels(ids=...)` (ids from the private `GT._spanners`), `loc.column_labels`, `loc.row_groups`, `loc.stub`, `loc.body`, `loc.footnotes`, `loc.source_notes` | ported; `gt_table` (deprecated in R) not ported |
+| `gt_significance` | `text_transform` per distinct mark | `text_transform` per distinct mark, functions bound with `functools.partial` | ported |
+| `gt_snake` | rebuild with `gt()`, copy `_heading`/`_source_notes`, edit the `_styles` tibble, `random_id()` | rebuild with `GT(..., id=)`, `GT._replace(_heading=, _source_notes=, _styles=)` with `StyleInfo` dataclass edits (private), own 10-letter id | ported; only the padding rows of the last block are blanked (R blanks every missing cell of the last block) |
+| `gt_snake_align` | `as.data.frame(x)`, matrices accepted | pandas or polars frame in, the same kind out | ported; matrices not accepted |
+| `gt_social_tag` | `fontawesome::fa()` icons | `faicons.icon_svg()` (a great_tables dependency) | ported; faicons 0.2.2 lacks `x-twitter`, `bluesky`, `threads` and `substack`: `x`/`twitter` fall back to the Twitter bird, the others raise naming the faicons version (as R does) |
+| `gt_social_tag` | `gt_538_caption(..., ...)` for a caption | wave C1's `gt_538_caption(gt, top_caption=, bottom_caption=, **kwargs)` | ported |
+| `gt_spotlight` | data-masked `rows` | great_tables row selection | ported |
+| `gt_tiers` | `gt_theme_tier()`, `fmt_image()`, `sub_missing()`, `cols_label(everything() ~ "")`, `.record_key()` | wave B's `gt_theme_tier()`, `fmt_image()`, `sub_missing()`, `cols_label(cases=)`, `_sdvplot_key` | ported |
+| `gt_title_header` | `tab_header(html())`, fonts on `cells_title("title")`, `Date` | `tab_header(html())`, fonts on `loc.title()`, `datetime.date` | ported |
+| `gt_watermark` | `opt_css` scoped by `.table_id()`, `base64enc`, `URLencode` | `opt_css` scoped by `GT.with_id()`, `base64`, `urllib.parse.quote` | ported |
+| `gt_wrap_labels` | `strwrap()` (lines shorter than `width`) | `textwrap.wrap(width - 1)` without word or hyphen breaks | ported |

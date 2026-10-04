@@ -82,3 +82,13 @@
   tables built from pandas or polars data.
 - `gt_color_pills` and `gt_color_ranks` record their color scale for `gt_legend_continuous`.
 - `docs/PARITY_TABLES.md` lists where they differ from R.
+
+### Added — tables wave C2 (legends, layout and annotation)
+
+- `sdvplot.great_tables` gains sdvplotR's legend, layout and annotation helpers, with sdvplotR's names and arguments
+  on pandas or polars data: `gt_legend_continuous`, `gt_legend_discrete`, `gt_marginalia`, `gt_outliers`,
+  `gt_percentile_bar`, `gt_row_accent`, `gt_scale_note`, `gt_set_font`, `gt_significance`, `gt_snake`,
+  `gt_snake_align`, `gt_social_tag`, `gt_spotlight`, `gt_tiers`, `gt_title_header`, `gt_watermark`, `gt_wrap_labels`.
+- `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
+  `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
+- `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.

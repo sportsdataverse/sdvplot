@@ -43,6 +43,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
 | `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |
 | `great_tables/_cells.py` | the cell styling and formatting helpers (tables wave C1); the `_sdvplot_scale` record legends read |
+| `great_tables/_layout.py` | wave C2: legends (`gt_legend_*`), `gt_percentile_bar`, `gt_tiers`, row emphasis, notes, `gt_snake`; reads the `_sdvplot_scale` / `_sdvplot_key` records |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
