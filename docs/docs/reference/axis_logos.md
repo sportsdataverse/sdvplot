@@ -41,7 +41,7 @@ import sdvplot
 try:
     sdvplot.axis_logos(object(), "x", league="nfl")
 except sdvplot.UnsupportedTargetError:
-    pass   # raised: this core release has no adapters registered
+    pass   # raised: object() is not a plot or table
 ```
 
 ## See also

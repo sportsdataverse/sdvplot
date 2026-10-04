@@ -41,7 +41,7 @@ import sdvplot
 try:
     sdvplot.add_headshots(object(), [0.5], [0.5], ["KC"], league="nfl")
 except sdvplot.UnsupportedTargetError:
-    pass   # raised: this core release has no adapters registered
+    pass   # raised: object() is not a plot or table
 ```
 
 ## See also

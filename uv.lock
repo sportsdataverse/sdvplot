@@ -3422,6 +3422,23 @@ wheels = [
 ]
 
 [[package]]
+name = "pytest-mpl"
+version = "0.19.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "packaging" },
+    { name = "pillow" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c1/d5347e8aff4f6306f33caac80e1527831f733788ca98a6d58cfa0d40999c/pytest_mpl-0.19.0.tar.gz", hash = "sha256:c08e7b51ba4c98eed77ac3f3c6e336ed6163647d9e27ea1d928f79b542178cbe", size = 881884, upload-time = "2026-03-25T10:12:35.992Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/f9/60a6c3da23525e600131eae9e17cad738e2e820335ab45e1ea78ec8df4cb/pytest_mpl-0.19.0-py3-none-any.whl", hash = "sha256:ceb6f7201587b07af82ba8892631a29a4716fdc84306db3ec1b4ef3758f0507d", size = 28139, upload-time = "2026-03-25T10:12:34.966Z" },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -4297,6 +4314,7 @@ dev = [
     { name = "pyarrow" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-mpl" },
     { name = "pyyaml" },
     { name = "ruff" },
     { name = "seaborn" },
@@ -4329,6 +4347,8 @@ test = [
     { name = "pyarrow" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-mpl" },
+    { name = "seaborn" },
 ]
 
 [package.metadata]
@@ -4371,6 +4391,7 @@ dev = [
     { name = "pyarrow", specifier = ">=15" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-cov", specifier = ">=5" },
+    { name = "pytest-mpl", specifier = ">=0.17" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "ruff", specifier = "==0.15.12" },
     { name = "seaborn", specifier = ">=0.13" },
@@ -4399,6 +4420,8 @@ test = [
     { name = "pyarrow", specifier = ">=15" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-cov", specifier = ">=5" },
+    { name = "pytest-mpl", specifier = ">=0.17" },
+    { name = "seaborn", specifier = ">=0.13" },
 ]
 
 [[package]]

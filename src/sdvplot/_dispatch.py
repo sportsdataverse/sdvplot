@@ -101,7 +101,7 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
             try:
                 sdvplot.add_logos(object(), [0.5], [0.5], ["KC"], league="nfl")
             except sdvplot.UnsupportedTargetError:
-                pass   # raised: this core release has no adapters registered
+                pass   # raised: object() is not a plot or table
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -140,7 +140,7 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
             try:
                 sdvplot.add_wordmarks(object(), [0.5], [0.5], ["KC"], league="nfl")
             except sdvplot.UnsupportedTargetError:
-                pass   # raised: this core release has no adapters registered
+                pass   # raised: object() is not a plot or table
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -179,7 +179,7 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
             try:
                 sdvplot.add_headshots(object(), [0.5], [0.5], ["KC"], league="nfl")
             except sdvplot.UnsupportedTargetError:
-                pass   # raised: this core release has no adapters registered
+                pass   # raised: object() is not a plot or table
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -217,10 +217,15 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
             try:
                 sdvplot.axis_logos(object(), "x", league="nfl")
             except sdvplot.UnsupportedTargetError:
-                pass   # raised: this core release has no adapters registered
+                pass   # raised: object() is not a plot or table
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
     return adapter_for(target).axis_logos(target, *args, **kwargs)
+
+
+# The adapters sdvplot ships. Registering imports nothing: the adapter module loads on first use.
+register_adapter(Adapter("matplotlib", "matplotlib", "sdvplot.matplotlib", "mpl"))
+register_adapter(Adapter("seaborn", "seaborn", "sdvplot.matplotlib", "mpl"))
