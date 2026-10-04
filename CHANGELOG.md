@@ -7,6 +7,7 @@
     - [Added — repository standards](#added--repository-standards)
     - [Added — matplotlib family](#added--matplotlib-family)
     - [Added — tables, wave A (marks and team identity)](#added--tables-wave-a-marks-and-team-identity)
+    - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

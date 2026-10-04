@@ -610,7 +610,7 @@ def gt_border_bars_top(
     bars = _bars(gt, loc.title, colors, **bar_args)
     heading = gt._heading
     title = "" if heading.title is None else f'<div style="padding: 4px 5px;">{_process_text(heading.title)}</div>'
-    subtitle = cast(Any, heading.subtitle)  # typed BaseText on GTData, Text on tab_header
+    subtitle = cast(Any, heading.subtitle)  # GTData annotates it BaseText; tab_header stores Text
     return gt.tab_header(title=html(bars + title), subtitle=subtitle, preheader=heading.preheader).opt_css(
         f"#{table_id} .gt_title {{padding: 0px !important;}}"
     )
