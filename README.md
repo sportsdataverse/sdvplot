@@ -45,6 +45,7 @@ sportypy surfaces and plottable have adapters today; the other extras install th
 | `[bokeh]` | bokeh |
 | `[holoviews]` | holoviews |
 | `[tables]` | great_tables |
+| `[reactable]` | reactable (reactable-py) |
 | `[folium]` | folium |
 | `[svg]` | resvg-py, for SVG marks |
 | `[surfaces]` | sportypy and mplsoccer |
