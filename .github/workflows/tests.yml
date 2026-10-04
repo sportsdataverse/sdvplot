@@ -33,7 +33,14 @@ jobs:
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
       - name: Run tests (offline)
-        run: uv run --frozen pytest -q --maxfail=10 --mpl
+        run: uv run --frozen pytest -q --maxfail=10 --mpl --mpl-results-path=mpl-results
+      - name: Upload image comparisons (baseline, result, diff) when they fail
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpl-results-py${{ matrix.python }}
+          path: mpl-results/
+          if-no-files-found: ignore
 
   live:
     name: pytest (live, py3.13)
