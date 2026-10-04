@@ -37,6 +37,7 @@ from sdvplot.great_tables._cells import (
     gt_highlight_na,
     gt_indicator_boxes,
 )
+from sdvplot.great_tables._export import gt_grid, gt_save_batch, gt_save_crop, gt_social_crop, gt_stack_tables
 from sdvplot.great_tables._marks import (
     gt_merge_stack_team_color,
     gt_sdv_cols_label,
@@ -149,15 +150,20 @@ __all__ = [
     "gt_delta",
     "gt_fmt_rank",
     "gt_fmt_tally",
+    "gt_grid",
     "gt_group_stripes",
     "gt_highlight_cells",
     "gt_highlight_na",
     "gt_indicator_boxes",
     "gt_merge_stack_team_color",
+    "gt_save_batch",
+    "gt_save_crop",
     "gt_sdv_cols_label",
     "gt_sdv_headshots",
     "gt_sdv_logos",
     "gt_sdv_wordmarks",
+    "gt_social_crop",
+    "gt_stack_tables",
     "gt_theme_almanac",
     "gt_theme_athletic",
     "gt_theme_booktabs",

@@ -36,7 +36,7 @@ plotly = ["plotly>=5"]
 altair = ["altair>=5"]
 bokeh = ["bokeh>=3"]
 holoviews = ["holoviews>=1.18"]
-tables = ["great_tables>=1.0"]
+tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.15"]
 surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
@@ -75,7 +75,10 @@ filterwarnings = [
   "error::sdvplot._errors.SdvplotWarning",
   "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
 ]
-markers = ["real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)"]
+markers = [
+  "real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)",
+  "render: renders through a headless Chrome (great_tables gtsave / nokap); skipped when none can start",
+]
 
 [tool.ruff]
 line-length = 120
