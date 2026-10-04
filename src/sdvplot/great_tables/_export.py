@@ -10,12 +10,18 @@ calls, checked against ImageMagick 6.9 in the tests.
 from __future__ import annotations
 
 import math
+import numbers
 import re
 import tempfile
+from os import PathLike
 from pathlib import Path
+from typing import Any
 
 from great_tables import GT
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageColor
+
+_GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
+_JPEG_QUALITY = 92  # magick's default; Pillow's own (75) blurs table text
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Rendering (the only steps that need Chrome; tests replace these two functions)
@@ -108,3 +114,163 @@ def _ratio(aspect_ratio: str | float) -> float:
             "like 1.91"
         )
     return ratio
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Argument checks: all run before anything renders, so a typo never costs a browser start
+
+
+def _check_gt(value: Any, what: str = "data") -> None:
+    if not isinstance(value, GT):
+        raise TypeError(f"{what} must be a great_tables GT, not {type(value).__name__}")
+
+
+def _pixels(name: str, value: Any, *, positive: bool = False) -> int:
+    ok = isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
+    if not ok or value < 0 or (positive and value == 0):
+        raise ValueError(
+            f"{name} must be a {'positive' if positive else 'non-negative'} number of pixels, got {value!r}"
+        )
+    return int(value)
+
+
+def _check_file(file: str | PathLike[str] | None) -> None:
+    if file is None:
+        return
+    fmt = Image.registered_extensions().get(Path(file).suffix.lower())
+    if fmt is None or fmt not in Image.SAVE:
+        raise ValueError(f"file must end in an image extension such as .png, .jpg or .jpeg, got {str(file)!r}")
+
+
+def _check_common(bg: str, whitespace: Any, width: Any, file: str | PathLike[str] | None) -> tuple[int, int | None]:
+    ImageColor.getrgb(bg)  # ValueError: unknown color specifier
+    _check_file(file)
+    return _pixels("whitespace", whitespace), None if width is None else _pixels("width", width, positive=True)
+
+
+def _check_gravity(gravity: str) -> str:
+    g = str(gravity).lower()
+    if g not in _GRAVITY:
+        raise ValueError(f"gravity must be one of {', '.join(_GRAVITY)}, got {gravity!r}")
+    return g
+
+
+def _finish(img: Image.Image, file: str | PathLike[str] | None, width: int | None) -> Any:
+    if width is not None:
+        img = _fit_width(img, width)
+    if file is None:
+        return img
+    img.save(file, quality=_JPEG_QUALITY)
+    return file
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Single tables
+
+
+def gt_save_crop(
+    data: GT,
+    file: str | PathLike[str] | None = None,
+    bg: str = "white",
+    whitespace: int = 50,
+    zoom: float = 2,
+    expand: int = 5,
+    width: int | None = None,
+) -> Any:
+    """Save a table to an image, trimmed to its content with an even border.
+
+    Renders the table in headless Chrome (great_tables' ``GT.gtsave``), trims the page around it and pads a
+    ``whitespace`` border of ``bg`` back on.
+
+    Args:
+        data: The great_tables ``GT`` to save.
+        file: A path ending in an image extension Pillow writes (``.png``, ``.jpg``, ``.jpeg``, ...). ``None`` returns
+            the image instead of writing it.
+        bg: The border color: a CSS color name or hex code.
+        whitespace: The border, in pixels, left around the trimmed table.
+        zoom: The rendering zoom; 2 gives a sharp (retina) image.
+        expand: Pixels of page captured around the table before trimming.
+        width: A final width in pixels, the height following, so a series of tables shares one width. ``None`` keeps
+            the rendered width.
+
+    Returns:
+        str | os.PathLike | PIL.Image.Image: ``file`` after writing it, or the image when ``file`` is ``None``.
+
+    Raises:
+        TypeError: If ``data`` is not a ``GT``.
+        ValueError: If ``bg``, ``whitespace``, ``width`` or the extension of ``file`` is invalid (checked before
+            rendering).
+        nokap.ChromeNotFoundError: If no Chrome or Chromium is installed (set ``CHROME_PATH`` to point at one).
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot.great_tables import gt_save_crop
+
+            gt_save_crop(GT(df), "table.png", bg="#FBFAF7", width=900)
+
+    See Also:
+        gt_social_crop: the same, padded onto a fixed-ratio canvas.
+        Ported from sdvplotR ``gt_save_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_save_crop.html
+    """
+    _check_gt(data)
+    pad, final = _check_common(bg, whitespace, width, file)
+    return _finish(_pad(_trim(_render_gt(data, zoom, expand)), bg, pad), file, final)
+
+
+def gt_social_crop(
+    data: GT,
+    file: str | PathLike[str] | None = None,
+    aspect_ratio: str | float = "1:1",
+    bg: str = "white",
+    whitespace: int = 60,
+    gravity: str = "center",
+    zoom: float = 2,
+    expand: int = 5,
+    width: int | None = None,
+) -> Any:
+    """Save a table centered on a canvas of a fixed aspect ratio, for social posts.
+
+    The trimmed table is never cropped: the canvas' short side grows until the ratio is met.
+
+    Args:
+        data: The great_tables ``GT`` to save.
+        file: A path ending in an image extension (``.png``, ``.jpg``, ...). ``None`` returns the image.
+        aspect_ratio: The canvas ratio, width to height: ``"1:1"``, ``"16:9"``, ``"4x5"`` or a number such as 1.91.
+        bg: The canvas color.
+        whitespace: Pixels left around the table before the canvas grows to the ratio.
+        gravity: Where the table sits on the canvas, as in magick: ``"center"``, ``"north"``, ``"south"``,
+            ``"east"``, ``"west"``, ``"northwest"``, ``"northeast"``, ``"southwest"`` or ``"southeast"``.
+        zoom: The rendering zoom.
+        expand: Pixels of page captured around the table before trimming.
+        width: A final width in pixels for the finished canvas, the ratio held.
+
+    Returns:
+        str | os.PathLike | PIL.Image.Image: ``file`` after writing it, or the image when ``file`` is ``None``.
+
+    Raises:
+        TypeError: If ``data`` is not a ``GT``.
+        ValueError: If ``aspect_ratio`` is not a positive ratio, ``gravity`` is unknown, or ``bg``, ``whitespace``,
+            ``width`` or the extension of ``file`` is invalid (all checked before rendering).
+        nokap.ChromeNotFoundError: If no Chrome or Chromium is installed.
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot.great_tables import gt_social_crop
+
+            gt_social_crop(GT(df), "post.png", aspect_ratio="4:5", bg="#0C0D10")
+
+    See Also:
+        gt_save_crop: a plain trimmed save.
+        Ported from sdvplotR ``gt_social_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_social_crop.html
+    """
+    _check_gt(data)
+    ratio = _ratio(aspect_ratio)
+    place = _check_gravity(gravity)
+    pad, final = _check_common(bg, whitespace, width, file)
+    img = _pad(_trim(_render_gt(data, zoom, expand)), bg, pad)
+    img = _extent(img, *_canvas(img.width, img.height, ratio), bg, place)
+    return _finish(img, file, final)
