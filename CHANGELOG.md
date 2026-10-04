@@ -59,3 +59,14 @@
 - `sdvplot.testing.check_table_adapter_contract` (rules T0-T6) for table adapters.
 - `docs/PARITY_TABLES.md`: how each sdvplotR table function maps to sdvplot.
 - The `[tables]` extra now needs great_tables 1.0 or later.
+
+### Added — table themes
+
+- The 18 sdvplotR table themes for great_tables, with sdvplotR's names, arguments and defaults
+  (`sdvplot.great_tables`): `gt_theme_almanac`, `gt_theme_athletic`, `gt_theme_booktabs`, `gt_theme_broadsheet`,
+  `gt_theme_brutalist`, `gt_theme_drench`, `gt_theme_gtutils`, `gt_theme_kenpom`, `gt_theme_midnight`, `gt_theme_ncaa`,
+  `gt_theme_pl`, `gt_theme_savant`, `gt_theme_scoreboard`, `gt_theme_sofa`, `gt_theme_swiss`, `gt_theme_terminal`,
+  `gt_theme_tier` and `gt_theme_tufte`, each with `density="comfortable" | "compact" | "social"`.
+- `pal_midnight`: sdvplotR's five-color rank palette for dark grounds (every step clears 4.5:1 on midnight and terminal).
+- `gt_theme_preview()`: the same rows in every theme, as `{theme name: GT}`.
+- Theme fonts load every weight from Google Fonts, over gt's fallback stack.
