@@ -19,7 +19,7 @@ import narwhals as nw
 from great_tables import GT, html, loc, px, random_id, style
 from great_tables._helpers import GoogleFont
 
-from sdvplot._contrast import contrast, hex6, mix
+from sdvplot._contrast import contrast, hex6, mix, on_color
 
 # gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
 R_FONTS = (
@@ -748,5 +748,489 @@ def gt_theme_tufte(gt: GT, accent: str = "#111111", density: str = "comfortable"
             source_notes_padding=px(d["pad"]),
         )
         .opt_css("\n".join([_tabular_nums(tid), _css(tid, ".gt_sourcenote", f"padding-top: {d['pad'] + 4}px;")]))
+    )
+    return gt.tab_options(**options)
+
+
+def gt_theme_brutalist(gt: GT, accent: str = "#FF3B00", density: str = "comfortable", **options: Any) -> GT:
+    """Brutalist theme: heavy black frame, a knocked-out black label bar and one loud accent.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        accent: The single accent color, on the row-group labels (hex).
+        density: The type and padding scale: "comfortable", "compact" or "social".
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``accent`` is not hex, or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_brutalist(GT(df), accent="#0047FF")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_brutalist()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_brutalist.html
+    """
+    d = _density(density)
+    accent = _color(accent, "accent")
+    ink = "#000000"
+    gt, tid = _table_id(_check_gt(gt))
+    gt = (
+        _table_font(gt, "Archivo", weight=500)
+        .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
+        .tab_style(
+            _text(font=_font("Archivo Black"), size=px(d["title"] + 6), color=ink, transform="uppercase"), loc.title()
+        )
+        .tab_style(_text(weight=600, size=px(d["subtitle"]), color=ink), loc.subtitle())
+        # label row is a solid black bar, knocked out white
+        .tab_style(
+            _text(weight=700, size=px(d["label"] + 1), color="#FFFFFF", transform="uppercase"), loc.column_labels()
+        )
+        .pipe(_on_spanners, _text(weight=700, size=px(d["label"] + 1), color=ink, transform="uppercase"))
+        .tab_style(_text(weight=700, size=px(d["group"] + 1), color=accent, transform="uppercase"), loc.row_groups())
+        .tab_style(_text(size=px(d["source"]), color=ink, weight=500), [loc.source_notes(), loc.footnotes()])
+        .tab_options(
+            table_background_color="#FFFFFF",
+            column_labels_background_color=ink,
+            table_font_size=px(d["body"]),
+            data_row_padding=px(d["pad"]),
+            table_border_top_style="solid",
+            table_border_top_width=px(3),
+            table_border_top_color=ink,
+            table_border_bottom_style="solid",
+            table_border_bottom_width=px(3),
+            table_border_bottom_color=ink,
+            table_border_left_style="solid",
+            table_border_left_width=px(3),
+            table_border_left_color=ink,
+            table_border_right_style="solid",
+            table_border_right_width=px(3),
+            table_border_right_color=ink,
+            heading_align="left",
+            heading_border_bottom_style="solid",
+            heading_border_bottom_width=px(3),
+            heading_border_bottom_color=ink,
+            heading_padding=px(d["pad"] + 2),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="none",
+            column_labels_padding=px(d["pad"]),
+            table_body_border_top_style="none",
+            table_body_hlines_color=ink,
+            table_body_hlines_width=px(1),
+            table_body_border_bottom_style="none",
+            row_group_border_top_style="solid",
+            row_group_border_top_width=px(2),
+            row_group_border_top_color=ink,
+            row_group_border_bottom_style="none",
+            row_group_padding=px(max(d["pad"] - 1, 3)),
+            source_notes_border_lr_style="none",
+            source_notes_border_bottom_style="none",
+            source_notes_padding=px(d["pad"] + 2),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _tabular_nums(tid),
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, ".gt_col_heading", "letter-spacing: 0.04em;"),
+                    _css(tid, ".gt_group_heading", "letter-spacing: 0.06em;"),
+                    _css(
+                        tid,
+                        ".gt_title",
+                        "letter-spacing: -0.02em; line-height: 1.05; "
+                        f"padding-bottom: {math.ceil(d['pad'] / 2)}px !important;",
+                    ),
+                    _css(tid, ".gt_subtitle", f"padding-bottom: {d['pad'] + 2}px !important;"),
+                ]
+            )
+        )
+    )
+    return gt.tab_options(**options)
+
+
+def gt_theme_drench(gt: GT, color: str = "#123F5E", density: str = "comfortable", **options: Any) -> GT:
+    """Drenched theme: the whole table in one color, with rules, bands and muted text all derived from it.
+
+    The type is black or white, whichever reads better on ``color``; the muted text blends the type into the ground
+    until it clears 4.5:1 contrast; the rules and the row-group band shift the ground's luminance.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        color: The hex color the table is drenched in, from near-black to a mid-saturation brand color.
+        density: The type and padding scale: "comfortable", "compact" or "social".
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``color`` is not hex, or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_drench(GT(df), color="#E31837")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_drench()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_drench.html
+    """
+    d = _density(density)
+    color = _color(color, "color")
+    # everything derives from the ground so any hue holds together
+    ink = on_color(color)
+    dark_type = ink == "#000000"
+    # shift the ground rather than laying gray over it
+    rule = _adjust_luminance(color, -0.6 if dark_type else 0.9)
+    surface = _adjust_luminance(color, 0.5 if dark_type else -0.7)
+    # a fixed luminance step fails on some hues, so blend until it clears 4.5:1
+    secondary = _secondary_on(color, ink, 4.5)
+    gt, tid = _table_id(_check_gt(gt))
+    label = _text(weight=700, size=px(d["label"]), color=secondary, transform="uppercase")
+    gt = (
+        _table_font(gt, "Gabarito")
+        .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
+        .tab_style(_text(weight=700, size=px(d["title"] + 2), color=ink), loc.title())
+        .tab_style(_text(weight=400, size=px(d["subtitle"]), color=secondary), loc.subtitle())
+        .tab_style(label, loc.column_labels())
+        .pipe(_on_spanners, label)
+        .tab_style(
+            [_text(weight=700, size=px(d["group"]), color=ink, transform="uppercase"), style.fill(color=surface)],
+            loc.row_groups(),
+        )
+        .tab_style(_text(size=px(d["source"]), color=secondary), [loc.source_notes(), loc.footnotes()])
+        .tab_options(
+            table_background_color=color,
+            heading_background_color=color,
+            column_labels_background_color=color,
+            row_group_background_color=color,
+            stub_background_color=color,
+            source_notes_background_color=color,
+            table_font_size=px(d["body"]),
+            data_row_padding=px(d["pad"] + 1),
+            table_border_top_style="none",
+            table_border_bottom_style="none",
+            heading_align="left",
+            heading_border_bottom_style="none",
+            heading_padding=px(d["pad"] + 2),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="solid",
+            column_labels_border_bottom_width=px(1),
+            column_labels_border_bottom_color=rule,
+            column_labels_padding=px(d["pad"] + 1),
+            table_body_border_top_style="none",
+            table_body_hlines_color=rule,
+            table_body_hlines_width=px(1),
+            table_body_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_bottom_style="none",
+            row_group_padding=px(max(d["pad"] - 1, 3)),
+            source_notes_border_lr_style="none",
+            source_notes_border_bottom_style="none",
+            source_notes_padding=px(d["pad"] + 2),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _tabular_nums(tid),
+                    _last_row_border(tid, color),
+                    # light type on a saturated ground reads lighter than it is
+                    *([] if dark_type else [_css(tid, ["td", "th"], "line-height: 1.55;")]),
+                    _css(tid, [".gt_col_heading", ".gt_column_spanner"], "letter-spacing: 0.08em;"),
+                    _css(tid, ".gt_group_heading", "letter-spacing: 0.06em;"),
+                    _css(tid, ".gt_subtitle", f"padding-bottom: {d['pad'] + 8}px !important;"),
+                    _css(tid, ".gt_title", f"padding-bottom: {math.ceil(d['pad'] / 2)}px !important;"),
+                ]
+            )
+        )
+    )
+    return gt.tab_options(**options)
+
+
+def gt_theme_midnight(gt: GT, accent: str = "#5B8DEF", density: str = "comfortable", **options: Any) -> GT:
+    """Dark theme: light type on a near-black ground, a raised label band and one cool accent.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        accent: Hex color of the row-group labels and the rule above the table.
+        density: The type and padding scale: "comfortable", "compact" or "social".
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``accent`` is not hex, or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_midnight(GT(df), accent="#3FBF87")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_midnight()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_midnight.html
+    """
+    d = _density(density)
+    accent = _color(accent, "accent")
+    ground, surface, primary, secondary, rule = "#0C0D10", "#16181D", "#E8E9ED", "#9498A3", "#24272E"
+    gt, tid = _table_id(_check_gt(gt))
+    # sentence case; uppercase tracking is too loud on this ground
+    label = _text(weight=600, size=px(d["label"] + 1), color=secondary)
+    gt = (
+        _table_font(gt, "Chivo")
+        .tab_style(_text(color=primary, size=px(d["body"])), loc.body())
+        .tab_style(_text(weight=700, size=px(d["title"]), color=primary), loc.title())
+        .tab_style(_text(weight=400, size=px(d["subtitle"]), color=secondary), loc.subtitle())
+        .tab_style(label, loc.column_labels())
+        .pipe(_on_spanners, label)
+        .tab_style(_text(weight=700, size=px(d["group"]), color=accent), loc.row_groups())
+        .tab_style(_text(size=px(d["source"]), color=secondary), [loc.source_notes(), loc.footnotes()])
+        .tab_options(
+            table_background_color=ground,
+            heading_background_color=ground,
+            column_labels_background_color=surface,
+            row_group_background_color=ground,
+            stub_background_color=ground,
+            source_notes_background_color=ground,
+            table_font_size=px(d["body"]),
+            data_row_padding=px(d["pad"]),
+            table_border_top_style="solid",
+            table_border_top_width=px(2),
+            table_border_top_color=accent,
+            table_border_bottom_style="none",
+            heading_align="left",
+            heading_border_bottom_style="none",
+            heading_padding=px(d["pad"]),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="solid",
+            column_labels_border_bottom_width=px(1),
+            column_labels_border_bottom_color=rule,
+            column_labels_padding=px(max(d["pad"] - 1, 3)),
+            table_body_border_top_style="none",
+            table_body_hlines_color=rule,
+            table_body_hlines_width=px(1),
+            table_body_border_bottom_style="solid",
+            table_body_border_bottom_width=px(1),
+            table_body_border_bottom_color=rule,
+            row_group_border_top_style="solid",
+            row_group_border_top_width=px(1),
+            row_group_border_top_color=rule,
+            row_group_border_bottom_style="none",
+            row_group_padding=px(max(d["pad"] - 2, 2)),
+            source_notes_border_lr_style="none",
+            source_notes_border_bottom_style="none",
+            source_notes_padding=px(d["pad"]),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _tabular_nums(tid),
+                    _last_row_border(tid, ground),
+                    # light on dark reads lighter than it is, so open the leading
+                    _css(tid, ["td", "th"], "line-height: 1.55;"),
+                    _css(tid, ".gt_subtitle", f"padding-bottom: {d['pad'] + 8}px !important;"),
+                    _css(tid, ".gt_title", f"padding-bottom: {math.ceil(d['pad'] / 2)}px !important;"),
+                ]
+            )
+        )
+    )
+    return gt.tab_options(**options)
+
+
+# sdvplotR's pal_midnight: a rank palette for dark backgrounds, five colors running best (green) to worst (red), its
+# luminance lifted so every step clears 4.5:1 on gt_theme_midnight's #0C0D10 ground (and gt_theme_terminal's). The
+# usual green-to-red ramp is built for white paper; its mid-tones sink into a near-black ground.
+pal_midnight: tuple[str, ...] = ("#3FBF87", "#8FD9A8", "#D8D6A0", "#E8996B", "#E0645C")
+
+
+def gt_theme_scoreboard(gt: GT, accent: str = "#0E1621", density: str = "compact", **options: Any) -> GT:
+    """Scoreboard theme: condensed uppercase type under a solid header band, like a broadcast stat panel.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        accent: Hex color of the header band; the label color (black or white) adapts to it.
+        density: The type and padding scale: "comfortable", "compact" or "social".
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``accent`` is not hex, or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_scoreboard(GT(df), accent="#FFC20E")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_scoreboard()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_scoreboard.html
+    """
+    d = _density(density)
+    accent = _color(accent, "accent")
+    ink, rule, muted = "#141719", "#E6E9ED", "#5A6069"
+    # a pale accent needs dark labels, so measure it
+    on_accent = on_color(accent)
+    gt, tid = _table_id(_check_gt(gt))
+    condensed = _font("Barlow Condensed")
+    label = _text(font=condensed, weight=700, size=px(d["label"] + 2), color=on_accent, transform="uppercase")
+    gt = (
+        _table_font(gt, "Barlow")
+        .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
+        .tab_style(
+            _text(font=condensed, weight=700, size=px(d["title"] + 4), color=ink, transform="uppercase"), loc.title()
+        )
+        .tab_style(_text(font=condensed, weight=500, size=px(d["subtitle"] + 1), color=muted), loc.subtitle())
+        .tab_style(label, loc.column_labels())
+        .pipe(_on_spanners, label)
+        .tab_style(
+            [
+                _text(font=condensed, weight=700, size=px(d["group"] + 1), color=accent, transform="uppercase"),
+                style.fill(color="#F2F4F6"),
+            ],
+            loc.row_groups(),
+        )
+        .tab_style(_text(size=px(d["source"]), color=muted), [loc.source_notes(), loc.footnotes()])
+        .tab_options(
+            table_background_color="#FFFFFF",
+            column_labels_background_color=accent,
+            table_font_size=px(d["body"]),
+            data_row_padding=px(d["pad"]),
+            table_border_top_style="none",
+            table_border_bottom_style="none",
+            heading_align="left",
+            heading_border_bottom_style="none",
+            heading_padding=px(d["pad"] + 1),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="none",
+            column_labels_padding=px(d["pad"] + 2),
+            table_body_border_top_style="none",
+            table_body_hlines_color=rule,
+            table_body_hlines_width=px(1),
+            table_body_border_bottom_style="solid",
+            table_body_border_bottom_width=px(2),
+            table_body_border_bottom_color=accent,
+            row_group_border_top_style="none",
+            row_group_border_bottom_style="none",
+            row_group_padding=px(max(d["pad"], 3)),
+            source_notes_border_lr_style="none",
+            source_notes_border_bottom_style="none",
+            source_notes_padding=px(d["pad"] + 2),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _tabular_nums(tid),
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, [".gt_col_heading", ".gt_column_spanner"], "letter-spacing: 0.06em;"),
+                    _css(tid, ".gt_group_heading", "letter-spacing: 0.06em;"),
+                    _css(tid, ".gt_heading", "letter-spacing: 0.01em;"),
+                    _css(tid, ".gt_subtitle", f"padding-bottom: {d['pad'] + 6}px !important;"),
+                ]
+            )
+        )
+    )
+    return gt.tab_options(**options)
+
+
+def gt_theme_terminal(gt: GT, accent: str = "#FFB86C", density: str = "compact", **options: Any) -> GT:
+    """Terminal theme: a monospaced readout on a near-black ground, with a rule on every row.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        accent: Hex color of the column labels, row groups and the top rule. The default is amber; "#7EE787" gives a
+            green-phosphor variant.
+        density: The type and padding scale: "comfortable", "compact" or "social".
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``accent`` is not hex, or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_terminal(GT(df), accent="#7EE787")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_terminal()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_terminal.html
+    """
+    d = _density(density)
+    accent = _color(accent, "accent")
+    ground, primary, secondary, rule = "#0F1115", "#C9D1D9", "#7D8590", "#262B33"
+    gt, tid = _table_id(_check_gt(gt))
+    label = _text(weight=700, size=px(d["label"]), color=accent, transform="uppercase")
+    gt = (
+        _table_font(gt, "JetBrains Mono")
+        .tab_style(_text(color=primary, size=px(d["body"])), loc.body())
+        .tab_style(_text(weight=700, size=px(d["title"] - 2), color=primary, transform="uppercase"), loc.title())
+        .tab_style(_text(weight=400, size=px(d["subtitle"] - 1), color=secondary), loc.subtitle())
+        .tab_style(label, loc.column_labels())
+        .pipe(_on_spanners, label)
+        .tab_style(_text(weight=700, size=px(d["group"]), color=accent, transform="uppercase"), loc.row_groups())
+        .tab_style(_text(size=px(d["source"]), color=secondary), [loc.source_notes(), loc.footnotes()])
+        .tab_options(
+            table_background_color=ground,
+            heading_background_color=ground,
+            column_labels_background_color=ground,
+            row_group_background_color=ground,
+            stub_background_color=ground,
+            source_notes_background_color=ground,
+            table_font_size=px(d["body"]),
+            data_row_padding=px(d["pad"]),
+            table_border_top_style="solid",
+            table_border_top_width=px(1),
+            table_border_top_color=accent,
+            table_border_bottom_style="solid",
+            table_border_bottom_width=px(1),
+            table_border_bottom_color=rule,
+            heading_align="left",
+            heading_border_bottom_style="none",
+            heading_padding=px(d["pad"] + 2),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="solid",
+            column_labels_border_bottom_width=px(1),
+            column_labels_border_bottom_color=accent,
+            column_labels_padding=px(d["pad"] + 1),
+            # rule on every row, it's a readout
+            table_body_border_top_style="none",
+            table_body_hlines_color=rule,
+            table_body_hlines_width=px(1),
+            table_body_border_bottom_style="none",
+            row_group_border_top_style="solid",
+            row_group_border_top_width=px(1),
+            row_group_border_top_color=rule,
+            row_group_border_bottom_style="none",
+            row_group_padding=px(max(d["pad"], 3)),
+            source_notes_border_lr_style="none",
+            source_notes_border_bottom_style="none",
+            source_notes_padding=px(d["pad"] + 2),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _tabular_nums(tid),
+                    _last_row_border(tid, ground),
+                    _css(tid, ["td", "th"], "line-height: 1.5;"),
+                    _css(tid, ".gt_col_heading", "letter-spacing: 0.08em;"),
+                    _css(tid, ".gt_title", "letter-spacing: 0.04em; padding-bottom: 2px !important;"),
+                    _css(tid, ".gt_subtitle", f"padding-bottom: {d['pad'] + 6}px !important;"),
+                ]
+            )
+        )
     )
     return gt.tab_options(**options)

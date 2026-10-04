@@ -241,3 +241,84 @@ def test_tufte():
     assert "font-style: italic" in cell(html, "team") and "color: #6F6A60" in cell(html, "team")
     assert "color: #a0522d" in cell(html, "AFC West")
     assert "border-bottom-color: #C9C4B8" in rule(html, ".gt_table_body")
+
+
+# --- bold and dark themes --------------------------------------------------------------------------------------------
+
+
+def test_brutalist():
+    html = sgt.gt_theme_brutalist(table()).as_raw_html()
+    frame = rule(html, ".gt_table")
+    for side in ("top", "right", "bottom", "left"):
+        assert f"border-{side}-style: solid; border-{side}-width: 3px; border-{side}-color: #000000" in frame
+    assert "color: #FFFFFF" in cell(html, "team")  # knocked out of the black label bar
+    assert "background-color: #000000" in rule(html, ".gt_col_heading")
+    assert "font-family: Archivo Black" in cell(html, "Title")
+    assert "color: #ff3b00" in cell(html, "AFC West")
+
+
+def test_drench_derives_its_colors_like_r():
+    html = sgt.gt_theme_drench(table()).as_raw_html()
+    assert "background-color: #123f5e" in rule(html, ".gt_table")
+    assert "color: #ffffff" in cell(html, "LV")
+    assert "color: #94a9b7" in cell(html, "team")  # muted ink, R's .theme_secondary_on
+    assert "border-bottom-color: #516e8b" in rule(html, ".gt_col_headings")  # rule: adjust_luminance(+0.9)
+    assert "background-color: #00294d" in cell(html, "AFC West")  # band: adjust_luminance(-0.7)
+    assert "#tid td, #tid th { line-height: 1.55; }" in html
+
+
+def test_drench_flips_to_dark_type_on_a_pale_color():
+    html = sgt.gt_theme_drench(table(), color="#F4E8C1").as_raw_html()
+    assert "color: #000000" in cell(html, "LV")
+    assert "color: #6e6857" in cell(html, "team")
+    assert "border-bottom-color: #e4d8b1" in rule(html, ".gt_col_headings")
+    assert "line-height: 1.55" not in html
+
+
+def test_midnight():
+    html = sgt.gt_theme_midnight(table()).as_raw_html()
+    assert "background-color: #0C0D10" in rule(html, ".gt_table") and "color: #FFFFFF" in rule(html, ".gt_table")
+    assert "background-color: #16181D" in rule(html, ".gt_col_heading")
+    assert "color: #E8E9ED" in cell(html, "LV") and "color: #5b8def" in cell(html, "AFC West")
+    assert "border-top-color: #5b8def" in rule(html, ".gt_table")
+
+
+def test_pal_midnight_reads_on_the_dark_grounds():
+    from sdvplot._contrast import contrast
+
+    # sdvplotR R/gt_theme_midnight.R, best to worst
+    assert sgt.pal_midnight == ("#3FBF87", "#8FD9A8", "#D8D6A0", "#E8996B", "#E0645C")
+    for ground in ("#0C0D10", "#0F1115"):  # gt_theme_midnight, gt_theme_terminal
+        assert all(contrast(color, ground) >= 4.5 for color in sgt.pal_midnight)
+
+
+def test_scoreboard_labels_read_on_the_accent():
+    html = sgt.gt_theme_scoreboard(table()).as_raw_html()
+    assert "background-color: #0e1621" in rule(html, ".gt_col_heading")
+    assert "color: #ffffff" in cell(html, "team") and "font-family: Barlow Condensed" in cell(html, "team")
+    gold = sgt.gt_theme_scoreboard(table(), accent="#FFC20E").as_raw_html()
+    assert "color: #000000" in cell(gold, "team")
+    assert "border-bottom-width: 2px; border-bottom-color: #ffc20e" in rule(gold, ".gt_table_body")
+
+
+def test_terminal():
+    html = sgt.gt_theme_terminal(table(), accent="#7EE787").as_raw_html()
+    assert table_font(html).startswith("'JetBrains Mono', system-ui")
+    assert "background-color: #0F1115" in rule(html, ".gt_table")
+    assert "color: #7ee787" in cell(html, "team") and "text-transform: uppercase" in cell(html, "team")
+    assert "border-top-color: #7ee787" in rule(html, ".gt_table")
+
+
+@pytest.mark.parametrize(
+    ("name", "arg"),
+    [
+        ("gt_theme_brutalist", "accent"),
+        ("gt_theme_drench", "color"),
+        ("gt_theme_midnight", "accent"),
+        ("gt_theme_scoreboard", "accent"),
+        ("gt_theme_terminal", "accent"),
+    ],
+)
+def test_a_bold_theme_color_that_is_not_hex_raises(name, arg):
+    with pytest.raises(ValueError, match=f"{arg} must be a hex color"):
+        getattr(sgt, name)(table(), **{arg: "navy"})

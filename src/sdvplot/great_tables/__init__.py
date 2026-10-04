@@ -31,8 +31,14 @@ from sdvplot.great_tables._themes import (
     gt_theme_almanac,
     gt_theme_booktabs,
     gt_theme_broadsheet,
+    gt_theme_brutalist,
+    gt_theme_drench,
+    gt_theme_midnight,
+    gt_theme_scoreboard,
     gt_theme_swiss,
+    gt_theme_terminal,
     gt_theme_tufte,
+    pal_midnight,
 )
 
 SUPPORTS_AXIS_LOGOS = False
@@ -110,8 +116,14 @@ __all__ = [
     "gt_theme_almanac",
     "gt_theme_booktabs",
     "gt_theme_broadsheet",
+    "gt_theme_brutalist",
+    "gt_theme_drench",
+    "gt_theme_midnight",
+    "gt_theme_scoreboard",
     "gt_theme_sdv",
     "gt_theme_sdv_team",
     "gt_theme_swiss",
+    "gt_theme_terminal",
     "gt_theme_tufte",
+    "pal_midnight",
 ]
