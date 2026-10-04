@@ -19,7 +19,8 @@ from typing import Any, cast
 from urllib.parse import quote
 
 import narwhals as nw
-from great_tables import GT, google_font, html, loc, md, random_id, style
+from great_tables import GT, google_font, html, loc, md, random_id, style, vals
+from great_tables._gt_data import Body, Boxhead, ColInfo
 from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
 
@@ -1313,3 +1314,332 @@ def gt_indicator_boxes(
             )
         out = _fmt_rows(out, c, cells)
     return out.cols_align(align="center", columns=cols)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# formatting, computed columns and stacked labels
+
+
+def _ordinal_suffix(n: float) -> str:
+    n = abs(n)
+    if n % 10 == 1 and n % 100 != 11:
+        return "st"
+    if n % 10 == 2 and n % 100 != 12:
+        return "nd"
+    if n % 10 == 3 and n % 100 != 13:
+        return "rd"
+    return "th"
+
+
+def gt_fmt_rank(gt: GT, columns: Any, superscript: bool = True, suffix_size: str = "0.7em") -> GT:
+    """Format numbers as ordinals: 1 becomes 1st, 2 becomes 2nd, 23 becomes 23rd, 11-13 take "th".
+
+    Applied to the rendered cell text; a cell that does not read as a number is left alone.
+
+    Args:
+        gt: The table.
+        columns: The columns to format.
+        superscript: Render the suffix as superscript.
+        suffix_size: The suffix size, as a CSS size.
+
+    Returns:
+        GT: A new table with ordinal formatting.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+
+    Example:
+        ::
+
+            gt_fmt_rank(GT(standings), "place", superscript=False)
+
+    See Also:
+        Ported from sdvplotR ``gt_fmt_rank()``.
+    """
+    _check_gt(gt)
+
+    def ordinal(text: str) -> str:
+        n = _number(text)
+        if n is None:
+            return text
+        shown, suffix = _natural(n), _ordinal_suffix(n)
+        return f"{shown}<sup style='font-size:{suffix_size};'>{suffix}</sup>" if superscript else f"{shown}{suffix}"
+
+    return gt.text_transform(locations=loc.body(columns=columns), fn=ordinal)
+
+
+def gt_fmt_tally(
+    gt: GT,
+    columns: Any,
+    separator: str = "-",
+    label: str | None = None,
+    share: bool = False,
+    share_of: int | str = 0,
+    share_location: str = "inline",
+    share_decimals: int = 1,
+    share_label: str = "%",
+    share_prefix: str = " (",
+    share_suffix: str = ")",
+    **fmt_percent_kwargs: Any,
+) -> GT:
+    """Combine two or more count columns into one ``"32-5"`` cell, optionally with one count's share of the total.
+
+    The tally goes in the first column and the others are hidden (or the last one carries the share). A row with a
+    missing count is left alone, and the share is blank where the counts sum to zero.
+
+    Args:
+        gt: The table.
+        columns: The count columns, in reading order (two or more).
+        separator: Placed between the counts.
+        label: A new label for the combined column; ``None`` keeps its label.
+        share: Show one count as a share of the row total.
+        share_of: The count the share is computed for: a 0-based position in ``columns`` or a column name.
+        share_location: ``"inline"`` (appended to the tally) or ``"column"`` (the last count column carries it).
+        share_decimals: Decimal places of the share.
+        share_label: The share column's label when ``share_location="column"``.
+        share_prefix: Placed before an inline share.
+        share_suffix: Placed after an inline share.
+        **fmt_percent_kwargs: Passed to great_tables ``vals.fmt_percent``.
+
+    Returns:
+        GT: A new table with the counts combined.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: Fewer than two columns, ``share_of`` is not one of them, or ``share_location`` is unknown.
+
+    Example:
+        ::
+
+            gt_fmt_tally(GT(suites), ["passed", "failed"], share=True)          # "142-8 (94.7%)"
+            gt_fmt_tally(GT(league), ["w", "d", "l"], label="W-D-L")
+
+    See Also:
+        Ported from sdvplotR ``gt_fmt_tally()``.
+    """
+    _check_gt(gt)
+    if share_location not in ("inline", "column"):
+        raise ValueError(f'share_location must be "inline" or "column", got {share_location!r}')
+    cols = _columns(gt, columns)
+    if len(cols) < 2:
+        raise ValueError("columns must select at least two columns")
+    rows = list(zip(*([_number(v) for v in _values(gt, c)] for c in cols), strict=True))
+    complete = [None if any(v is None for v in r) else cast(tuple[float, ...], r) for r in rows]
+    tally = [None if r is None else separator.join(_natural(v) for v in r) for r in complete]
+
+    shares: list[str | None] = [None] * len(rows)
+    if share:
+        pos = cols.index(share_of) if isinstance(share_of, str) and share_of in cols else share_of
+        if not isinstance(pos, int) or not 0 <= pos < len(cols):
+            raise ValueError(f"share_of must name or index (from 0) one of {cols}")
+        props = {i: r[pos] / sum(r) for i, r in enumerate(complete) if r is not None and sum(r) != 0}
+        props = {i: p for i, p in props.items() if math.isfinite(p)}
+        if props:
+            text = cast(
+                list[str], vals.fmt_percent(list(props.values()), decimals=share_decimals, **fmt_percent_kwargs)
+            )
+            for i, s in zip(props, text, strict=True):
+                shares[i] = s
+
+    inline = share and share_location == "inline"
+    display = [
+        f"{t}{share_prefix}{s}{share_suffix}" if inline and t is not None and s is not None else t
+        for t, s in zip(tally, shares, strict=True)
+    ]
+    out = _fmt_rows(gt, cols[0], {i: t for i, t in enumerate(display) if t is not None})
+    if share and share_location == "column":
+        carrier = cols[-1]
+        out = _fmt_rows(out, carrier, {i: s for i, s in enumerate(shares) if s is not None})
+        out = out.cols_label(cases={carrier: share_label})
+        spent = cols[1:-1]
+    else:
+        spent = cols[1:]
+    if spent:
+        out = out.cols_hide(columns=spent)
+    if label is not None:
+        out = out.cols_label(cases={cols[0]: label})
+    return out
+
+
+def _add_column(gt: GT, name: str, values: list[str], after: str) -> GT:
+    """Add a text column placed after ``after``.
+
+    great_tables 1.0 has no ``cols_add``, so this extends the GT's data, empty body and boxhead (private
+    attributes, pinned by a test). Formats, styles and labels on the other columns are kept.
+    """
+    frame = _frame(gt)
+    column = nw.new_series(name, values, nw.String(), backend=nw.get_native_namespace(frame))
+    data = frame.with_columns(column).to_native()
+    boxhead = list(gt._boxhead)
+    boxhead.insert([c.var for c in boxhead].index(after) + 1, ColInfo(name))
+    return gt._replace(_tbl_data=data, _body=Body.from_empty(data), _boxhead=Boxhead(boxhead))
+
+
+def gt_delta(
+    gt: GT,
+    from_: Any,
+    to: Any,
+    column_label: str = "Change",
+    percent: bool = False,
+    decimals: int = 1,
+    arrows: bool = False,
+    color: bool = True,
+    color_positive: str = "#1B7837",
+    color_negative: str = "#B2182B",
+    color_neutral: str | None = None,
+    force_sign: bool = True,
+    after: int | str | None = None,
+) -> GT:
+    """Add a column holding the change from one numeric column to another, signed and colored by direction.
+
+    The change is ``to - from_`` (or that over ``from_`` with ``percent=True``). A row is blank where either value
+    is missing, or a percent change divides by zero. With ``arrows`` a triangle leads the magnitude in place of a
+    sign.
+
+    Args:
+        gt: The table.
+        from_: The starting column (``from`` is a Python keyword).
+        to: The ending column.
+        column_label: The new column's label.
+        percent: Show the change as a percent of ``from_``.
+        decimals: Decimal places.
+        arrows: Lead each value with an up or down triangle instead of a sign.
+        color: Color the values by direction.
+        color_positive: Color of an increase.
+        color_negative: Color of a decrease.
+        color_neutral: Color of no change; ``None`` leaves it the table's text color.
+        force_sign: Show a plus on an increase (ignored with ``arrows``).
+        after: The column the new one follows, a name or a 0-based position in the data; ``None`` places it
+            after ``to``.
+
+    Returns:
+        GT: A new table with the change column (right-aligned).
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: ``from_`` or ``to`` does not select a single column, or ``after`` names no column.
+
+    Example:
+        ::
+
+            gt_delta(GT(revenue), "q1", "q2")
+            gt_delta(GT(revenue), "q1", "q2", percent=True, arrows=True)
+
+    See Also:
+        Ported from sdvplotR ``gt_delta()``.
+    """
+    _check_gt(gt)
+    start, end = _columns(gt, from_), _columns(gt, to)
+    if len(start) != 1 or len(end) != 1:
+        raise ValueError("from_ and to must each select a single column")
+    names = list(_frame(gt).columns)
+    if after is None:
+        anchor = end[0]
+    elif isinstance(after, str) and after in names:
+        anchor = after
+    elif isinstance(after, int) and not isinstance(after, bool) and -len(names) <= after < len(names):
+        anchor = names[after]
+    else:
+        raise ValueError(f"after must name or index (from 0) one of {names}, got {after!r}")
+
+    delta: list[float | None] = []
+    for a, b in zip(_values(gt, start[0]), _values(gt, end[0]), strict=True):
+        x, y = _number(a), _number(b)
+        if x is None or y is None:
+            d = None
+        elif percent:
+            d = (y - x) / x if x != 0 else None
+        else:
+            d = y - x
+        delta.append(d if d is None or math.isfinite(d) else None)
+
+    present = [abs(d) if arrows else d for d in delta if d is not None]
+    fmt = vals.fmt_percent if percent else vals.fmt_number
+    texts = iter(cast(list[str], fmt(present, decimals=decimals, force_sign=force_sign and not arrows)))
+    body = []
+    for d in delta:
+        if d is None:
+            body.append("")
+            continue
+        text = next(texts)
+        body.append(("▲ " if d > 0 else "▼ " if d < 0 else "") + text if arrows else text)
+
+    new, k = column_label, 0
+    while new in names:  # R's make.unique: Change, Change.1, Change.2, ...
+        k += 1
+        new = f"{column_label}.{k}"
+    out = _add_column(gt, new, body, anchor)
+    if new != column_label:
+        out = out.cols_label(cases={new: column_label})
+    out = out.cols_align(align="right", columns=new)
+    if color:
+        for rows, ink in (
+            ([i for i, d in enumerate(delta) if d is not None and d > 0], color_positive),
+            ([i for i, d in enumerate(delta) if d is not None and d < 0], color_negative),
+            ([i for i, d in enumerate(delta) if d == 0], color_neutral),
+        ):
+            if rows and ink is not None:
+                out = out.tab_style(style=style.text(color=ink), locations=loc.body(columns=new, rows=rows))
+    return out
+
+
+def gt_column_subheaders(
+    gt: GT,
+    heading_color: str = "black",
+    subtitle_color: str = "#808080",
+    heading_weight: str = "bold",
+    subtitle_weight: str = "normal",
+    heading_size: float = 14,
+    subtitle_size: float = 10,
+    font: str | None = None,
+    **subheaders: dict[str, str],
+) -> GT:
+    """Replace every column label with a two-line header: a heading over a smaller subtitle.
+
+    Every column is relabeled. A column not named in ``subheaders`` keeps its name as the heading and gets a
+    non-breaking space as the subtitle, so the headers stay aligned. Call it after other label changes.
+
+    Args:
+        gt: The table.
+        heading_color: Heading text color.
+        subtitle_color: Subtitle text color.
+        heading_weight: Heading font weight.
+        subtitle_weight: Subtitle font weight.
+        heading_size: Heading size in pixels.
+        subtitle_size: Subtitle size in pixels.
+        font: A CSS font family for both lines (not imported: it must be installed or loaded by the theme).
+        **subheaders: ``column={"heading": ..., "subtitle": ...}`` per column (either key may be left out). A
+            column named like one of this function's arguments cannot be given this way.
+
+    Returns:
+        GT: A new table with stacked labels.
+
+    Raises:
+        TypeError: ``gt`` is not a ``GT``.
+        ValueError: A ``subheaders`` key is not a column of the table.
+
+    Example:
+        ::
+
+            gt_column_subheaders(GT(df), hp={"heading": "Horsepower", "subtitle": "HP"}, heading_color="blue")
+
+    See Also:
+        Ported from sdvplotR ``gt_column_subheaders()``.
+    """
+    _check_gt(gt)
+    names = list(_frame(gt).columns)
+    unknown = sorted(set(subheaders) - set(names))
+    if unknown:
+        raise ValueError(f"subheaders name columns the table does not have: {unknown}")
+    font_css = f"font-family: '{font}';" if font is not None else ""
+    labels: dict[str, Any] = {}
+    for name in names:
+        info = subheaders.get(name, {})
+        labels[name] = html(
+            "<div style='line-height: 1.05; margin-bottom: -2px;'>"
+            f"<span style='font-size: {heading_size}px; font-weight: {heading_weight}; color: {heading_color}; "
+            f"{font_css}'>{info.get('heading', name)}</span><br>"
+            f"<span style='font-size: {subtitle_size}px; font-weight: {subtitle_weight}; color: {subtitle_color}; "
+            f"{font_css}'>{info.get('subtitle', '&nbsp;')}</span></div>"
+        )
+    return gt.cols_label(cases=labels)
