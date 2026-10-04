@@ -11,6 +11,7 @@
     - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
     - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
     - [Added — web family](#added--web-family)
+    - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

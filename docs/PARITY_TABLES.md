@@ -6,6 +6,7 @@
   - [Wave B: table themes](#wave-b-table-themes)
   - [Wave C1: cell styling and formatting](#wave-c1-cell-styling-and-formatting)
   - [Wave D: image export and composition](#wave-d-image-export-and-composition)
+  - [Wave C2: legends, layout and annotation (`sdvplot.great_tables._layout`)](#wave-c2-legends-layout-and-annotation-sdvplotgreat_tables_layout)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

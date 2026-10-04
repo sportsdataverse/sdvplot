@@ -11,6 +11,7 @@
     - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
     - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
     - [Added — web family](#added--web-family)
+    - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -102,3 +103,13 @@
   Bokeh plot hook (`sdvplot.holoviews`) and Folium maps (`sdvplot.folium`, `x` longitude and `y` latitude).
 - `embed=True` inlines the images as data URIs, for HTML that renders offline and for static export.
 - The `[holoviews]` extra now installs Bokeh 3 as well.
+
+### Added — tables wave C2 (legends, layout and annotation)
+
+- `sdvplot.great_tables` gains sdvplotR's legend, layout and annotation helpers, with sdvplotR's names and arguments
+  on pandas or polars data: `gt_legend_continuous`, `gt_legend_discrete`, `gt_marginalia`, `gt_outliers`,
+  `gt_percentile_bar`, `gt_row_accent`, `gt_scale_note`, `gt_set_font`, `gt_significance`, `gt_snake`,
+  `gt_snake_align`, `gt_social_tag`, `gt_spotlight`, `gt_tiers`, `gt_title_header`, `gt_watermark`, `gt_wrap_labels`.
+- `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
+  `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
+- `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
