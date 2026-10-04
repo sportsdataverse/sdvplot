@@ -12,13 +12,20 @@ from __future__ import annotations
 import math
 import numbers
 import re
+import sys
 import tempfile
+import warnings
+from collections import Counter
+from collections.abc import Callable
 from os import PathLike
 from pathlib import Path
 from typing import Any
 
+import narwhals as nw
 from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
+
+from sdvplot._errors import SdvplotWarning
 
 _GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
 _JPEG_QUALITY = 92  # magick's default; Pillow's own (75) blurs table text
@@ -274,3 +281,122 @@ def gt_social_crop(
     img = _pad(_trim(_render_gt(data, zoom, expand)), bg, pad)
     img = _extent(img, *_canvas(img.width, img.height, ratio), bg, place)
     return _finish(img, file, final)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Batches
+
+
+def _slug(value: Any) -> str:
+    return re.sub(r"[^A-Za-z0-9._-]+", "-", str(value)).strip("-").lower()
+
+
+def gt_save_batch(
+    data: Any,
+    group: str,
+    fn: Callable[[Any, Any], GT],
+    file: str,
+    dir: str | PathLike[str],
+    match_width: bool = True,
+    bg: str = "white",
+    whitespace: int = 50,
+    zoom: float = 2,
+    quiet: bool = False,
+) -> list[str]:
+    """Save a matched set of table images, one per group.
+
+    Splits ``data`` by a column, builds a table per group with ``fn`` and writes one image per group, padded to a
+    common width so a posted series is not ragged. A group whose table fails to build or render is skipped and named
+    in one warning at the end; the rest are still written.
+
+    Args:
+        data: A pandas or polars DataFrame (any narwhals-supported eager frame).
+        group: The column to split on. Its missing values are skipped.
+        fn: Builds one table, called as ``fn(df, value)`` with the group's rows (the same frame type as ``data``) and
+            its value; it must return a ``GT``.
+        file: A file name containing ``{group}``, replaced by the group value with anything awkward turned into a
+            dash and lower-cased, so ``"North / East"`` writes ``"net-north-east.png"`` for ``"net-{group}.png"``.
+        dir: The directory to write into, created when missing. It has no default, so a batch never lands in the
+            working directory unasked; pass ``"."`` for that.
+        match_width: Pad every image to the widest one's width.
+        bg: The padding color.
+        whitespace: The border, in pixels, around each table.
+        zoom: The rendering zoom.
+        quiet: Do not print the per-group progress lines (to stderr).
+
+    Returns:
+        list[str]: The files written, in group order.
+
+    Raises:
+        TypeError: If ``data`` is not a data frame or ``fn`` is not callable.
+        ValueError: If ``group`` is not a column, has no non-missing values, two values would write the same file,
+            ``file`` lacks ``{group}`` or an image extension, or ``bg`` / ``whitespace`` is invalid (all before
+            rendering).
+        RuntimeError: If no group built.
+        nokap.ChromeNotFoundError: If no browser can start (raised at the first group, not collected per group).
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot.great_tables import gt_save_batch
+
+            def build(df, value):
+                return GT(df).tab_header(title=f"{value} cylinders")
+
+            gt_save_batch(cars, "cyl", build, "cars-{group}.png", dir="out")
+
+    See Also:
+        gt_grid: the same split composed into one image.
+        Ported from sdvplotR ``gt_save_batch()``: https://sdvplotR.sportsdataverse.org/reference/gt_save_batch.html
+    """
+    from nokap import ChromeNotFoundError, ChromeStartError
+
+    frame = nw.from_native(data, eager_only=True)
+    if not callable(fn):
+        raise TypeError("fn must be a function returning a GT")
+    if "{group}" not in file:
+        raise ValueError(f"file must contain {{group}}, as in 'net-{{group}}.png', got {file!r}")
+    if not isinstance(group, str) or group not in frame.columns:
+        raise ValueError(f"group must name one column of data, got {group!r}")
+    pad, _ = _check_common(bg, whitespace, None, file.replace("{group}", "x"))
+    keys = frame[group].drop_nulls().unique(maintain_order=True).to_list()
+    if not keys:
+        raise ValueError(f"group {group!r} has no non-missing values")
+    names = [file.replace("{group}", _slug(k)) for k in keys]
+    shared = sorted(n for n, c in Counter(names).items() if c > 1)
+    if shared:
+        raise ValueError(f"group values write to the same file name: {', '.join(shared)}; rename the values first")
+
+    built: list[tuple[str, Image.Image]] = []
+    failed: list[str] = []
+    for key, name in zip(keys, names, strict=True):
+        if not quiet:
+            print(f"Building {key!r}", file=sys.stderr)
+        try:
+            tbl = fn(frame.filter(nw.col(group) == key).to_native(), key)
+            _check_gt(tbl, "fn's return value")
+            built.append((name, _trim(_render_gt(tbl, zoom, 5))))
+        except (ChromeNotFoundError, ChromeStartError):
+            raise  # no browser: every group would fail the same way
+        except Exception as e:
+            failed.append(f"{key}: {e}")
+    if not built:
+        raise RuntimeError("No group built successfully:\n" + "\n".join(failed))
+
+    widest = max(img.width for _, img in built) if match_width else None
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    paths = []
+    for name, img in built:
+        if widest is not None:
+            img = _extent(img, widest, img.height, bg)
+        path = str(Path(dir) / name)
+        _pad(img, bg, pad).save(path, quality=_JPEG_QUALITY)
+        paths.append(path)
+    if failed:
+        warnings.warn(
+            f"{len(failed)} group(s) failed and were skipped:\n" + "\n".join(failed), SdvplotWarning, stacklevel=2
+        )
+    if not quiet:
+        print(f"Wrote {len(paths)} file(s) to {dir}", file=sys.stderr)
+    return paths
