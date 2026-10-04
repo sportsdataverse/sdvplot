@@ -1,0 +1,99 @@
+"""Wave D in a real headless Chrome (great_tables gtsave and nokap), plus the public names.
+
+Tests marked `render` skip when nokap cannot start a browser (no Chrome/Chromium, or a sandbox that blocks it).
+"""
+
+import functools
+import tempfile
+from pathlib import Path
+
+import polars as pl
+import pytest
+
+pytest.importorskip("great_tables")
+from great_tables import GT  # noqa: E402
+from PIL import Image  # noqa: E402
+
+import sdvplot.great_tables as sgt  # noqa: E402
+from sdvplot.great_tables import gt_grid, gt_save_batch, gt_save_crop, gt_social_crop, gt_stack_tables  # noqa: E402
+from tests.gt_export_fakes import MAGENTA, size  # noqa: E402
+
+
+@functools.cache
+def _chrome_starts():
+    try:
+        import nokap
+
+        with tempfile.TemporaryDirectory() as tmp:
+            nokap.from_html("<p>x</p>", Path(tmp) / "probe.png", selector="p")
+        return True
+    except Exception:
+        return False
+
+
+@pytest.fixture(autouse=True)
+def _skip_render_without_chrome(request):
+    if request.node.get_closest_marker("render") and not _chrome_starts():
+        pytest.skip("needs Chrome or Chromium (nokap could not start one)")
+
+
+def _table():
+    return GT(pl.DataFrame({"team": ["LV", "LAR", "LAC"], "wins": [10, 8, 5]})).tab_header(title="Wins")
+
+
+def test_the_export_functions_are_public():
+    names = {"gt_save_crop", "gt_save_batch", "gt_social_crop", "gt_grid", "gt_stack_tables"}
+    assert names <= set(sgt.__all__)
+    assert all(getattr(sgt, n).__module__ == "sdvplot.great_tables._export" for n in names)
+
+
+@pytest.mark.render
+def test_render_save_crop_trims_the_page_and_pads_in_bg(tmp_path):
+    out = gt_save_crop(_table(), tmp_path / "t.png", bg="#ff00ff", whitespace=12)
+    with Image.open(out) as im:
+        rgb = im.convert("RGB")
+    edges = [(0, 0), (rgb.width - 1, rgb.height - 1), (11, 11), (rgb.width - 12, rgb.height - 12)]
+    assert [rgb.getpixel(p) for p in edges] == [MAGENTA] * 4
+    inner = rgb.crop((12, 12, rgb.width - 12, rgb.height - 12))
+    colors = {c for _, c in inner.getcolors(1 << 20)}
+    assert MAGENTA not in colors and any(sum(c) < 200 for c in colors)  # dark text inside, no bg left inside
+
+
+@pytest.mark.render
+def test_render_zoom_scales_the_table():
+    one, two = (gt_save_crop(_table(), zoom=z, whitespace=0) for z in (1, 2))
+    assert abs(two.width - 2 * one.width) <= 4 and abs(two.height - 2 * one.height) <= 4
+
+
+@pytest.mark.render
+def test_render_social_crop_meets_the_ratio():
+    im = gt_social_crop(_table(), aspect_ratio="16:9")
+    assert abs(im.width / im.height - 16 / 9) < 0.01
+
+
+@pytest.mark.render
+def test_render_grid_and_stack_compose_side_by_side_and_down(tmp_path):
+    tables = [_table(), _table()]
+    one = gt_save_crop(tables[0], whitespace=0)
+    across = size(gt_grid(tables, ncol=2, file=tmp_path / "g.png", whitespace=0))
+    down = size(gt_stack_tables(tables, file=tmp_path / "s.png", whitespace=0))
+    assert across[0] > 1.8 * one.width and across[1] < 1.3 * one.height
+    assert down[1] > 1.8 * one.height and down[0] < 1.3 * one.width
+
+
+@pytest.mark.render
+def test_render_grid_on_a_colored_bg_is_trimmed_evenly(tmp_path):
+    out = gt_grid([_table(), GT(pl.DataFrame({"a": [1]}))], file=tmp_path / "g.png", bg="#ff00ff", whitespace=10)
+    with Image.open(out) as im:
+        rgb = im.convert("RGB")
+    inner = rgb.crop((10, 10, rgb.width - 10, rgb.height - 10))
+    iw, ih = inner.size
+    for edge in [(0, 0, iw, 1), (0, ih - 1, iw, ih), (0, 0, 1, ih), (iw - 1, 0, iw, ih)]:
+        assert any(c != MAGENTA for _, c in inner.crop(edge).getcolors(1 << 16))  # content on every edge
+
+
+@pytest.mark.render
+def test_render_batch_matches_widths(tmp_path):
+    df = pl.DataFrame({"g": ["short", "a much longer group value"], "v": [1, 2]})
+    paths = gt_save_batch(df, "g", lambda d, v: GT(d).tab_header(title=str(v)), "t-{group}.png", tmp_path, quiet=True)
+    assert len({size(p)[0] for p in paths}) == 1

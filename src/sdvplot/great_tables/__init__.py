@@ -18,6 +18,7 @@ from typing import Any
 
 from great_tables import GT
 
+from sdvplot.great_tables._export import gt_grid, gt_save_batch, gt_save_crop, gt_social_crop, gt_stack_tables
 from sdvplot.great_tables._marks import (
     gt_merge_stack_team_color,
     gt_sdv_cols_label,
@@ -95,11 +96,16 @@ def drawn_cells(gt: GT) -> list[tuple[str, int, str, float, str]]:
 
 
 __all__ = [
+    "gt_grid",
     "gt_merge_stack_team_color",
+    "gt_save_batch",
+    "gt_save_crop",
     "gt_sdv_cols_label",
     "gt_sdv_headshots",
     "gt_sdv_logos",
     "gt_sdv_wordmarks",
+    "gt_social_crop",
+    "gt_stack_tables",
     "gt_theme_sdv",
     "gt_theme_sdv_team",
 ]
