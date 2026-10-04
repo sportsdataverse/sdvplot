@@ -11,6 +11,7 @@
     - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
     - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
     - [Added — web family](#added--web-family)
+    - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -102,3 +103,15 @@
   Bokeh plot hook (`sdvplot.holoviews`) and Folium maps (`sdvplot.folium`, `x` longitude and `y` latitude).
 - `embed=True` inlines the images as data URIs, for HTML that renders offline and for static export.
 - The `[holoviews]` extra now installs Bokeh 3 as well.
+
+### Added — long tail (pygal, Cartopy, gallery compatibility)
+
+- pygal: `add_logos`, `add_wordmarks` and `add_headshots` on XY-family charts (`XY`, `DateTimeLine`, `DateLine`,
+  `TimeLine`, `TimeDeltaLine`), drawn in every render; `embed=True` makes SVG and PNG exports work offline;
+  `team_style()` colors series by team (`sdvplot.pygal`, new `[pygal]` extra).
+- Cartopy: the matplotlib adapter's `add_logos`, `add_wordmarks` and `add_headshots` take `transform=` (e.g.
+  `ccrs.PlateCarree()` for longitude/latitude, or any matplotlib transform); a `GeoAxes` without it raises
+  `ValueError`. A mark whose point falls outside the Axes is not drawn, in any coordinate system.
+- `docs/COMPATIBILITY.md`: every package on python-graph-gallery's best dataviz packages list, how it gets marks or
+  colors, and the test that proves it (`tests/test_compat_*.py`, new `compat` dependency group); a watch item for
+  Reflex XY image marks, re-checked at each release.
