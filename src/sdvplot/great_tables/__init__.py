@@ -37,6 +37,7 @@ from sdvplot.great_tables._cells import (
     gt_highlight_na,
     gt_indicator_boxes,
 )
+from sdvplot.great_tables._layout import gt_set_font, gt_title_header, gt_watermark
 from sdvplot.great_tables._marks import (
     gt_merge_stack_team_color,
     gt_sdv_cols_label,
@@ -158,6 +159,7 @@ __all__ = [
     "gt_sdv_headshots",
     "gt_sdv_logos",
     "gt_sdv_wordmarks",
+    "gt_set_font",
     "gt_theme_almanac",
     "gt_theme_athletic",
     "gt_theme_booktabs",
@@ -179,5 +181,7 @@ __all__ = [
     "gt_theme_terminal",
     "gt_theme_tier",
     "gt_theme_tufte",
+    "gt_title_header",
+    "gt_watermark",
     "pal_midnight",
 ]
