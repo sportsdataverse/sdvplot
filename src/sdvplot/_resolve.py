@@ -106,6 +106,13 @@ def _unpack(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
     if isinstance(values, (list, tuple)):
         return list(values), list
     if hasattr(values, "tolist") and not hasattr(values, "to_list"):  # numpy arrays
+        kind = getattr(values.dtype, "kind", "")
+        if kind in ("m", "M"):
+            import numpy as np  # importable: values is a numpy array
+
+            if np.datetime_data(values.dtype)[0] in ("ns", "ps", "fs", "as"):
+                # tolist() turns sub-microsecond datetime64/timedelta64 (pandas' default) into integers
+                values = values.astype(f"{kind}8[us]")
         return list(values.tolist()), list
     return _unpack_series(values)
 

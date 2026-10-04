@@ -40,6 +40,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
 | `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `image_src`, `image_sources`: what the web adapters share |
 | `plotly.py`, `altair.py`, `bokeh.py`, `holoviews.py`, `folium.py` | the web adapters (public submodules) |
+| `pygal.py` | the pygal adapter (an xml filter draws the marks at each render) and `team_style` |
 | `_surface.py` | `surface` (sportypy) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
@@ -51,7 +52,9 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
-`export_sdvplotr.R`). `docs/` is the Docusaurus site. `data-raw/` is the committed input to the index.
+`export_sdvplotr.R`). `docs/` is the Docusaurus site; `docs/COMPATIBILITY.md` (outside the site's pages) is the
+gallery compatibility matrix, kept true by `tests/test_compat_matrix.py`. `data-raw/` is the committed input to the
+index.
 
 ## Commands
 
