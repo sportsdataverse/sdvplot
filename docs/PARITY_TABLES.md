@@ -5,6 +5,7 @@
   - [Wave A: marks and team identity](#wave-a-marks-and-team-identity)
   - [Wave B: table themes](#wave-b-table-themes)
   - [Wave C1: cell styling and formatting](#wave-c1-cell-styling-and-formatting)
+  - [Wave D: image export and composition](#wave-d-image-export-and-composition)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -100,6 +101,16 @@ table that is not a `GT` raises `TypeError`.
 | `gt_highlight_cells` | an rlang formula or function per column, or a logical matrix | a callable on each column's pandas/polars Series, or a DataFrame or 2-D sequence mask | ported |
 | `gt_highlight_na` | `tab_style()` + `text_transform()` for `missing_text` | `tab_style()` + `fmt()` (`text_transform` skips null cells) | ported; `columns=None` means every column (R: `everything()`) |
 | `gt_indicator_boxes` | `text_transform()` with a vectorized rule over the rendered text | `fmt()` per data value; the rule is called per value (and column name) | approximated: a rule that needs the whole column (`x > mean(x)`) must be computed beforehand; `show_only` is validated |
+
+## Wave D: image export and composition
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_save_crop` | `gtExtras::gtsave_extra(zoom, expand)`; magick `image_trim`, `image_border`, `image_resize` | `GT.gtsave(zoom=, expand=)` (headless Chrome through nokap); Pillow ports of the magick steps, measured against ImageMagick 6.9 | ported. `file=None` returns a `PIL.Image` (R: the encoded bytes). JPEG is written at magick's quality 92. A one-color render comes back untrimmed (magick raises). |
+| `gt_social_crop` | as `gt_save_crop`, plus `magick::image_extent(gravity=)` | a Pillow canvas with ImageMagick's gravity offsets (measured) | ported. A three-part ratio (`"1:2:3"`) or an infinite one raises (R reads the first two parts, or passes `Inf` on to magick). |
+| `gt_save_batch` | a tidyselect `group`; `cli` progress messages; `gtsave_extra(zoom)`; magick | a column name; progress lines on stderr; `GT.gtsave`; Pillow | ported. `fn` gets the caller's frame type (pandas or polars, through narwhals). Two values that make the same file name raise before anything renders (R overwrites one). A browser that cannot start raises at the first group (R records it as a failure of every group). |
+| `gt_grid` | an `htmltools` CSS grid; `webshot2::webshot(selector = "body")`; magick | a py-htmltools `Tag` (a great_tables dependency); `nokap.from_html` capturing the page wrapper; Pillow | ported. Returns an `htmltools.Tag` (R: `browsable()`); `tables` may be a dict (its values). A misspelled style key raises (R ignores it). A label font loads without a heading too (R drops the link). The capture is the `bg`-colored wrapper, so a non-white `bg` trims evenly (capturing the page body, as R does, leaves uneven `bg` padding: the even-trim render test fails with it). Deliberate divergence: a plain string in `title`, `subtitle`, `caption`, `source_note` or `labels` is escaped, as great_tables escapes text; `html()` and `md()` pass through as markup. R inserts plain strings as raw HTML (`htmltools::HTML(as.character(x))`), so `"Wins < 5"` loses its tail there. `gap` must be a non-negative number and `zoom` a positive one, and `labels` a non-empty text or list of text (R puts any `gap` into the CSS and hands any `zoom` to webshot). |
+| `gt_stack_tables` | an `htmltools` flex column; `webshot2::webshot(selector = "body")`; magick | as `gt_grid` | ported, with `gt_grid`'s notes on the return value, dict input, style keys, the even trim, escaped plain strings and the `gap` / `zoom` checks. |
 
 ## Wave C2: legends, layout and annotation (`sdvplot.great_tables._layout`)
 
