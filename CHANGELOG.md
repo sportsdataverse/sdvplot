@@ -110,6 +110,8 @@
 - pygal: `add_logos`, `add_wordmarks` and `add_headshots` on XY-family charts (`XY`, `DateTimeLine`, `DateLine`,
   `TimeLine`, `TimeDeltaLine`), drawn in every render; `embed=True` makes SVG and PNG exports work offline;
   `team_style()` colors series by team (`sdvplot.pygal`, new `[pygal]` extra).
+- pygal: a copy of a chart (`copy.copy` or `copy.deepcopy`) renders the marks it was copied with, and marks added to
+  the copy or to the original afterwards stay on that chart.
 - Cartopy: the matplotlib adapter's `add_logos`, `add_wordmarks` and `add_headshots` take `transform=` (e.g.
   `ccrs.PlateCarree()` for longitude/latitude, or any matplotlib transform); a `GeoAxes` without it raises
   `ValueError`. A mark whose point falls outside the Axes is not drawn, in any coordinate system.

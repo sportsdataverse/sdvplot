@@ -1,14 +1,17 @@
 """The pygal adapter: logos, wordmarks and headshots on pygal XY charts, plus team colors as a pygal Style.
 
-pygal builds a new SVG tree on every render, so each add_* call registers an xml filter (``chart.add_xml_filter``,
-pygal's public hook) that appends one ``<image>`` per mark to the plot overlay group, above pygal's own dots, during
-the render. Positions come from ``chart.view``, the projection pygal uses for its own dots, after pygal's own value
-adapters (dates become timestamps), so a logo sits exactly where pygal would draw that point. Resolution and its
-warnings happen when add_* is called, not at render time.
+pygal builds a new SVG tree on every render, so add_* records the marks on the chart and registers one xml filter
+(``chart.add_xml_filter``, pygal's public hook) that appends one ``<image>`` per recorded mark to the plot overlay
+group, above pygal's own dots, during the render. Positions come from ``chart.view``, the projection pygal uses for its
+own dots, after pygal's own value adapters (dates become timestamps), so a logo sits exactly where pygal would draw that
+point. Resolution and its warnings happen when add_* is called, not at render time. A copy of the chart
+(``copy.copy`` or ``copy.deepcopy``) renders the marks it was copied with, and marks added to either one afterwards stay
+on that one.
 """
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 import pygal
@@ -32,32 +35,35 @@ def _check_chart(chart: Any) -> None:
         )
 
 
-def _filter(chart: Any, marks: list[tuple[Any, Any, str, float]], height: float, alpha: float) -> Any:
-    """An xml filter that appends the marks to the plot overlay (pygal's dot layer) of the render in progress."""
+def _draw(root: Any) -> Any:
+    """The xml filter: append the rendering chart's marks to its plot overlay (pygal's dot layer).
 
-    def draw(root: Any) -> Any:
-        view = getattr(chart, "view", None)  # set during a render; absent when every series is empty
-        overlay = next((el for el in root.iter() if el.get("class") == "plot overlay"), None)
-        if view is None or overlay is None:
-            return root
-        ident = lambda v: v  # noqa: E731
-        adapt = getattr(chart, "_adapt", None) or ident  # pygal's value adapters, as applied to its own points
-        x_adapt = getattr(chart, "_x_adapt", None) or ident
-        h = height * view.height
-        for x, y, src, ratio in marks:
-            cx, cy = view((adapt(x_adapt(x)), adapt(y)))
-            if cx is None or cy is None or not (0 <= cx <= view.width and 0 <= cy <= view.height):
-                continue  # outside the plot, like a matplotlib annotation outside the limits
-            w = h * ratio
-            attrs = {
-                _HREF: src, "x": f"{cx - w / 2:.3f}", "y": f"{cy - h / 2:.3f}", "width": f"{w:.3f}",
-                "height": f"{h:.3f}", "preserveAspectRatio": "xMidYMid meet", "opacity": f"{alpha:g}",
-                "pointer-events": "none",  # hovering still reaches pygal's dot (and its tooltip) underneath
-            }  # fmt: skip
-            overlay.append(overlay.makeelement("image", attrs))
+    pygal hands a filter the SVG tree alone, so the chart is read off the caller: ``Svg.render`` (whose ``graph`` is
+    the chart) or ``render_tree`` (the chart itself). A copy of a chart, which shares this filter (``copy.copy``) or
+    holds it again (``copy.deepcopy``), so draws its own marks at its own projection.
+    """
+    caller = sys._getframe(1).f_locals.get("self")  # ponytail: pygal's two call sites, pinned by every render test
+    chart = getattr(caller, "graph", caller)
+    view = getattr(chart, "view", None)  # set during a render; absent when every series is empty
+    overlay = next((el for el in root.iter() if el.get("class") == "plot overlay"), None)
+    if not isinstance(chart, pygal.XY) or view is None or overlay is None:
         return root
-
-    return draw
+    ident = lambda v: v  # noqa: E731
+    adapt = getattr(chart, "_adapt", None) or ident  # pygal's value adapters, as applied to its own points
+    x_adapt = getattr(chart, "_x_adapt", None) or ident
+    for _, x, y, height, _, src, ratio, alpha in vars(chart).get("_sdvplot_marks", ()):
+        cx, cy = view((adapt(x_adapt(x)), adapt(y)))
+        if cx is None or cy is None or not (0 <= cx <= view.width and 0 <= cy <= view.height):
+            continue  # outside the plot, like a matplotlib annotation outside the limits
+        h = height * view.height
+        w = h * ratio
+        attrs = {
+            _HREF: src, "x": f"{cx - w / 2:.3f}", "y": f"{cy - h / 2:.3f}", "width": f"{w:.3f}",
+            "height": f"{h:.3f}", "preserveAspectRatio": "xMidYMid meet", "opacity": f"{alpha:g}",
+            "pointer-events": "none",  # hovering still reaches pygal's dot (and its tooltip) underneath
+        }  # fmt: skip
+        overlay.append(overlay.makeelement("image", attrs))
+    return root
 
 
 def _add(
@@ -83,10 +89,11 @@ def _add(
     for p in placements:
         if p.url not in sources:
             sources[p.url] = image_src(p, embed=embed)  # with embed=True this reads the cache now, not at render
-        marks.append((p.x, p.y, sources[p.url], aspect(p)))
-    chart.add_xml_filter(_filter(chart, marks, h, a))
-    drawn = vars(chart).setdefault("_sdvplot_marks", [])
-    drawn.extend((p.team_id, p.x, p.y, h, p.url) for p in placements)
+        marks.append((p.team_id, p.x, p.y, h, p.url, sources[p.url], aspect(p), a))
+    state = vars(chart)
+    state["_sdvplot_marks"] = [*state.get("_sdvplot_marks", ()), *marks]  # a new list: a shallow copy keeps the old
+    if _draw not in chart.xml_filters:  # a shallow copy shares the original's filter list, and with it the filter
+        chart.add_xml_filter(_draw)
     return chart
 
 
@@ -105,9 +112,6 @@ def add_logos(
     id_system: str = "auto",
 ) -> Any:
     """Draw each team's logo centred on its (x, y) point of a pygal XY chart, in every render of the chart.
-
-    The logos belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
-    hands the copied filter only the SVG tree, not the copy. Call add_logos again on the copy.
 
     Args:
         chart: A pygal ``XY`` chart (``XY(stroke=False)`` for a scatter) or a ``DateTimeLine``/``DateLine``/
@@ -167,9 +171,6 @@ def add_wordmarks(
 ) -> Any:
     """Draw each team's wordmark centred on its (x, y) point of a pygal XY chart, in every render of the chart.
 
-    The wordmarks belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
-    hands the copied filter only the SVG tree, not the copy. Call add_wordmarks again on the copy.
-
     Args:
         chart: A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...).
         x: The points' x positions in the chart's units (read by position).
@@ -222,9 +223,6 @@ def add_headshots(
     id_system: str = "espn",
 ) -> Any:
     """Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart.
-
-    The headshots belong to this chart: a copy of it (``copy.deepcopy``) renders without them, because pygal
-    hands the copied filter only the SVG tree, not the copy. Call add_headshots again on the copy.
 
     Args:
         chart: A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...).
@@ -335,4 +333,4 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
 
 def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) for each mark add_logos/add_wordmarks/add_headshots placed."""
-    return list(vars(chart).get("_sdvplot_marks", []))
+    return [m[:5] for m in vars(chart).get("_sdvplot_marks", ())]
