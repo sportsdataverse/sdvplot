@@ -33,7 +33,7 @@ jobs:
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
       - name: Run tests (offline)
-        run: uv run --frozen pytest -q --maxfail=10
+        run: uv run --frozen pytest -q --maxfail=10 --mpl
 
   live:
     name: pytest (live, py3.13)
@@ -50,4 +50,4 @@ jobs:
       - name: Run tests (live network tests included)
         env:
           SDVPLOT_LIVE_TESTS: ${{ github.event.inputs.live_tests != 'false' && '1' || '' }}
-        run: uv run --frozen pytest -q --maxfail=10 --cov=sdvplot --cov-report=term-missing:skip-covered
+        run: uv run --frozen pytest -q --maxfail=10 --mpl --cov=sdvplot --cov-report=term-missing:skip-covered

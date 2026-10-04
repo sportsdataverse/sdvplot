@@ -57,6 +57,13 @@ uv run mypy
 Tests run against a small hand-written index fixture. A test that needs the shipped index carries the `real_index`
 marker (`tests/test_real_index.py`).
 
+### Image baselines
+
+`tests/test_images_baseline.py` compares figures against `tests/baseline/*.png` (pytest-mpl). CI runs `pytest --mpl`.
+After an intended visual change, regenerate on Linux (the CI image) and look at every changed PNG before committing:
+
+    uv run pytest tests/test_images_baseline.py --mpl-generate-path=tests/baseline
+
 ## Generated files
 
 Generated files are never hand-edited. Change the source, regenerate, and commit both.
