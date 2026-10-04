@@ -6,6 +6,7 @@
     - [pre-commit](#pre-commit)
   - [Tests](#tests)
     - [Image baselines](#image-baselines)
+    - [Render tests](#render-tests)
   - [Generated files](#generated-files)
   - [Code standards for new modules](#code-standards-for-new-modules)
   - [Notebooks](#notebooks)
