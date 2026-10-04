@@ -2,11 +2,12 @@
 
 sdvplot routes matplotlib and seaborn targets here (sdvplot._dispatch). An image's height is a fraction of its Axes'
 height at draw time (_AxesFractionImage), so it holds at any dpi or figure size. plotnine draws through
-draw_placements too.
+draw_placements too. Cartopy GeoAxes are matplotlib Axes: transform= takes the CRS of the caller's coordinates.
 """
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 import numpy as np
@@ -71,10 +72,32 @@ def _image(p: Placement) -> np.ndarray:
     return rgba_array(load_mark_image(p.mark) if p.mark is not None else load_url_image(p.url))
 
 
+def _xycoords(ax: Axes, transform: Any) -> Any:
+    """The coordinates (x, y) are in: the Axes' data, or ``transform`` (a Cartopy CRS or a matplotlib Transform)."""
+    if transform is None:
+        geoaxes = sys.modules.get("cartopy.mpl.geoaxes")  # loaded whenever a GeoAxes exists
+        if geoaxes is not None and isinstance(ax, geoaxes.GeoAxes):
+            raise ValueError(
+                "this is a Cartopy GeoAxes, whose data coordinates are the projection's: pass the CRS of x and y, "
+                "e.g. transform=ccrs.PlateCarree() for longitude/latitude"
+            )
+        return "data"
+    return transform._as_mpl_transform(ax) if hasattr(transform, "_as_mpl_transform") else transform
+
+
 def draw_placements(
-    ax: Axes, placements: list[Placement], *, height: float, alpha: float = 1.0, zorder: float = 3
+    ax: Axes,
+    placements: list[Placement],
+    *,
+    height: float,
+    alpha: float = 1.0,
+    zorder: float = 3,
+    xycoords: Any = "data",
 ) -> list[AnnotationBbox]:
-    """Draw each placement centred on its (x, y) in data coordinates, ``height`` of the Axes tall."""
+    """Draw each placement centred on its (x, y) in ``xycoords``, ``height`` of the Axes tall.
+
+    A point outside the Axes is not drawn, whatever ``xycoords`` is (matplotlib only clips "data" by default).
+    """
     images: dict[str, np.ndarray] = {}
     boxes = []
     for p in placements:
@@ -83,10 +106,11 @@ def draw_placements(
         box = AnnotationBbox(
             _AxesFractionImage(images[p.url], ax, height, alpha=alpha),
             (p.x, p.y),
-            xycoords="data",
+            xycoords=xycoords,
             frameon=False,
             pad=0,
             zorder=zorder,
+            annotation_clip=True,
         )
         box._sdvplot_mark = (p.team_id, p.x, p.y, height, p.url)  # type: ignore[attr-defined]
         ax.add_artist(box)
@@ -108,11 +132,13 @@ def _add(
     variant: str,
     zorder: float,
     id_system: str,
+    transform: Any,
 ) -> Any:
     h, a = check_height(height), check_alpha(alpha)
     ax = target_axes(target)
+    xycoords = _xycoords(ax, transform)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
-    draw_placements(ax, placements, height=h, alpha=a, zorder=zorder)
+    draw_placements(ax, placements, height=h, alpha=a, zorder=zorder, xycoords=xycoords)
     return target
 
 
@@ -129,6 +155,7 @@ def add_logos(
     variant: str = "default",
     zorder: float = 3,
     id_system: str = "auto",
+    transform: Any = None,
 ) -> Any:
     """Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plot.
 
@@ -144,13 +171,15 @@ def add_logos(
         variant: "default", "dark", or a named variant from ``marks()``.
         zorder: matplotlib drawing order (3 draws above lines and markers).
         id_system: The id system of ``teams``; "auto" tries each in order.
+        transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
+            ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
 
     Returns:
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, or the target
-            has several Axes.
+        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target
+            has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
 
     Example:
         ::
@@ -163,13 +192,21 @@ def add_logos(
             ax.set_ylim(-10, 0)
             sdvplot.add_logos(ax, [10, 20], [-3, -7], ["KC", "BUF"], league="nfl", height=0.15)
 
+        On a Cartopy map, at longitude/latitude::
+
+            import cartopy.crs as ccrs
+
+            ax = plt.axes(projection=ccrs.Robinson())
+            ax.set_global()
+            sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
+
     See Also:
         sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
     return _add(
         target, x, y, teams, kind="logo", league=league, season=season, height=height, alpha=alpha,
-        variant=variant, zorder=zorder, id_system=id_system,
+        variant=variant, zorder=zorder, id_system=id_system, transform=transform,
     )  # fmt: skip
 
 
@@ -186,6 +223,7 @@ def add_wordmarks(
     variant: str = "default",
     zorder: float = 3,
     id_system: str = "auto",
+    transform: Any = None,
 ) -> Any:
     """Draw each team's wordmark centred on its (x, y) point of a matplotlib or seaborn plot.
 
@@ -201,13 +239,15 @@ def add_wordmarks(
         variant: "default", "dark", or a named variant from ``marks()``.
         zorder: matplotlib drawing order.
         id_system: The id system of ``teams``; "auto" tries each in order.
+        transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
+            ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
 
     Returns:
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the target has
-            several Axes.
+        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
+            several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
 
     Example:
         ::
@@ -223,7 +263,7 @@ def add_wordmarks(
     """
     return _add(
         target, x, y, teams, kind="wordmark", league=league, season=season, height=height, alpha=alpha,
-        variant=variant, zorder=zorder, id_system=id_system,
+        variant=variant, zorder=zorder, id_system=id_system, transform=transform,
     )  # fmt: skip
 
 
@@ -238,6 +278,7 @@ def add_headshots(
     alpha: float = 1,
     zorder: float = 3,
     id_system: str = "espn",
+    transform: Any = None,
 ) -> Any:
     """Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot.
 
@@ -251,13 +292,15 @@ def add_headshots(
         alpha: Opacity, 0 to 1.
         zorder: matplotlib drawing order.
         id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
+        transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
+            ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
 
     Returns:
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the target has
-            several Axes.
+        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
+            several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
 
     Example:
         ::
@@ -273,7 +316,7 @@ def add_headshots(
     """
     return _add(
         target, x, y, players, kind="headshot", league=league, season=None, height=height, alpha=alpha,
-        variant="default", zorder=zorder, id_system=id_system,
+        variant="default", zorder=zorder, id_system=id_system, transform=transform,
     )  # fmt: skip
 
 
