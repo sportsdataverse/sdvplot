@@ -26,7 +26,7 @@ SECTIONS = [
     ("Teams", ["resolve", "suggest", "teams"]),
     ("Colors", ["palette", "team_colors"]),
     ("Logos and headshots", ["logo_url", "logo_image", "marks", "headshot_url"]),
-    ("Plots and tables", ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]),
+    ("Plots and tables", ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface"]),
     ("Housekeeping", ["versions", "clear_cache"]),
 ]
 ERRORS = ["SdvplotWarning", "UnresolvedTeamError", "OfflineError", "OptionalDependencyError", "UnsupportedTargetError"]

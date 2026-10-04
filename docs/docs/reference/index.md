@@ -30,6 +30,7 @@ sidebar_position: 0
 - [`add_wordmarks`](add_wordmarks.md): Add team wordmarks to a plot or table of any supported library.
 - [`add_headshots`](add_headshots.md): Add player headshots to a plot or table of any supported library.
 - [`axis_logos`](axis_logos.md): Replace an axis' team labels with team logos on a plot of any supported library.
+- [`surface`](surface.md): Draw the league's playing surface with sportypy, in a team's colors.
 
 ## Housekeeping
 

@@ -69,7 +69,10 @@ exclude = ["docs", ".github", ".vscode", "examples", "CLAUDE.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-filterwarnings = ["error::sdvplot._errors.SdvplotWarning"]
+filterwarnings = [
+  "error::sdvplot._errors.SdvplotWarning",
+  "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
+]
 markers = ["real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)"]
 
 [tool.ruff]
