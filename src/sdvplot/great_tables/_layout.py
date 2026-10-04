@@ -12,7 +12,7 @@ import string
 import warnings
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 
 import narwhals as nw
@@ -992,3 +992,390 @@ def gt_tiers(
             look = [gst.fill(color=fill), gst.text(weight="bold", color=on_color(fill))]
             gt = gt.tab_style(look, loc.body(columns=tier_column, rows=rows))
     return _record(gt, "_sdvplot_key", dict(zip(names, fills, strict=True)))
+
+
+def _rendered(gt: GT) -> list[str]:
+    """The visible body columns, in display order (not the stub, row groups or hidden columns)."""
+    return [c.var for c in gt._boxhead if c.type.name == "default"]
+
+
+def _append(text: str, suffix: str) -> str:
+    """A ``text_transform`` function: the cell's rendered text plus ``suffix`` (bound with ``functools.partial``)."""
+    return f"{text}{suffix}"
+
+
+def gt_spotlight(
+    gt: GT,
+    rows: Any,
+    columns: Any = None,
+    fill: str | None = None,
+    text_color: str | None = None,
+    bold: bool = True,
+    accent_color: str | None = None,
+    accent_width: float = 4,
+    accent_column: Any = None,
+    dim_color: str | None = "#BBBBBB",
+    if_none: str = "warn",
+) -> GT:
+    """Light up some rows (bold, a fill, an accent bar) and dim everything else.
+
+    Args:
+        gt: The table.
+        rows: The rows to focus on: any great_tables row selection (0-based positions, a polars expression, or a
+            function of the pandas frame).
+        columns: The columns the spotlight covers; cells outside it are dimmed in the focused rows too. Defaults to
+            every column.
+        fill: A fill behind the focused cells.
+        text_color: The focused cells' text color.
+        bold: Bold the focused cells.
+        accent_color: A bar on the left edge of the focused rows; giving a color turns it on.
+        accent_width: The bar width in pixels.
+        accent_column: The column(s) the bar is drawn on; defaults to the leftmost rendered column.
+        dim_color: The text color of everything else; ``None`` emphasizes without dimming.
+        if_none: When ``rows`` matches nothing: ``"warn"`` (unchanged, with an SdvplotWarning), ``"dim"`` (dim the
+            whole table, for a spotlight that lives in another table of a grid) or ``"ignore"``.
+
+    Returns:
+        GT: A new table with the spotlight.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``if_none`` is not one of its choices.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_spotlight
+
+            df = pl.DataFrame({"team": ["LV", "KC", "BUF"], "wins": [10, 12, 11]})
+            gt = gt_spotlight(GT(df), pl.col("team") == "KC", accent_color="#E31837")
+
+    See Also:
+        Ported from sdvplotR ``gt_spotlight()``: https://sdvplotR.sportsdataverse.org/reference/gt_spotlight.html
+    """
+    _check_gt(gt)
+    _choice("if_none", if_none, ("warn", "dim", "ignore"))
+    focus = _rows(gt, rows)
+    if not focus:
+        if if_none == "dim" and dim_color is not None:
+            return gt.tab_style(gst.text(color=dim_color), loc.body())
+        if if_none == "warn":
+            msg = "rows matched no rows, so the table is unchanged; set if_none='dim' to dim the whole table instead"
+            warnings.warn(msg, SdvplotWarning, stacklevel=2)
+        return gt
+
+    chosen = _columns(gt, columns)
+    rendered = _rendered(gt)
+    others = [i for i in range(len(_frame(gt))) if i not in set(focus)]
+    rest = [c for c in rendered if c not in chosen]
+    if dim_color is not None:
+        if others:
+            gt = gt.tab_style(gst.text(color=dim_color), loc.body(rows=others))
+        if rest:
+            gt = gt.tab_style(gst.text(color=dim_color), loc.body(columns=rest, rows=focus))
+
+    looks: list[Any] = [] if fill is None else [gst.fill(color=fill)]
+    if text_color is not None or bold:
+        looks.append(gst.text(color=text_color, weight="bold" if bold else None))
+    if looks:
+        gt = gt.tab_style(looks, loc.body(columns=chosen, rows=focus))
+
+    if accent_color is not None:
+        edge = rendered[:1] if accent_column is None else [c for c in _columns(gt, accent_column) if c in rendered]
+        if not edge:
+            warnings.warn("accent_column matched no rendered column; no accent drawn", SdvplotWarning, stacklevel=2)
+        else:
+            bar = gst.borders(sides="left", color=accent_color, weight=f"{accent_width:g}px")
+            gt = gt.tab_style(bar, loc.body(columns=edge, rows=focus))
+    return gt
+
+
+def gt_row_accent(
+    gt: GT,
+    column: Any,
+    palette: Mapping[str, str] | Sequence[str] | None = None,
+    rows: Any = None,
+    width: float = 4,
+    side: str = "left",
+    hide: bool = True,
+    na_color: str = "transparent",
+) -> GT:
+    """Draw a colored bar on the edge of each row, keyed to a column (a team color, a conference).
+
+    The bar is a border on the stub, or on the leftmost rendered column when the table has no stub, so it lines up
+    with the row.
+
+    Args:
+        gt: The table.
+        column: The one column the color is keyed to: a column of colors, or values mapped through ``palette``.
+        palette: ``{value: color}``; or a list of colors assigned to the sorted distinct values and recycled.
+            Defaults to reading ``column`` as colors.
+        rows: The rows to accent (any great_tables row selection). Defaults to every row.
+        width: The bar width in pixels.
+        side: ``"left"`` or ``"right"``.
+        hide: Hide ``column`` once the bars are drawn (what you want when it holds hex codes).
+        na_color: The color for a missing or unmapped key; ``"transparent"`` draws no bar.
+
+    Returns:
+        GT: A new table with the bars (unchanged, with an SdvplotWarning, when ``rows`` selects no rows).
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``column`` does not select exactly one column, or ``side`` is not ``"left"``/``"right"``.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_row_accent
+
+            df = pl.DataFrame({"team": ["Clemson", "Georgia"], "conf": ["ACC", "SEC"], "wins": [10, 12]})
+            gt = gt_row_accent(GT(df), "conf", palette={"ACC": "#003366", "SEC": "#B8232F"})
+
+    See Also:
+        Ported from sdvplotR ``gt_row_accent()``: https://sdvplotR.sportsdataverse.org/reference/gt_row_accent.html
+    """
+    _check_gt(gt)
+    _choice("side", side, ("left", "right"))
+    selected = _columns(gt, column)
+    if len(selected) != 1:
+        raise ValueError(f"column must select exactly one column, got {selected}")
+    keys = _strings(gt, selected[0])
+    if palette is None:
+        colors = list(keys)
+    elif isinstance(palette, Mapping):
+        colors = [None if k is None else palette.get(k) for k in keys]
+    else:
+        levels = sorted({k for k in keys if k is not None})
+        lookup = {level: palette[i % len(palette)] for i, level in enumerate(levels)}
+        colors = [None if k is None else lookup[k] for k in keys]
+    fills = [na_color if c is None else c for c in colors]
+
+    keep = set(_rows(gt, rows))
+    if not keep:
+        warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
+        return gt
+    if hide:
+        gt = gt.cols_hide(columns=selected)
+    has_stub = any(c.type.name == "stub" for c in gt._boxhead)
+    rendered = _rendered(gt)
+    if not rendered and not has_stub:
+        return gt
+    edge_side: Literal["left", "right"] = "left" if side == "left" else "right"
+    for color in dict.fromkeys(fills):
+        at = [i for i, c in enumerate(fills) if c == color and i in keep]
+        if color == "transparent" or not at:
+            continue
+        where = loc.stub(rows=at) if has_stub else loc.body(columns=rendered[0], rows=at)
+        gt = gt.tab_style(gst.borders(sides=edge_side, color=color, weight=f"{width:g}px"), where)
+    return gt
+
+
+def _quantile(ordered: list[float], p: float) -> float:
+    """R's default (type 7) quantile of sorted values."""
+    h = (len(ordered) - 1) * p
+    i = math.floor(h)
+    return ordered[i] if i + 1 >= len(ordered) else ordered[i] + (h - i) * (ordered[i + 1] - ordered[i])
+
+
+def _limits(method: str, values: list[float], threshold: float, bounds: Sequence[Any]) -> list[float]:
+    """The (low, high) outside which a value is an outlier; infinite when the spread is zero or undefined."""
+    wide = [-math.inf, math.inf]
+    if method == "bounds":
+        lo, hi = (_number(b) for b in bounds)
+        return [-math.inf if lo is None else lo, math.inf if hi is None else hi]
+    if len(values) < 2:
+        return wide
+    if method == "sd":
+        mean = sum(values) / len(values)
+        sd = math.sqrt(sum((v - mean) ** 2 for v in values) / (len(values) - 1))
+        return wide if sd == 0 else [mean - threshold * sd, mean + threshold * sd]
+    ordered = sorted(values)
+    q1, q3 = _quantile(ordered, 0.25), _quantile(ordered, 0.75)
+    return wide if q3 == q1 else [q1 - threshold * (q3 - q1), q3 + threshold * (q3 - q1)]
+
+
+def gt_outliers(
+    gt: GT,
+    columns: Any,
+    method: str = "iqr",
+    threshold: float | None = None,
+    bounds: Sequence[float | None] | None = None,
+    side: str = "both",
+    fill: str | None = None,
+    color: str | None = None,
+    bold: bool = True,
+    symbol: str | None = None,
+    note: bool | str | None = None,
+) -> GT:
+    """Flag outlying values in numeric columns: colored (and bold) text, an optional fill, symbol and source note.
+
+    Args:
+        gt: The table.
+        columns: The columns to test (any great_tables selection); non-numeric columns are skipped.
+        method: ``"iqr"`` (beyond ``threshold`` x IQR of the quartiles, R's type-7 quantiles), ``"sd"`` (more than
+            ``threshold`` sample standard deviations from the mean) or ``"bounds"`` (outside ``bounds``).
+        threshold: The cutoff for ``"iqr"`` (default 1.5) and ``"sd"`` (default 3).
+        bounds: ``(lower, upper)`` for ``"bounds"``; ``None`` on either side leaves it open.
+        side: ``"both"``, ``"high"`` or ``"low"``.
+        fill: A fill behind flagged values.
+        color: The flagged text color; defaults to a warning red, or the readable ink when the red fails 4.5:1 on
+            ``fill``.
+        bold: Bold flagged values.
+        symbol: A marker appended to flagged values, such as ``"†"``.
+        note: ``True`` adds a source note describing the rule; a string adds that note; ``None``/``False`` none.
+
+    Returns:
+        GT: A new table (unchanged, with an SdvplotWarning, when no selected column is numeric).
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``columns`` selects nothing, ``bounds`` is missing for ``"bounds"``, or an option is invalid.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_outliers
+
+            df = pl.DataFrame({"team": list("ABCDEFG"), "pts": [21, 24, 20, 23, 22, 25, 61]})
+            gt = gt_outliers(GT(df), "pts", symbol="†", note=True)
+
+    See Also:
+        Ported from sdvplotR ``gt_outliers()``: https://sdvplotR.sportsdataverse.org/reference/gt_outliers.html
+    """
+    _check_gt(gt)
+    _choice("method", method, ("iqr", "sd", "bounds"))
+    _choice("side", side, ("both", "high", "low"))
+    if threshold is None:
+        threshold = 3 if method == "sd" else 1.5
+    if method == "bounds" and (bounds is None or len(bounds) != 2):
+        raise ValueError("bounds must be (lower, upper) when method is 'bounds'")
+    cols = _columns(gt, columns)
+    if not cols:
+        raise ValueError("columns matched no columns")
+    data = _frame(gt)
+    numeric = [c for c in cols if data[c].dtype.is_numeric()]
+    if not numeric:
+        warnings.warn("no numeric columns among columns; nothing to flag", SdvplotWarning, stacklevel=2)
+        return gt
+    if color is None:
+        color = "#B3261E" if fill is None or contrast("#B3261E", fill) >= 4.5 else on_color(fill)
+
+    flagged = False
+    for col in numeric:
+        values = _numbers(gt, col)
+        low, high = _limits(method, [v for v in values if v is not None], threshold, bounds or ())
+        hit = [
+            i
+            for i, v in enumerate(values)
+            if v is not None and ((v < low and side != "high") or (v > high and side != "low"))
+        ]
+        if not hit:
+            continue
+        flagged = True
+        looks: list[Any] = [gst.text(color=color, weight="bold" if bold else None)]
+        if fill is not None:
+            looks.append(gst.fill(color=fill))
+        gt = gt.tab_style(looks, loc.body(columns=col, rows=hit))
+        if symbol is not None:
+            gt = gt.text_transform(loc.body(columns=col, rows=hit), functools.partial(_append, suffix=symbol))
+
+    if not flagged or note is None or note is False:
+        return gt
+    if note is True:
+        tail = {"both": "", "high": " (high side only)", "low": " (low side only)"}[side]
+        if method == "sd":
+            plural = "" if threshold == 1 else "s"
+            text = f"Marked values fall more than {threshold:g} standard deviation{plural} from the column mean{tail}."
+        elif method == "iqr":
+            text = f"Marked values fall outside {threshold:g} × IQR of the column quartiles{tail}."
+        else:
+            lo, hi = ("NA" if x is None else f"{x:g}" for x in map(_number, bounds or ()))
+            text = f"Marked values fall outside {lo}–{hi}{tail}."
+    else:
+        text = str(note)
+    return gt.tab_source_note(text)
+
+
+def gt_significance(
+    gt: GT,
+    columns: Any,
+    p_columns: Any,
+    levels: Sequence[float] = (0.01, 0.05, 0.1),
+    symbols: Sequence[str] = ("***", "**", "*"),
+    superscript: bool = True,
+    size: str = "0.7em",
+    legend: bool = True,
+    legend_text: str | None = None,
+    hide_p: bool = True,
+) -> GT:
+    """Append significance stars to estimates from paired p-value columns.
+
+    Each value takes the symbol of the strictest level its p-value is below (0.004 gets ``***``, not ``*``); values
+    that meet no level, and missing p-values, are left alone. Stars follow the formatted text, so format first.
+
+    Args:
+        gt: The table.
+        columns: The estimate columns (any great_tables selection).
+        p_columns: The p-value columns, paired with ``columns`` by position.
+        levels: Significance thresholds, ascending (strictest first).
+        symbols: The notation for each level.
+        superscript: Render the stars as superscript.
+        size: The stars' CSS font size.
+        legend: Add a legend as a source note.
+        legend_text: A custom legend; defaults to ``"*** p < 0.01, ** p < 0.05, * p < 0.1"`` from the levels.
+        hide_p: Hide the p-value columns.
+
+    Returns:
+        GT: A new table with the stars.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``levels`` and ``symbols`` differ in length, ``levels`` is not ascending, ``columns`` selects
+            nothing, or the two selections do not pair up.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_significance
+
+            df = pl.DataFrame({"term": ["epa", "wpa"], "est": [0.42, 0.08], "p": [0.004, 0.2]})
+            gt = gt_significance(GT(df).fmt_number("est"), "est", "p")
+
+    See Also:
+        Ported from sdvplotR ``gt_significance()``: https://sdvplotR.sportsdataverse.org/reference/gt_significance.html
+    """
+    _check_gt(gt)
+    if len(levels) != len(symbols):
+        raise ValueError("levels and symbols must be the same length")
+    if list(levels) != sorted(levels):
+        raise ValueError("levels must be in ascending order, strictest first")
+    estimates, p_cols = _columns(gt, columns), _columns(gt, p_columns)
+    if not estimates:
+        raise ValueError("columns matched no columns")
+    if len(p_cols) != len(estimates):
+        raise ValueError(
+            f"p_columns must pair with columns: got {len(estimates)} estimate column(s) and {len(p_cols)} p-value "
+            "column(s)"
+        )
+    for estimate, p_col in zip(estimates, p_cols, strict=True):
+        marks = []
+        for p in _numbers(gt, p_col):
+            mark = next((s for level, s in zip(levels, symbols, strict=True) if p is not None and p < level), "")
+            marks.append(f"<sup style='font-size:{size};'>{mark}</sup>" if superscript and mark else mark)
+        for mark in dict.fromkeys(m for m in marks if m):
+            rows = [i for i, m in enumerate(marks) if m == mark]
+            gt = gt.text_transform(loc.body(columns=estimate, rows=rows), functools.partial(_append, suffix=mark))
+    if hide_p:
+        gt = gt.cols_hide(columns=p_cols)
+    if legend:
+        text = ", ".join(f"{s} p < {level:g}" for level, s in zip(levels, symbols, strict=True))
+        gt = gt.tab_source_note(html(text if legend_text is None else legend_text))
+    return gt
