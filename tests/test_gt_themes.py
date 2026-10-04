@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import pandas as pd
 import polars as pl
@@ -476,3 +477,11 @@ def test_preview_rejects_bad_input():
         sgt.gt_theme_preview([1, 2, 3])
     with pytest.raises(ValueError, match="density must be"):
         sgt.gt_theme_preview(pl.DataFrame(ROWS), density="cozy")
+
+
+def test_every_theme_has_a_ported_row_in_the_parity_table():
+    text = (Path(__file__).resolve().parents[1] / "docs" / "PARITY_TABLES.md").read_text(encoding="utf-8")
+    for name in [*THEMES, "gt_theme_preview", "pal_midnight"]:
+        rows = [line for line in text.splitlines() if line.startswith(f"| `{name}` |")]
+        assert rows, f"{name} has no row in docs/PARITY_TABLES.md"
+        assert any(row.rstrip(" |").split("|")[-1].strip().startswith("ported") for row in rows), name
