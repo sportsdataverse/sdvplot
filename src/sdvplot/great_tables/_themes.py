@@ -1234,3 +1234,403 @@ def gt_theme_terminal(gt: GT, accent: str = "#FFB86C", density: str = "compact",
         )
     )
     return gt.tab_options(**options)
+
+
+def gt_theme_athletic(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """The Athletic's table look: a monospaced body, uppercase sans labels, dotted row rules and thin column rules.
+
+    The row-group band is solid black with knocked-out white labels, and every column is centered. The theme sets its
+    sizes directly, so ``density`` rescales the finished table (as sdvplotR does).
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_athletic(GT(df), density="compact")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_athletic()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_athletic.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    columns = _shape(gt)[0]
+    work = _font("Work Sans")
+    table = (
+        _table_font(gt, "Spline Sans Mono", weight=500)
+        .tab_style(_text(font=work, weight=650, size=px(12), transform="uppercase"), loc.column_labels())
+        .tab_style(_text(font=work, weight=650, size=px(22)), loc.title())
+        .tab_style(_text(font=work, weight=500, size=px(14)), loc.subtitle())
+        .tab_style([_text(weight=650, size=px(12), color="white"), style.fill(color="black")], loc.row_groups())
+        # column rules: a left border on every column but the first, so the stub reads without a leading rule
+        .tab_style(style.borders(sides="left", weight=px(0.5), color="black"), loc.body(columns=columns[1:]))
+        .tab_style(style.borders(sides="top", color="black", weight=px(1.5), style="dotted"), loc.body())
+        .cols_align("center")
+        .tab_options(
+            table_font_size=px(12),
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="solid",
+            column_labels_border_bottom_width=px(1),
+            column_labels_border_bottom_color="black",
+            table_border_top_style="none",
+            table_border_bottom_style="none",
+            table_body_border_top_style="none",
+            heading_border_bottom_style="none",
+            heading_align="left",
+            heading_title_font_size=px(26),
+            source_notes_border_lr_style="none",
+            source_notes_font_size=px(10),
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_sourcenote", "border-bottom-color: #FFFDF5 !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """The gtUtils look: Almarai and Signika Negative on cream, taupe row rules and a taupe row-group band.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_gtutils(GT(df))
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_gtutils()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_gtutils.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    signika, almarai = _font("Signika Negative"), _font("Almarai")
+    table = (
+        _table_font(gt, "Almarai", weight=500)
+        .tab_style(_text(font=signika, weight=650), loc.title())
+        .tab_style(_text(font=signika, weight=500), loc.subtitle())
+        .tab_style(_text(font=signika, weight=650, size=px(14)), loc.column_labels())
+        .pipe(_on_spanners, _text(font=signika, weight=650, size=px(13)))
+        .tab_style(
+            [_text(font=signika, weight=650, size=px(14), color="#FFFDF5"), style.fill(color="#8A817C")],
+            loc.row_groups(),
+        )
+        .tab_style(_text(font=almarai, size=px(12)), [loc.source_notes(), loc.footnotes()])
+        .pipe(_row_rules, "#8A817C")
+        .cols_align("center")
+        .tab_options(
+            data_row_padding=px(1),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="solid",
+            column_labels_border_bottom_width=px(1),
+            column_labels_border_bottom_color="black",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="left",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+            table_background_color="#FFFDF5",
+            table_border_top_color="#FFFDF5",
+            table_border_right_color="#FFFDF5",
+            table_border_bottom_color="#FFFDF5",
+            table_border_left_color="#FFFDF5",
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, "#FFFDF5"),
+                    _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_sourcenote", "border-bottom-color: #FFFDF5 !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                    _css(tid, ".gt_column_spanner", "padding-bottom: 2px;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """KenPom's table look: blue-banded rows, a pale-blue label band with blue labels, black row rules.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_kenpom(GT(df))
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_kenpom()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_kenpom.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    n = _shape(gt)[1]
+    helvetica = _font("Helvetica Neue")
+    band = [_text(font=helvetica, weight=650, size=px(14), color="#02b"), style.fill(color="#c3d9ff")]
+    table = (
+        _table_font(gt, "Helvetica Neue", weight=500)
+        # R's odd and even rows (1-based), banded
+        .tab_style(style.fill(color="#F2FAFD"), loc.body(rows=list(range(0, n, 2))))
+        .tab_style(style.fill(color="#e5ecf9"), loc.body(rows=list(range(1, n, 2))))
+        .tab_style(band, loc.column_labels())
+        .tab_style(_text(font=helvetica, weight=650, size=px(18), align="left"), loc.title())
+        .tab_style(_text(font=helvetica, weight=500, size=px(14), align="left"), loc.subtitle())
+        .pipe(_on_spanners, _text(font=helvetica, weight=650, size=px(12)))
+        .tab_style(band, loc.row_groups())
+        .tab_style(_text(font=helvetica, size=px(12)), loc.source_notes())
+        .tab_style(_text(weight="bold", font=helvetica, size=px(14)), loc.row_groups())
+        .tab_style(_text(font=helvetica, size=px(12)), loc.footnotes())
+        .pipe(_row_rules, "#000000")
+        # uh this is kinda hacky but it works
+        .pipe(_hide_spanner_row, tid)
+        .tab_options(
+            data_row_padding=px(2),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="center",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_body_border_bottom_color="white",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                    _css(tid, ".gt_column_spanner", "text-decoration: underline;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_ncaa(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """NCAA stats-site look: Open Sans, a black label band with white uppercase labels, striped rows, wide left inset.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_ncaa(GT(df))
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_ncaa()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_ncaa.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    sans, almarai = _font("Open Sans"), _font("Almarai")
+    table = (
+        gt.tab_style(_text(font=sans, size=px(14)), loc.body())
+        .tab_style(
+            [
+                _text(font=sans, size=px(14), transform="uppercase", color="white", align="left"),
+                style.fill(color="#000000"),
+            ],
+            loc.column_labels(),
+        )
+        .tab_style(_text(weight="bold", font=sans, size=px(14)), loc.row_groups())
+        .tab_style(_text(font=sans, size=px(12)), loc.footnotes())
+        .tab_style(_text(weight="bold", font=sans, size=px(18)), loc.title())
+        .tab_style(_text(font=sans, size=px(14)), loc.subtitle())
+        .tab_style(_text(font=sans, size=px(10)), loc.source_notes())
+        .cols_align("left")
+        .pipe(_on_spanners, _text(font=sans, weight=650, size=px(13)))
+        .tab_style(
+            [_text(font=sans, weight=650, size=px(14), color="#ffffff"), style.fill(color="#3C3A40")], loc.row_groups()
+        )
+        .tab_style(_text(font=almarai, size=px(12)), [loc.source_notes(), loc.footnotes()])
+        .pipe(_hide_spanner_row, tid)
+        .tab_options(
+            data_row_padding=px(2),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_color="black",
+            column_labels_border_top_width=px(1),
+            column_labels_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="left",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_body_border_bottom_color="white",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+        )
+        .opt_row_striping()
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, ".gt_col_heading", "padding: 5px 5px 5px 25px;"),
+                    _css(tid, ".gt_row", "padding: 5px 5px 5px 25px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                    _css(tid, ".gt_column_spanner", "text-decoration: underline;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_pl(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """Premier League look: DM Sans in the league's deep purple, purple rules, a lilac row-group band.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_pl(GT(df))
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_pl()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_pl.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    n = _shape(gt)[1]
+    dm = _font("DM Sans")
+    purple = "#37003c"
+    table = (
+        gt.tab_style(_text(font=dm, color=purple, size=px(14)), loc.body())
+        .tab_style(_text(font=dm, color="#87668a", weight=650, size=px(13)), loc.column_labels())
+        .tab_style(_text(font=dm, weight=650), loc.title())
+        .tab_style(_text(font=dm, weight=500), loc.subtitle())
+        .pipe(_on_spanners, _text(font=dm, weight=650, size=px(12), color=purple))
+        .tab_style(
+            [_text(font=dm, weight=650, size=px(12), color="#ffffff"), style.fill(color="#C0BACA")], loc.row_groups()
+        )
+        .tab_style(_text(font=dm, size=px(12)), [loc.footnotes(), loc.source_notes()])
+        .pipe(_row_rules, purple)
+    )
+    if n:
+        table = table.tab_style(style.borders(sides="top", color=purple), loc.body(rows=[0]))
+    table = table.tab_options(
+        heading_align="left",
+        column_labels_border_top_style="none",
+        table_border_top_style="none",
+        table_body_border_top_style="solid",
+        table_body_border_top_width=px(1),
+        table_body_border_top_color=purple,
+        table_body_border_bottom_color="white",
+        heading_border_bottom_style="none",
+        data_row_padding=px(2),
+        row_group_padding=px(1.5),
+        row_group_border_top_style="none",
+        row_group_border_bottom_width=px(1),
+        row_group_border_bottom_color=purple,
+        row_group_border_bottom_style="solid",
+        table_border_bottom_style="none",
+        source_notes_border_lr_style="none",
+        column_labels_border_bottom_style="solid",
+        column_labels_border_bottom_width=px(1),
+        column_labels_border_bottom_color=purple,
+    ).opt_css(
+        "\n".join(
+            [
+                _last_row_border(tid, "#FFFFFF"),
+                _css(tid, ".gt_col_heading", "padding-bottom: 3px;"),
+                _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                _css(tid, ".gt_subtitle", "padding-top: 2px; padding-bottom: 6px;"),
+                _css(tid, ".gt_column_spanner", "font-size: 13px; font-weight: bold; padding-bottom: 2px;"),
+                _css(tid, ".gt_sourcenote", "line-height: 1.2;"),
+            ]
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)

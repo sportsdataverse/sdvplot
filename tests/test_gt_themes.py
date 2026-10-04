@@ -322,3 +322,78 @@ def test_terminal():
 def test_a_bold_theme_color_that_is_not_hex_raises(name, arg):
     with pytest.raises(ValueError, match=f"{arg} must be a hex color"):
         getattr(sgt, name)(table(), **{arg: "navy"})
+
+
+# --- site themes (density rescales the finished table) ---------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("name", "density", "table_font_size", "label_size", "row_padding"),
+    [
+        # sdvplotR's .theme_scale_output() on R 4.6.1 / gt 1.3.0, 2026-10-04
+        ("gt_theme_athletic", "compact", "10.3px", "10.8px", "4px"),
+        ("gt_theme_athletic", "social", "14.6px", "14.4px", "12px"),
+        ("gt_theme_gtutils", "compact", "13.7px", "12.6px", "0.5px"),
+        ("gt_theme_kenpom", "social", "19.4px", "16.8px", "3px"),
+        ("gt_theme_ncaa", "compact", "13.7px", "12.6px", "1px"),
+        ("gt_theme_pl", "social", "19.4px", "15.6px", "3px"),
+    ],
+)
+def test_density_rescales_site_themes_like_sdvplotr(name, density, table_font_size, label_size, row_padding):
+    themed = getattr(sgt, name)(table(), density=density)
+    assert themed._options.table_font_size.value == table_font_size
+    assert themed._options.data_row_padding.value == row_padding
+    assert f"font-size: {label_size}" in cell(themed.as_raw_html(), "team")
+
+
+def test_athletic():
+    html = sgt.gt_theme_athletic(table()).as_raw_html()
+    assert table_font(html).startswith("'Spline Sans Mono', system-ui")
+    assert "border-top: 1.5px dotted black" in cell(html, "LV")
+    assert "background-color: black" in cell(html, "AFC West") and "color: white" in cell(html, "AFC West")
+    assert 'class="gt_row gt_center"' in html
+    # column rules on every column but the first data column (here the row-group column, as R does)
+    assert "border-left: 0.5px solid black" in cell(html, "LV")
+    plain = sgt.gt_theme_athletic(GT(pl.DataFrame(ROWS).drop("conf"), id="tid")).as_raw_html()
+    assert "border-left" not in cell(plain, "LV") and "border-left: 0.5px solid black" in cell(plain, "8")
+
+
+def test_gtutils():
+    html = sgt.gt_theme_gtutils(table()).as_raw_html()
+    assert "background-color: #FFFDF5" in rule(html, ".gt_table")
+    assert "border-bottom: 1px solid #8A817C" in cell(html, "LV")
+    assert "border-bottom: 1px solid #8A817C" not in cell(html, "LAR")  # the last row
+    assert "background-color: #8A817C" in cell(html, "AFC West")
+
+
+def test_kenpom_bands_rows_and_hides_its_spanner_row():
+    html = sgt.gt_theme_kenpom(table()).as_raw_html()
+    assert "background-color: #F2FAFD" in cell(html, "LV") and "background-color: #e5ecf9" in cell(html, "KC")
+    assert "color: #02b" in cell(html, "team") and "background-color: #c3d9ff" in cell(html, "team")
+    # sdvplotR's hidden spanner over every column, stacked here over the table's own "Record" spanner
+    assert '<span class="gt_column_spanner"><span class="sdvplot-hidden-spanner"></span></span>' in html
+    assert "#tid th:has(.sdvplot-hidden-spanner) { display: none; }" in html
+    assert 'id="tid-Record"' in html
+    # themed twice: one hidden spanner, not a "spanner id already exists" error
+    twice = sgt.gt_theme_kenpom(sgt.gt_theme_kenpom(table()))
+    assert [s.spanner_id for s in twice._spanners].count("toss_out_spanner_dev") == 1
+    # R's seq(2, 1, 2) errors on a one-row table; the port bands its only row
+    one = sgt.gt_theme_kenpom(table(pl.DataFrame(ROWS).head(1))).as_raw_html()
+    assert "background-color: #F2FAFD" in cell(one, "LV")
+
+
+def test_ncaa():
+    html = sgt.gt_theme_ncaa(table()).as_raw_html()
+    assert "background-color: #000000" in cell(html, "team") and "color: white" in cell(html, "team")
+    assert "font-family: Open Sans" in cell(html, "LV")
+    assert "#tid .gt_row { padding: 5px 5px 5px 25px; }" in html
+    assert "gt_striped" in html.split("<tbody", 1)[1]
+    assert "font-family: Almarai" in cell(html, "Src")
+
+
+def test_pl():
+    html = sgt.gt_theme_pl(table()).as_raw_html()
+    assert "color: #37003c" in cell(html, "LV") and "border-top: 1px solid #37003c" in cell(html, "LV")
+    assert "color: #87668a" in cell(html, "team")
+    assert "background-color: #C0BACA" in cell(html, "AFC West")
+    assert "border-top-color: #37003c" in rule(html, ".gt_table_body")
