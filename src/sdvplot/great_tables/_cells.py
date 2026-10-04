@@ -15,6 +15,8 @@ import re
 import warnings
 from collections.abc import Callable, Sequence
 from decimal import Decimal
+from html import escape
+from numbers import Real
 from typing import Any, cast
 from urllib.parse import quote
 
@@ -41,6 +43,12 @@ def _check_gt(gt: Any) -> None:
 
 def _warn(message: str) -> None:
     warnings.warn(message, SdvplotWarning, stacklevel=3)
+
+
+def _one_of(name: str, value: Any, allowed: tuple[str, ...]) -> None:
+    """Raise unless ``value`` is one of ``allowed`` (the strings it is interpolated into CSS as)."""
+    if value not in allowed:
+        raise ValueError(f"{name} must be one of {allowed}, got {value!r}")
 
 
 def _frame(gt: GT) -> Any:
@@ -466,17 +474,17 @@ def gt_538_caption(
         top_caption: Text above the rule; ``None`` leaves out the rule too.
         bottom_caption: Text below the rule.
         rule_color: The rule's color; ``None`` takes the first text color in the rendered table (so it tracks a
-            dark theme), else a neutral gray.
+            dark theme; a ``background-color`` or ``border-*-color`` is never taken), else a neutral gray.
         rule_width: The rule width in pixels.
         size: The top caption's font size in pixels.
-        align: The bottom caption's alignment.
+        align: The bottom caption's alignment: ``"left"``, ``"center"`` or ``"right"``.
 
     Returns:
         GT: A new table with the captions.
 
     Raises:
         TypeError: ``gt`` is not a ``GT``.
-        ValueError: Neither caption was given.
+        ValueError: Neither caption was given, or ``align`` is unknown.
 
     Example:
         ::
@@ -489,8 +497,9 @@ def gt_538_caption(
     _check_gt(gt)
     if top_caption is None and bottom_caption is None:
         raise ValueError("nothing to caption: pass top_caption (above the rule), bottom_caption (below it), or both")
-    if rule_color is None:
-        found = re.search(r"color:\s(#[0-9A-Fa-f]{6})", gt.as_raw_html())
+    _one_of("align", align, ("left", "center", "right"))
+    if rule_color is None:  # a bare `color:` declaration, not the tail of `background-color:` or `border-*-color:`
+        found = re.search(r"(?<![\w-])color:\s(#[0-9A-Fa-f]{6})", gt.as_raw_html())
         rule_color = found.group(1) if found else "#8A8A8A"
     out = gt
     if top_caption is not None:
@@ -521,8 +530,11 @@ def _style_font(gt: GT, where: type) -> str | None:
 
 def _bars(gt: GT, where: type, colors: str | Sequence[str], **a: Any) -> str:
     """The bar block sdvplotR's ``gt_border_bars_top``/``_bottom`` build, as one HTML string."""
+    _one_of("bar_align", a["bar_align"], tuple(_BAR_ALIGN))
+    _one_of("img_align", a["img_align"], ("left", "right"))  # each becomes a `padding-<side>` property
+    _one_of("text_align", a["text_align"], ("left", "right"))
     colors = [colors] if isinstance(colors, str) else list(colors)
-    align = _BAR_ALIGN.get(a["bar_align"], _BAR_ALIGN["center"])
+    align = _BAR_ALIGN[a["bar_align"]]
     if a["text"] is None and a["img"] is None:
         stack = "".join(f'<div style="height: {a["bar_height"]}px; background-color: {c};"></div>' for c in colors)
         return f'<div style="background-color: transparent; width: {a["bar_width"]}; {align}">{stack}</div>'
@@ -595,6 +607,7 @@ def gt_border_bars_top(
 
     Raises:
         TypeError: ``gt`` is not a ``GT``.
+        ValueError: ``bar_align``, ``img_align`` or ``text_align`` is not one of its listed values.
 
     Example:
         ::
@@ -663,6 +676,7 @@ def gt_border_bars_bottom(
 
     Raises:
         TypeError: ``gt`` is not a ``GT``.
+        ValueError: ``bar_align``, ``img_align`` or ``text_align`` is not one of its listed values.
 
     Example:
         ::
@@ -751,7 +765,7 @@ def gt_cutline(
     Args:
         gt: The table.
         after: The number of rows above each line: ``4`` draws between the 4th and 5th rows, ``0`` above the
-            first. One number or several.
+            first. One whole number or several (numpy integers included).
         label: A label per line, recycled against ``after``; ``None`` in a list leaves that line unlabeled. Drawn
             in uppercase.
         color: The rule color.
@@ -767,8 +781,8 @@ def gt_cutline(
 
     Raises:
         TypeError: ``gt`` is not a ``GT``.
-        ValueError: ``after`` is not numeric, ``gap`` is not one or two non-negative numbers, or
-            ``label_position`` is unknown.
+        ValueError: ``after`` is not numeric or not a whole number, ``gap`` is not one or two non-negative
+            numbers, or ``style`` or ``label_position`` is unknown.
 
     Example:
         ::
@@ -781,13 +795,18 @@ def gt_cutline(
     _check_gt(gt)
     if label_position not in ("below", "above"):
         raise ValueError(f'label_position must be "below" or "above", got {label_position!r}')
-    afters = [after] if isinstance(after, int | float) else list(after)
+    _one_of("style", style, ("dashed", "solid", "dotted"))
+    # numbers.Real, not int | float: numpy integers are neither, and list() of one raises a TypeError
+    afters: list[Any] = [after] if isinstance(after, Real) else list(cast(Sequence[Any], after))
     if not afters:
         return gt
-    if not all(isinstance(a, int | float) and not isinstance(a, bool) for a in afters):
+    if not all(isinstance(a, Real) and not isinstance(a, bool) for a in afters):
         raise ValueError("after must be numeric row numbers")
-    gaps = [gap] if isinstance(gap, int | float) else list(gap)
-    if not 1 <= len(gaps) <= 2 or any(not isinstance(g, int | float) or g < 0 for g in gaps):
+    if not all(float(a).is_integer() for a in afters):
+        raise ValueError(f"after must be whole row numbers, got {[float(a) for a in afters]}")
+    afters = [int(a) for a in afters]
+    gaps: list[Any] = [gap] if isinstance(gap, Real) else list(cast(Sequence[Any], gap))
+    if not 1 <= len(gaps) <= 2 or any(not isinstance(g, Real) or g < 0 for g in gaps):
         raise ValueError("gap must be one or two non-negative numbers")
     above_gap, below_gap = gaps[0], gaps[-1]
 
@@ -1631,7 +1650,8 @@ def gt_column_subheaders(
     unknown = sorted(set(subheaders) - set(names))
     if unknown:
         raise ValueError(f"subheaders name columns the table does not have: {unknown}")
-    font_css = f"font-family: '{font}';" if font is not None else ""
+    # the style attributes are single-quoted, so the family's quotes go in as &quot; (R's '{font}' ends them early)
+    font_css = f"font-family: &quot;{escape(font)}&quot;;" if font is not None else ""
     labels: dict[str, Any] = {}
     for name in names:
         info = subheaders.get(name, {})

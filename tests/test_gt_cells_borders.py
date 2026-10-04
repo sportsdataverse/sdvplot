@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import pytest
 
 pytest.importorskip("great_tables")
@@ -58,6 +59,32 @@ def test_538_caption_rule_tracks_the_theme_and_accepts_raw_html(lib):
 def test_538_caption_needs_a_caption():
     with pytest.raises(ValueError, match="nothing to caption"):
         gt_538_caption(GT(frame("polars", CARS)))
+
+
+def test_538_caption_rule_color_skips_background_colors(monkeypatch):
+    # a render whose first hex color is a background: the rule takes the text color, not the fill
+    rendered = "<style>.x { background-color: #ABCDEF; border-top-color: #00FF00; } .y { color: #123456; }</style>"
+    monkeypatch.setattr(GT, "as_raw_html", lambda self, **_: rendered)
+    out = gt_538_caption(GT(frame("polars", CARS)), top_caption="Top")
+    monkeypatch.undo()
+    assert "border-bottom: 1px solid #123456;" in tfoot(out)
+
+
+def test_538_caption_rejects_an_unknown_align():
+    with pytest.raises(ValueError, match="align"):
+        gt_538_caption(GT(frame("polars", CARS)), bottom_caption="x", align="middle")
+
+
+@pytest.mark.parametrize("bars", [gt_border_bars_top, gt_border_bars_bottom])
+@pytest.mark.parametrize(
+    "arg", [{"bar_align": "middle"}, {"img_align": "center"}, {"text_align": "center"}, {"text_align": "top"}]
+)
+def test_border_bars_reject_unknown_alignments(bars, arg):
+    gt = GT(frame("polars", CARS)).tab_header("Standings")
+    with pytest.raises(ValueError, match=next(iter(arg))):
+        bars(gt, "#22223B", text="x", img="https://cdn/1.png", **arg)
+    with pytest.raises(ValueError, match=next(iter(arg))):
+        bars(gt, "#22223B", **arg)  # checked even when the plain bars do not use it
 
 
 def test_border_bars_bottom_stacks_one_bar_per_color_and_unpads_the_source_notes(lib):
@@ -195,3 +222,17 @@ def test_cutline_drops_lines_outside_the_table_with_one_warning(lib):
         gt_cutline(gt, after=["2"])
     with pytest.raises(ValueError, match="label_position"):
         gt_cutline(gt, after=1, label_position="left")
+    with pytest.raises(ValueError, match="style"):
+        gt_cutline(gt, after=1, style="wavy")
+
+
+def test_cutline_takes_numpy_integers_and_rejects_fractional_rows(lib):
+    gt = GT(frame(lib, CARS))
+    expected = ["", "", "border-top: 2px dashed #A6081A;", "", ""]
+    for after in (np.int64(2), [np.int64(2)], np.array([2]), 2.0):
+        assert [row[0][0] for row in body_rows(gt_cutline(gt, after=after))] == expected
+    gapped = css(gt_cutline(gt, after=np.int64(2), gap=np.int64(4)))
+    assert "tbody tr:nth-child(2) td { padding-bottom: 4px !important; }" in gapped
+    for after in (2.5, [1, 2.5], float("nan")):
+        with pytest.raises(ValueError, match="whole"):
+            gt_cutline(gt, after=after)

@@ -1,4 +1,5 @@
 import re
+from html.parser import HTMLParser
 
 import pytest
 
@@ -21,6 +22,18 @@ def texts(gt):
 
 def labels(gt):
     return re.findall(r'<th class="gt_col_heading[^>]*>(.*?)</th>', gt.as_raw_html(), re.S)
+
+
+def span_styles(fragment):
+    styles = []
+
+    class Spans(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            if tag == "span":
+                styles.append(dict(attrs).get("style"))
+
+    Spans().feed(fragment)
+    return styles
 
 
 PLACES = {"team": list("ABCDEFGHIJK"), "place": [1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 111]}
@@ -129,11 +142,15 @@ def test_column_subheaders_stack_a_heading_over_a_subtitle_on_every_column(lib):
     )
     got = labels(out)
     assert len(got) == 3 and all(g.startswith("<div style='line-height: 1.05; margin-bottom: -2px;'>") for g in got)
-    assert (
-        "<span style='font-size: 14px; font-weight: bold; color: blue; font-family: 'Lato';'>Q1</span><br>"
-        "<span style='font-size: 10px; font-weight: normal; color: #808080; font-family: 'Lato';'>Jan-Mar</span>"
-    ) in got[1]
+    # parse the attributes: a quoted family must not end the single-quoted style attribute early
+    assert span_styles(got[1]) == [
+        'font-size: 14px; font-weight: bold; color: blue; font-family: "Lato";',
+        'font-size: 10px; font-weight: normal; color: #808080; font-family: "Lato";',
+    ]
+    assert ">Q1</span><br>" in got[1] and ">Jan-Mar</span>" in got[1]
     assert ">segment</span>" in got[0] and ">&nbsp;</span>" in got[0]
+    plain = labels(gt_column_subheaders(GT(frame(lib, REVENUE))))
+    assert "font-family" not in plain[0]
     with pytest.raises(ValueError, match="does not have"):
         gt_column_subheaders(GT(frame(lib, REVENUE)), q9={"heading": "x"})
 
