@@ -126,3 +126,9 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Fixed — adapter contract follow-ups
+
+- plotnine: a faceted plot warns once per render for each reason points are skipped (an unknown team, a missing
+  mark), naming the values of every panel, instead of once per panel; `axis_logos` on a faceted plot likewise warns
+  once.

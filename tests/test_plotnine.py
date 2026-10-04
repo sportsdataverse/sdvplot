@@ -43,6 +43,39 @@ def test_the_geom_draws_on_every_facet(mark_images):
     assert sorted(m[0] for m in marks) == ["13", "14"] and all(m[3] == 0.2 for m in marks)
 
 
+def _sdv_warnings(rec):
+    return [str(w.message) for w in rec if issubclass(w.category, SdvplotWarning)]
+
+
+def test_a_faceted_geom_warns_once_per_render_not_once_per_panel(mark_images):
+    df = pd.DataFrame({"x": [1.0, 2.0, 3.0, 4.0], "y": [1.0, 2.0, 3.0, 4.0], "team": ["LV", "XXX", "LAR", "YYY"],
+                       "panel": ["a", "a", "b", "b"]})  # fmt: skip
+    p = ggplot(df, aes("x", "y", team="team")) + sp9.geom_sdv_logos(league="nfl") + facet_wrap("panel")
+    with pytest.warns(SdvplotWarning) as rec:
+        marks = sp9.drawn_marks(p)
+    assert sorted(m[0] for m in marks) == ["13", "14"]
+    (msg,) = _sdv_warnings(rec)  # one warning naming the unknown teams of every panel
+    assert "'XXX'" in msg and "'YYY'" in msg
+
+
+def test_add_logos_on_a_faceted_plot_warns_once_per_render(mark_images):
+    # add_logos' data has no facet column, so plotnine draws the layer in every panel: still one warning
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "XXX"], league="nfl")
+    with pytest.warns(SdvplotWarning) as rec:
+        assert [m[0] for m in sp9.drawn_marks(p)] == ["13", "13"]
+    assert len(_sdv_warnings(rec)) == 1
+
+
+def test_axis_logos_on_a_faceted_plot_warn_once_per_render(mark_images):
+    bars = pd.DataFrame({"team": ["LV", "XXX", "LAR"] * 2, "v": [1, 2, 3] * 2, "g": list("aaabbb")})
+    p = sdvplot.axis_logos(ggplot(bars, aes("team", "v")) + geom_col() + facet_wrap("g"), "x", league="nfl")
+    with pytest.warns(SdvplotWarning) as rec:
+        assert sorted(m[0] for m in sp9.drawn_axis_marks(p, "x")) == ["13", "14"]
+    assert len(_sdv_warnings(rec)) == 1
+
+
 def test_the_geom_accepts_polars_data(mark_images):
     df = pl.DataFrame({"x": [1.0], "y": [1.0], "team": ["LV"]})
     p = ggplot(df, aes("x", "y", team="team")) + sp9.geom_sdv_logos(league="nfl")

@@ -334,6 +334,14 @@ def _ticks(which: Any) -> tuple[list[float], list[str]]:
     return locs, [str(s) for s in which.get_major_formatter().format_ticks(locs)]
 
 
+def _in_view(ax: Axes, axis: str) -> tuple[list[float], list[str]]:
+    """The positions and labels of the ticks of ``axis`` inside the view: the ones axis_logos turns into images."""
+    locs, labels = _ticks(_axis(ax, axis))
+    low, high = sorted(ax.get_xlim() if axis == "x" else ax.get_ylim())
+    in_view = [(loc, lab) for loc, lab in zip(locs, labels, strict=True) if low <= loc <= high]
+    return [loc for loc, _ in in_view], [lab for _, lab in in_view]
+
+
 def axis_logos(
     target: Any,
     axis: str,
@@ -383,9 +391,7 @@ def axis_logos(
     ax = target_axes(target)
     which = _axis(ax, axis)
     locs, labels = _ticks(which)
-    low, high = sorted(ax.get_xlim() if axis == "x" else ax.get_ylim())
-    in_view = [(loc, lab) for loc, lab in zip(locs, labels, strict=True) if low <= loc <= high]
-    view_locs, view_labels = [loc for loc, _ in in_view], [lab for _, lab in in_view]
+    view_locs, view_labels = _in_view(ax, axis)
     if axis == "x":
         positions: tuple[list[Any], list[Any]] = (view_locs, [0.0] * len(view_locs))
     else:
