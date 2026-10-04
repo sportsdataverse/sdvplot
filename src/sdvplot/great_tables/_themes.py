@@ -11,6 +11,7 @@ test: ``GT._options`` (the table id and option values), ``GT._tbl_data`` (column
 from __future__ import annotations
 
 import dataclasses
+import inspect
 import math
 import re
 from typing import Any
@@ -1634,3 +1635,297 @@ def gt_theme_pl(gt: GT, density: str = "comfortable", **options: Any) -> GT:
         )
     )
     return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_savant(gt: GT, density: str = "comfortable", **options: Any) -> GT:
+    """Baseball Savant's table look: Roboto Condensed, striped rows, a black row-group band, a centered heading.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_savant(GT(df))
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_savant()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_savant.html
+    """
+    _density(density)
+    gt, tid = _table_id(_check_gt(gt))
+    roboto = _font("Roboto Condensed")
+    table = (
+        gt.tab_style(_text(font=roboto, size=px(14)), loc.body())
+        .tab_style(_text(weight="bold", font=roboto, size=px(14)), loc.column_labels())
+        .tab_style(
+            [_text(font=roboto, weight=650, size=px(14), color="#FFFDF5"), style.fill(color="#000000")],
+            loc.row_groups(),
+        )
+        .tab_style(_text(font=roboto, size=px(12)), [loc.footnotes(), loc.source_notes()])
+        .tab_style(_text(weight="bold", font=roboto, size=px(18)), loc.title())
+        .tab_style(_text(font=roboto, size=px(14)), loc.subtitle())
+        .pipe(_on_spanners, _text(font=roboto, weight=650, size=px(8)))
+        .tab_options(
+            data_row_padding=px(1),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_color="black",
+            column_labels_border_top_width=px(1),
+            column_labels_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="center",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_body_border_bottom_color="white",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+        )
+        .opt_row_striping()
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, "#FFFFFF"),
+                    _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                    _css(tid, ".gt_column_spanner", "font-size: 12px; font-weight: bold; text-decoration: underline;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_sofa(gt: GT, style: str = "light", density: str = "comfortable", **options: Any) -> GT:
+    """SofaScore's table look: Sofia Sans Condensed on a warm cream (or dark navy) ground, no rules between rows.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        style: "light" for the cream ground or "dark" for the navy one; on navy great_tables switches the text to
+            white.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``style`` is not "light" or "dark", or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_sofa(GT(df), style="dark")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_sofa()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_sofa.html
+    """
+    _density(density)
+    if style not in ("light", "dark"):
+        raise ValueError(f"style must be 'light' or 'dark', not {style!r}")
+    base = "#F0EAD6" if style == "light" else "#1c2632"
+    gt, tid = _table_id(_check_gt(gt))
+    sofia = _font("Sofia Sans Condensed")
+    table = (
+        gt.tab_style(_text(font=sofia, size=px(14)), loc.body())
+        .tab_style(_text(weight="bold", font=sofia, size=px(14)), [loc.column_labels(), loc.row_groups()])
+        .tab_style(_text(font=sofia, size=px(12)), loc.footnotes())
+        .tab_style(_text(weight="bold", font=sofia, size=px(22)), loc.title())
+        .tab_style(_text(font=sofia, size=px(14)), loc.subtitle())
+        .pipe(_on_spanners, _text(font=sofia, weight=650, size=px(12)))
+        .tab_style(_text(font=sofia, size=px(10)), loc.source_notes())
+        .tab_options(
+            data_row_padding=px(1),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="left",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+            table_background_color=base,
+            table_border_top_color=base,
+            table_border_right_color=base,
+            table_border_bottom_color=base,
+            table_border_left_color=base,
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, base),
+                    _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_sourcenote", f"border-bottom-color: {base} !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                    _css(tid, ".gt_column_spanner", "font-size: 12px; font-weight: bold; text-decoration: underline;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_tier(gt: GT, style: str = "dark", density: str = "comfortable", **options: Any) -> GT:
+    """Tier-list look: Oswald on a near-black (or white) ground, centered columns, a rule under every row.
+
+    Args:
+        gt: The great_tables ``GT`` to theme.
+        style: "dark" for the near-black ground (great_tables switches the text to white) or "light" for white.
+        density: The type and padding scale: "comfortable" keeps the theme's sizes, "compact" scales them down and
+            "social" up.
+        **options: Passed to ``GT.tab_options`` last, so they override the theme.
+
+    Returns:
+        GT: A new ``GT`` with the theme applied.
+
+    Raises:
+        TypeError: ``gt`` is not a great_tables ``GT``.
+        ValueError: ``style`` is not "light" or "dark", or ``density`` is not one of the three scales.
+
+    Example:
+        ::
+
+            gt_theme_tier(GT(df), style="light")
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_tier()``: https://sdvplotR.sportsdataverse.org/reference/gt_theme_tier.html
+    """
+    _density(density)
+    if style not in ("light", "dark"):
+        raise ValueError(f"style must be 'light' or 'dark', not {style!r}")
+    base = "#1a1a17" if style == "dark" else "#ffffff"
+    gt, tid = _table_id(_check_gt(gt))
+    oswald = _font("Oswald")
+    table = (
+        _table_font(gt, "Oswald", weight=500)
+        .tab_style(_text(font=oswald, weight=650), loc.title())
+        .tab_style(_text(font=oswald, weight=500), loc.subtitle())
+        .pipe(_row_rules, "black")
+        .cols_align("center")
+        .tab_options(
+            data_row_padding=px(1),
+            table_body_hlines_color="transparent",
+            column_labels_border_top_style="none",
+            column_labels_border_bottom_style="none",
+            row_group_border_top_style="none",
+            row_group_border_top_color="black",
+            row_group_border_bottom_width=px(1),
+            row_group_border_bottom_color="black",
+            row_group_border_bottom_style="solid",
+            row_group_padding=px(1.5),
+            heading_align="left",
+            heading_border_bottom_style="none",
+            table_body_border_top_style="none",
+            table_border_bottom_style="none",
+            table_border_top_style="none",
+            source_notes_border_lr_style="none",
+            table_background_color=base,
+            table_border_top_color=base,
+            table_border_right_color=base,
+            table_border_bottom_color=base,
+            table_border_left_color=base,
+        )
+        .opt_css(
+            "\n".join(
+                [
+                    _last_row_border(tid, base),
+                    _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
+                    _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
+                    _css(tid, ".gt_sourcenote", f"border-bottom-color: {base} !important;"),
+                    _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),
+                ]
+            )
+        )
+    )
+    return _scale_output(table, density).tab_options(**options)
+
+
+def gt_theme_preview(
+    data: Any, themes: str | list[str] | None = None, *, n: int = 5, density: str | None = "compact"
+) -> dict[str, GT]:
+    """The same few rows in every table theme, one ``GT`` per theme, to compare them side by side.
+
+    Each theme is called at its defaults, except ``density``. ``gt_theme_sdv_team`` is shown with ``league="nfl"``
+    and no team, i.e. the SportsDataverse colors, as R shows it.
+
+    Args:
+        data: A pandas or polars DataFrame, or a ``GT`` (its data is used).
+        themes: Theme function names (e.g. "gt_theme_kenpom"); None shows every ``gt_theme_*`` in
+            ``sdvplot.great_tables``, sorted.
+        n: How many rows of ``data`` each table shows.
+        density: The density passed to every theme that takes one, so the tables compare; None leaves each theme at
+            its own default.
+
+    Returns:
+        dict[str, GT]: ``{theme name: themed GT}``, in the order of ``themes``.
+
+    Raises:
+        TypeError: ``data`` is not a DataFrame or a ``GT``.
+        ValueError: ``data`` has no rows, a name in ``themes`` is not a theme, or ``density`` is not a scale.
+
+    Example:
+        ::
+
+            from sdvplot.great_tables import gt_theme_preview
+
+            tables = gt_theme_preview(df, themes=["gt_theme_kenpom", "gt_theme_athletic"])
+            tables["gt_theme_kenpom"]
+
+    See Also:
+        Ported from sdvplotR ``gt_theme_preview()``, which lays the tables out with ``gt_grid()``:
+        https://sdvplotR.sportsdataverse.org/reference/gt_theme_preview.html
+    """
+    import sdvplot.great_tables as sgt  # the package imports this module, so import it at call time
+
+    if isinstance(data, GT):
+        data = data._tbl_data
+    try:
+        frame = nw.from_native(data, eager_only=True)
+    except TypeError:
+        raise TypeError(f"data must be a pandas or polars DataFrame or a GT, not {type(data).__name__}") from None
+    if len(frame) == 0:
+        raise ValueError("data has no rows")
+    if density is not None:
+        _density(density)
+    available = sorted(name for name in sgt.__all__ if name.startswith("gt_theme_") and name != "gt_theme_preview")
+    names = available if themes is None else [themes] if isinstance(themes, str) else list(themes)
+    missing = [name for name in names if name not in available]
+    if missing:
+        raise ValueError(f"No such theme: {', '.join(missing)}. Themes: {', '.join(available)}")
+    rows = frame.head(n).to_native()
+    out = {}
+    for name in names:
+        fn = getattr(sgt, name)
+        params = inspect.signature(fn).parameters
+        kwargs: dict[str, Any] = {}
+        if density is not None and "density" in params:
+            kwargs["density"] = density
+        if "league" in params and params["league"].default is inspect.Parameter.empty:
+            kwargs["league"] = "nfl"
+        out[name] = fn(GT(rows), **kwargs)
+    return out

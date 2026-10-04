@@ -397,3 +397,82 @@ def test_pl():
     assert "color: #87668a" in cell(html, "team")
     assert "background-color: #C0BACA" in cell(html, "AFC West")
     assert "border-top-color: #37003c" in rule(html, ".gt_table_body")
+
+
+# --- remaining site themes and the preview ---------------------------------------------------------------------------
+
+
+def test_savant():
+    html = sgt.gt_theme_savant(table()).as_raw_html()
+    assert "font-family: Roboto Condensed" in cell(html, "LV")
+    assert "background-color: #000000" in cell(html, "AFC West") and "color: #FFFDF5" in cell(html, "AFC West")
+    assert "text-align: center" in rule(html, ".gt_heading")
+    assert "gt_striped" in html.split("<tbody", 1)[1]
+
+
+def test_sofa_light_and_dark():
+    light = sgt.gt_theme_sofa(table()).as_raw_html()
+    assert "background-color: #F0EAD6" in rule(light, ".gt_table") and "color: #333333" in rule(light, ".gt_table")
+    dark = sgt.gt_theme_sofa(table(), style="dark").as_raw_html()
+    assert "background-color: #1c2632" in rule(dark, ".gt_table")
+    assert "color: #FFFFFF" in rule(dark, ".gt_table")  # great_tables picks light text on the dark ground
+    with pytest.raises(ValueError, match="style must be"):
+        sgt.gt_theme_sofa(table(), style="navy")
+
+
+def test_tier_dark_and_light():
+    dark = sgt.gt_theme_tier(table()).as_raw_html()
+    assert "background-color: #1a1a17" in rule(dark, ".gt_table") and "color: #FFFFFF" in rule(dark, ".gt_table")
+    assert table_font(dark).startswith("Oswald, system-ui")
+    assert "border-bottom: 1px solid black" in cell(dark, "LV")
+    light = sgt.gt_theme_tier(table(), style="light").as_raw_html()
+    assert "background-color: #ffffff" in rule(light, ".gt_table")
+
+
+@pytest.mark.parametrize(
+    ("name", "kwargs"),
+    [
+        ("gt_theme_drench", {}),
+        ("gt_theme_midnight", {}),
+        ("gt_theme_terminal", {}),
+        ("gt_theme_sofa", {"style": "dark"}),
+        ("gt_theme_tier", {"style": "dark"}),
+    ],
+)
+def test_dark_grounds_switch_the_text_to_white(name, kwargs):
+    # neither R nor the port sets the table's text color: gt and great_tables pick it from the background
+    assert "color: #FFFFFF" in rule(getattr(sgt, name)(table(), **kwargs).as_raw_html(), ".gt_table")
+
+
+def test_all_eighteen_themes_are_exported():
+    assert len(THEMES) == 18
+
+
+def test_preview_shows_every_theme_by_default():
+    tables = sgt.gt_theme_preview(pl.DataFrame(ROWS))
+    assert list(tables) == sorted([*THEMES, "gt_theme_sdv", "gt_theme_sdv_team"])
+    assert all(isinstance(t, GT) for t in tables.values())
+    for t in tables.values():
+        t.as_raw_html()
+
+
+def test_preview_picks_themes_rows_and_density():
+    tables = sgt.gt_theme_preview(table(pd.DataFrame(ROWS)), themes="gt_theme_kenpom", n=2)
+    assert list(tables) == ["gt_theme_kenpom"]
+    kenpom = tables["gt_theme_kenpom"]
+    assert kenpom._options.table_font_size.value == "13.7px"  # density="compact" reached the theme
+    html = kenpom.as_raw_html()
+    assert "KC" in html and "LAR" not in html
+    natural = sgt.gt_theme_preview(pl.DataFrame(ROWS), themes=["gt_theme_kenpom"], density=None)
+    assert natural["gt_theme_kenpom"]._options.table_font_size.value == "16px"
+
+
+def test_preview_rejects_bad_input():
+    with pytest.raises(ValueError, match="No such theme: gt_theme_nope"):
+        sgt.gt_theme_preview(pl.DataFrame(ROWS), themes=["gt_theme_kenpom", "gt_theme_nope"])
+    with pytest.raises(ValueError, match="no rows"):
+        sgt.gt_theme_preview(pl.DataFrame(ROWS).head(0))
+    with pytest.raises(TypeError, match="DataFrame or a GT"):
+        sgt.gt_theme_preview([1, 2, 3])
+    with pytest.raises(ValueError, match="density must be"):
+        sgt.gt_theme_preview(pl.DataFrame(ROWS), density="cozy")
