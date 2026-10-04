@@ -34,11 +34,14 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse) |
 | `_cache.py` | the download cache, `clear_cache` |
 | `_dispatch.py` | `add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the adapter registry |
-| `testing.py` | `check_adapter_contract`, the shared adapter harness |
+| `testing.py` | `check_adapter_contract` and `check_table_adapter_contract`, the shared adapter harnesses |
 | `_placement.py` | `Placement`, `place`, `check_height`, `check_alpha`: the step every adapter shares |
 | `_contrast.py` | WCAG contrast and readable ink (surfaces, table themes) |
 | `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
 | `_surface.py` | `surface` (sportypy) |
+| `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
+| `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
+| `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
