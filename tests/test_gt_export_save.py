@@ -73,6 +73,12 @@ def test_social_crop_gravity_then_width(monkeypatch):
         (lambda: gt_save_crop(DF), TypeError),
         (lambda: gt_social_crop(GT(DF), aspect_ratio="16:0"), ValueError),
         (lambda: gt_social_crop(GT(DF), gravity="middle"), ValueError),
+        (lambda: gt_save_crop(GT(DF), zoom=0), ValueError),
+        (lambda: gt_save_crop(GT(DF), zoom=-1), ValueError),
+        (lambda: gt_save_crop(GT(DF), zoom="2"), ValueError),
+        (lambda: gt_save_crop(GT(DF), zoom=None), ValueError),
+        (lambda: gt_social_crop(GT(DF), zoom=float("inf")), ValueError),
+        (lambda: gt_social_crop(GT(DF), zoom=float("nan")), ValueError),
     ],
 )
 def test_bad_arguments_fail_before_rendering(monkeypatch, call, error):

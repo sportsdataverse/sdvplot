@@ -113,6 +113,8 @@ def test_batch_stops_when_no_browser_can_start(monkeypatch, tmp_path):
         ({"data": pl.DataFrame({"g": [None, None]}, schema={"g": pl.String})}, ValueError, "no non-missing"),
         ({"bg": "nope"}, ValueError, "color"),
         ({"whitespace": -5}, ValueError, "whitespace"),
+        ({"zoom": 0}, ValueError, "zoom"),
+        ({"zoom": "2"}, ValueError, "zoom"),
     ],
 )
 def test_batch_checks_its_arguments_before_rendering(monkeypatch, tmp_path, kwargs, error, match):

@@ -9,6 +9,7 @@ calls, checked against ImageMagick 6.9 in the tests.
 
 from __future__ import annotations
 
+import html
 import math
 import numbers
 import re
@@ -16,7 +17,7 @@ import sys
 import tempfile
 import warnings
 from collections import Counter
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from os import PathLike
 from pathlib import Path
 from typing import Any
@@ -133,13 +134,21 @@ def _check_gt(value: Any, what: str = "data") -> None:
         raise TypeError(f"{what} must be a great_tables GT, not {type(value).__name__}")
 
 
+def _finite(value: Any) -> bool:
+    return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
+
+
 def _pixels(name: str, value: Any, *, positive: bool = False) -> int:
-    ok = isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
-    if not ok or value < 0 or (positive and value == 0):
+    if not _finite(value) or value < 0 or (positive and value == 0):
         raise ValueError(
             f"{name} must be a {'positive' if positive else 'non-negative'} number of pixels, got {value!r}"
         )
     return int(value)
+
+
+def _check_zoom(zoom: Any) -> None:
+    if not (_finite(zoom) and zoom > 0):
+        raise ValueError(f"zoom must be a positive number, got {zoom!r}")
 
 
 def _check_file(file: str | PathLike[str] | None) -> None:
@@ -196,7 +205,7 @@ def gt_save_crop(
             the image instead of writing it.
         bg: The border color: a CSS color name or hex code.
         whitespace: The border, in pixels, left around the trimmed table.
-        zoom: The rendering zoom; 2 gives a sharp (retina) image.
+        zoom: The rendering zoom, a positive number; 2 gives a sharp (retina) image.
         expand: Pixels of page captured around the table before trimming.
         width: A final width in pixels, the height following, so a series of tables shares one width. ``None`` keeps
             the rendered width.
@@ -206,8 +215,8 @@ def gt_save_crop(
 
     Raises:
         TypeError: If ``data`` is not a ``GT``.
-        ValueError: If ``bg``, ``whitespace``, ``width`` or the extension of ``file`` is invalid (checked before
-            rendering).
+        ValueError: If ``bg``, ``whitespace``, ``width``, ``zoom`` or the extension of ``file`` is invalid (checked
+            before rendering).
         nokap.ChromeNotFoundError: If no Chrome or Chromium is installed (set ``CHROME_PATH`` to point at one).
 
     Example:
@@ -223,6 +232,7 @@ def gt_save_crop(
         Ported from sdvplotR ``gt_save_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_save_crop.html
     """
     _check_gt(data)
+    _check_zoom(zoom)
     pad, final = _check_common(bg, whitespace, width, file)
     return _finish(_pad(_trim(_render_gt(data, zoom, expand)), bg, pad), file, final)
 
@@ -260,7 +270,7 @@ def gt_social_crop(
     Raises:
         TypeError: If ``data`` is not a ``GT``.
         ValueError: If ``aspect_ratio`` is not a positive ratio, ``gravity`` is unknown, or ``bg``, ``whitespace``,
-            ``width`` or the extension of ``file`` is invalid (all checked before rendering).
+            ``width``, ``zoom`` or the extension of ``file`` is invalid (all checked before rendering).
         nokap.ChromeNotFoundError: If no Chrome or Chromium is installed.
 
     Example:
@@ -278,6 +288,7 @@ def gt_social_crop(
     _check_gt(data)
     ratio = _ratio(aspect_ratio)
     place = _check_gravity(gravity)
+    _check_zoom(zoom)
     pad, final = _check_common(bg, whitespace, width, file)
     img = _pad(_trim(_render_gt(data, zoom, expand)), bg, pad)
     img = _extent(img, *_canvas(img.width, img.height, ratio), bg, place)
@@ -331,8 +342,8 @@ def gt_save_batch(
     Raises:
         TypeError: If ``data`` is not a data frame or ``fn`` is not callable.
         ValueError: If ``group`` is not a column, has no non-missing values, two values would write the same file,
-            ``file`` lacks ``{group}`` or an image extension, or ``bg`` / ``whitespace`` is invalid (all before
-            rendering).
+            ``file`` lacks ``{group}`` or an image extension, or ``bg``, ``whitespace`` or ``zoom`` is invalid (all
+            before rendering).
         RuntimeError: If no group built.
         nokap.ChromeNotFoundError: If no browser can start (raised at the first group, not collected per group).
 
@@ -361,6 +372,7 @@ def gt_save_batch(
     if not isinstance(group, str) or group not in frame.columns:
         raise ValueError(f"group must name one column of data, got {group!r}")
     pad, _ = _check_common(bg, whitespace, None, file.replace("{group}", "x"))
+    _check_zoom(zoom)
     keys = frame[group].drop_nulls().unique(maintain_order=True).to_list()
     if not keys:
         raise ValueError(f"group {group!r} has no non-missing values")
@@ -471,8 +483,9 @@ def _css(style: Mapping[str, Any]) -> str:
 
 
 def _text(value: Any) -> htmltools.HTML:
-    """A title or caption: md() renders as markdown, html() and plain strings are HTML (as in sdvplotR)."""
-    return htmltools.HTML(value.to_html() if hasattr(value, "to_html") else str(value))
+    """A title, caption or label: md() and html() text render as markup; anything else is escaped, as great_tables
+    does (sdvplotR inserts plain strings as HTML)."""
+    return htmltools.HTML(value.to_html() if hasattr(value, "to_html") else html.escape(str(value)))
 
 
 def _font_link(styles: Sequence[Mapping[str, Any]]) -> htmltools.Tag | None:
@@ -556,8 +569,8 @@ def _save_composed(
     page = htmltools.div(
         composed, id="sdvplot-page", style=f"display: inline-block; padding: 8px; background-color: {bg};"
     )
-    html = f'<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>{page}</body></html>'
-    _pad(_trim(_render_html(html, zoom)), bg, whitespace).save(file, quality=_JPEG_QUALITY)
+    doc = f'<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>{page}</body></html>'
+    _pad(_trim(_render_html(doc, zoom)), bg, whitespace).save(file, quality=_JPEG_QUALITY)
     return file
 
 
@@ -590,10 +603,11 @@ def gt_grid(
     Args:
         tables: A list of ``GT`` objects (a dict's values are used in order, so ``gt_theme_preview()``'s dict works).
         ncol: The number of tables across.
-        labels: A caption above each table, recycled across ``tables``: a string, ``md()``/``html()`` text, or a list
-            of them. Plain strings are HTML.
+        labels: A caption above each table, recycled across ``tables``: a string, ``md()``/``html()`` text, or a
+            non-empty list of them. Plain strings are escaped; use ``html()`` for markup.
         label_style: Style for the labels (see ``title_style``).
-        title: A heading above the whole grid (string, ``md()`` or ``html()``).
+        title: A heading above the whole grid: a string, ``md()`` or ``html()``. Plain strings are escaped (as in
+            great_tables); use ``html()`` for markup. ``subtitle``, ``caption`` and ``source_note`` take the same.
         subtitle: A line below ``title``.
         caption: A note below the grid.
         source_note: A second line below ``caption``, right-aligned by default.
@@ -605,7 +619,7 @@ def gt_grid(
         subtitle_style: As ``title_style``, for the subtitle.
         caption_style: As ``title_style``, for the caption.
         source_note_style: As ``title_style``, for the source note.
-        gap: The space between tables, in pixels.
+        gap: The space between tables, a non-negative number of pixels.
         align: How tables of differing height line up in a row: ``"top"``, ``"center"`` or ``"bottom"``.
         file: A path to write an image to; ``None`` returns the HTML.
         bg: The background color when saving.
@@ -617,8 +631,10 @@ def gt_grid(
 
     Raises:
         TypeError: If ``tables`` holds anything but ``GT`` objects.
-        ValueError: If ``tables`` is empty, ``ncol`` is below 1, ``align`` or a style key is unknown, or (when saving)
-            ``bg``, ``whitespace`` or the extension of ``file`` is invalid.
+        TypeError: If ``labels`` is neither text nor a list of it.
+        ValueError: If ``tables`` or ``labels`` is empty, ``ncol`` is below 1, ``gap`` is not a non-negative number,
+            ``zoom`` is not a positive number, ``align`` or a style key is unknown, or (when saving) ``bg``,
+            ``whitespace`` or the extension of ``file`` is invalid.
         nokap.ChromeNotFoundError: If saving and no Chrome or Chromium is installed.
 
     Example:
@@ -639,13 +655,25 @@ def gt_grid(
     places = {"top": "start", "center": "center", "bottom": "end"}
     if align not in places:
         raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
+    _pixels("gap", gap)
+    _check_zoom(zoom)
     s_label = _style("label", label_style)
     pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
+    if labels is not None:
+        if isinstance(labels, str) or hasattr(labels, "to_html"):
+            labs = [labels]
+        elif isinstance(labels, Iterable):
+            labs = list(labels)
+        else:
+            raise TypeError(
+                f"labels must be a string, md() or html() text, or a list of them, not {type(labels).__name__}"
+            )
+        if not labs:
+            raise ValueError("labels must be non-empty; pass None for no labels")
 
     if labels is None:
         cells = [_table_html(t) for t in items]
     else:
-        labs = [labels] if isinstance(labels, str) or hasattr(labels, "to_html") else list(labels)
         cells = [
             htmltools.div(htmltools.div(_text(labs[i % len(labs)]), style=_css(s_label)), _table_html(t))
             for i, t in enumerate(items)
@@ -696,9 +724,10 @@ def gt_stack_tables(
 
     Args:
         tables: A list of ``GT`` objects (a dict's values are used in order).
-        gap: The space between tables, in pixels.
+        gap: The space between tables, a non-negative number of pixels.
         align: How tables of differing width line up: ``"center"``, ``"left"`` or ``"right"``.
-        title: A heading above the stack (string, ``md()`` or ``html()``).
+        title: A heading above the stack: a string, ``md()`` or ``html()``. Plain strings are escaped (as in
+            great_tables); use ``html()`` for markup. ``subtitle``, ``caption`` and ``source_note`` take the same.
         subtitle: A line below ``title``.
         caption: A note below the stack.
         source_note: A second line below ``caption``, right-aligned by default.
@@ -717,8 +746,9 @@ def gt_stack_tables(
 
     Raises:
         TypeError: If ``tables`` holds anything but ``GT`` objects.
-        ValueError: If ``tables`` is empty, ``align`` or a style key is unknown, or (when saving) ``bg``,
-            ``whitespace`` or the extension of ``file`` is invalid.
+        ValueError: If ``tables`` is empty, ``gap`` is not a non-negative number, ``zoom`` is not a positive number,
+            ``align`` or a style key is unknown, or (when saving) ``bg``, ``whitespace`` or the extension of ``file``
+            is invalid.
         nokap.ChromeNotFoundError: If saving and no Chrome or Chromium is installed.
 
     Example:
@@ -736,6 +766,8 @@ def gt_stack_tables(
     places = {"left": "flex-start", "center": "center", "right": "flex-end"}
     if align not in places:
         raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
+    _pixels("gap", gap)
+    _check_zoom(zoom)
     pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
     stack = htmltools.div(
         *[_table_html(t) for t in items],

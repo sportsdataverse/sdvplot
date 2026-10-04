@@ -5,7 +5,7 @@ import polars as pl
 import pytest
 
 pytest.importorskip("great_tables")
-from great_tables import GT, md  # noqa: E402
+from great_tables import GT, html, md  # noqa: E402
 from PIL import Image  # noqa: E402
 
 import sdvplot.great_tables._export as ex  # noqa: E402
@@ -14,6 +14,8 @@ from tests.gt_export_fakes import BLACK, forbid_render, img  # noqa: E402
 
 DF = pl.DataFrame({"team": ["LV", "LAR"], "wins": [10, 8]})
 STACK = "font-family:system-ui, -apple-system, sans-serif;"
+BAD_GAPS = ["big", None, -5, "1px; display:none", float("nan")]
+BAD_ZOOMS = [0, -1, None, "2", float("inf")]
 
 
 def _two():
@@ -79,6 +81,19 @@ def test_grid_labels_recycle_and_take_markdown():
     assert html.count(f'<div style="{label}">East</div>') == 2 and html.count("<em>West</em>") == 1
 
 
+@pytest.mark.parametrize("compose", [gt_grid, gt_stack_tables])
+def test_plain_strings_are_escaped_and_html_passes_through(compose):  # great_tables' rule; sdvplotR inserts raw HTML
+    text = "Wins < 5 or Q&A"
+    kwargs = {"title": text, "subtitle": text, "caption": text, "source_note": html("<b>bold</b>")}
+    if compose is gt_grid:
+        kwargs["labels"] = [text, html("<i>it</i>")]
+    out = str(compose(_two(), **kwargs))
+    assert "Wins < 5" not in out
+    assert out.count("Wins &lt; 5 or Q&amp;A") == (4 if compose is gt_grid else 3)
+    assert "<b>bold</b>" in out
+    assert compose is gt_stack_tables or "<i>it</i>" in out
+
+
 def test_grid_label_font_loads_without_a_heading():  # sdvplotR drops the link here; sdvplot keeps it
     html = str(gt_grid(_two(), labels="x", label_style={"font": "Roboto Slab"}))
     assert "family=Roboto+Slab:wght@100..900" in html
@@ -105,6 +120,12 @@ def test_tables_accept_a_dict_of_tables():  # gt_theme_preview() returns one
         (lambda: gt_stack_tables([GT(DF)], align="top"), ValueError, "align"),
         (lambda: gt_grid([GT(DF)], file="grid.txt"), ValueError, "image extension"),
         (lambda: gt_stack_tables([GT(DF)], file="stack.png", bg="nope"), ValueError, "color"),
+        (lambda: gt_grid([GT(DF)], labels=[]), ValueError, "labels must be non-empty"),
+        (lambda: gt_grid([GT(DF)], labels=5), TypeError, "labels must be"),
+        *[(lambda g=g: gt_grid([GT(DF)], gap=g), ValueError, "gap") for g in BAD_GAPS],
+        *[(lambda g=g: gt_stack_tables([GT(DF)], gap=g), ValueError, "gap") for g in BAD_GAPS],
+        *[(lambda z=z: gt_grid([GT(DF)], zoom=z), ValueError, "zoom") for z in BAD_ZOOMS],
+        *[(lambda z=z: gt_stack_tables([GT(DF)], zoom=z, file="s.png"), ValueError, "zoom") for z in BAD_ZOOMS],
     ],
 )
 def test_composition_checks_its_arguments_before_rendering(monkeypatch, call, error, match):
