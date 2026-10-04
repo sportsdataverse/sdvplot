@@ -6,6 +6,7 @@ import base64
 import copy
 import datetime
 import functools
+import importlib.metadata
 import math
 import random
 import string
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote
 
+import faicons
 import narwhals as nw
 from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
@@ -1379,3 +1381,255 @@ def gt_significance(
         text = ", ".join(f"{s} p < {level:g}" for level, s in zip(levels, symbols, strict=True))
         gt = gt.tab_source_note(html(text if legend_text is None else legend_text))
     return gt
+
+
+def gt_marginalia(
+    gt: GT,
+    columns: Any,
+    width: float | str | None = 220,
+    label: str | None = "",
+    italic: bool = True,
+    color: str | None = None,
+    size: str = "0.92em",
+    rule: bool = True,
+    rule_color: str | None = None,
+    align: str = "left",
+) -> GT:
+    """Turn columns into margin notes: muted italic prose in a fixed-width column behind a hairline rule.
+
+    Args:
+        gt: The table.
+        columns: The note columns (any great_tables selection).
+        width: The column width (a number is pixels); the fixed width is what makes the prose wrap. ``None`` leaves
+            it alone.
+        label: The column label (empty by default); ``None`` keeps the existing label.
+        italic: Italicize the notes.
+        color: The text color; defaults to a muted ink that clears 4.5:1 on the table background (dark themes too).
+        size: The CSS font size.
+        rule: Draw a hairline on the left edge.
+        rule_color: The hairline color; defaults to a faint tint of the ink.
+        align: The text alignment.
+
+    Returns:
+        GT: A new table with the note columns styled.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``columns`` selects nothing.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_marginalia
+
+            df = pl.DataFrame({"team": ["LV"], "note": ["Lost the starting QB in week 3."]})
+            gt = gt_marginalia(GT(df), "note")
+
+    See Also:
+        Ported from sdvplotR ``gt_marginalia()``: https://sdvplotR.sportsdataverse.org/reference/gt_marginalia.html
+    """
+    _check_gt(gt)
+    cols = _columns(gt, columns)
+    if not cols:
+        raise ValueError("columns matched no columns")
+    bg = _background(gt)
+    ink = on_color(bg)
+    color = _secondary_on(bg, ink) if color is None else color
+    rule_color = mix(bg, ink, 0.18) if rule_color is None else rule_color
+    out = gt.cols_align(align=align, columns=cols).tab_style(
+        gst.text(color=color, size=size, style="italic" if italic else "normal"), loc.body(columns=cols)
+    )
+    if width is not None:
+        out = out.cols_width(cases={c: _css_len(width) for c in cols})
+    if label is not None:
+        out = out.cols_label(cases={c: label for c in cols})
+    if rule:
+        out = out.tab_style(gst.borders(sides="left", color=rule_color, weight="1px"), loc.body(columns=cols))
+    return out
+
+
+_SCALE_NAMES = {
+    1e3: ("thousands", "(000s)"),
+    1e6: ("millions", "(millions)"),
+    1e9: ("billions", "(billions)"),
+    1e12: ("trillions", "(trillions)"),
+}
+
+
+def gt_scale_note(
+    gt: GT,
+    columns: Any,
+    divisor: float = 1000,
+    note: str | None = None,
+    where: str = "source_note",
+    label_suffix: str | None = None,
+    decimals: int = 0,
+    **kwargs: Any,
+) -> GT:
+    """Divide columns by a round number and say so: "Figures in thousands." or a "(000s)" label suffix.
+
+    Args:
+        gt: The table.
+        columns: The columns to scale (any great_tables selection).
+        divisor: The amount to divide by.
+        note: The disclosure; defaults to "Figures in thousands." (millions, billions, trillions) or "Figures divided
+            by 2,500." for other divisors.
+        where: ``"source_note"``, ``"label"`` (append ``label_suffix`` to the column labels) or ``"both"``.
+        label_suffix: The label suffix; defaults to "(000s)", "(millions)", ... or "(÷2,500)".
+        decimals: Decimal places of the scaled values.
+        **kwargs: Passed to great_tables ``fmt_number`` (``use_seps``, ``pattern``, ...).
+
+    Returns:
+        GT: A new table with the columns formatted and the disclosure added.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``divisor`` is not a non-zero number, ``columns`` selects nothing, or ``where`` is invalid.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_scale_note
+
+            df = pl.DataFrame({"team": ["LV", "KC"], "payroll": [254_000_000, 268_500_000]})
+            gt = gt_scale_note(GT(df), "payroll", divisor=1e6, decimals=1, where="both")
+
+    See Also:
+        Ported from sdvplotR ``gt_scale_note()``: https://sdvplotR.sportsdataverse.org/reference/gt_scale_note.html
+    """
+    _check_gt(gt)
+    _choice("where", where, ("source_note", "label", "both"))
+    if isinstance(divisor, bool) or not isinstance(divisor, int | float) or divisor == 0:
+        raise ValueError(f"divisor must be a single non-zero number, got {divisor!r}")
+    cols = _columns(gt, columns)
+    if not cols:
+        raise ValueError("columns matched no columns")
+    named = _SCALE_NAMES.get(float(divisor))
+    shown = f"{int(divisor):,}" if float(divisor).is_integer() else f"{divisor:,}"
+    if note is None:
+        note = f"Figures in {named[0]}." if named else f"Figures divided by {shown}."
+    if label_suffix is None:
+        label_suffix = named[1] if named else f"(÷{shown})"
+
+    out = gt.fmt_number(columns=cols, scale_by=1 / divisor, decimals=decimals, **kwargs)
+    if where in ("source_note", "both"):
+        out = out.tab_source_note(note)
+    if where in ("label", "both"):
+        current = {c.var: c.column_label for c in gt._boxhead}
+        out = out.cols_label(cases={c: _suffixed(current[c], label_suffix) for c in cols})
+    return out
+
+
+def _suffixed(label: Any, suffix: str) -> Any:
+    """A column label with ``suffix`` appended, keeping an HTML label HTML."""
+    text = f"{getattr(label, 'text', label)} {suffix}"
+    return html(text) if hasattr(label, "text") else text
+
+
+# sdvplotR's friendly names -> Font Awesome icon names, tried in order. faicons (a great_tables dependency) 0.2.2
+# predates Font Awesome's x-twitter, bluesky, threads and substack icons, so X falls back to the Twitter bird.
+_SOCIAL = {
+    "x": ("x-twitter", "twitter"),
+    "twitter": ("x-twitter", "twitter"),
+    "ig": ("instagram",),
+    "bsky": ("bluesky",),
+    "gh": ("github",),
+    "yt": ("youtube",),
+    "fb": ("facebook",),
+    "web": ("globe",),
+    "website": ("globe",),
+    "link": ("globe",),
+    "email": ("envelope",),
+    "mail": ("envelope",),
+}
+
+
+def _social_icon(key: str, fill: str, height: str) -> str:
+    """The Font Awesome SVG for a platform name or alias, or a ValueError naming the installed faicons version."""
+    names = _SOCIAL.get(key.lower(), (key.lower(),))
+    for name in names:
+        try:
+            return str(faicons.icon_svg(name, fill=fill, height=height))
+        except ValueError:
+            continue
+    version = importlib.metadata.version("faicons")
+    raise ValueError(
+        f"icon {names[0]!r} was not found in your installed faicons ({version}); update faicons or use a "
+        "different icon or alias"
+    )
+
+
+def gt_social_tag(
+    gt: GT,
+    accounts: Mapping[str, str],
+    caption: str | None = None,
+    stack: bool = False,
+    separator: str = " | ",
+    align: str = "right",
+    icon_color: str | None = None,
+    icon_height: str = "0.9em",
+    text_size: str | None = None,
+    text_weight: str | int | None = None,
+    **kwargs: Any,
+) -> GT:
+    """Sign a table with social handles, each behind its platform's icon, under an optional caption.
+
+    Args:
+        gt: The table.
+        accounts: ``{platform: handle}``. Platforms are Font Awesome brand icon names or the aliases ``x``/``twitter``,
+            ``ig``, ``bsky``, ``gh``, ``yt``, ``fb``, ``web``/``website``/``link`` and ``email``/``mail``.
+        caption: A caption line above the handles, drawn by ``gt_538_caption``.
+        stack: One account per line instead of a row.
+        separator: The string between accounts in a row.
+        align: The handle line's alignment.
+        icon_color: The icons' color; defaults to the text color.
+        icon_height: The icons' CSS height (``em`` scales with ``text_size``).
+        text_size: The handles' CSS font size; defaults to the source-note size.
+        text_weight: The handles' font weight.
+        **kwargs: Passed to ``gt_538_caption`` (``rule_color``, ``rule_width``, ``size``) when ``caption`` is given.
+
+    Returns:
+        GT: A new table with the handle line (and caption) as source notes.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``accounts`` is not a non-empty mapping of platform to handle, or an icon is not in the
+            installed faicons.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_social_tag
+
+            gt = gt_social_tag(GT(pl.DataFrame({"team": ["LV"]})), {"gh": "sportsdataverse", "web": "sdv.org"})
+
+    See Also:
+        Ported from sdvplotR ``gt_social_tag()``: https://sdvplotR.sportsdataverse.org/reference/gt_social_tag.html
+    """
+    _check_gt(gt)
+    if not isinstance(accounts, Mapping) or not accounts or not all(isinstance(k, str) and k for k in accounts):
+        raise ValueError("accounts must be a mapping of platform to handle, such as {'x': '@you', 'gh': 'you'}")
+    fill = "currentColor" if icon_color is None else icon_color
+    items = [
+        "<span style='display:inline-flex; align-items:center; gap:0.3em; white-space:nowrap;'>"
+        f"{_social_icon(key, fill, icon_height)}{handle}</span>"
+        for key, handle in accounts.items()
+    ]
+    joined = "<br>".join(items) if stack else separator.join(items)
+    box = f"text-align:{align};"
+    if text_size is not None:
+        box += f" font-size:{text_size};"
+    if text_weight is not None:
+        box += f" font-weight:{text_weight};"
+    social = f"<div style='{box}'>{joined}</div>"
+    if caption is not None:
+        from sdvplot.great_tables._cells import gt_538_caption  # wave C1
+
+        return gt_538_caption(gt, top_caption=caption, bottom_caption=social, **kwargs)
+    return gt.tab_source_note(html(social))
