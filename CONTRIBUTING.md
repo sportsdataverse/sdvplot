@@ -71,6 +71,12 @@ baseline, result and diff images as the `mpl-results-py3.13` artifact:
 uv run pytest tests/test_images_baseline.py --mpl-generate-path=tests/baseline
 ```
 
+### Render tests
+
+`tests/test_web_render.py` (marker `render`) renders Plotly figures with kaleido and Altair charts with vl-convert, and
+measures the logos in pixels. kaleido drives a local Chrome; without one, the Plotly render tests skip. CI sets
+`SDVPLOT_RENDER_TESTS=1`, which turns a missing Chrome into a failure. Run only these with `uv run pytest -m render`.
+
 ## Generated files
 
 Generated files are never hand-edited. Change the source, regenerate, and commit both.

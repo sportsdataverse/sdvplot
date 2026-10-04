@@ -50,7 +50,7 @@ Repository = "https://github.com/sportsdataverse/sdvplot"
 Changelog = "https://sdvplot.sportsdataverse.org/CHANGELOG"
 
 [dependency-groups]
-test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5", "seaborn>=0.13", "vl-convert-python>=1.6"]
+test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5", "seaborn>=0.13", "kaleido>=1.0", "vl-convert-python>=1.6"]
 lint = ["ruff==0.15.12", "mypy>=1.10", "types-requests", "pyyaml>=6"]
 docs = ["docstring_parser>=0.16", "nbclient>=0.10", "nbconvert>=7", "nbformat>=5", "ipykernel>=6", "jinja2>=3", "seaborn>=0.13"]
 dev = [{ include-group = "test" }, { include-group = "lint" }, { include-group = "docs" }, "pre-commit>=3.7", "nbstripout>=0.7"]
@@ -74,7 +74,10 @@ filterwarnings = [
   "error::sdvplot._errors.SdvplotWarning",
   "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
 ]
-markers = ["real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)"]
+markers = [
+  "real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)",
+  "render: renders a web figure (kaleido needs Chrome; vl-convert does not) and measures it in pixels",
+]
 
 [tool.ruff]
 line-length = 120
