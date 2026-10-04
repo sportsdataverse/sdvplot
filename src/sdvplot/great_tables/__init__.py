@@ -27,6 +27,13 @@ from sdvplot.great_tables._marks import (
     gt_theme_sdv,
     gt_theme_sdv_team,
 )
+from sdvplot.great_tables._themes import (
+    gt_theme_almanac,
+    gt_theme_booktabs,
+    gt_theme_broadsheet,
+    gt_theme_swiss,
+    gt_theme_tufte,
+)
 
 SUPPORTS_AXIS_LOGOS = False
 add_logos = gt_sdv_logos
@@ -100,6 +107,11 @@ __all__ = [
     "gt_sdv_headshots",
     "gt_sdv_logos",
     "gt_sdv_wordmarks",
+    "gt_theme_almanac",
+    "gt_theme_booktabs",
+    "gt_theme_broadsheet",
     "gt_theme_sdv",
     "gt_theme_sdv_team",
+    "gt_theme_swiss",
+    "gt_theme_tufte",
 ]
