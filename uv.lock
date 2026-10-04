@@ -4379,7 +4379,7 @@ requires-dist = [
     { name = "altair", marker = "extra == 'altair'", specifier = ">=5" },
     { name = "bokeh", marker = "extra == 'bokeh'", specifier = ">=3" },
     { name = "folium", marker = "extra == 'folium'", specifier = ">=0.15" },
-    { name = "great-tables", marker = "extra == 'tables'", specifier = ">=0.10" },
+    { name = "great-tables", marker = "extra == 'tables'", specifier = ">=1.0" },
     { name = "holoviews", marker = "extra == 'holoviews'", specifier = ">=1.18" },
     { name = "matplotlib", marker = "extra == 'mpl'", specifier = ">=3.7" },
     { name = "mplsoccer", marker = "extra == 'surfaces'", specifier = ">=1.2" },
