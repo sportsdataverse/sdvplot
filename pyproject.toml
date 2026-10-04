@@ -36,7 +36,7 @@ plotly = ["plotly>=5"]
 altair = ["altair>=5"]
 bokeh = ["bokeh>=3"]
 holoviews = ["holoviews>=1.18", "bokeh>=3"]
-tables = ["great_tables>=1.0"]
+tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.15"]
 surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
@@ -77,7 +77,7 @@ filterwarnings = [
 ]
 markers = [
   "real_index: run against the shipped index instead of the hand-written fixture (tests/conftest.py)",
-  "render: renders a web figure (kaleido needs Chrome; vl-convert does not) and measures it in pixels",
+  "render: renders through a headless Chrome (Plotly kaleido, great_tables gtsave / nokap) or vl-convert (Altair, no Chrome); skipped when Chrome cannot start",
 ]
 
 [tool.ruff]

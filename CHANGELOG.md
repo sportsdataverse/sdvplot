@@ -9,6 +9,7 @@
     - [Added — tables, wave A (marks and team identity)](#added--tables-wave-a-marks-and-team-identity)
     - [Added — table themes](#added--table-themes)
     - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
+    - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
     - [Added — web family](#added--web-family)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -83,6 +84,14 @@
   tables built from pandas or polars data.
 - `gt_color_pills` and `gt_color_ranks` record their color scale for `gt_legend_continuous`.
 - `docs/PARITY_TABLES.md` lists where they differ from R.
+
+### Added — tables, wave D (image export and composition)
+
+- `sdvplot.great_tables`: `gt_save_crop`, `gt_social_crop` and `gt_save_batch` save tables as trimmed, padded images
+  (great_tables' `GT.gtsave`, headless Chrome); `gt_grid` and `gt_stack_tables` compose several tables into one HTML
+  block or image. Ports of the sdvplotR functions of the same names; differences are in `docs/PARITY_TABLES.md`.
+- `[tables]` names `htmltools` and `nokap`, which great_tables 1.0 already installs. Saving needs Chrome or Chromium
+  (set `CHROME_PATH` for a non-standard install); no selenium.
 
 ### Added — web family
 

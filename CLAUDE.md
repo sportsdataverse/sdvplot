@@ -45,6 +45,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
 | `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |
 | `great_tables/_cells.py` | the cell styling and formatting helpers (tables wave C1); the `_sdvplot_scale` record legends read |
+| `great_tables/_export.py` | `gt_save_crop`, `gt_social_crop`, `gt_save_batch`, `gt_grid`, `gt_stack_tables`: rendering through `GT.gtsave` / nokap, Pillow ports of sdvplotR's magick trim and pad |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
@@ -97,8 +98,9 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 - The `real_index` marker runs a test against the shipped index instead of the hand-written fixture
   (`tests/conftest.py`).
 - `filterwarnings` turns `SdvplotWarning` into errors in tests; assert expected warnings with `pytest.warns`.
-- The `render` marker renders Plotly (kaleido, needs Chrome) and Altair (vl-convert) and measures pixels;
-  `SDVPLOT_RENDER_TESTS=1` makes a missing Chrome fail instead of skip.
+- The `render` marker: tests that render through a headless Chrome (Plotly kaleido, great_tables `gtsave`, nokap) or
+  vl-convert (Altair) and measure the output. They skip when no browser can start (`SDVPLOT_RENDER_TESTS=1` makes a
+  missing Chrome fail the web render tests instead); `-m "not render"` deselects them.
 
 ## Docstring standard
 
