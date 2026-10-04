@@ -17,6 +17,7 @@ from sdvplot._images import logo_image
 from sdvplot._index import teams
 from sdvplot._marks import logo_url, marks
 from sdvplot._resolve import resolve, suggest
+from sdvplot._surface import surface
 from sdvplot._versions import versions
 
 try:
@@ -40,6 +41,7 @@ __all__ = [
     "add_wordmarks",
     "add_headshots",
     "axis_logos",
+    "surface",
     "SdvplotWarning",
     "UnresolvedTeamError",
     "OfflineError",

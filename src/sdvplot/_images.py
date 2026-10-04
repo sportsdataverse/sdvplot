@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import warnings
 from pathlib import Path
@@ -10,7 +11,7 @@ from typing import Any
 
 from PIL import Image
 
-from sdvplot._cache import atomic_write, cache_dir, fetch_immutable
+from sdvplot._cache import atomic_write, cache_dir, fetch_cached, fetch_immutable
 from sdvplot._errors import OptionalDependencyError, SdvplotWarning
 from sdvplot._marks import _check_mark_type, select_mark
 from sdvplot._resolve import one_team, resolve
@@ -114,6 +115,14 @@ def logo_image(
     if row is None:
         warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
         return None
+    return load_mark_image(row, size)
+
+
+def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
+    """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
+
+    ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
+    """
     sha, ext = str(row["sha256"]), str(row["ext"])
     path = fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
     if ext == "svg":
@@ -123,4 +132,17 @@ def logo_image(
     if size is not None:
         img = img.copy()
         img.thumbnail((size, size))
+    return img
+
+
+def _check_image(body: bytes) -> None:
+    Image.open(io.BytesIO(body)).verify()
+
+
+def load_url_image(url: str) -> Image.Image:
+    """An image that is not content-addressed (a headshot): cached by sha256(url), refreshed after SDVPLOT_CACHE_TTL."""
+    key = hashlib.sha256(url.encode()).hexdigest()
+    path = fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image)
+    img: Image.Image = Image.open(path)
+    img.load()
     return img

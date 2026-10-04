@@ -33,8 +33,8 @@ pip install sdvplot
 uv add sdvplot
 ```
 
-Plotting libraries are optional extras, for example `pip install "sdvplot[mpl]"`. In this core release they only install
-the library; the adapters that use it arrive in later releases:
+Plotting libraries are optional extras, for example `pip install "sdvplot[mpl]"`. matplotlib (and seaborn), plotnine,
+sportypy surfaces and plottable have adapters today; the other extras install their library ahead of its adapter:
 
 | Extra | Adds |
 | --- | --- |
@@ -48,6 +48,7 @@ the library; the adapters that use it arrive in later releases:
 | `[folium]` | folium |
 | `[svg]` | resvg-py, for SVG marks |
 | `[surfaces]` | sportypy and mplsoccer |
+| `[plottable]` | plottable |
 | `[all]` | everything above |
 
 ## Get started

@@ -22,7 +22,7 @@ adapter takes the same arguments. For headshots, ``teams`` holds player ids and 
 |---|---|---|
 | `target` | `Any` | The plot or table object. Its type picks the adapter. |
 | `*args` | `Any` | Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and ``teams`` (the team values to draw), in that order. |
-| `**kwargs` | `Any` | Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team), ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``variant`` (a mark variant, as in ``logo_url``). |
+| `**kwargs` | `Any` | Passed to the adapter: ``league`` (the SDV league key), ``height`` (the headshot's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``id_system`` (``"espn"`` or ``"gsis"``, as in ``headshot_url``). Headshots take no ``season`` or ``variant``. |
 
 ## Returns
 
@@ -41,7 +41,7 @@ import sdvplot
 try:
     sdvplot.add_headshots(object(), [0.5], [0.5], ["KC"], league="nfl")
 except sdvplot.UnsupportedTargetError:
-    pass   # raised: this core release has no adapters registered
+    pass   # raised: object() is not a plot or table
 ```
 
 ## See also

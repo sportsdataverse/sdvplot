@@ -1,10 +1,11 @@
 import sys
 import types
+import warnings
 
 import pytest
 
 import sdvplot._dispatch as d
-from sdvplot._errors import OptionalDependencyError, UnsupportedTargetError
+from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsupportedTargetError
 from sdvplot._resolve import resolve
 from sdvplot.testing import check_adapter_contract
 
@@ -22,13 +23,33 @@ def _dummy_adapter():
     def add_logos(target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0, variant="default"):
         if not 0 < height <= 1:
             raise ValueError("height is a fraction of the plot height")
+        if not 0 <= alpha <= 1:
+            raise ValueError("alpha is an opacity")
         # positional values, never index labels; x, y and teams are filtered together
         for xi, yi, team_id in zip(list(x), list(y), resolve(list(teams), league, season=season), strict=True):
             if team_id is not None:
                 target.append((team_id, xi, yi, height))
         return target
 
+    def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0):
+        if not 0 < height <= 1:
+            raise ValueError("height is a fraction of the plot height")
+        bad = [p for p in players if not str(p).isdigit()]
+        if bad:
+            warnings.warn(f"no headshot for {bad}", SdvplotWarning, stacklevel=2)
+        for xi, yi, pid in zip(list(x), list(y), list(players), strict=True):
+            if str(pid).isdigit():
+                target.append((str(pid), xi, yi, height))
+        return target
+
+    def axis_logos(target, axis, *, league, **kw):
+        raise TypeError("the dummy adapter draws no axis logos")
+
     mod.add_logos = add_logos
+    mod.add_wordmarks = add_logos  # the dummy resolves only, so a wordmark is drawn like a logo
+    mod.add_headshots = add_headshots
+    mod.axis_logos = axis_logos
+    mod.SUPPORTS_AXIS_LOGOS = False
     mod.drawn_marks = list
     return mod
 
@@ -231,3 +252,49 @@ def test_a_missing_target_library_still_names_the_extra(monkeypatch):
     monkeypatch.setattr(d.importlib, "import_module", gone)
     with pytest.raises(OptionalDependencyError, match=r"pip install sdvplot\[fakeplot\]"):
         d.add_logos(Canvas(), [0], [0], ["LV"], league="nfl")
+
+
+def test_rule_0_catches_a_target_that_routes_elsewhere(dummy, monkeypatch):
+    other = _dummy_adapter()
+    with pytest.raises(AssertionError, match=r"rule 0 \(registration\)"):
+        check_adapter_contract(other, make_target=Canvas)  # Canvas routes to `dummy`, not to `other`
+
+
+def test_rule_5_catches_an_adapter_whose_wordmarks_ignore_height(dummy, monkeypatch):
+    working = dummy.add_logos
+
+    def fixed(target, x, y, teams, *, league, height=0.1, **kw):
+        return working(target, x, y, teams, league=league, height=0.1, **kw)
+
+    monkeypatch.setattr(dummy, "add_wordmarks", fixed)
+    with pytest.raises(AssertionError, match=r"rule 5 \(wordmarks: height\)"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_6_catches_an_adapter_that_drops_headshots(dummy, monkeypatch):
+    monkeypatch.setattr(dummy, "add_headshots", lambda target, *a, **k: target)
+    with pytest.raises(AssertionError, match=r"rule 6 \(headshots\)"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_7_catches_an_adapter_without_axis_support_that_does_not_raise(dummy, monkeypatch):
+    monkeypatch.setattr(dummy, "axis_logos", lambda target, axis, **k: target)
+    with pytest.raises(AssertionError, match=r"rule 7 \(axis logos\)"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_7_requires_an_axis_target_from_an_adapter_that_supports_axis_logos(dummy, monkeypatch):
+    monkeypatch.setattr(dummy, "SUPPORTS_AXIS_LOGOS", True)
+    with pytest.raises(AssertionError, match="make_axis_target is required"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_8_catches_an_adapter_that_accepts_any_alpha(dummy, monkeypatch):
+    working = dummy.add_logos
+
+    def lax(target, x, y, teams, *, league, alpha=1.0, **kw):
+        return working(target, x, y, teams, league=league, alpha=min(max(alpha, 0), 1), **kw)
+
+    monkeypatch.setattr(dummy, "add_logos", lax)
+    with pytest.raises(AssertionError, match=r"rule 8 \(alpha\)"):
+        check_adapter_contract(dummy, make_target=Canvas)

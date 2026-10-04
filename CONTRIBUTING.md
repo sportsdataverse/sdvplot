@@ -5,6 +5,7 @@
   - [Development setup](#development-setup)
     - [pre-commit](#pre-commit)
   - [Tests](#tests)
+    - [Image baselines](#image-baselines)
   - [Generated files](#generated-files)
   - [Code standards for new modules](#code-standards-for-new-modules)
   - [Notebooks](#notebooks)
@@ -56,6 +57,19 @@ uv run mypy
 
 Tests run against a small hand-written index fixture. A test that needs the shipped index carries the `real_index`
 marker (`tests/test_real_index.py`).
+
+### Image baselines
+
+`tests/test_images_baseline.py` compares figures against `tests/baseline/*.png` (pytest-mpl). CI's py3.13 job runs
+`pytest --mpl`; the py3.10 job skips the comparison, because py3.10 resolves an older matplotlib (3.10.x) whose
+image-edge antialiasing differs. The figures carry no text, so the newest matplotlib renders them the same on Linux,
+macOS and Windows. After an intended visual change, regenerate with the newest locked matplotlib (any Python 3.11+
+environment from `uv sync`) and look at every changed PNG before committing; a failing CI comparison uploads the
+baseline, result and diff images as the `mpl-results-py3.13` artifact:
+
+```sh
+uv run pytest tests/test_images_baseline.py --mpl-generate-path=tests/baseline
+```
 
 ## Generated files
 

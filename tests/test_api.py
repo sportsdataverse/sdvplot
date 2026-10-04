@@ -19,6 +19,7 @@ PUBLIC = {
     "add_wordmarks",
     "add_headshots",
     "axis_logos",
+    "surface",
     "SdvplotWarning",
     "UnresolvedTeamError",
     "OfflineError",

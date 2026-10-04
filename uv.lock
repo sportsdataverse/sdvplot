@@ -3202,6 +3202,25 @@ wheels = [
 ]
 
 [[package]]
+name = "plottable"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pandas", version = "3.0.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/3e/15137d0dde8eb6721d2a42b8d45359f37c2fc76dd688903d04c6bdbf43c7/plottable-0.1.5.tar.gz", hash = "sha256:235d762a31c82129dc5bf74205c103a14b1e4393d0f921cc0231be5de884041d", size = 21616, upload-time = "2022-11-13T09:31:08.981Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/cf/23ea4b6f9460312604ed67b74e7db3e702fcaefc04743224ef1cdda663f4/plottable-0.1.5-py3-none-any.whl", hash = "sha256:5c5d1128d90065fc940e5c8445b2603d253909745bb0cee0c9828651b812441c", size = 24734, upload-time = "2022-11-13T09:31:01.102Z" },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3419,6 +3438,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/51/a849f96e117386044471c8ec2bd6cfebacda285da9525c9106aeb28da671/pytest_cov-7.1.0.tar.gz", hash = "sha256:30674f2b5f6351aa09702a9c8c364f6a01c27aae0c1366ae8016160d1efc56b2", size = 55592, upload-time = "2026-03-21T20:11:16.284Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9d/7a/d968e294073affff457b041c2be9868a40c1c71f4a35fcc1e45e5493067b/pytest_cov-7.1.0-py3-none-any.whl", hash = "sha256:a0461110b7865f9a271aa1b51e516c9a95de9d696734a2f71e3e78f46e1d4678", size = 22876, upload-time = "2026-03-21T20:11:14.438Z" },
+]
+
+[[package]]
+name = "pytest-mpl"
+version = "0.19.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "packaging" },
+    { name = "pillow" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c1/d5347e8aff4f6306f33caac80e1527831f733788ca98a6d58cfa0d40999c/pytest_mpl-0.19.0.tar.gz", hash = "sha256:c08e7b51ba4c98eed77ac3f3c6e336ed6163647d9e27ea1d928f79b542178cbe", size = 881884, upload-time = "2026-03-25T10:12:35.992Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/f9/60a6c3da23525e600131eae9e17cad738e2e820335ab45e1ea78ec8df4cb/pytest_mpl-0.19.0-py3-none-any.whl", hash = "sha256:ceb6f7201587b07af82ba8892631a29a4716fdc84306db3ec1b4ef3758f0507d", size = 28139, upload-time = "2026-03-25T10:12:34.966Z" },
 ]
 
 [[package]]
@@ -4238,6 +4274,7 @@ all = [
     { name = "mplsoccer" },
     { name = "plotly" },
     { name = "plotnine" },
+    { name = "plottable" },
     { name = "resvg-py" },
     { name = "sportypy" },
 ]
@@ -4263,6 +4300,9 @@ plotly = [
 ]
 plotnine = [
     { name = "plotnine" },
+]
+plottable = [
+    { name = "plottable" },
 ]
 surfaces = [
     { name = "mplsoccer" },
@@ -4297,6 +4337,7 @@ dev = [
     { name = "pyarrow" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-mpl" },
     { name = "pyyaml" },
     { name = "ruff" },
     { name = "seaborn" },
@@ -4329,6 +4370,8 @@ test = [
     { name = "pyarrow" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "pytest-mpl" },
+    { name = "seaborn" },
 ]
 
 [package.metadata]
@@ -4344,14 +4387,15 @@ requires-dist = [
     { name = "pillow", specifier = ">=10" },
     { name = "platformdirs", specifier = ">=4" },
     { name = "plotly", marker = "extra == 'plotly'", specifier = ">=5" },
-    { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.13" },
+    { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.15" },
+    { name = "plottable", marker = "extra == 'plottable'", specifier = ">=0.1.5" },
     { name = "polars", specifier = ">=1.0,<2" },
     { name = "requests", specifier = ">=2.31" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2" },
-    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces"], marker = "extra == 'all'" },
+    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "plottable"], marker = "extra == 'all'" },
     { name = "sportypy", marker = "extra == 'surfaces'", specifier = ">=1.0" },
 ]
-provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "all"]
+provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "folium", "surfaces", "plottable", "all"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -4371,6 +4415,7 @@ dev = [
     { name = "pyarrow", specifier = ">=15" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-cov", specifier = ">=5" },
+    { name = "pytest-mpl", specifier = ">=0.17" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "ruff", specifier = "==0.15.12" },
     { name = "seaborn", specifier = ">=0.13" },
@@ -4399,6 +4444,8 @@ test = [
     { name = "pyarrow", specifier = ">=15" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-cov", specifier = ">=5" },
+    { name = "pytest-mpl", specifier = ">=0.17" },
+    { name = "seaborn", specifier = ">=0.13" },
 ]
 
 [[package]]
