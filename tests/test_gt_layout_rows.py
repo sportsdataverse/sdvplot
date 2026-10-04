@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import polars as pl
 import pytest
 
@@ -36,6 +37,15 @@ def test_spotlight_lights_the_rows_and_dims_the_rest(kind):
     assert '<td style="background-color: #fff3c4; font-weight: bold; border-left: 4px solid #E31837;"' in kc
     assert '<td style="background-color: #fff3c4; font-weight: bold;" class="gt_row gt_right">12</td>' in kc
     assert '<td style="color: #BBBBBB;" class="gt_row gt_left">#E31837</td>' in kc  # outside `columns`: dimmed
+
+
+@pytest.mark.parametrize("kind", KINDS)
+def test_numpy_integer_rows_are_positions(kind):
+    # great_tables' row resolver silently skips numpy integers; the shared _rows helper turns them into ints
+    gt = GT(frame(kind, TEAMS))
+    assert rows_of(gt_spotlight(gt, [np.int64(1)])) == rows_of(gt_spotlight(gt, [1]))
+    assert rows_of(gt_spotlight(gt, np.int64(1))) == rows_of(gt_spotlight(gt, 1))
+    assert rows_of(gt_row_accent(gt, "team", rows=[np.int64(0)])) == rows_of(gt_row_accent(gt, "team", rows=[0]))
 
 
 def test_spotlight_takes_a_polars_expression_and_an_accent_column():

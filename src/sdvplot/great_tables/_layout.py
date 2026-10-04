@@ -9,6 +9,7 @@ import datetime
 import functools
 import importlib.metadata
 import math
+import numbers
 import random
 import string
 import textwrap
@@ -64,8 +65,8 @@ def _style(default: Mapping[str, Any], user: Mapping[str, Any] | None) -> dict[s
 
 
 def _css_len(value: Any) -> str:
-    """A number reads as pixels; anything else is a CSS length already."""
-    return f"{value}px" if isinstance(value, int | float) and not isinstance(value, bool) else str(value)
+    """A number (numpy numbers included) reads as pixels; anything else is a CSS length already."""
+    return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
 
 
 def _style_css(s: Mapping[str, Any]) -> str:
@@ -122,7 +123,14 @@ def _columns(gt: GT, columns: Any) -> list[str]:
 
 
 def _rows(gt: GT, rows: Any) -> list[int]:
-    """The 0-based row positions a great_tables row selection names (``None`` selects every row)."""
+    """The 0-based row positions a great_tables row selection names (``None`` selects every row).
+
+    numpy integers count as positions: great_tables' resolver silently skips anything that is not an ``int``.
+    """
+    if isinstance(rows, numbers.Integral) and not isinstance(rows, bool):
+        rows = [int(rows)]
+    elif isinstance(rows, list):
+        rows = [int(r) if isinstance(r, numbers.Integral) and not isinstance(r, bool) else r for r in rows]
     return [i for _, i in resolve_rows_i(gt, rows)]
 
 
@@ -361,6 +369,8 @@ def _watermark_svg(text: str, color: str, opacity: float, angle: float, font: st
     w = math.ceil(text_w * math.cos(rad) + text_h * math.sin(rad)) + 4
     h = math.ceil(text_w * math.sin(rad) + text_h * math.cos(rad)) + 4
     rot = f' transform="rotate({angle:g} {w / 2:g} {h / 2:g})"' if angle != 0 else ""
+    # attribute values: a font list such as '"Helvetica Neue", Arial' must not end font-family="..." early
+    font, color = (str(v).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;") for v in (font, color))
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">'
         f'<text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-family="{font}" '
@@ -1506,7 +1516,7 @@ def gt_scale_note(
     """
     _check_gt(gt)
     _choice("where", where, ("source_note", "label", "both"))
-    if isinstance(divisor, bool) or not isinstance(divisor, int | float) or divisor == 0:
+    if isinstance(divisor, bool) or not isinstance(divisor, numbers.Real) or divisor == 0:
         raise ValueError(f"divisor must be a single non-zero number, got {divisor!r}")
     cols = _columns(gt, columns)
     if not cols:
@@ -1588,7 +1598,7 @@ def gt_social_tag(
         caption: A caption line above the handles, drawn by ``gt_538_caption``.
         stack: One account per line instead of a row.
         separator: The string between accounts in a row.
-        align: The handle line's alignment.
+        align: The handle line's alignment: ``"left"``, ``"center"`` or ``"right"``.
         icon_color: The icons' color; defaults to the text color.
         icon_height: The icons' CSS height (``em`` scales with ``text_size``).
         text_size: The handles' CSS font size; defaults to the source-note size.
@@ -1600,8 +1610,8 @@ def gt_social_tag(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables ``GT``.
-        ValueError: If ``accounts`` is not a non-empty mapping of platform to handle, or an icon is not in the
-            installed faicons.
+        ValueError: If ``accounts`` is not a non-empty mapping of platform to handle, an icon is not in the
+            installed faicons, or ``align`` is not ``"left"``, ``"center"`` or ``"right"``.
 
     Example:
         ::
@@ -1616,6 +1626,7 @@ def gt_social_tag(
         Ported from sdvplotR ``gt_social_tag()``: https://sdvplotR.sportsdataverse.org/reference/gt_social_tag.html
     """
     _check_gt(gt)
+    _choice("align", align, ("left", "center", "right"))
     if not isinstance(accounts, Mapping) or not accounts or not all(isinstance(k, str) and k for k in accounts):
         raise ValueError("accounts must be a mapping of platform to handle, such as {'x': '@you', 'gh': 'you'}")
     fill = "currentColor" if icon_color is None else icon_color

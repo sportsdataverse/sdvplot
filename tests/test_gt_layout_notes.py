@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import polars as pl
 import pytest
 
@@ -57,6 +58,13 @@ def test_scale_note_unnamed_divisor_label_only_and_html_labels():
             gt_scale_note(gt, "pay", divisor=bad)
 
 
+def test_numpy_numbers_are_numbers():
+    gt = GT(pl.DataFrame(DATA), id="t")
+    numpy_note = gt_scale_note(gt, "pay", divisor=np.int64(1000)).as_raw_html()
+    assert numpy_note == gt_scale_note(gt, "pay", divisor=1000).as_raw_html()
+    assert '<col style="width:180px;"/>' in gt_marginalia(gt, "note", width=np.int64(180)).as_raw_html()
+
+
 @pytest.mark.parametrize("kind", KINDS)
 def test_social_tag_puts_icons_before_handles(kind):
     gt = gt_social_tag(GT(frame(kind, DATA)), {"gh": "sportsdataverse", "web": "sportsdataverse.org"})
@@ -78,6 +86,8 @@ def test_social_tag_stacks_colors_and_styles():
         gt_social_tag(gt, {"no-such-icon": "sdv"})
     with pytest.raises(ValueError, match="mapping of platform to handle"):
         gt_social_tag(gt, {})
+    with pytest.raises(ValueError, match="align must be one of"):  # R pastes any string into the CSS
+        gt_social_tag(gt, {"gh": "sdv"}, align="middle")
 
 
 def test_social_tag_with_a_caption_goes_through_gt_538_caption():

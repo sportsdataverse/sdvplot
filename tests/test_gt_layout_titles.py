@@ -86,6 +86,12 @@ def test_a_steep_text_watermark_sizes_by_height_and_keeps_the_table_id():
     assert "transform%3D%22rotate%28-80" in h
 
 
+def test_a_quoted_font_list_stays_inside_its_attribute():
+    h = gt_watermark(GT(pl.DataFrame(DATA), id="t"), text="SDV", font='"Helvetica Neue", Arial').as_raw_html()
+    svg = unquote(re.search(r"url\('data:image/svg\+xml,([^']*)'\)", h).group(1))
+    assert 'font-family="&quot;Helvetica Neue&quot;, Arial" font-size="100"' in svg
+
+
 def test_image_watermark_embeds_the_file(tmp_path):
     png = tmp_path / "mark.png"
     png.write_bytes(b"\x89PNG fake")
