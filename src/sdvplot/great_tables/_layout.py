@@ -25,28 +25,11 @@ import polars as pl
 from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
-# private great_tables API: the column/row resolvers its own methods use (pinned by test_private_great_tables_api)
-from great_tables._locations import resolve_cols_c, resolve_rows_i
-
 from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
-from sdvplot._tables import row_positions
+from sdvplot.great_tables._cells import _columns, _frame, _row_indices
+from sdvplot.great_tables._export import _STYLE_KEYS, _css_len, _fonts, _style_css
 
-_STYLE_KEYS = (
-    "font",
-    "size",
-    "color",
-    "weight",
-    "italic",
-    "spacing",
-    "transform",
-    "align",
-    "line_height",
-    "margin_top",
-    "margin_bottom",
-    "padding_top",
-    "padding_bottom",
-)
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
 
@@ -65,45 +48,6 @@ def _style(default: Mapping[str, Any], user: Mapping[str, Any] | None) -> dict[s
     return {**default, **user}
 
 
-def _css_len(value: Any) -> str:
-    """A number (numpy numbers included) reads as pixels; anything else is a CSS length already."""
-    return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
-
-
-def _style_css(s: Mapping[str, Any]) -> str:
-    """Inline CSS for a style dict (sdvplotR's ``.style_css`` with no font fallback, so text inherits the theme's)."""
-    out = []
-    if s.get("font") is not None:
-        out.append(f"font-family:'{s['font']}', sans-serif;")
-    plain = {"color": "color", "weight": "font-weight", "transform": "text-transform", "align": "text-align"}
-    lengths = {
-        "size": "font-size",
-        "spacing": "letter-spacing",
-        "margin_top": "margin-top",
-        "margin_bottom": "margin-bottom",
-        "padding_top": "padding-top",
-        "padding_bottom": "padding-bottom",
-    }
-    for key in _STYLE_KEYS:
-        value = s.get(key)
-        if value is None:
-            continue
-        if key in plain:
-            out.append(f"{plain[key]}:{value};")
-        elif key in lengths:
-            out.append(f"{lengths[key]}:{_css_len(value)};")
-        elif key == "italic" and value is True:
-            out.append("font-style:italic;")
-        elif key == "line_height":
-            out.append(f"line-height:{value};")
-    return "".join(out)
-
-
-def _fonts(*styles: Mapping[str, Any]) -> list[str]:
-    """The distinct Google font names across style dicts, in order."""
-    return list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
-
-
 def _with_fonts(gt: GT, fonts: list[str], location: Any) -> GT:
     """Load Google fonts through great_tables, so the inline ``font-family`` references resolve."""
     for font in fonts:
@@ -116,24 +60,6 @@ def _choice(name: str, value: str, options: tuple[str, ...]) -> str:
     if value not in options:
         raise ValueError(f"{name} must be one of {', '.join(map(repr, options))}, got {value!r}")
     return value
-
-
-def _columns(gt: GT, columns: Any) -> list[str]:
-    """The data columns a great_tables column selection names (``None`` selects every column)."""
-    return resolve_cols_c(data=gt, expr=columns)
-
-
-def _rows(gt: GT, rows: Any) -> list[int]:
-    """The 0-based row positions a great_tables row selection names (``None`` selects every row).
-
-    numpy integers count as positions: great_tables' resolver silently skips anything that is not an ``int``.
-    """
-    return [i for _, i in resolve_rows_i(gt, row_positions(rows))]
-
-
-def _frame(gt: GT) -> nw.DataFrame[Any]:
-    """The table's data (pandas or polars) as a narwhals frame."""
-    return nw.from_native(gt._tbl_data, eager_only=True)
 
 
 def _number(value: Any) -> float | None:
@@ -846,7 +772,7 @@ def gt_percentile_bar(
     cols = _columns(gt, columns)
     if not cols:
         return gt
-    keep = _rows(gt, rows)
+    keep = _row_indices(gt, rows)
     if not keep:
         warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
         return gt
@@ -1069,7 +995,7 @@ def gt_spotlight(
     """
     _check_gt(gt)
     _choice("if_none", if_none, ("warn", "dim", "ignore"))
-    focus = _rows(gt, rows)
+    focus = _row_indices(gt, rows)
     if not focus:
         if if_none == "dim" and dim_color is not None:
             return gt.tab_style(gst.text(color=dim_color), loc.body())
@@ -1166,7 +1092,7 @@ def gt_row_accent(
         colors = [None if k is None else lookup[k] for k in keys]
     fills = [na_color if c is None else c for c in colors]
 
-    keep = set(_rows(gt, rows))
+    keep = set(_row_indices(gt, rows))
     if not keep:
         warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
         return gt

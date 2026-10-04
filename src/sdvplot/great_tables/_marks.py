@@ -242,6 +242,7 @@ def gt_sdv_cols_label(
 
 
 def _constant(value: str) -> Callable[[Any], str]:
+    """A great_tables ``fmt`` function that ignores the cell and returns ``value`` (sdvplotR's ``.constant``)."""
     return lambda _: value
 
 
@@ -314,7 +315,7 @@ def gt_merge_stack_team_color(
 
 # --- themes (R/gt_theme_sdv.R) ---
 
-DENSITY = {  # sdvplotR's .theme_density(): type sizes and row padding per density
+DENSITY: dict[str, dict[str, int]] = {  # sdvplotR's .theme_density(): type sizes and row padding per density
     "comfortable": {"body": 14, "pad": 6, "title": 26, "subtitle": 15, "label": 10, "group": 11, "source": 11},
     "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
     "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},

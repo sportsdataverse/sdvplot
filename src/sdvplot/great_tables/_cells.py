@@ -29,6 +29,7 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
+from sdvplot.great_tables._marks import _constant
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -99,15 +100,6 @@ def _flags(values: Any) -> list[bool]:
         except (TypeError, ValueError):
             out.append(False)
     return out
-
-
-def _constant(value: str) -> Callable[[Any], str]:
-    """A great_tables ``fmt`` function that ignores the cell and returns ``value`` (sdvplotR's ``.constant``)."""
-
-    def fn(_x: Any) -> str:
-        return value
-
-    return fn
 
 
 # ---------------------------------------------------------------------------------------------------------------------

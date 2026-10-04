@@ -21,6 +21,7 @@ from great_tables import GT, html, loc, px, random_id, style
 from great_tables._helpers import GoogleFont
 
 from sdvplot._contrast import contrast, hex6, mix, on_color
+from sdvplot.great_tables._marks import DENSITY
 
 # gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
 R_FONTS = (
@@ -35,13 +36,6 @@ R_FONTS = (
     "Segoe UI Symbol",
     "Noto Color Emoji",
 )
-
-# sdvplotR's .theme_density(): type size and row padding in one scale
-DENSITY: dict[str, dict[str, int]] = {
-    "comfortable": {"body": 14, "pad": 6, "title": 26, "subtitle": 15, "label": 10, "group": 11, "source": 11},
-    "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
-    "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},
-}
 
 # sdvplotR's .theme_scale_output(): which density role each styled location and size option scales with
 _STYLE_ROLE: dict[type, str] = {

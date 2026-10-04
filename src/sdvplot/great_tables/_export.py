@@ -466,13 +466,22 @@ def _style(kind: str, user: Mapping[str, Any] | None) -> dict[str, Any]:
 
 
 def _css_len(value: Any) -> str:
+    """A number (numpy numbers included) reads as pixels; anything else is a CSS length already."""
     return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
 
 
-def _css(style: Mapping[str, Any]) -> str:
-    """A style dict -> inline CSS, in sdvplotR's .style_css() order; composed HTML always sets a font stack."""
+def _style_css(style: Mapping[str, Any], font_fallback: str | None = None) -> str:
+    """A style dict -> inline CSS, in sdvplotR's .style_css() order.
+
+    With ``font_fallback`` the font family is always set (composed HTML, which has no table font to inherit); without
+    it a style with no font sets none, so the text inherits the theme's (the wave C2 headers and legends).
+    """
     font = style.get("font")
-    out = [f"font-family:'{font}', {_FONT_FALLBACK};" if font is not None else f"font-family:{_FONT_FALLBACK};"]
+    out = []
+    if font is not None:
+        out.append(f"font-family:'{font}', {font_fallback or 'sans-serif'};")
+    elif font_fallback is not None:
+        out.append(f"font-family:{font_fallback};")
     for key, prop in _CSS_PROPS:
         value = style.get(key)
         if value is not None:
@@ -488,9 +497,14 @@ def _text(value: Any) -> htmltools.HTML:
     return htmltools.HTML(value.to_html() if hasattr(value, "to_html") else html.escape(str(value)))
 
 
+def _fonts(*styles: Mapping[str, Any]) -> list[str]:
+    """The distinct Google font names across style dicts, in order."""
+    return list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
+
+
 def _font_link(styles: Sequence[Mapping[str, Any]]) -> htmltools.Tag | None:
     """composed HTML never runs through great_tables' google_font(), so a named font is fetched here."""
-    fonts = list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
+    fonts = _fonts(*styles)
     if not fonts:
         return None
     families = "&".join(f"family={f.replace(' ', '+')}:wght@100..900" for f in fonts)
@@ -545,13 +559,19 @@ def _compose(
     header = footer = None
     if has_header:
         header = htmltools.div(
-            htmltools.div(_text(title), style=_css(s_title)) if title is not None else None,
-            htmltools.div(_text(subtitle), style=_css(s_subtitle)) if subtitle is not None else None,
+            htmltools.div(_text(title), style=_style_css(s_title, _FONT_FALLBACK)) if title is not None else None,
+            htmltools.div(_text(subtitle), style=_style_css(s_subtitle, _FONT_FALLBACK))
+            if subtitle is not None
+            else None,
         )
     if has_footer:
         footer = htmltools.div(
-            htmltools.div(_text(caption), style=_css(s_caption) + rule) if caption is not None else None,
-            htmltools.div(_text(source_note), style=_css(s_source)) if source_note is not None else None,
+            htmltools.div(_text(caption), style=_style_css(s_caption, _FONT_FALLBACK) + rule)
+            if caption is not None
+            else None,
+            htmltools.div(_text(source_note), style=_style_css(s_source, _FONT_FALLBACK))
+            if source_note is not None
+            else None,
         )
     # inner wrapper shrinks to the tables, outer one recenters it; "safe" centering plus overflow-x keeps a sheet
     # wider than a phone scrollable
@@ -675,7 +695,9 @@ def gt_grid(
         cells = [_table_html(t) for t in items]
     else:
         cells = [
-            htmltools.div(htmltools.div(_text(labs[i % len(labs)]), style=_css(s_label)), _table_html(t))
+            htmltools.div(
+                htmltools.div(_text(labs[i % len(labs)]), style=_style_css(s_label, _FONT_FALLBACK)), _table_html(t)
+            )
             for i, t in enumerate(items)
         ]
     grid = htmltools.div(
