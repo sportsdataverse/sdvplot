@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import base64
 import copy
+import dataclasses
 import datetime
 import functools
 import importlib.metadata
 import math
 import random
 import string
+import textwrap
 import warnings
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -18,6 +20,7 @@ from urllib.parse import quote
 
 import faicons
 import narwhals as nw
+import polars as pl
 from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
@@ -1633,3 +1636,252 @@ def gt_social_tag(
 
         return gt_538_caption(gt, top_caption=caption, bottom_caption=social, **kwargs)
     return gt.tab_source_note(html(social))
+
+
+def _snake_shape(n: int, n_cols: int, rows_per_col: int | None) -> tuple[int, int]:
+    """(blocks, rows per block) for ``n`` rows, from ``n_cols`` or, when given, ``rows_per_col``."""
+    if rows_per_col is not None:
+        per = int(rows_per_col)
+        if per < 1:
+            raise ValueError("rows_per_col must be at least 1")
+        return math.ceil(n / per), per
+    blocks = int(n_cols)
+    if blocks < 1:
+        raise ValueError("n_cols must be at least 1")
+    return blocks, math.ceil(n / blocks)
+
+
+def _block(data: Any, cols: list[str], i: int, per: int, fill: Any) -> Any:
+    """Rows ``i*per`` to ``(i+1)*per`` of ``cols`` (a pandas or polars frame), padded with ``fill`` to ``per`` rows
+    and suffixed ``_{i+1}``."""
+    names = {c: f"{c}_{i + 1}" for c in cols}
+    if isinstance(data, pl.DataFrame):
+        part = data.select(cols).slice(i * per, per)
+        short = per - part.height
+        if short:
+            pad = pl.DataFrame({c: [fill] * short for c in cols})
+            part = pl.concat([part, pad], how="vertical_relaxed")
+        return part.rename(names)
+    part = data[cols].iloc[i * per : (i + 1) * per].reset_index(drop=True)
+    short = per - len(part)
+    if short:
+        # object dtype keeps integers as integers next to the padding (a float column would print 3 as 3.0)
+        part = part.astype(object).reindex(range(per))
+        part.iloc[per - short :] = fill
+    return part.rename(columns=names)
+
+
+def _side_by_side(parts: list[Any]) -> Any:
+    return nw.concat([nw.from_native(p, eager_only=True) for p in parts], how="horizontal").to_native()
+
+
+def gt_snake(
+    gt: GT,
+    n_cols: int = 2,
+    rows_per_col: int | None = None,
+    gap: float = 20,
+    fill: str | None = "",
+    clean_gaps: bool = True,
+) -> GT:
+    """Wrap a long table into side-by-side blocks (a top-50 list as two columns of 25).
+
+    The table is rebuilt from its data: each visible column appears once per block, suffixed ``_1``, ``_2``, ...
+    (``gt_snake_align`` reshapes helper data the same way). Labels, the header, source notes and body-cell styles
+    (``tab_style`` on ``loc.body``, moved to their block's column and row) carry over; formats, text transforms,
+    options and themes do not, so apply those after snaking. The recorded legend scale is dropped too.
+
+    Args:
+        gt: The table, from pandas or polars data.
+        n_cols: The number of blocks.
+        rows_per_col: Rows per block; given this, the number of blocks follows from the data.
+        gap: Pixels of empty spacer column between blocks; 0 for none.
+        fill: What the padding cells of the last block show; ``None`` leaves them missing.
+        clean_gaps: Scrub borders, fills and rules off the spacer columns so the gap stays clean under any theme
+            (set ``False`` when you style the gap yourself).
+
+    Returns:
+        GT: A new, snaked table (``gt`` unchanged when there are fewer than two blocks or no rows).
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``n_cols`` or ``rows_per_col`` is below 1.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_snake
+
+            df = pl.DataFrame({"rank": range(1, 51), "team": [f"T{i}" for i in range(1, 51)]})
+            gt = gt_snake(GT(df), n_cols=2).fmt_integer(["rank_1", "rank_2"])
+
+    See Also:
+        Ported from sdvplotR ``gt_snake()``: https://sdvplotR.sportsdataverse.org/reference/gt_snake.html
+    """
+    _check_gt(gt)
+    data = gt._tbl_data
+    n = len(_frame(gt))
+    blocks, per = _snake_shape(n, n_cols, rows_per_col)
+    if blocks < 2 or n == 0:
+        return gt
+
+    cols = [c.var for c in gt._boxhead if c.type.name in ("default", "stub")]
+    labels: dict[str, Any] = {c.var: c.var if c.column_label is None else c.column_label for c in gt._boxhead}
+    parts: list[Any] = []
+    spacers: list[str] = []
+    for i in range(blocks):
+        parts.append(_block(data, cols, i, per, None))
+        if gap > 0 and i < blocks - 1:
+            spacers.append(f".gap{i + 1}")
+            parts.append(type(data)({spacers[-1]: [""] * per}))
+    out = _side_by_side(parts)
+
+    table_id = gt._options.table_id.value
+    do_clean = clean_gaps and bool(spacers)
+    if table_id is None and do_clean:
+        table_id = "".join(random.choices(string.ascii_lowercase, k=10))
+    res = GT(out, id=table_id)
+    res = res.cols_label(
+        cases={f"{c}_{i + 1}": labels[c] for i in range(blocks) for c in cols} | {s: "" for s in spacers}
+    )
+    padded = blocks * per - n
+    if padded and fill is not None:
+        last = [f"{c}_{blocks}" for c in cols]
+        res = res.sub_missing(columns=last, rows=list(range(per - padded, per)), missing_text=fill)
+    if spacers:
+        res = res.cols_width(cases={s: f"{gap:g}px" for s in spacers})
+
+    # body-cell styles move to their block's column and row; other column styles repeat in every block
+    moved = []
+    for s in gt._styles:
+        if s.colname is not None and s.colname not in cols:
+            continue
+        if type(s.locname).__name__ == "LocBody" and s.rownum is not None:
+            block, row = divmod(s.rownum, per)
+            moved.append(dataclasses.replace(s, colname=f"{s.colname}_{block + 1}", rownum=row))
+        elif s.colname is not None:
+            moved.extend(dataclasses.replace(s, colname=f"{s.colname}_{i + 1}") for i in range(blocks))
+        else:
+            moved.append(s)
+    # what belongs to the table rather than its cells carries over as is
+    res = res._replace(_heading=gt._heading, _source_notes=gt._source_notes, _styles=[*res._styles, *moved])
+
+    if do_clean:
+        names = nw.from_native(out, eager_only=True).columns
+        css = []
+        for k in (names.index(s) + 1 for s in spacers):
+            cell = f"#{table_id} td:nth-child"
+            css += [
+                f"{cell}({k}) {{border: 1px solid transparent !important; background: transparent !important;"
+                " box-shadow: none !important;}",
+                f"{cell}({k - 1}) {{border-right: 1px solid transparent !important;}}",
+                f"{cell}({k + 1}) {{border-left: 1px solid transparent !important;}}",
+            ]
+        res = res.opt_css("\n".join(css)).tab_style(
+            gst.borders(sides="all", color="transparent", weight="1px"), loc.column_labels(columns=spacers)
+        )
+    return res
+
+
+def gt_snake_align(x: Any, n_cols: int = 2, rows_per_col: int | None = None, fill: Any = None) -> Any:
+    """Reshape a frame the way ``gt_snake`` reshapes a table, so helper data (highlight masks, colors) lines up.
+
+    Args:
+        x: A pandas or polars frame with one row per row of the un-snaked table.
+        n_cols: The number of blocks, as passed to ``gt_snake``.
+        rows_per_col: Rows per block, as passed to ``gt_snake`` (then ``n_cols`` follows from the data).
+        fill: The value of the trailing cells when the rows do not divide evenly (missing by default).
+
+    Returns:
+        The same kind of frame, with each column once per block, suffixed ``_1``, ``_2``, ... (``x`` unchanged when
+        there are fewer than two blocks or no rows).
+
+    Raises:
+        TypeError: If ``x`` is not a pandas or polars frame.
+        ValueError: If ``n_cols`` or ``rows_per_col`` is below 1.
+
+    Example:
+        ::
+
+            import polars as pl
+            from sdvplot.great_tables import gt_snake_align
+
+            wide = gt_snake_align(pl.DataFrame({"hot": [True, False, True]}), n_cols=2)   # hot_1, hot_2
+
+    See Also:
+        Ported from sdvplotR ``gt_snake_align()``: https://sdvplotR.sportsdataverse.org/reference/gt_snake_align.html
+    """
+    frame = nw.from_native(x, eager_only=True)
+    n = len(frame)
+    blocks, per = _snake_shape(n, n_cols, rows_per_col)
+    if blocks < 2 or n == 0:
+        return x
+    return _side_by_side([_block(x, frame.columns, i, per, fill) for i in range(blocks)])
+
+
+def _strwrap(text: str, width: int) -> list[str]:
+    """R's ``strwrap``: greedy lines shorter than ``width``, split on whitespace only."""
+    return textwrap.wrap(text, max(width - 1, 1), break_long_words=False, break_on_hyphens=False)
+
+
+def _balanced(words: list[str], width: int) -> list[str]:
+    """As many lines as ``strwrap`` needs, filled toward the mean length instead of the maximum."""
+    greedy = _strwrap(" ".join(words), width)
+    if len(greedy) <= 1:
+        return [" ".join(words)]
+    target = math.ceil(sum(len(w) + 1 for w in words) / len(greedy))
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = f"{current} {word}" if current else word
+        if len(candidate) > target and current:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    return [*lines, current] if current else lines
+
+
+def gt_wrap_labels(gt: GT, columns: Any = None, width: int = 12, balance: bool = True) -> GT:
+    """Wrap long column labels onto several lines, so narrow columns keep readable headers.
+
+    A one-word label, or one already shorter than ``width``, is left alone; a single long word is never split.
+
+    Args:
+        gt: The table.
+        columns: The columns whose labels wrap (any great_tables selection); defaults to every column.
+        width: The target line length in characters (lines stay shorter than this, as R's ``strwrap``).
+        balance: Even the lines out instead of filling them greedily.
+
+    Returns:
+        GT: A new table with the wrapped labels.
+
+    Raises:
+        TypeError: If ``gt`` is not a great_tables ``GT``.
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_wrap_labels
+
+            gt = gt_wrap_labels(GT(pl.DataFrame({"Expected points added per play": [0.12]})))
+
+    See Also:
+        Ported from sdvplotR ``gt_wrap_labels()``: https://sdvplotR.sportsdataverse.org/reference/gt_wrap_labels.html
+    """
+    _check_gt(gt)
+    labels = {c.var: c.column_label for c in gt._boxhead}
+    wrapped: dict[str, Any] = {}
+    for col in _columns(gt, columns):
+        label = labels.get(col)
+        text = col if label is None else str(getattr(label, "text", label))
+        words = text.split()
+        if len(words) <= 1:
+            continue
+        lines = _balanced(words, width) if balance else _strwrap(text, width)
+        if len(lines) > 1:
+            wrapped[col] = html("<br>".join(lines))
+    return gt.cols_label(cases=wrapped) if wrapped else gt

@@ -47,11 +47,14 @@ from sdvplot.great_tables._layout import (
     gt_scale_note,
     gt_set_font,
     gt_significance,
+    gt_snake,
+    gt_snake_align,
     gt_social_tag,
     gt_spotlight,
     gt_tiers,
     gt_title_header,
     gt_watermark,
+    gt_wrap_labels,
 )
 from sdvplot.great_tables._marks import (
     gt_merge_stack_team_color,
@@ -183,6 +186,8 @@ __all__ = [
     "gt_sdv_wordmarks",
     "gt_set_font",
     "gt_significance",
+    "gt_snake",
+    "gt_snake_align",
     "gt_social_tag",
     "gt_spotlight",
     "gt_theme_almanac",
@@ -209,5 +214,6 @@ __all__ = [
     "gt_tiers",
     "gt_title_header",
     "gt_watermark",
+    "gt_wrap_labels",
     "pal_midnight",
 ]
