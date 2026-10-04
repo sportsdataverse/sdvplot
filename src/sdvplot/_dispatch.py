@@ -1,15 +1,14 @@
 """One front door for every library: sdvplot.add_logos(target, ...) routes to the adapter for target's library.
 
-Adapters arrive in sub-projects 2-5 and register here. The table starts empty in the core release.
+Each adapter registers at the end of this module (registering imports nothing; the adapter module loads on first
+use). The full adapter contract, its rules and its test hooks are documented in sdvplot.testing; in short, an adapter
+module exposes add_logos, add_wordmarks, add_headshots and axis_logos, plus the test hook
 
-Adapter module contract (checked by sdvplot.testing.check_adapter_contract): add_logos, add_wordmarks,
-add_headshots and axis_logos as in the plan, plus the test hook
+    drawn_marks(target) -> list[tuple]
 
-    drawn_marks(target) -> list[tuple[str, float, float, float]]
-
-which returns one (team_id, x, y, height) tuple per image the adapter drew, in draw order. team_id is the
-canonical string id, x/y are the position values passed in (positional, never index labels), and height is the
-fraction of the plot height the adapter actually used.
+which returns one (team_id, x, y, height) or (team_id, x, y, height, url) tuple per image the adapter drew, in draw
+order. team_id is the canonical string id, x/y are the position values passed in (positional, never index labels),
+height is the fraction of the plot height the adapter used, and url the image source it drew.
 
 add_logos must return the object that was drawn on: the target itself when the library mutates in place
 (matplotlib), or the new object when it builds one (plotnine, altair, tables). The harness reads drawn_marks from
@@ -160,9 +159,9 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
         target: The plot or table object. Its type picks the adapter.
         *args: Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and
             ``teams`` (the team values to draw), in that order.
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team),
-            ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and
-            ``variant`` (a mark variant, as in ``logo_url``).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key), ``height`` (the headshot's height as a
+            fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``id_system`` (``"espn"`` or
+            ``"gsis"``, as in ``headshot_url``). Headshots take no ``season`` or ``variant``.
 
     Returns:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.

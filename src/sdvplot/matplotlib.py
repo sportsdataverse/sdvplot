@@ -337,11 +337,14 @@ def axis_logos(
     ax = target_axes(target)
     which = _axis(ax, axis)
     locs, labels = _ticks(which)
+    low, high = sorted(ax.get_xlim() if axis == "x" else ax.get_ylim())
+    in_view = [(loc, lab) for loc, lab in zip(locs, labels, strict=True) if low <= loc <= high]
+    view_locs, view_labels = [loc for loc, _ in in_view], [lab for _, lab in in_view]
     if axis == "x":
-        positions: tuple[list[Any], list[Any]] = (locs, [0.0] * len(locs))
+        positions: tuple[list[Any], list[Any]] = (view_locs, [0.0] * len(view_locs))
     else:
-        positions = ([0.0] * len(locs), locs)
-    placements = place(*positions, labels, league=league, season=season, kind=mark_type, variant=variant,
+        positions = ([0.0] * len(view_locs), view_locs)
+    placements = place(*positions, view_labels, league=league, season=season, kind=mark_type, variant=variant,
                        id_system=id_system)  # fmt: skip
     drawn = {(p.x if axis == "x" else p.y) for p in placements}
     which.set_major_locator(FixedLocator(locs))

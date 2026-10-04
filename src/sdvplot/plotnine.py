@@ -13,7 +13,8 @@ from matplotlib.figure import Figure
 from plotnine import aes, element_text, ggplot, scale_color_manual, scale_fill_manual, theme
 from plotnine.geoms.geom import geom
 
-from sdvplot._colors import team_colors
+from sdvplot._colors import _column, team_colors
+from sdvplot._marks import _check_mark_type
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
 from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
@@ -254,6 +255,7 @@ class _AxisLogos:
         if axis not in ("x", "y"):
             raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
         check_height(kw["height"])
+        _check_mark_type(kw["mark_type"])
         self.axis, self.kw = axis, kw
 
     def __radd__(self, gg: ggplot) -> ggplot:
@@ -311,6 +313,8 @@ def axis_logos(
 
 
 def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
+    _column(which)  # "primary" / "secondary", else ValueError now rather than when the plot is drawn
+
     class _TeamScale(kind):
         def __init__(self) -> None:
             super().__init__(values={}, na_value=na_value, **kwargs)

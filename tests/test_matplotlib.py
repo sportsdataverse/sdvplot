@@ -181,3 +181,11 @@ def test_a_point_outside_the_limits_is_not_drawn(mark_images):
     buf = io.BytesIO()
     fig.savefig(buf, format="png", facecolor="white")
     assert np.asarray(Image.open(io.BytesIO(buf.getvalue())).convert("L")).min() == 255
+
+
+def test_axis_logos_skip_ticks_outside_the_view(mark_images):
+    _, ax = plt.subplots()
+    ax.bar(["LV", "LAR", "LAC"], [1, 2, 3])
+    ax.set_xlim(-0.5, 1.5)  # LAC (no logo archived) sits outside the view: no image and no warning for it
+    sdvplot.axis_logos(ax, "x", league="nfl")
+    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 1.0)]

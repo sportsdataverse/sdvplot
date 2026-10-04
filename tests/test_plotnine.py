@@ -81,3 +81,10 @@ def test_scale_color_sdv_maps_any_team_value_to_its_color(mark_images):
     colors = [tuple(c) for c in fig.axes[0].collections[0].get_facecolors()]
     to_rgba = matplotlib.colors.to_rgba
     assert colors == [to_rgba("#000000"), to_rgba("#003594"), to_rgba("#123456")]
+
+
+def test_bad_arguments_fail_when_built_not_when_drawn():
+    with pytest.raises(ValueError):
+        sdvplot.axis_logos(_axis_plot(["LV"]), "x", league="nfl", mark_type="banner")
+    with pytest.raises(ValueError):
+        sp9.scale_color_sdv("nfl", which="tertiary")
