@@ -3,6 +3,8 @@
 
 - [great_tables and reactable parity with sdvplotR](#great_tables-and-reactable-parity-with-sdvplotr)
   - [Wave A: marks and team identity](#wave-a-marks-and-team-identity)
+  - [Wave B: table themes](#wave-b-table-themes)
+  - [Wave C1: cell styling and formatting](#wave-c1-cell-styling-and-formatting)
   - [Wave D: image export and composition](#wave-d-image-export-and-composition)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -35,6 +37,70 @@ HTML bytes.
 | `reactable_sdv_cols_label` | a named list of `colDef(header = "<img>")` | `list[Column(id=name, name="", header="<img>", html=True)]` | ported. Column names that do not resolve are left out with one warning (R drops them silently) |
 | `reactable_sdv_team_color_bar` | `colDef(style = function(value, index, name))` returning CSS text | `Column(style=fn(CellInfo) -> dict)` | ported. `which=` for `type=`; `na_color` defaults to `#b3b3b3` (R's `grey70`) |
 | `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color |
+
+## Wave B: table themes
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_theme_almanac` | `opt_row_striping()`, `row.striping.background_color`, `stripe = NA` | `opt_row_striping()`, `row_striping_background_color`, `stripe=None` | ported |
+| `gt_theme_athletic` | `cells_body(columns = c(-names(data)[1]))`, dotted `cell_borders()`, `cols_align()` | `loc.body(columns=<all but the first data column>)`, `style.borders(style="dotted")`, `cols_align()` | ported |
+| `gt_theme_booktabs` | three rules (`column_labels.border.top`, `.bottom`, `table_body.border.bottom`) | the same `tab_options` | ported |
+| `gt_theme_broadsheet` | `.gt_row_group_first td` padding in `opt_css()` | great_tables has no `gt_row_group_first` class: `.gt_group_heading_row + tr td` | table_additional_css (equivalent selector); ported |
+| `gt_theme_broadsheet` | `paper` = `"white"`, `"salmon"` or any color | the presets, or a hex color (anything else raises `ValueError`) | ported (stricter) |
+| `gt_theme_brutalist` | four 3px table borders, black `column_labels.background.color` | the same `tab_options` | ported |
+| `gt_theme_drench` | `gt::adjust_luminance()` | `_adjust_luminance()`, a port of grDevices' Luv / `hcl()` math (R's D65 white 0.3137, 0.3291); 426 of 432 sampled colors match R exactly, the other 6 are pure white, where R returns NA and the port white | ported |
+| `gt_theme_drench` | `.theme_on_color()`, `.theme_secondary_on()` | `_contrast.on_color()`, `_secondary_on()` (lowercase hex) | ported |
+| `gt_theme_gtutils` | `cells_body(rows = 1:(nrow(data) - 1))` row rules | `loc.body(rows=range(n - 1))`; a one-row table gets no rule (R's `1:0` ruled its only row) | ported (R's one-row rule not ported) |
+| `gt_theme_kenpom` | `cells_body(rows = seq(1, n, 2))` / `seq(2, n, 2)` banding | `loc.body(rows=range(0, n, 2))` / `range(1, n, 2)`; R errors on a one-row table, the port bands it | ported |
+| `gt_theme_kenpom` | hidden `tab_spanner("toss_out_spanner_dev")` + `#toss_out_spanner_dev {display: none;}` | great_tables gives a stacked spanner no element id, so the label is `<span class="sdvplot-hidden-spanner">` and the CSS is `th:has(.sdvplot-hidden-spanner)`; a second application reuses the spanner | html + table_additional_css; ported |
+| `gt_theme_midnight` | dark ground on every part (`heading`, `column_labels`, `row_group`, `stub`, `source_notes` backgrounds) | the same `tab_options` | ported |
+| `pal_midnight` | an exported character vector of five hex colors (a rank palette for dark grounds) | a tuple of the same five hex strings, exported from `sdvplot.great_tables` beside `gt_theme_midnight` | ported |
+| `gt_theme_ncaa` | hidden spanner (as kenpom), `opt_row_striping()`, `.gt_row` padding | as kenpom; `opt_row_striping()`; `opt_css()` | ported |
+| `gt_theme_pl` | `cells_body(rows = 1)` top rule, row rules (as gtutils) | `loc.body(rows=[0])`, skipped on an empty table | ported |
+| `gt_theme_savant` | `opt_row_striping()`, centered heading | the same | ported |
+| `gt_theme_scoreboard` | `.theme_on_color(accent)` for the labels | `_contrast.on_color()` | ported |
+| `gt_theme_sofa` | `style`: `"light"` or anything else (dark) | `"light"` or `"dark"`, else `ValueError` | ported (stricter) |
+| `gt_theme_swiss` | padding as the separator, one accent rule | the same `tab_options` | ported |
+| `gt_theme_terminal` | monospaced readout, rule on every row | the same `tab_options` | ported |
+| `gt_theme_tier` | `style`: `"dark"` or anything else (light); row rules (as gtutils) | `"light"` or `"dark"`, else `ValueError`; as gtutils | ported (stricter) |
+| `gt_theme_tufte` | one hairline, italic labels | the same `tab_options` and `style.text(style="italic")` | ported |
+| `gt_theme_preview` | lays the panels out with `gt_grid()` (`ncol`, `file`, `...`) and returns the grid | returns `dict[str, GT]` keyed by theme name; `ncol`, `file` and `...` not ported (layout is wave D's `gt_grid`); `gt_theme_sdv_team` is shown with `league="nfl"` and no team, as R shows it | ported (dict instead of a grid) |
+| all 18 themes | `opt_table_font(font = list(google_font(x), default_fonts()))` | `opt_table_font(font=<gt 1.3.0's default_fonts()>)` then `opt_table_font(font=google_font(x))`; the import asks for every weight (great_tables' own import loads only 400, so 600/700 would be synthesized) | ported |
+| all 18 themes | `cell_text(weight = 650)` | `style.text(weight=650)` (renders; great_tables types `weight` as keywords) | ported |
+| all 18 themes | `cells_column_spanners()` | `loc.spanner_labels(ids=<every spanner id>)` (great_tables raises without ids); skipped on a table without spanners | ported |
+| all 18 themes | `tab_options(footnotes.border.bottom.style = "none")` | no such option; great_tables' `.gt_footnotes` is already `border-bottom-style: none` | dropped (no-op) |
+| all 18 themes | `.theme_scale_output()` (density rescales a finished table: `_styles` text sizes and the size/padding options, gt's defaults included) | `_scale_output()` walks `GT._styles` and `GT._options` the same way; sizes match R on athletic, gtutils, kenpom, ncaa, pl, savant, sofa, tier at "compact" and "social" | ported |
+| all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())` | ported |
+| all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color raises `ValueError` naming the argument | ported (stricter) |
+| all 18 themes | `...` to `tab_options()`, last | `**options` to `tab_options()`, last (great_tables' snake_case names) | ported |
+
+## Wave C1: cell styling and formatting
+
+All 17 functions are ported, in `sdvplot.great_tables` (`_cells.py`). Throughout the wave: the table argument is
+`gt`; rows are great_tables row selections (0-based positions, a polars expression, or a callable for pandas data)
+instead of R's data-masked expressions and 1-based indices; positions in other arguments are 0-based; palettes are
+lists of hex colors (paletteer's `"pkg::palette"` strings are not supported); warnings are `SdvplotWarning`; and a
+table that is not a `GT` raises `TypeError`.
+
+| R function | gt feature | great_tables equivalent | decision |
+| --- | --- | --- | --- |
+| `gt_538_caption` | `tab_footnote()` on the column labels, `opt_css()` on `.gt_footnote` and `.gt_sourcenote` | great_tables renders source notes above footnotes | approximated: both captions are source notes, the rule and size inline on the top one (the rule spans the cell's content, inside its 5px padding); R's unused `...` dropped; `align` must be left, center or right (R pastes any string into CSS); the auto rule color skips `background-color` and `border-*-color` (R's `(?<=color:\s)` lookbehind also matches them) |
+| `gt_bold_rows` | `tab_style(cells_body(rows = <expr>))` | `tab_style(loc.body(rows=))` | ported; the deprecated `row` and `filter_statement` arguments are not ported |
+| `gt_border_bars_bottom` | `tab_source_note(html())`, `opt_css()`, `google_font()` | the same | ported; no Google Fonts import when the source notes have no font (R imports a family named `inherit`); `bar_align`, `img_align` and `text_align` are validated (R falls back to center, and pastes e.g. an invalid `padding-center`) |
+| `gt_border_bars_top` | `tab_caption()` | none (`tab_header(preheader=)` is stored, never rendered) | approximated: the bars open the heading, inside the table's top border, with the existing title re-wrapped under them; call it after `tab_header`; the alignments are validated as in `gt_border_bars_bottom` |
+| `gt_border_grid` | `gtExtras::gt_add_divider(columns = -last_col())`, `opt_css()` | `tab_style(style.borders(sides="right"), loc.body / loc.column_labels)` | ported; "every column but the last" counts visible body columns (R: data columns, so a stub or hidden last column shifted it) |
+| `gt_color_pills` | `scales::col_numeric()` (CIELAB), `text_transform()` through `.fmt_rows()`, `...` to `col_numeric` | `_contrast.mix` sRGB ramp, `fmt()` per distinct HTML string | approximated colors (sRGB, as great_tables' `data_color`; scales interpolates in CIELAB); `...` not ported; out-of-domain values grey `#808080` with one warning (scales' NA color); records `_sdvplot_scale` |
+| `gt_color_ranks` | `data_color(rows =)`, paletteer | `data_color(rows=)` | ported; hex palettes only; records `_sdvplot_scale` |
+| `gt_color_results` | `tab_style()` per result | the same | ported; `result_type` is validated; `"binary"` compares numbers (R also matches the strings `"1"`/`"0"`) |
+| `gt_column_subheaders` | `cols_label(html())` per column, `...` of lists | one `cols_label(cases=)` | ported; per-column `**subheaders` dicts; a name that is not a column raises (R ignores it); the deprecated `gt_table` argument is not ported; `font` is written as `&quot;<font>&quot;` (R's `'<font>'` ends the single-quoted style attribute early, so the font and anything after it are lost) |
+| `gt_cutline` | `tab_style(cell_borders())`, `opt_css()` with an inline SVG label | `tab_style(style.borders())`, `opt_css()` | ported; the SVG label is byte-identical to R's; `style` must be dashed, solid or dotted; `after` must be whole numbers (numpy integers accepted; R has no whole-number check) |
+| `gt_delta` | `cols_add()`, `vec_fmt_number()` / `vec_fmt_percent()` | no `cols_add` in great_tables 1.0; `vals.fmt_number` / `vals.fmt_percent` | implemented through GT internals (`_tbl_data`, `_body`, `_boxhead`; pinned by a test); `from` is `from_` (a Python keyword); `after` positions are 0-based |
+| `gt_fmt_rank` | `text_transform()` | `text_transform()` | ported |
+| `gt_fmt_tally` | `.fmt_rows()` (`fmt()` with a vectorized constant), `cols_hide()`, `vec_fmt_percent()` | `fmt()` per distinct string, `cols_hide()`, `vals.fmt_percent` | ported; `share_of` is 0-based (default `0`, R's `1`) |
+| `gt_group_stripes` | `_row_groups`, `_stub_df` | `GT._stub.group_rows` (render order) | ported |
+| `gt_highlight_cells` | an rlang formula or function per column, or a logical matrix | a callable on each column's pandas/polars Series, or a DataFrame or 2-D sequence mask | ported |
+| `gt_highlight_na` | `tab_style()` + `text_transform()` for `missing_text` | `tab_style()` + `fmt()` (`text_transform` skips null cells) | ported; `columns=None` means every column (R: `everything()`) |
+| `gt_indicator_boxes` | `text_transform()` with a vectorized rule over the rendered text | `fmt()` per data value; the rule is called per value (and column name) | approximated: a rule that needs the whole column (`x > mean(x)`) must be computed beforehand; `show_only` is validated |
 
 ## Wave D: image export and composition
 
