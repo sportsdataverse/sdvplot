@@ -68,6 +68,15 @@ def test_add_logos_on_a_faceted_plot_warns_once_per_render(mark_images):
     assert len(_sdv_warnings(rec)) == 1
 
 
+def test_a_season_per_team_follows_its_row_into_every_panel(mark_images):
+    # plotnine copies add_logos' rows into each panel; each copy keeps its own season (the Oakland mark for 2010)
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "LV"], league="nfl", season=[2010, 2021])
+    urls = [m[4] for m in sp9.drawn_marks(p)]
+    assert urls == ["https://cdn/3333.png", "https://cdn/1111.png"] * 2
+
+
 def test_axis_logos_on_a_faceted_plot_warn_once_per_render(mark_images):
     bars = pd.DataFrame({"team": ["LV", "XXX", "LAR"] * 2, "v": [1, 2, 3] * 2, "g": list("aaabbb")})
     p = sdvplot.axis_logos(ggplot(bars, aes("team", "v")) + geom_col() + facet_wrap("g"), "x", league="nfl")

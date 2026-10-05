@@ -18,7 +18,7 @@ from sdvplot._colors import _column, team_colors
 from sdvplot._errors import SdvplotWarning
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._resolve import _unpack
+from sdvplot._resolve import _seasons, _unpack
 from sdvplot.matplotlib import _in_view, draw_placements
 from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
@@ -44,7 +44,7 @@ class _geom_sdv_marks(geom):
 
     _kind = "logo"
     _id_aes = "team"
-    DEFAULT_AES: dict[str, Any] = {}
+    DEFAULT_AES: dict[str, Any] = {"season": None}  # optional: one season per row, which plotnine copies with the row
     REQUIRED_AES = {"x", "y", "team"}
     DEFAULT_PARAMS = _MARK_PARAMS
 
@@ -58,9 +58,11 @@ class _geom_sdv_marks(geom):
 
     def _place(self, data: pd.DataFrame) -> list[Placement]:
         p = self.params
+        # the season= parameter, else the season aesthetic (a column, so each panel's copy of a row keeps its season)
+        season = p["season"] if p["season"] is not None or "season" not in data else data["season"].tolist()
         return place(
             data["x"].tolist(), data["y"].tolist(), data[self._id_aes].tolist(), league=p["league"],
-            season=p["season"], kind=self._kind, variant=p["variant"], id_system=p["id_system"],
+            season=season, kind=self._kind, variant=p["variant"], id_system=p["id_system"],
         )  # fmt: skip
 
     def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -79,7 +81,8 @@ class _geom_sdv_marks(geom):
 
 class geom_sdv_logos(_geom_sdv_marks):
     """Team logos at (x, y): ``aes(x=..., y=..., team=...)``, plus ``league=`` and optional ``season``, ``height``
-    (fraction of the panel height), ``alpha``, ``variant`` and ``id_system``.
+    (fraction of the panel height), ``alpha``, ``variant`` and ``id_system``. For a season per row, map it instead:
+    ``aes(..., season="season")`` (a ``season=`` parameter wins over the mapping).
 
     Example:
         ::
@@ -121,11 +124,12 @@ class geom_sdv_headshots(_geom_sdv_marks):
     DEFAULT_PARAMS = {**_MARK_PARAMS, "id_system": "espn"}
 
 
-def _frame(x: Any, y: Any, ids: Any, column: str) -> pd.DataFrame:
+def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:
+    """The layer data: one row per point, with its season, so plotnine's per-panel copies of a row keep it."""
     xs, ys, ts = _unpack(x)[0], _unpack(y)[0], _unpack(ids)[0]
     if not len(xs) == len(ys) == len(ts):
         raise ValueError(f"x, y and teams must have the same length, got {len(xs)}, {len(ys)} and {len(ts)}")
-    return pd.DataFrame({"x": xs, "y": ys, column: ts})
+    return pd.DataFrame({"x": xs, "y": ys, column: ts, "season": pd.Series(_seasons(season, len(ts)), dtype=object)})
 
 
 def add_logos(
@@ -168,8 +172,8 @@ def add_logos(
             p2 = sdvplot.add_logos(p, [0.2], [0.48], ["KC"], league="nfl")
     """
     layer = geom_sdv_logos(
-        aes("x", "y", team="team"), data=_frame(x, y, teams, "team"), inherit_aes=False, league=league,
-        season=season, height=height, alpha=alpha, variant=variant, id_system=id_system,
+        aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
+        league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
     return target + layer
 
@@ -213,8 +217,8 @@ def add_wordmarks(
             p2 = sdvplot.add_wordmarks(p, [0.2], [0.48], ["KC"], league="nfl")
     """
     layer = geom_sdv_wordmarks(
-        aes("x", "y", team="team"), data=_frame(x, y, teams, "team"), inherit_aes=False, league=league,
-        season=season, height=height, alpha=alpha, variant=variant, id_system=id_system,
+        aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
+        league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
     return target + layer
 
