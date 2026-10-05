@@ -46,7 +46,7 @@ jobs:
         run: |
           uv venv
           uv pip install \
-            "sdvplot[mpl,tables] @ git+https://github.com/sportsdataverse/sdvplot@6c5d18deb1626a9d25cdc911c7f2174b35cd6220" \
+            "sdvplot[mpl,tables] @ git+https://github.com/sportsdataverse/sdvplot@5f986845ff7514590bd42c832fd5bfafe33f9ce9" \
             "sportsdataverse>=0.1.4"
       - name: Make the graphics
         # Each line adds its posts to out/<today>/manifest.json. Pick your leagues, stats and sizes.
