@@ -187,7 +187,7 @@ games = (
 game_no = list(range(1, games.height + 1))
 
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(game_no, games["margin"], color=sdvplot.team_colors(team, "cfb"), width=0.7)
+ax.bar(game_no, games["margin"], color=sdvplot.team_colors("cfb", team), width=0.7)
 sdvplot.add_logos(ax, game_no, games["margin"] + 7, games["opponent"], league="cfb", season=SEASON, height=0.08)
 ax.set_ylim(0, games["margin"].max() + 14)
 ax.set_xticks(game_no)
@@ -241,7 +241,7 @@ rivalry = (
 )
 
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(rivalry["season"], rivalry["osu_margin"], color=sdvplot.team_colors(rivalry["winner"], "cfb").to_list())
+ax.bar(rivalry["season"], rivalry["osu_margin"], color=sdvplot.team_colors("cfb", rivalry["winner"]).to_list())
 tip = rivalry["osu_margin"] + pl.Series([8 if m > 0 else -8 for m in rivalry["osu_margin"]])
 sdvplot.add_logos(ax, rivalry["season"], tip, rivalry["winner"], league="cfb", season=SEASON, height=0.08)
 ax.axhline(0, color="black", lw=0.8)
@@ -396,7 +396,7 @@ top = (
 )
 
 fig, ax = plt.subplots(figsize=(9, 6))
-ax.barh(top["team_id"], top["fpi"], color=sdvplot.team_colors(top["team_id"], "cfb").to_list())
+ax.barh(top["team_id"], top["fpi"], color=sdvplot.team_colors("cfb", top["team_id"]).to_list())
 for y, value in enumerate(top["fpi"]):
     ax.text(value + 0.3, y, f"{value:.1f}", va="center", fontsize=8)
 sdvplot.axis_logos(ax, "y", league="cfb", season=SEASON, height=0.04)

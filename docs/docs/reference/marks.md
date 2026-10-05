@@ -12,8 +12,8 @@ sidebar_position: 8
 marks(
     team: Any,
     league: str,
-    season: Any = None,
     *,
+    season: Any = None,
     id_system: str = 'auto',
 ) -> polars.dataframe.frame.DataFrame
 ```

@@ -88,11 +88,11 @@ top = (
     .head(5)
 )
 top = top.with_columns(
-    primary=sdvplot.team_colors(top["team_abbrev"], "nhl"),
-    secondary=sdvplot.team_colors(top["team_abbrev"], "nhl", which="secondary"),
+    primary=sdvplot.team_colors("nhl", top["team_abbrev"]),
+    secondary=sdvplot.team_colors("nhl", top["team_abbrev"], which="secondary"),
 )
 try:
-    sdvplot.team_colors(top["team_abbrev"], "nhl", which="alternate")
+    sdvplot.team_colors("nhl", top["team_abbrev"], which="alternate")
 except ValueError as e:
     print(e)
 top
@@ -194,10 +194,10 @@ def distance(a: str, b: str) -> float:
     return sum((x - y) ** 2 for x, y in zip(to_rgb(a), to_rgb(b), strict=True)) ** 0.5
 
 
-lal, sac = sdvplot.team_colors(["LAL", "SAC"], "nba")
+lal, sac = sdvplot.team_colors("nba", ["LAL", "SAC"])
 print(f"primaries {lal} vs {sac}: distance {distance(lal, sac):.2f}")
 if distance(lal, sac) < 0.25:
-    sac = sdvplot.team_colors("SAC", "nba", which="secondary")
+    sac = sdvplot.team_colors("nba", "SAC", which="secondary")
     print(f"using the Kings' secondary {sac}: distance {distance(lal, sac):.2f}")
 
 race = (
@@ -255,7 +255,7 @@ order = (
     .agg(pl.col("team_winner").sum())
     .sort(["team_winner", "team_abbreviation"], descending=[True, False])
 )["team_abbreviation"].to_list()
-cmap = ListedColormap(sdvplot.team_colors(order, "nba") + ["#e6e6e6"])  # one color per team, then a loss
+cmap = ListedColormap(sdvplot.team_colors("nba", order) + ["#e6e6e6"])  # one color per team, then a loss
 
 grid = [[float("nan")] * (east["game_no"].max() + 1) for _ in order]
 for team, game_no, won in east.select("team_abbreviation", "game_no", "team_winner").iter_rows():
@@ -292,7 +292,7 @@ from pypalettes import create_cmap
 
 shots = nba.load_nba_stats_shots(seasons=SEASON - 1)  # this loader takes the season's start year
 sga = sdvplot.court_coords(shots.filter((pl.col("person_id") == 1628983) & (pl.col("season_type_id") == "2")))
-okc_primary, okc_secondary = sdvplot.team_colors("OKC", "nba"), sdvplot.team_colors("OKC", "nba", "secondary")
+okc_primary, okc_secondary = sdvplot.team_colors("nba", "OKC"), sdvplot.team_colors("nba", "OKC", which="secondary")
 cmap = create_cmap(["#d6e8f5", okc_primary, okc_secondary], cmap_type="continuous")
 
 fig, ax = plt.subplots(figsize=(7.5, 6.5))
@@ -331,7 +331,7 @@ net = (
 with plt.rc_context():
     mt.set_theme("economist")
     fig, ax = plt.subplots(figsize=(9, 5.5))
-    ax.barh(net["team_abbreviation"], net["diff"], color=sdvplot.team_colors(net["team_abbreviation"], "nba"))
+    ax.barh(net["team_abbreviation"], net["diff"], color=sdvplot.team_colors("nba", net["team_abbreviation"]))
     sdvplot.axis_logos(ax, "y", league="nba", height=0.07)
     ax.set_xlabel("Average point differential per game")
     ax.set_title("The NBA's top ten by point differential, 2025-26", loc="left", fontweight="bold")

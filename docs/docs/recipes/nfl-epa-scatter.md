@@ -236,7 +236,7 @@ def epa_chart(figsize, dpi=100, logo_height=0.075):
             textcoords="offset points",
             fontsize=9,
             fontweight="bold",
-            color=sdvplot.team_colors(row["team"], "nfl"),
+            color=sdvplot.team_colors("nfl", row["team"]),
             linespacing=1.1,
             **CALLOUTS[row["team"]],
         )

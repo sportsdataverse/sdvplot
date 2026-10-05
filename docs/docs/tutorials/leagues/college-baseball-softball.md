@@ -122,7 +122,7 @@ omaha = (
 )
 
 fig, ax = plt.subplots(figsize=(8, 5))
-ax.bar(omaha["team"], omaha["diff"], color=sdvplot.team_colors(omaha["team"].to_list(), "ncaa_baseball"))
+ax.bar(omaha["team"], omaha["diff"], color=sdvplot.team_colors("ncaa_baseball", omaha["team"].to_list()))
 for i, (diff, wins, games) in enumerate(omaha.select("diff", "wins", "games").iter_rows()):
     ax.text(
         i,
@@ -170,7 +170,7 @@ fig, ax = plt.subplots(figsize=(8, 5))
 ends = line.group_by("team", maintain_order=True).agg(pl.col("inning").max(), pl.col("total").last())
 for team in ends["team"]:
     t = line.filter(pl.col("team") == team)
-    ax.step(t["inning"], t["total"], where="post", linewidth=3, color=sdvplot.team_colors(team, "ncaa_baseball"))
+    ax.step(t["inning"], t["total"], where="post", linewidth=3, color=sdvplot.team_colors("ncaa_baseball", team))
 ax.set_xticks(range(1, line["inning"].max() + 1))
 ax.set_xlim(0, line["inning"].max() + 1.2)
 ax.set_ylim(-0.5, line["total"].max() + 1.5)
@@ -420,7 +420,7 @@ plt.show()
 </div>
 
 ```python
-sdvplot.team_colors(sb["team_id"].head(3).to_list(), "ncaa_softball", which="secondary")
+sdvplot.team_colors("ncaa_softball", sb["team_id"].head(3).to_list(), which="secondary")
 ```
 
 <div class="sdv-output">

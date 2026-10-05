@@ -10,8 +10,9 @@ sidebar_position: 5
 
 ```python
 team_colors(
-    teams: Any,
     league: str,
+    teams: Any,
+    *,
     which: str = 'primary',
     season: Any = None,
 ) -> Any
@@ -25,8 +26,8 @@ One "#hex" (or None) per team value, in the same container the values came in.
 
 | Name | Type | Description |
 |---|---|---|
-| `teams` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
+| `teams` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers. |
 | `which` | `str` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 
@@ -44,8 +45,8 @@ str | list | Series | None: The hex color for each team, None where a team does 
 ```python
 import sdvplot
 
-sdvplot.team_colors(["KC", "SF"], "nfl")      # ['#e31837', '#aa0000']
-sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
+sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
+sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
 ```
 
 ## See also

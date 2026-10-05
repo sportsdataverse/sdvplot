@@ -361,7 +361,7 @@ decided = avs.filter(pl.col("margin") != 0).with_columns(
     result=pl.when(pl.col("margin") > 0).then(pl.lit("Won")).otherwise(pl.lit("Lost"))
 )
 shootouts = avs.height - decided.height
-colors = {"Won": sdvplot.team_colors("COL", "nhl"), "Lost": sdvplot.team_colors("COL", "nhl", "secondary")}
+colors = {"Won": sdvplot.team_colors("nhl", "COL"), "Lost": sdvplot.team_colors("nhl", "COL", which="secondary")}
 (
     ggplot(decided, aes("game_no", "margin", fill="result"))
     + geom_col(width=0.8)

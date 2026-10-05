@@ -116,7 +116,7 @@ x = list(range(ranked.height))
 ends = [d + 1.4 if d >= 0 else d - 1.4 for d in ranked["diff"]]
 
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(x, ranked["diff"], color=sdvplot.team_colors(ranked["team_abbreviation"], "nba"), width=0.75)
+ax.bar(x, ranked["diff"], color=sdvplot.team_colors("nba", ranked["team_abbreviation"]), width=0.75)
 ax.axhline(0, color="black", linewidth=0.8)
 ax.set_ylim(ranked["diff"].min() - 3.5, ranked["diff"].max() + 3.5)
 sdvplot.add_logos(ax, x, ends, ranked["team_abbreviation"], league="nba", height=0.055)
@@ -152,13 +152,13 @@ nfl_sacks = (
 )
 
 fig, (left, right) = plt.subplots(1, 2, figsize=(10, 5))
-colors = sdvplot.team_colors(nhl_scoring["team_abbrev"], "nhl")
+colors = sdvplot.team_colors("nhl", nhl_scoring["team_abbrev"])
 left.bar(nhl_scoring["team_abbrev"], nhl_scoring["gpg"], color=colors)
 left.set_ylim(2.5, nhl_scoring["gpg"].max() + 0.2)
 left.set_title("NHL goals per game, 2025-26 (top 10)", loc="left", fontsize=10, fontweight="bold")
 sdvplot.axis_logos(left, "x", league="nhl", height=0.08)
 
-right.barh(nfl_sacks["team"], nfl_sacks["def_sacks"], color=sdvplot.team_colors(nfl_sacks["team"], "nfl"))
+right.barh(nfl_sacks["team"], nfl_sacks["def_sacks"], color=sdvplot.team_colors("nfl", nfl_sacks["team"]))
 right.set_title(f"NFL sacks, {NFL_SEASON} (top 10)", loc="left", fontsize=10, fontweight="bold")
 sdvplot.axis_logos(right, "y", league="nfl", height=0.07)
 fig.text(0.99, 0.01, f"{FASTRHOCKEY} | {NFLVERSE}", ha="right", fontsize=8, color="grey")
@@ -202,7 +202,7 @@ end = last["game_no"].max()
 fig, ax = plt.subplots(figsize=(10, 6))
 for team in PACIFIC:
     run = runs.filter(pl.col("team_abbrev") == team)
-    ax.plot(run["game_no"], run["goal_diff"], color=sdvplot.team_colors(team, "nhl"), linewidth=2)
+    ax.plot(run["game_no"], run["goal_diff"], color=sdvplot.team_colors("nhl", team), linewidth=2)
 for y, spot in zip(last["goal_diff"], spots, strict=True):
     ax.plot([end, end + 4], [y, spot], color="grey", linewidth=0.6)
 ax.axhline(0, color="grey", linewidth=0.8)
@@ -330,7 +330,7 @@ kc = (
     .with_columns(epa=(pl.col("passing_epa") + pl.col("rushing_epa")) / plays)
     .sort("week")
 )
-good, bad = sdvplot.team_colors("KC", "nfl"), sdvplot.team_colors("KC", "nfl", "secondary")
+good, bad = sdvplot.team_colors("nfl", "KC"), sdvplot.team_colors("nfl", "KC", which="secondary")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 ax.bar(kc["week"], kc["epa"], color=[good if e >= 0 else bad for e in kc["epa"]], edgecolor="black")

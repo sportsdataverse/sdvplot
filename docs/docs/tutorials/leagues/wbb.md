@@ -381,7 +381,7 @@ fig = go.Figure(
         x=top25["adj_em"],
         y=top25["team_id"],
         orientation="h",
-        marker_color=sdvplot.team_colors(top25["team_id"].to_list(), "wbb"),
+        marker_color=sdvplot.team_colors("wbb", top25["team_id"].to_list()),
         customdata=top25.select("short_name", "conference").rows(),
         hovertemplate="%{customdata[0]} (%{customdata[1]})<br>Adj. EM %{x:+.1f}<extra></extra>",
     )
@@ -464,7 +464,7 @@ champ_name = sdvplot.teams("wbb").filter(pl.col("team_id") == str(champ))["name"
 
 fig, ax = plt.subplots(figsize=(9, 5.5))
 x = list(range(run.height))
-ax.bar(x, run["margin"], color=sdvplot.team_colors(champ, "wbb"), width=0.65)
+ax.bar(x, run["margin"], color=sdvplot.team_colors("wbb", champ), width=0.65)
 sdvplot.add_logos(ax, x, run["margin"] + 5, run["opponent"], league="wbb", height=0.11)
 for xi, m in zip(x, run["margin"], strict=True):
     ax.text(xi, m / 2, f"+{m}", ha="center", va="center", color="white", fontsize=12, fontweight="bold")

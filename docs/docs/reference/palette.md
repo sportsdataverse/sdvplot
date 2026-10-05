@@ -11,8 +11,9 @@ sidebar_position: 4
 ```python
 palette(
     league: str,
-    which: str = 'primary',
     teams: Any = None,
+    *,
+    which: str = 'primary',
     season: Any = None,
 ) -> dict[Any, str]
 ```
@@ -30,8 +31,8 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 | Name | Type | Description |
 |---|---|---|
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary". |
 | `teams` | `Any` | Team values to key the dict by; None returns the whole league. |
+| `which` | `str` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 
 ## Returns

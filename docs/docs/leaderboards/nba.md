@@ -197,7 +197,7 @@ The same net ratings as bars in team colors; `axis_logos` swaps the abbreviation
 ```python
 by_net = ratings.sort(["net", "team"], descending=[True, False])
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(by_net["abbr"], by_net["net"], color=sdvplot.team_colors(by_net["team"].to_list(), "nba"))
+ax.bar(by_net["abbr"], by_net["net"], color=sdvplot.team_colors("nba", by_net["team"].to_list()))
 ax.axhline(0, color="#222222", lw=0.8)
 ax.margins(x=0.01)
 ax.set_ylabel("Net rating (points per 100 possessions)")
@@ -243,7 +243,7 @@ leaders = (
 
 fig, ax = plt.subplots(figsize=(9, 7))
 y = list(range(leaders.height))
-ax.barh(y, leaders["ppg"], color=sdvplot.team_colors(leaders["team"].to_list(), "nba"), height=0.7)
+ax.barh(y, leaders["ppg"], color=sdvplot.team_colors("nba", leaders["team"].to_list()), height=0.7)
 ax.set_yticks(y, [f"{name}  " for name in leaders["name"]])
 top = leaders["ppg"].max()
 for i, (ppg, gp) in enumerate(zip(leaders["ppg"], leaders["gp"], strict=True)):

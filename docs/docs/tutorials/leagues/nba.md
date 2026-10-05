@@ -154,7 +154,7 @@ labels can be the data's own ESPN abbreviations (`GS`, `NO`, `UTAH`).
 
 ```python
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(ratings["team_abbreviation"], ratings["net"], color=sdvplot.team_colors(ratings["team"], "nba", season=SEASON))
+ax.bar(ratings["team_abbreviation"], ratings["net"], color=sdvplot.team_colors("nba", ratings["team"], season=SEASON))
 ax.axhline(0, color="black", linewidth=0.8)
 ax.margins(x=0.01)
 ax.set_ylabel("Net rating (per 100 possessions)")
@@ -200,7 +200,7 @@ bump = (
 west = bump.filter(pl.col("conference") == "Western Conference")
 fig, ax = plt.subplots(figsize=(10, 6))
 for (team,), line in west.sort("week").group_by("team", maintain_order=True):
-    ax.plot(line["week_no"], line["rank"], color=sdvplot.team_colors([team], "nba")[0], linewidth=2.5, alpha=0.85)
+    ax.plot(line["week_no"], line["rank"], color=sdvplot.team_colors("nba", [team])[0], linewidth=2.5, alpha=0.85)
 final = west.filter(pl.col("week_no") == pl.col("week_no").max())
 ax.set_xlim(west["week_no"].min() - 0.5, west["week_no"].max() + 1.5)
 ax.set_ylim(15.8, 0.2)
@@ -243,7 +243,7 @@ leaders = (
 
 fig, ax = plt.subplots(figsize=(9, 6))
 y = list(range(len(leaders)))
-ax.barh(y, leaders["ppg"], color=sdvplot.team_colors(leaders["team"], "nba", season=SEASON), height=0.7)
+ax.barh(y, leaders["ppg"], color=sdvplot.team_colors("nba", leaders["team"], season=SEASON), height=0.7)
 ax.set_yticks(y, leaders["athlete_display_name"])
 ax.set_xlim(0, leaders["ppg"].max() + 9)
 sdvplot.add_logos(ax, leaders["ppg"] + 1.6, y, leaders["team"], league="nba", season=SEASON, height=0.075)
@@ -299,7 +299,7 @@ ax.scatter(
 ax.scatter(
     made["x"],
     made["y"],
-    color=sdvplot.team_colors([star["team"]], "nba", which="secondary")[0],
+    color=sdvplot.team_colors("nba", [star["team"]], which="secondary")[0],
     edgecolors="black",
     linewidths=0.4,
     s=18,

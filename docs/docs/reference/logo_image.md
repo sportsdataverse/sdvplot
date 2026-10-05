@@ -12,6 +12,7 @@ sidebar_position: 7
 logo_image(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = 'default',
     mark_type: str = 'logo',
