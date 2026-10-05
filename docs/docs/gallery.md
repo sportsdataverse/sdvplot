@@ -19,3 +19,21 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 [<img src="/img/gallery/tutorials/03_logos_and_seasons_9.png" alt="The Quebec Nordiques logo for 1993 and the Colorado Avalanche logo for 2024, rasterized from SVG." loading="lazy"/><br/>Nordiques and Avalanche marks<br/><small>Logos and eras</small>](tutorials/03_logos_and_seasons.md#svg-marks)
 
 </div>
+
+## Tutorials by league
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/tutorials/leagues/soccer_16.png" alt="Twenty small panels of rolling five-match points, one per Premier League club in its ESPN color, with crests" loading="lazy"/><br/>Premier League form in club colors<br/><small>Soccer</small>](tutorials/leagues/soccer.md#5-form-club-by-club-in-club-colors)
+
+[<img src="/img/gallery/tutorials/leagues/soccer_21.png" alt="Every Arsenal shot and goal of the 2025-26 Premier League on a sportypy half pitch, with the Arsenal crest" loading="lazy"/><br/>Soccer shot map on a pitch<br/><small>Soccer</small>](tutorials/leagues/soccer.md#7-the-champions-shots-on-a-pitch)
+
+[<img src="/img/gallery/tutorials/leagues/soccer_24.png" alt="Arsenal and Manchester City starting elevens in formation on an mplsoccer pitch, with crests" loading="lazy"/><br/>Soccer lineup card<br/><small>Soccer</small>](tutorials/leagues/soccer.md#8-a-lineup-card-with-mplsoccer)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_16.png" alt="Ten small panels of cumulative IPL 2026 points, each team in its ESPN color over the others in grey" loading="lazy"/><br/>IPL points race<br/><small>Cricket</small>](tutorials/leagues/cricket.md#6-the-points-race)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_19.png" alt="Both innings of the 2026 IPL final as batting bars in team colors with team logos" loading="lazy"/><br/>IPL final scorecard card<br/><small>Cricket</small>](tutorials/leagues/cricket.md#7-a-scorecard-card-for-the-final)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_22.png" alt="Every team of the 2026 men&#x27;s T20 World Cup as a flag in a tier by how far it went" loading="lazy"/><br/>T20 World Cup tier list<br/><small>Cricket</small>](tutorials/leagues/cricket.md#8-the-t20-world-cup-as-a-tier-list)
+
+</div>
