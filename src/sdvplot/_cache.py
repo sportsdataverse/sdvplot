@@ -7,8 +7,10 @@ import hashlib
 import json
 import os
 import shutil
+import threading
 import time
-from collections.abc import Callable, Iterator
+import weakref
+from collections.abc import Callable, Hashable, Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin, urlsplit
@@ -40,6 +42,15 @@ MEMORY_CACHES: list[Callable[[], object]] = []  # in-memory caches (decoded imag
 _warned: set[str] = set()
 _intact: set[str] = set()  # cached files already checked this process
 _fresh: dict[tuple[str, str], tuple[Path, float]] = {}  # (cache dir, relpath) -> (path, fetched_at): fetch_cached
+_locks: weakref.WeakValueDictionary[Hashable, threading.Lock] = weakref.WeakValueDictionary()
+_locks_guard = threading.Lock()
+
+
+def key_lock(key: Hashable) -> threading.Lock:
+    """The one lock for key while anyone holds it, so threads after the same file (or image) do the work once: the
+    rest wait, then find it done. Windows also refuses to replace a file another thread holds open."""
+    with _locks_guard:
+        return _locks.setdefault(key, threading.Lock())
 
 
 def _session() -> Any:
@@ -212,12 +223,14 @@ def fetch_cached(
 ) -> Path:
     """``_fetch_cached``, with a file this process found fresh remembered until its TTL runs out: a warm call is a dict
     lookup and one stat, not two path resolutions and a JSON read. It is trusted only while ``_intact`` vouches for the
-    file (``clear_cache()`` empties it) and the file still exists (another process may have cleared the cache)."""
+    file (``clear_cache()`` empties it) and the file still exists (another process may have cleared the cache). Threads
+    after the same file share one refresh: the others wait, then find it fresh."""
     key = (str(cache_dir()), relpath)
     hit = _fresh.get(key)
     if hit is not None and str(hit[0]) in _intact and hit[0].exists() and time.time() - hit[1] < ttl_seconds():
         return hit[0]
-    path = _fetch_cached(url, relpath, validate=validate, max_bytes=max_bytes)
+    with key_lock(str(cache_path(relpath))):
+        path = _fetch_cached(url, relpath, validate=validate, max_bytes=max_bytes)
     fetched_at = (read_meta(relpath) or {}).get("fetched_at", 0)
     if str(path) in _intact and time.time() - fetched_at < ttl_seconds():  # not a stale copy kept after a failure
         _fresh[key] = (path, fetched_at)
@@ -286,25 +299,33 @@ def _fetch_cached(
 
 def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMAGE_MAX_BYTES) -> Path:
     """A content-addressed file: downloaded once, checked against its sha256, never refreshed. A cached copy that no
-    longer matches its sha256 (corrupt, truncated) is deleted and downloaded again."""
+    longer matches its sha256 (corrupt, truncated) is deleted and downloaded again. Threads after the same file share
+    one download."""
     path = cache_path(relpath)
-    if path.exists() and _heal(path, None, sha256):
-        return path
-    import requests  # lazy: only a download needs it
+    with key_lock(str(path)):
+        if path.exists() and _heal(path, None, sha256):
+            return path
+        import requests  # lazy: only a download needs it
 
-    try:
-        r, body = _download(url, None, max_bytes)
-        r.raise_for_status()
-    except requests.HTTPError as e:  # a 4xx or 5xx: sdvplot's error, still an OSError as requests' was
-        raise DownloadError(f"{_offline_message(url)} ({e})") from e
-    except requests.RequestException as e:
-        raise OfflineError(f"{_offline_message(url)} ({e})") from e
-    digest = hashlib.sha256(body).hexdigest()
-    if digest != sha256:
-        raise IntegrityError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
-    atomic_write(path, body)
-    _intact.add(str(path))
-    return path
+        try:
+            r, body = _download(url, None, max_bytes)
+            r.raise_for_status()
+        except requests.HTTPError as e:  # a 4xx or 5xx: sdvplot's error, still an OSError as requests' was
+            raise DownloadError(f"{_offline_message(url)} ({e})") from e
+        except requests.RequestException as e:
+            raise OfflineError(f"{_offline_message(url)} ({e})") from e
+        digest = hashlib.sha256(body).hexdigest()
+        if digest != sha256:
+            raise IntegrityError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
+        try:
+            atomic_write(path, body)
+        except PermissionError:
+            # Windows refuses to replace a file another process holds open; when that process wrote the same content
+            # (it is content-addressed), the file is already what this call wanted. atomic_write dropped the .part.
+            if not (path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == sha256):
+                raise
+        _intact.add(str(path))
+        return path
 
 
 def clear_cache() -> None:

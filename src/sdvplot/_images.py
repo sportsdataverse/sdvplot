@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
-from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
+from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable, key_lock
 from sdvplot._errors import InputError, IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
@@ -192,24 +192,26 @@ def _nbytes(img: Image.Image) -> int:
 
 def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
     """The decoded image of one mark, kept per (sha256, ext, url, size) so repeated calls decode a team's logo once.
-    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Callers must go
-    through ``load_mark_image``, which hands out a copy."""
+    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Threads after the
+    same key decode it once (the others wait for it). Callers must go through ``load_mark_image``, which hands out a
+    copy."""
     global _decoded_bytes
     key = (sha, ext, url, size)
-    with _decoded_lock:
-        if (hit := _decoded.get(key)) is not None:
-            _decoded.move_to_end(key)
-            return hit
-    img = _decode_mark(*key)
-    nbytes = _nbytes(img)
-    if nbytes <= DECODED_BUDGET // 4:
+    with key_lock(key):
         with _decoded_lock:
-            if key not in _decoded:
-                _decoded[key] = img
-                _decoded_bytes += nbytes
-                while _decoded_bytes > DECODED_BUDGET:
-                    _, old = _decoded.popitem(last=False)
-                    _decoded_bytes -= _nbytes(old)
+            if (hit := _decoded.get(key)) is not None:
+                _decoded.move_to_end(key)
+                return hit
+        img = _decode_mark(*key)
+        nbytes = _nbytes(img)
+        if nbytes <= DECODED_BUDGET // 4:
+            with _decoded_lock:
+                if key not in _decoded:
+                    _decoded[key] = img
+                    _decoded_bytes += nbytes
+                    while _decoded_bytes > DECODED_BUDGET:
+                        _, old = _decoded.popitem(last=False)
+                        _decoded_bytes -= _nbytes(old)
     return img
 
 

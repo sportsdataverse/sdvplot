@@ -3,13 +3,14 @@ import os
 import shutil
 import time
 import types
+from pathlib import Path
 
 import pytest
 import requests
 
-from sdvplot import _cache
+from sdvplot import _cache, _manifest
 from sdvplot._errors import DownloadError, IntegrityError, OfflineError, SdvplotWarning, UnsafeDownloadError
-from tests.conftest import FakeResponse, FakeSession
+from tests.conftest import FIXTURE, FakeResponse, FakeSession, in_threads, slow_download
 
 
 def test_first_fetch_downloads_and_records_the_etag(cache, monkeypatch):
@@ -584,3 +585,46 @@ def test_the_skip_warning_names_the_path_and_says_to_delete_by_hand(cache):
     (cache / "images").mkdir(parents=True)
     with pytest.warns(SdvplotWarning, match=r"images.*by hand"):
         _cache.clear_cache()
+
+
+# --- concurrent callers --------------------------------------------------------------------------------------------
+
+
+def test_threads_fetching_one_uncached_image_download_it_once(cache, monkeypatch):
+    body = b"\x89PNG fake"
+    sha = hashlib.sha256(body).hexdigest()
+    calls = []
+    monkeypatch.setattr(_cache, "_download", slow_download({"https://x/a.png": body}, calls))
+    paths = in_threads(lambda: _cache.fetch_immutable("https://x/a.png", f"images/{sha[:2]}/{sha}.png", sha))
+    assert calls == ["https://x/a.png"]
+    assert len(set(paths)) == 1 and paths[0].read_bytes() == body
+
+
+def test_threads_loading_an_uncached_manifest_download_it_once(cache, monkeypatch):
+    calls = []
+    monkeypatch.setattr(_cache, "_download", slow_download({_manifest.MANIFEST_URL: FIXTURE.read_bytes()}, calls))
+    _manifest._read.cache_clear()
+    frames = in_threads(_manifest.load_manifest)  # a "could not refresh" warning would raise here
+    assert calls == [_manifest.MANIFEST_URL]
+    assert all(f.equals(frames[0]) for f in frames)
+
+
+@pytest.mark.parametrize("theirs", [b"real image bytes", b"something else"])
+def test_a_replace_refused_over_a_file_another_process_wrote(cache, monkeypatch, theirs):
+    # Windows refuses os.replace onto a file another process holds open; a content-addressed file it wrote is ours too
+    body = b"real image bytes"
+    sha = hashlib.sha256(body).hexdigest()
+    rel = f"images/{sha[:2]}/{sha}.png"
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+
+    def refused(src, dst):
+        Path(dst).write_bytes(theirs)
+        raise PermissionError(13, "Access is denied", str(src))
+
+    monkeypatch.setattr(_cache.os, "replace", refused)
+    if theirs == body:
+        assert _cache.fetch_immutable("https://x/a.png", rel, sha).read_bytes() == body
+    else:
+        with pytest.raises(PermissionError):
+            _cache.fetch_immutable("https://x/a.png", rel, sha)
+    assert not list((cache / "images" / sha[:2]).glob("*.part"))  # the temp file is dropped either way
