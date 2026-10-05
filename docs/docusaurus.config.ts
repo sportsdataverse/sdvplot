@@ -435,7 +435,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} <strong>sdvplot</strong>, developed by <a href='https://twitter.com/saiemgilani'>Saiem Gilani</a>, part of the <a href='https://sportsdataverse.org'>SportsDataverse</a>.`,
+      copyright: `Copyright © ${new Date().getFullYear()} <strong>sdvplot</strong>, developed by <a href='https://twitter.com/saiemgilani'>Saiem Gilani</a>, part of the <a href='https://sportsdataverse.org'>SportsDataverse</a>.<br/>Team names, logos and headshots belong to their leagues, teams and other rights holders. sdvplot is not affiliated with or endorsed by them; use of each mark follows its owner's terms. See <a href='/docs/intro#logos-trademarks-and-data'>Logos, trademarks and data</a>.`,
     },
     prism: {
       // The family themes defined above: one surface per mode, every token at 4.5:1 or better.

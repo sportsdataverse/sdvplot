@@ -1,21 +1,6 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [sdvplot](#sdvplot)
-  - [Installation](#installation)
-  - [Get started](#get-started)
-  - [Environment variables](#environment-variables)
-  - [Documentation](#documentation)
-  - [Companion packages](#companion-packages)
-  - [Citations](#citations)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # sdvplot
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![PyPI](https://img.shields.io/pypi/v/sdvplot)](https://pypi.org/project/sdvplot/)
-[![Downloads](https://img.shields.io/pypi/dm/sdvplot)](https://pypi.org/project/sdvplot/)
 [![Docs](https://img.shields.io/badge/docs-sdvplot.sportsdataverse.org-blue)](https://sdvplot.sportsdataverse.org)
 
 Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
@@ -23,7 +8,7 @@ resolves team abbreviations, names and provider ids across 28 leagues and picks 
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib, plotnine, plotly, altair, bokeh,
 holoviews, great_tables, folium and pygal plots, tables and maps. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
-[CHANGELOG.md](https://sdvplot.sportsdataverse.org/CHANGELOG).
+[CHANGELOG](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.md).
 
 ## Installation
 
@@ -81,8 +66,18 @@ Colors marked `color_source="fallback"` are placeholders, not team colors.
 ## Documentation
 
 - [Docs site](https://sdvplot.sportsdataverse.org) with concepts, tutorials and the API reference.
-- [Changelog](https://sdvplot.sportsdataverse.org/CHANGELOG).
-- [Contributing](CONTRIBUTING.md).
+- [Changelog](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.md).
+- [Contributing](https://github.com/sportsdataverse/sdvplot/blob/main/CONTRIBUTING.md).
+
+## Logos, trademarks and data
+
+Team names, logos, wordmarks and player headshots are trademarks or copyrighted works of their respective leagues,
+teams, schools and other rights holders. sdvplot is not affiliated with, sponsored by or endorsed by any of them, and
+using sdvplot to draw a mark grants no right to use it. The package ships no logo files: the wheel carries only an
+index of team names, ids and colors, and marks are fetched at runtime from the
+[SportsDataverse logo archive](https://github.com/sportsdataverse/sdv-assets). Use of any mark in your own work is
+governed by that owner's terms, and following them is your responsibility. The [MIT license](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)
+covers the sdvplot code only; team data belongs to its respective owners and sources.
 
 ## Companion packages
 
