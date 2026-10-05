@@ -15,7 +15,7 @@ permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}  # a run on main is that merge's record
 jobs:
   dry-run:
     name: social graphics (dry-run)
