@@ -35,7 +35,7 @@ The team's mark as a PIL image (downloaded once, then cached).
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
 | `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
-| `size` | `int \| None` | The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
+| `size` | `int \| None` | The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at it (default 512). Without it a raster comes at the archive's size, up to 4096 px (64 MiB decoded): pass ``size`` when the image is for a plot. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when the team does not resolve. |
 
