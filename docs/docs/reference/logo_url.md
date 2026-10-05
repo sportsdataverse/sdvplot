@@ -16,6 +16,8 @@ logo_url(
     season: Any = None,
     variant: str = 'default',
     mark_type: Literal['logo', 'wordmark'] = 'logo',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> str | None
 ```
 
@@ -36,6 +38,8 @@ authoritative source. Unknown teams return None with one SdvplotWarning.
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
 | `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when the team does not resolve. |
 
 ## Returns
 
@@ -44,7 +48,8 @@ str | None: The archive URL (content-addressed, immutable), or None when no mark
 ## Raises
 
 - `TypeError`: If ``team`` is not a single value.
-- `ValueError`: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
+- `ValueError`: If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
+- `UnresolvedTeamError`: If ``strict=True`` and the team does not resolve.
 - `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
 
 ## Example

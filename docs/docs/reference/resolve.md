@@ -43,8 +43,8 @@ str | list | Series | None: The same shape as ``values``: a team_id string (or N
 
 ## Raises
 
-- `TypeError`: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is neither a year nor a list of them.
-- `ValueError`: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next year), or is a list whose length does not match the teams.
+- `TypeError`: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``season`` is neither a year nor a list of them (a ``pd.Timestamp``, ``"2020-21"``), is outside the seasons sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next year), or is a list whose length does not match the teams.
 - `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ## Example

@@ -65,6 +65,7 @@ def mark_html(
     season: Any = None,
     variant: str = "default",
     id_system: str = "auto",
+    strict: bool = False,
     include_name: bool = False,
 ) -> list[str | None]:
     """The ``<img>`` of each value's mark, or None where there is none (one SdvplotWarning for those, from place()).
@@ -75,7 +76,7 @@ def mark_html(
     s = norm_season(season)
     n = len(values)
     placed = place(list(range(n)), [0] * n, values, league=league, season=s, kind=kind, variant=variant,
-                   id_system=id_system)  # fmt: skip
+                   id_system=id_system, strict=strict)  # fmt: skip
     names: dict[str, str] = {}
     if kind != "headshot":
         rows = _index.team_table().filter(pl.col("league") == league).select("team_id", "name").iter_rows()

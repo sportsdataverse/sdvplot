@@ -17,7 +17,14 @@ from urllib.parse import urljoin, urlsplit
 
 import platformdirs
 
-from sdvplot._errors import OfflineError, UnsafeCachePathError, UnsafeDownloadError, warn
+from sdvplot._errors import (
+    DownloadError,
+    IntegrityError,
+    OfflineError,
+    UnsafeCachePathError,
+    UnsafeDownloadError,
+    warn,
+)
 
 if TYPE_CHECKING:
     import requests
@@ -34,6 +41,7 @@ MAX_REDIRECTS = 5
 MEMORY_CACHES: list[Callable[[], object]] = []  # in-memory caches (decoded images) that clear_cache() empties
 _warned: set[str] = set()
 _intact: set[str] = set()  # cached files already checked this process
+_fresh: dict[tuple[str, str], tuple[Path, float]] = {}  # (cache dir, relpath) -> (path, fetched_at): fetch_cached
 _locks: weakref.WeakValueDictionary[Hashable, threading.Lock] = weakref.WeakValueDictionary()
 _locks_guard = threading.Lock()
 
@@ -213,14 +221,27 @@ def _heal(path: Path, validate: Callable[[bytes], object] | None, sha256: str | 
 def fetch_cached(
     url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None, max_bytes: int = MAX_BYTES
 ) -> Path:
-    """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
-    truncation, a validate() rejection) the previous copy is kept and used with one warning. Threads after the same file
-    share one refresh: the others wait, then find it fresh."""
+    """``_fetch_cached``, with a file this process found fresh remembered until its TTL runs out: a warm call is a dict
+    lookup and one stat, not two path resolutions and a JSON read. It is trusted only while ``_intact`` vouches for the
+    file (``clear_cache()`` empties it) and the file still exists (another process may have cleared the cache). Threads
+    after the same file share one refresh: the others wait, then find it fresh."""
+    key = (str(cache_dir()), relpath)
+    hit = _fresh.get(key)
+    if hit is not None and str(hit[0]) in _intact and hit[0].exists() and time.time() - hit[1] < ttl_seconds():
+        return hit[0]
     with key_lock(str(cache_path(relpath))):
-        return _fetch_cached(url, relpath, validate=validate, max_bytes=max_bytes)
+        path = _fetch_cached(url, relpath, validate=validate, max_bytes=max_bytes)
+    fetched_at = (read_meta(relpath) or {}).get("fetched_at", 0)
+    if str(path) in _intact and time.time() - fetched_at < ttl_seconds():  # not a stale copy kept after a failure
+        _fresh[key] = (path, fetched_at)
+    return path
 
 
-def _fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] | None, max_bytes: int) -> Path:
+def _fetch_cached(
+    url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None, max_bytes: int = MAX_BYTES
+) -> Path:
+    """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
+    truncation, a validate() rejection) the previous copy is kept and used with one warning."""
     path = cache_path(relpath)
     if path.exists() and not _heal(path, validate):
         pass  # a corrupt cached file was deleted: fall through to a fresh download
@@ -257,7 +278,8 @@ def _fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object]
             return path
         if isinstance(e, UnsafeDownloadError):
             raise
-        raise OfflineError(f"{_offline_message(url)} ({e})") from e
+        error = DownloadError if isinstance(e, requests.HTTPError) else OfflineError
+        raise error(f"{_offline_message(url)} ({e})") from e
     try:
         atomic_write(path, body)
         new_meta = {
@@ -288,15 +310,13 @@ def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMA
         try:
             r, body = _download(url, None, max_bytes)
             r.raise_for_status()
-        except requests.HTTPError as e:
-            if e.response is not None and e.response.status_code < 500:
-                raise
-            raise OfflineError(f"{_offline_message(url)} ({e})") from e
+        except requests.HTTPError as e:  # a 4xx or 5xx: sdvplot's error, still an OSError as requests' was
+            raise DownloadError(f"{_offline_message(url)} ({e})") from e
         except requests.RequestException as e:
             raise OfflineError(f"{_offline_message(url)} ({e})") from e
         digest = hashlib.sha256(body).hexdigest()
         if digest != sha256:
-            raise OSError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
+            raise IntegrityError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
         try:
             atomic_write(path, body)
         except PermissionError:

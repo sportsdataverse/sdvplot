@@ -8,7 +8,7 @@ import pytest
 
 import sdvplot
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, SdvplotWarning
 from sdvplot._normalize import norm_season
 
 
@@ -109,14 +109,33 @@ def test_this_season_and_the_next_are_always_accepted(manifest):
 
 
 def test_a_split_season_names_the_ending_year():
-    with pytest.raises(ValueError, match=r"got '2020-21'; for a split season pass its ending year \(2021"):
+    with pytest.raises(InputError, match=r"got '2020-21'; for a split season pass its ending year \(2021"):
         sdvplot.resolve("LV", "nfl", season="2020-21")
+    with pytest.raises(InputError, match="season must be a year such as 2020"):  # N2: one season, checked directly
+        norm_season("2020-21")
 
 
 def test_a_season_of_the_wrong_type_blames_season_not_values():
     pd = pytest.importorskip("pandas")
-    with pytest.raises(TypeError, match="season must be a year, or one per team, got Timestamp"):
+    with pytest.raises(InputError, match="season must be a year, or one per team, got Timestamp"):  # N2
         sdvplot.resolve("LV", "nfl", season=pd.Timestamp("2020-09-10"))
+    with pytest.raises(InputError, match="season has 2 values but there are 1 teams"):
+        sdvplot.resolve(["LV"], "nfl", season=[2020, 2021])
+
+
+# --- sizes and counts (N2: every shared input check is an InputError) -----------------------------------------------
+
+
+@pytest.mark.parametrize("size", [0, -5, 4097, 2.5, True, "64"])
+def test_logo_image_size_is_an_int_from_1_to_4096(size):
+    with pytest.raises(InputError, match=rf"size is the longest side in pixels, an int from 1 to 4096, got {size!r}"):
+        sdvplot.logo_image("LV", "nfl", size=size)
+
+
+@pytest.mark.parametrize("n", [0, -1, 2.5, True])
+def test_suggest_n_is_an_int_of_at_least_1(n):
+    with pytest.raises(InputError, match=rf"n is the most candidates to return, an int of at least 1, got {n!r}"):
+        sdvplot.suggest("Kansas", "nfl", n=n)
 
 
 # --- variants ------------------------------------------------------------------------------------------------------

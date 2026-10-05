@@ -17,6 +17,8 @@ logo_image(
     variant: str = 'default',
     mark_type: Literal['logo', 'wordmark'] = 'logo',
     size: int | None = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> PIL.Image.Image | None
 ```
 
@@ -33,7 +35,9 @@ The team's mark as a PIL image (downloaded once, then cached).
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
 | `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
-| `size` | `int \| None` | The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
+| `size` | `int \| None` | The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when the team does not resolve. |
 
 ## Returns
 
@@ -44,11 +48,12 @@ PIL.Image.Image | None: The image, or None when the team does not resolve or has
 - `TypeError`: If ``team`` is not a single value.
 - `OptionalDependencyError`: If the mark is an SVG and the ``svg`` extra is not installed.
 - `OfflineError`: If the download fails and no cached copy exists.
+- `DownloadError`: (an OfflineError and an OSError) If the CDN answers with an error status (a 4xx or 5xx response) and no cached copy exists.
+- `IntegrityError`: (a DownloadError) If the download does not match the manifest's sha256, or is not an image PIL can decode.
 - `UnsafeDownloadError`: (an OSError) If the download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 - `UnsafeCachePathError`: (a ValueError) If the manifest's sha256 or extension for the mark would put the file outside the cache directory.
-- `requests.HTTPError`: If the CDN refuses the file (a 4xx response).
-- `OSError`: If the download does not match the manifest's sha256, or is not an image PIL can decode (``PIL.UnidentifiedImageError`` subclasses OSError).
-- `InputError`: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has, ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``size`` is not an int from 1 to 4096.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and the team does not resolve.
 - `ValueError`: If an SVG cannot be parsed.
 
 ## Example

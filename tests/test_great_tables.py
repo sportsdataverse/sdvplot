@@ -401,3 +401,38 @@ def test_a_translucent_table_background_is_read_as_it_shows_not_as_white():
     notes = sgt.gt_marginalia(dark, "note").as_raw_html()
     ink = re.search(r'style="[^"]*color: (#[0-9a-fA-F]{6})[^"]*"[^>]*>Lost the starting QB', notes).group(1)
     assert _marks.contrast(ink, "#ffffff") < _marks.contrast(ink, "#000000")  # a light ink
+
+
+# S11: the helpers that resolve teams take resolve()'s id_system and strict. "LV" resolves under "auto" but is no
+# "name": id_system="name" with strict=True raises only if both arrive at the resolver.
+TEAM_HELPERS = {
+    "gt_sdv_logos": lambda gt, **kw: gt_sdv_logos(gt, "team", league="nfl", **kw),
+    "gt_sdv_wordmarks": lambda gt, **kw: gt_sdv_wordmarks(gt, "team", league="nfl", **kw),
+    "gt_sdv_cols_label": lambda gt, **kw: gt_sdv_cols_label(gt, "LV", league="nfl", **kw),
+    "gt_merge_stack_team_color": lambda gt, **kw: gt_merge_stack_team_color(
+        gt, "team", "w", "team", league="nfl", **kw
+    ),
+}
+
+
+@pytest.mark.parametrize("call", TEAM_HELPERS.values(), ids=TEAM_HELPERS.keys())
+def test_team_helpers_pass_id_system_and_strict_to_the_resolver(manifest, call):
+    gt = GT(pl.DataFrame({"team": ["LV"], "w": [1], "LV": [2]}))
+    with pytest.raises(UnresolvedTeamError, match="'LV'"):
+        call(gt, id_system="name", strict=True)
+    call(gt, id_system="espn_abbr", strict=True)  # resolves: no warning, no error
+
+
+def test_theme_sdv_team_takes_an_id_system(manifest):
+    with pytest.raises(UnresolvedTeamError, match="'LV'"):
+        gt_theme_sdv_team(GT(pl.DataFrame({"x": [1]})), "LV", league="nfl", id_system="name")
+
+
+def test_cols_label_headshots_keep_espn_as_the_default_id_system(headshot_images):
+    out = gt_sdv_cols_label(GT(pl.DataFrame({"3139477": [1]})), league="nfl", mark_type="headshot")
+    assert "<img" in str(out._boxhead[0].column_label)
+
+
+def test_cols_label_rejects_an_unknown_mark_type_with_an_input_error():  # N2
+    with pytest.raises(sdvplot.InputError, match="mark_type must be one of"):
+        gt_sdv_cols_label(GT(pl.DataFrame({"LV": [1]})), league="nfl", mark_type="helmet")

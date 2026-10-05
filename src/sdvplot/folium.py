@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-import folium
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("folium"):
+    import folium
+
 from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
@@ -20,7 +22,7 @@ _SUPPORTS_AXIS_LOGOS = False
 _FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
 _GROUP_NAME = "sdvplot logos"
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -73,13 +75,13 @@ def _add(
     group = _group(m)
     for p, src in zip(placements, image_sources(placements, embed=embed), strict=True):
         w = max(1, round(px * aspect(p)))
-        marker = folium.Marker(
+        marker: Any = folium.Marker(  # Any: it carries the test hook below (a type: ignore is unused without folium)
             location=[p.y, p.x],
             icon=folium.CustomIcon(src, icon_size=(w, px), icon_anchor=(w // 2, px // 2)),
             tooltip=names.get(p.team_id, p.team_id),
             opacity=a,
         )
-        marker._sdvplot_mark = (p.team_id, p.x, p.y, src)  # type: ignore[attr-defined]
+        marker._sdvplot_mark = (p.team_id, p.x, p.y, src)
         marker.add_to(group)
     return m
 

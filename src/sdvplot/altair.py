@@ -13,9 +13,11 @@ import numbers
 import re
 from typing import Any
 
-import altair as alt
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("altair"):
+    import altair as alt
+
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, axis_letter, image_sources
 
@@ -29,7 +31,7 @@ _SUBCHARTS = {"FacetChart": "spec", "RepeatChart": "spec", "HConcatChart": "hcon
               "VConcatChart": "vconcat[i]", "ConcatChart": "concat[i]"}  # fmt: skip
 _BLANKED = re.compile(r"^indexof\((\[.*?\]), datum\.label\) >= 0")
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "logo_layer"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos", "logo_layer"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

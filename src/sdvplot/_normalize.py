@@ -77,6 +77,6 @@ def norm_season(value: Any, league: str | None = None) -> int | None:
         if isinstance(value, str) and (m := _SPLIT_SEASON.fullmatch(value)):
             end = int(m.group(1)) + 1
             hint = f"; for a split season pass its ending year ({end} for {value.strip()!r})"
-        raise ValueError(f"season must be a year such as 2020, got {value!r}{hint}")
+        raise InputError(f"season must be a year such as 2020, got {value!r}{hint}")
     check_season(year, league)
     return year

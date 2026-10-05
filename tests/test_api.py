@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import sys
 import typing
 
 import pytest
@@ -32,6 +33,8 @@ PUBLIC = {
     "InputError",
     "UnresolvedTeamError",
     "OfflineError",
+    "DownloadError",
+    "IntegrityError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
     "UnsafeDownloadError",
@@ -88,6 +91,8 @@ def test_an_unknown_mark_type_is_an_error(fn):  # M2
 ERRORS = {
     sdvplot.UnresolvedTeamError: ValueError,
     sdvplot.OfflineError: RuntimeError,
+    sdvplot.DownloadError: OSError,
+    sdvplot.IntegrityError: OSError,
     sdvplot.OptionalDependencyError: ImportError,
     sdvplot.UnsupportedTargetError: TypeError,
     sdvplot.UnsafeCachePathError: ValueError,
@@ -159,6 +164,28 @@ def test_a_public_submodule_shows_only_its_all(name):
         if not n.startswith("_") and (inspect.isfunction(v) or inspect.isclass(v)) and v.__module__ == mod.__name__
     }
     assert own <= set(mod.__all__), own - set(mod.__all__)
+
+
+# Past its leading "what" arguments (the target and data, a table and its columns) a public function's arguments are
+# keyword-only, so a later release can add or reorder options without silently rebinding a positional value (N1).
+MAX_POSITIONAL = 4
+# Functions allowed more positional arguments, each with its reason. Empty: none needs more today.
+POSITIONAL_ALLOWLIST: dict[str, int] = {}
+
+
+@pytest.mark.parametrize("name", ["", *SUBMODULES])
+def test_public_functions_take_at_most_four_positional_arguments(name):
+    mod = _submodule(name) if name else sdvplot
+    over = {}
+    for n in mod.__all__:
+        fn = getattr(mod, n)
+        if not inspect.isfunction(fn):
+            continue
+        params = inspect.signature(fn).parameters.values()
+        count = sum(p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD) for p in params)
+        if count > POSITIONAL_ALLOWLIST.get(f"{mod.__name__}.{n}", MAX_POSITIONAL):
+            over[n] = count
+    assert not over, f"put a bare * after the leading arguments of {over}"
 
 
 def test_the_top_level_shows_only_its_all_and_the_submodules():
@@ -312,3 +339,66 @@ def test_the_axis_logos_docstring_matches_the_adapters(module):
         assert key in raising.replace("_", "").lower(), module
         with pytest.raises(sdvplot.UnsupportedTargetError):
             mod.axis_logos(object(), "x", league="nfl")
+
+
+# S11: every function that resolves teams takes resolve()'s id_system and strict and passes them through. "LV" resolves
+# under "auto" (espn_abbr) but is no "name", so id_system="name" proves the id system arrives, and strict that it raises.
+TEAM_RESOLVERS = {  # the call, and what it returns for a team that does not resolve
+    "team_colors": (lambda **kw: sdvplot.team_colors("nfl", ["LV"], **kw), [None]),
+    "palette": (lambda **kw: sdvplot.palette("nfl", ["LV"], **kw), {}),
+    "logo_url": (lambda **kw: sdvplot.logo_url("LV", "nfl", **kw), None),
+    "logo_image": (lambda **kw: sdvplot.logo_image("LV", "nfl", **kw), None),
+}
+
+
+@pytest.mark.parametrize(("call", "unresolved"), TEAM_RESOLVERS.values(), ids=TEAM_RESOLVERS.keys())
+def test_team_resolving_functions_pass_id_system_and_strict_to_the_resolver(call, unresolved):
+    with pytest.raises(sdvplot.UnresolvedTeamError, match="'LV'"):
+        call(id_system="name", strict=True)
+    with pytest.warns(sdvplot.SdvplotWarning, match="did not resolve"):
+        assert call(id_system="name") == unresolved
+    with pytest.raises(sdvplot.InputError, match="unknown id_system"):
+        call(id_system="espnn")
+
+
+# S6: each adapter submodule's library and the extra that installs it. Every public submodule but testing and typing
+# needs one, so a new adapter cannot skip this check.
+EXTRAS = {
+    "matplotlib": ("matplotlib", "mpl"),
+    "plotnine": ("plotnine", "plotnine"),
+    "plottable": ("plottable", "plottable"),
+    "plotly": ("plotly", "plotly"),
+    "altair": ("altair", "altair"),
+    "bokeh": ("bokeh", "bokeh"),
+    "holoviews": ("holoviews", "holoviews"),
+    "folium": ("folium", "folium"),
+    "pygal": ("pygal", "pygal"),
+    "reactable": ("reactable", "reactable"),
+    "great_tables": ("great_tables", "tables"),
+}
+
+
+def test_every_adapter_submodule_names_its_extra():
+    assert set(EXTRAS) == set(SUBMODULES) - {"testing", "typing"}
+
+
+@pytest.mark.parametrize("name", EXTRAS)
+def test_importing_an_adapter_without_its_library_names_the_extra(monkeypatch, name):
+    library, extra = EXTRAS[name]
+    for mod in [m for m in sys.modules if m == library or m.startswith(library + ".")] + [library]:
+        monkeypatch.setitem(sys.modules, mod, None)  # None in sys.modules: importing it raises ModuleNotFoundError
+    for mod in [m for m in sys.modules if m == f"sdvplot.{name}" or m.startswith(f"sdvplot.{name}.")]:
+        monkeypatch.delitem(sys.modules, mod)  # restored afterwards, as are the libraries
+    with pytest.raises(sdvplot.OptionalDependencyError, match=rf'pip install "sdvplot\[{extra}\]"') as exc:
+        importlib.import_module(f"sdvplot.{name}")
+    assert isinstance(exc.value, ModuleNotFoundError) and exc.value.name.split(".")[0] == library
+
+
+def test_the_front_door_passes_the_adapters_missing_extra_error_through(monkeypatch):
+    go = pytest.importorskip("plotly.graph_objects")
+    fig = go.Figure()
+    for mod in [m for m in sys.modules if m == "plotly" or m.startswith("plotly.")]:
+        monkeypatch.setitem(sys.modules, mod, None)
+    monkeypatch.delitem(sys.modules, "sdvplot.plotly", raising=False)
+    with pytest.raises(sdvplot.OptionalDependencyError, match=r'pip install "sdvplot\[plotly\]"'):
+        sdvplot.add_logos(fig, [1], [1], ["LV"], league="nfl")

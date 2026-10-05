@@ -1,12 +1,15 @@
 import hashlib
 import os
+import shutil
+import time
+import types
 from pathlib import Path
 
 import pytest
 import requests
 
 from sdvplot import _cache, _manifest
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeDownloadError
+from sdvplot._errors import DownloadError, IntegrityError, OfflineError, SdvplotWarning, UnsafeDownloadError
 from tests.conftest import FIXTURE, FakeResponse, FakeSession, in_threads, slow_download
 
 
@@ -23,6 +26,42 @@ def test_within_the_ttl_nothing_is_requested(cache, monkeypatch):
     _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
     monkeypatch.setattr(_cache, "SESSION", FakeSession())  # any request would IndexError
     assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv").read_bytes() == b"x"
+
+
+def test_a_fresh_file_is_served_from_memory(cache, monkeypatch):  # re-audit finding 1: no bookkeeping when warm
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x")))
+    path = _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
+
+    def fail(*args, **kwargs):
+        raise AssertionError("the path was resolved or the sidecar read again")
+
+    monkeypatch.setattr(_cache, "cache_path", fail)
+    monkeypatch.setattr(_cache, "read_meta", fail)
+    assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv") == path
+
+
+def test_the_memory_of_a_fresh_file_ends_with_its_ttl(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x", {"ETag": '"v1"'})))
+    _cache.fetch_cached("https://x/m.csv", "m.csv")
+    later = time.time() + (_cache.DEFAULT_TTL_DAYS + 1) * 86400
+    monkeypatch.setattr(_cache, "time", types.SimpleNamespace(time=lambda: later, monotonic=time.monotonic))
+    s = FakeSession(FakeResponse(304))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"x"
+    assert s.calls[0][1] == {"If-None-Match": '"v1"'}  # revalidated, not served from memory
+
+
+@pytest.mark.parametrize(
+    "clear",
+    [_cache.clear_cache, lambda: shutil.rmtree(_cache.cache_dir() / "manifest")],
+    ids=["clear_cache", "another-process-cleared-it"],
+)
+def test_a_cleared_cache_is_downloaded_again_although_memory_had_it_fresh(cache, monkeypatch, clear):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"old")))
+    _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
+    clear()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"new")))
+    assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv").read_bytes() == b"new"
 
 
 def test_after_the_ttl_a_304_keeps_the_file_and_sends_if_none_match(cache, monkeypatch):
@@ -85,8 +124,10 @@ def test_immutable_fetch_verifies_the_hash_and_never_refetches(cache, monkeypatc
 
 def test_immutable_fetch_rejects_a_hash_mismatch(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"other")))
-    with pytest.raises(OSError, match="does not match"):
+    with pytest.raises(IntegrityError, match="does not match") as exc:  # M5: sdvplot's error, still an OSError
         _cache.fetch_immutable("https://x/a.png", "images/ab/abc.png", "0" * 64)
+    assert isinstance(exc.value, OSError)
+    assert not (cache / "images/ab/abc.png").exists()
 
 
 def test_write_failure_with_existing_copy_uses_cached_and_warns(cache, monkeypatch):
@@ -114,6 +155,7 @@ def test_bad_sidecar_json_forces_refetch(cache, monkeypatch):
 
     meta_path = _cache._meta_path(path)
     meta_path.write_text("not json")
+    _cache._intact.clear()  # a new process: this one remembers the file is fresh and never reads the sidecar again
 
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"new")))
     result = _cache.fetch_cached("https://x/m.csv", "m.csv")
@@ -183,11 +225,19 @@ def test_clear_cache_only_removes_known_subdirs(cache, monkeypatch):
     assert foreign.exists()
 
 
-def test_immutable_404_raises_httperror_not_offline(cache, monkeypatch):
-    """R18: A 404 on immutable is re-raised as HTTPError, not wrapped as OfflineError."""
-    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
-    with pytest.raises(requests.HTTPError, match="HTTP 404"):
+@pytest.mark.parametrize("status", [404, 503])
+def test_an_immutable_http_error_is_a_download_error_not_a_requests_error(cache, monkeypatch, status):
+    """M5: a 4xx or 5xx raises sdvplot's DownloadError (an OfflineError and an OSError), never requests.HTTPError."""
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(status)))
+    with pytest.raises(DownloadError, match=f"HTTP {status}") as exc:
         _cache.fetch_immutable("https://x/missing.png", "images/ab/cd.png", "0" * 64)
+    assert isinstance(exc.value, (OfflineError, OSError)) and not isinstance(exc.value, requests.RequestException)
+
+
+def test_a_cached_fetch_http_error_with_no_copy_is_a_download_error(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.raises(DownloadError, match="HTTP 404"):
+        _cache.fetch_cached("https://x/m.csv", "m.csv")
 
 
 def test_immutable_connection_error_gives_offline_guidance(cache, monkeypatch):
@@ -216,7 +266,7 @@ def test_fetch_immutable_uses_timeout_5_60(cache, monkeypatch):
 
 
 def test_immutable_5xx_is_offline_not_httperror(cache, monkeypatch):
-    """A server error is transient: OfflineError with the cache guidance, unlike a 4xx (R18)."""
+    """A server error is transient: OfflineError (a DownloadError) with the cache guidance (R18)."""
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(503)))
     with pytest.raises(OfflineError, match="HTTP 503"):
         _cache.fetch_immutable("https://x/a.png", "images/ab/cd.png", "0" * 64)
