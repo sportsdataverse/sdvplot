@@ -15,6 +15,7 @@ from typing import Any
 from sdvplot._errors import SdvplotWarning
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
+from sdvplot._normalize import norm_value
 from sdvplot._resolve import _seasons, _unpack, resolve
 
 KINDS = ("logo", "wordmark", "headshot")
@@ -100,7 +101,10 @@ def place(
             if url is None:
                 no_image.append(pid)
                 continue
-            out.append(Placement(str(pid).strip(), xi, yi, url, None, None))
+            # the id the URL was built from: headshot_url reads an espn id through norm_value, so an id that went
+            # through a float ("3139477.0") is 3139477; gsis ids are looked up as given
+            key = norm_value(pid) if id_system == "espn" else None
+            out.append(Placement(key or str(pid).strip(), xi, yi, url, None, None))
         _warn_skipped("with no headshot", no_image)
     else:
         seasons = _seasons(season, len(ts))

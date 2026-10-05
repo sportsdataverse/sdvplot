@@ -144,3 +144,5 @@
   (`loc.body()`, `loc.stub()`, `loc.row_groups()`) and raise `ValueError` for any other: column labels used to come out
   as escaped `<img>` text, and a title or source note was silently left alone. `gt_sdv_cols_label` puts marks in the
   column labels.
+- A headshot whose ESPN player id was read through a float (pandas stores `[3139477, None]` as floats, so the cell reads
+  `3139477.0`) carries `3139477` in its alt text and team attribute, in every adapter; the URL was already right.

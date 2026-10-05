@@ -354,3 +354,11 @@ def test_drawn_cells_leaves_out_images_in_the_footer(manifest):
     html = gt.as_raw_html()
     assert html.count('data-sdvplot-team="13"') == 2 and "<tfoot" in html
     assert _cells(gt) == [("14", 0, "team")]
+
+
+def test_a_player_id_read_through_a_float_keeps_its_integer_form():
+    """pandas stores [3139477, None] as floats, so the cell reads "3139477.0": the alt text and team attribute are the
+    id the headshot URL was built from, not "3139477.0"."""
+    gt = gt_sdv_headshots(GT(pd.DataFrame({"player": [3139477, None]})), "player", league="nfl")
+    assert sgt.drawn_cells(gt) == [("3139477", 0, "player", 30.0, sdvplot.headshot_url("3139477", "nfl"))]
+    assert 'alt="3139477"' in gt.as_raw_html()
