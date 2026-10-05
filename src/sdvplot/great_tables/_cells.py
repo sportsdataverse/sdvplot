@@ -126,9 +126,6 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
         TypeError: ``gt`` is not a ``GT``.
 
 
-    Warns:
-        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the text color on every other
-            row.
 
     Example:
         ::
@@ -151,10 +148,9 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     idx = _kept_rows(gt, rows)
     if idx is None:
         return gt
-    styles: list[Any] = [style.text(color=text_color, weight="bold")]
+    styles: list[Any] = [important(style.text(color=text_color, weight="bold"))]
     if highlight_color is not None:
         styles.insert(0, important(style.fill(color=highlight_color)))
-    _warn_striped(gt, "gt_bold_rows")
     return gt.tab_style(style=styles, locations=loc.body(rows=idx))
 
 
@@ -192,9 +188,6 @@ def gt_color_results(
         ValueError: ``result_column`` does not select exactly one column, or ``result_type`` is unknown.
 
 
-    Warns:
-        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the text color on every other
-            row.
 
     Example:
         ::
@@ -218,7 +211,6 @@ def gt_color_results(
         raise ValueError(f"result_column must select exactly one column; it selected {len(cols)}")
     col = _values(gt, cols[0])
     win, loss = (1, 0) if result_type == "binary" else ("W", "L")
-    _warn_striped(gt, "gt_color_results")
     out = gt
     passes = [(win, win_color, wins_text_color), (loss, loss_color, loss_text_color)]
     if tie_color is not None:
@@ -227,7 +219,8 @@ def gt_color_results(
         rows = [i for i, v in enumerate(col) if not _is_na(v) and v == value]
         if rows:
             out = out.tab_style(
-                style=[important(style.fill(color=fill)), style.text(color=ink)], locations=loc.body(rows=rows)
+                style=[important(style.fill(color=fill)), important(style.text(color=ink))],
+                locations=loc.body(rows=rows),
             )
     return out
 
@@ -267,9 +260,6 @@ def gt_highlight_cells(
             on a column or does not return one value per row.
 
 
-    Warns:
-        SdvplotWarning: When ``text_color`` is set and the table stripes its rows: in a notebook the stripes cover the
-            text color on every other row.
 
     Example:
         ::
@@ -297,9 +287,7 @@ def gt_highlight_cells(
         text_args["weight"] = "bold"
     styles: list[Any] = [important(style.fill(color=fill))]
     if text_args:
-        styles.append(style.text(**text_args))
-    if "color" in text_args:
-        _warn_striped(gt, "gt_highlight_cells")
+        styles.append(important(style.text(**text_args)))
     out = gt
     for c in cols:
         rows = [i for i, hit in enumerate(masks[c]) if hit]
@@ -376,9 +364,6 @@ def gt_highlight_na(
         TypeError: ``gt`` is not a ``GT``.
 
 
-    Warns:
-        SdvplotWarning: When ``text_color`` is set and the table stripes its rows: in a notebook the stripes cover the
-            text color on every other row.
 
     Example:
         ::
@@ -418,9 +403,7 @@ def gt_highlight_na(
     if fill is not None:
         styles.append(important(style.fill(color=fill)))
     if text_args:
-        styles.append(style.text(**text_args))
-    if "color" in text_args:
-        _warn_striped(gt, "gt_highlight_na")
+        styles.append(important(style.text(**text_args)))
 
     out = gt
     for col in _columns(gt, columns):
@@ -1281,8 +1264,8 @@ def gt_color_ranks(
 
 
     Warns:
-        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the fills and text color on
-            every other row.
+        SdvplotWarning: When the table stripes its rows in a VS Code or Positron notebook, where great_tables makes
+            the stripes ``!important`` and they cover ``data_color``'s fills and text color on every other row.
 
     Example:
         ::

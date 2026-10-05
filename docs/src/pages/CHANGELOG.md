@@ -71,12 +71,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
   the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn, which every cell
   fill shows over, in either order and in the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
-- The great_tables fill helpers warn once (`SdvplotWarning`) on a table with row striping on. great_tables' notebook
-  repr marks its stylesheet `!important`, so on every other row the stripe's colors beat a plain inline style: the
-  text color `gt_color_results`, `gt_bold_rows`, `gt_tiers`, `gt_spotlight`, `gt_outliers`, `gt_highlight_cells` and
-  `gt_highlight_na` pair with their fills, and `gt_color_ranks`' `data_color` fills and text. The warning says to
-  turn striping off with `opt_row_striping(row_striping=False)`. `gt_color_pills`, `gt_indicator_boxes` and
-  `gt_row_accent` draw inside the cell or with `!important`, which the stripes cannot cover, so they do not warn.
+- Row striping no longer covers the text color sdvplot's fill helpers draw in VS Code and Positron notebooks. There,
+  great_tables' repr marks its whole stylesheet `!important` (Jupyter, Quarto, Databricks and saved files do not), and
+  on every other row the stripe's text color beat the plain inline ink that `gt_color_results`, `gt_bold_rows`,
+  `gt_tiers`, `gt_spotlight`, `gt_outliers`, `gt_highlight_cells` and `gt_highlight_na` pair with their `!important`
+  fills: white text on a dark fill turned the stripe's dark gray. That ink is now `!important` too. `gt_color_ranks`
+  fills through great_tables' `data_color`, whose plain fills sdvplot cannot mark, so on a striped table in VS Code or
+  Positron it warns once (`SdvplotWarning`) and says to turn striping off with `opt_row_striping(row_striping=False)`.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the

@@ -129,7 +129,7 @@ def test_render_kenpom_bands_rows_and_leaves_a_fill_on_top(tmp_path, all_importa
     ids=["gt_color_ranks", "gt_color_results", "gt_color_pills"],
 )
 def test_render_notebook_stripes_cover_only_plain_fills(tmp_path, helper, covered):
-    # great_tables' notebook repr marks its stylesheet !important, so a stripe beats a plain inline fill
+    # in VS Code and Positron great_tables' repr marks its stylesheet !important, so a stripe beats a plain inline fill
     import warnings
 
     import nokap
@@ -145,3 +145,45 @@ def test_render_notebook_stripes_cover_only_plain_fills(tmp_path, helper, covere
     magenta = [sum(n for n, c in band.getcolors(1 << 20) if c == MAGENTA) for band in bands]
     filled = [n > max(magenta) / 2 for n in magenta]  # a covered row keeps a sliver of its neighbor's fill
     assert filled == ([True, False, True, False] if covered else [True] * 4)
+
+
+NAVY = (0x00, 0x22, 0x44)
+
+
+@pytest.mark.render
+@pytest.mark.parametrize(
+    "helper",
+    [
+        lambda gt: sgt.gt_color_results(gt, "res", win_color="#002244"),  # white ink by default
+        lambda gt: sgt.gt_bold_rows(gt, rows=[0, 1, 2, 3], text_color="white", highlight_color="#002244"),
+        lambda gt: sgt.gt_spotlight(gt, rows=[0, 1, 2, 3], fill="#002244", text_color="white", dim_color=None),
+        lambda gt: sgt.gt_highlight_cells(
+            gt, ["team", "res"], lambda s: s.is_not_null(), fill="#002244", text_color="white"
+        ),  # fmt: skip
+    ],
+    ids=["gt_color_results", "gt_bold_rows", "gt_spotlight", "gt_highlight_cells"],
+)
+def test_render_vscode_stripes_leave_the_text_color_paired_with_a_fill(tmp_path, helper):
+    # the VS Code/Positron repr (all_important) made the stripes' text color beat a helper's plain one on rows 2 and 4:
+    # white ink on a navy fill turned the stripe's dark gray
+    import nokap
+
+    df = pl.DataFrame({"team": ["LVLVLV", "LARLAR", "LACLAC", "KCKCKC"], "res": ["W", "W", "W", "W"]})
+    gt = helper(GT(df, id="ink").opt_row_striping())
+    shot = nokap.from_html(
+        gt.as_raw_html(make_page=True, all_important=True), tmp_path / "i.png", selector="#ink table"
+    )
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    column = [rgb.getpixel((3, y)) == NAVY for y in range(rgb.height)]
+    rows = []  # the navy rows, top to bottom, as (first y, last y)
+    for y, navy in enumerate(column):
+        if navy and (not rows or rows[-1][1] != y - 1):
+            rows.append((y, y))
+        elif navy:
+            rows[-1] = (rows[-1][0], y)
+    inked = [
+        any(min(c) >= 235 for _, c in rgb.crop((0, top + 2, rgb.width, bottom - 1)).getcolors(1 << 20))
+        for top, bottom in rows
+    ]
+    assert inked == [True] * 4, rows

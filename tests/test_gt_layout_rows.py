@@ -33,13 +33,18 @@ def test_private_boxhead_api():
 def test_spotlight_lights_the_rows_and_dims_the_rest(kind):
     gt = gt_spotlight(GT(frame(kind, TEAMS)), [1], columns=["team", "wins"], fill="#fff3c4", accent_color="#E31837")
     lv, kc, buf = rows_of(gt)
-    assert lv.count('style="color: #BBBBBB;"') == 3 and buf.count('style="color: #BBBBBB;"') == 3
+    assert lv.count('style="color: #BBBBBB !important;"') == 3 and buf.count('style="color: #BBBBBB !important;"') == 3
     assert (
-        '<td style="background-color: #fff3c4 !important; font-weight: bold; border-left: 4px solid #E31837 !important;"'
+        '<td style="background-color: #fff3c4 !important; font-weight: bold !important; border-left: 4px solid #E31837 !important;"'
         in kc
     )
-    assert '<td style="background-color: #fff3c4 !important; font-weight: bold;" class="gt_row gt_right">12</td>' in kc
-    assert '<td style="color: #BBBBBB;" class="gt_row gt_left">#E31837</td>' in kc  # outside `columns`: dimmed
+    assert (
+        '<td style="background-color: #fff3c4 !important; font-weight: bold !important;" class="gt_row gt_right">12</td>'
+        in kc
+    )
+    assert (
+        '<td style="color: #BBBBBB !important;" class="gt_row gt_left">#E31837</td>' in kc
+    )  # outside `columns`: dimmed
 
 
 @pytest.mark.parametrize("kind", KINDS)
@@ -56,8 +61,8 @@ def test_spotlight_takes_a_polars_expression_and_an_accent_column():
                       accent_column="wins")  # fmt: skip
     lv, kc, buf = rows_of(gt)
     assert "#BBBBBB" not in lv and "font-weight: bold" not in lv
-    assert 'font-weight: bold; border-left: 4px solid #000000 !important;" class="gt_row gt_right">12' in kc
-    assert 'font-weight: bold; border-left: 4px solid #000000 !important;" class="gt_row gt_right">11' in buf
+    assert 'font-weight: bold !important; border-left: 4px solid #000000 !important;" class="gt_row gt_right">12' in kc
+    assert 'font-weight: bold !important; border-left: 4px solid #000000 !important;" class="gt_row gt_right">11' in buf
 
 
 def test_spotlight_with_no_matching_rows():
@@ -66,7 +71,7 @@ def test_spotlight_with_no_matching_rows():
         assert gt_spotlight(gt, pl.col("team") == "NYJ") is gt
     assert gt_spotlight(gt, pl.col("team") == "NYJ", if_none="ignore") is gt
     dimmed = gt_spotlight(gt, pl.col("team") == "NYJ", if_none="dim")
-    assert sum(r.count("color: #BBBBBB;") for r in rows_of(dimmed)) == 9
+    assert sum(r.count("color: #BBBBBB !important;") for r in rows_of(dimmed)) == 9
     with pytest.warns(SdvplotWarning, match="accent_column matched no rendered column"):
         gt_spotlight(gt.cols_hide("wins"), [0], accent_color="#000000", accent_column="wins")
 
@@ -102,7 +107,7 @@ def test_outliers_flag_by_iqr_with_a_symbol_and_note(kind):
     df = frame(kind, {"team": list("ABCDEFG"), "pts": [21, 24, 20, 23, 22, 25, 61], "name": list("abcdefg")})
     gt = gt_outliers(GT(df), ["pts", "name"], symbol="†", note=True)
     h = gt.as_raw_html()
-    assert '<td style="color: #B3261E;font-weight: bold;" class="gt_row gt_right">61†</td>' in h
+    assert '<td style="color: #B3261E !important; font-weight: bold !important;" class="gt_row gt_right">61†</td>' in h
     assert h.count("#B3261E") == 1
     assert source_notes(gt) == ["Marked values fall outside 1.5 × IQR of the column quartiles."]
 
@@ -114,7 +119,10 @@ def test_outliers_sd_bounds_sides_and_fill():
     assert "#B3261E" not in rows_of(low_only)[4]
     assert source_notes(low_only) == ["Marked values fall outside 0–NA (low side only)."]
     sd = gt_outliers(GT(df), "v", method="sd", threshold=1, fill="#B3261E", note="custom")
-    assert 'style="color: #ffffff;font-weight: bold; background-color: #B3261E !important;"' in rows_of(sd)[4]
+    assert (
+        'style="color: #ffffff !important; font-weight: bold !important; background-color: #B3261E !important;"'
+        in rows_of(sd)[4]
+    )
     assert source_notes(sd) == ["custom"]
     assert gt_outliers(GT(df), "v", method="sd").as_raw_html().count("#B3261E") == 0  # nothing beyond 3 sd
 

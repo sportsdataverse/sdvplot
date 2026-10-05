@@ -33,7 +33,6 @@ from sdvplot.great_tables._marks import (
     _record,
     _secondary_on,
     _table_id,
-    _warn_striped,
     important,
 )
 
@@ -835,8 +834,7 @@ def gt_tiers(
             or a color is not hex.
 
     Warns:
-        SdvplotWarning: When a level has no rows in ``tier_column``, and when the table stripes its rows: in a
-            notebook the stripes cover the tier labels' text color on every other row.
+        SdvplotWarning: When a level has no rows in ``tier_column``.
 
     Example:
         ::
@@ -881,11 +879,10 @@ def gt_tiers(
         .sub_missing(missing_text="")
         .cols_label(cases={c: "" for c in data.columns})
     )
-    _warn_striped(gt, "gt_tiers")
     for level, fill in zip(names, fills, strict=True):
         rows = [i for i, t in enumerate(tiers) if t == level]
         if rows:
-            look = [important(gst.fill(color=fill)), gst.text(weight="bold", color=on_color(fill))]
+            look = [important(gst.fill(color=fill)), important(gst.text(weight="bold", color=on_color(fill)))]
             gt = gt.tab_style(look, loc.body(columns=tier_column, rows=rows))
     return _record(gt, "_sdvplot_key", dict(zip(names, fills, strict=True)))
 
@@ -939,9 +936,6 @@ def gt_spotlight(
         ValueError: If ``if_none`` is not one of its choices.
 
 
-    Warns:
-        SdvplotWarning: When the table stripes its rows and the function sets a text color (``dim_color`` or
-            ``text_color``): in a notebook the stripes cover it on every other row.
 
     Example:
         ::
@@ -961,27 +955,25 @@ def gt_spotlight(
     focus = _row_indices(gt, rows)
     if not focus:
         if if_none == "dim" and dim_color is not None:
-            return gt.tab_style(gst.text(color=dim_color), loc.body())
+            return gt.tab_style(important(gst.text(color=dim_color)), loc.body())
         if if_none == "warn":
             msg = "rows matched no rows, so the table is unchanged; set if_none='dim' to dim the whole table instead"
             warn(msg)
         return gt
 
-    if dim_color is not None or text_color is not None:
-        _warn_striped(gt, "gt_spotlight")
     chosen = _columns(gt, columns)
     rendered = _rendered(gt)
     others = [i for i in range(len(_frame(gt))) if i not in set(focus)]
     rest = [c for c in rendered if c not in chosen]
     if dim_color is not None:
         if others:
-            gt = gt.tab_style(gst.text(color=dim_color), loc.body(rows=others))
+            gt = gt.tab_style(important(gst.text(color=dim_color)), loc.body(rows=others))
         if rest:
-            gt = gt.tab_style(gst.text(color=dim_color), loc.body(columns=rest, rows=focus))
+            gt = gt.tab_style(important(gst.text(color=dim_color)), loc.body(columns=rest, rows=focus))
 
     looks: list[Any] = [] if fill is None else [important(gst.fill(color=fill))]
     if text_color is not None or bold:
-        looks.append(gst.text(color=text_color, weight="bold" if bold else None))
+        looks.append(important(gst.text(color=text_color, weight="bold" if bold else None)))
     if looks:
         gt = gt.tab_style(looks, loc.body(columns=chosen, rows=focus))
 
@@ -1140,9 +1132,6 @@ def gt_outliers(
         ValueError: If ``columns`` selects nothing, ``bounds`` is missing for ``"bounds"``, or an option is invalid.
 
 
-    Warns:
-        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the flagged cells' text color
-            on every other row.
 
     Example:
         ::
@@ -1187,10 +1176,8 @@ def gt_outliers(
         ]
         if not hit:
             continue
-        if not flagged:
-            _warn_striped(gt, "gt_outliers")
         flagged = True
-        looks: list[Any] = [gst.text(color=color, weight="bold" if bold else None)]
+        looks: list[Any] = [important(gst.text(color=color, weight="bold" if bold else None))]
         if fill is not None:
             looks.append(important(gst.fill(color=fill)))
         gt = gt.tab_style(looks, loc.body(columns=col, rows=hit))
