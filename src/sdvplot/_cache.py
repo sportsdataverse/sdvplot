@@ -6,6 +6,7 @@ import contextlib
 import hashlib
 import json
 import os
+import re
 import shutil
 import time
 from collections.abc import Callable, Iterator
@@ -135,6 +136,18 @@ def _offline_message(url: str) -> str:
 def _check_https(url: str) -> None:
     if urlsplit(url).scheme != "https":
         raise UnsafeDownloadError(f"refusing to download {url}: not https")
+
+
+# A plain https URL: a host, then only RFC 3986 characters, minus ' (RFC 3986 allows it, but it ends a single-quoted
+# HTML attribute). No quote, <, >, whitespace, backslash or control character, so a URL from the logo manifest or
+# nflverse's player table cannot break out of the HTML attribute or <script> block a web adapter writes it into.
+# A pattern both re and polars (Rust regex) read the same way.
+SAFE_URL = r"https://[A-Za-z0-9.\-]+(?::[0-9]+)?(?:[/?#][A-Za-z0-9\-._~:/?#\[\]@!$&()*+,;=%]*)?"
+
+
+def safe_url(url: object) -> bool:
+    """True when ``url`` is a plain https URL (``SAFE_URL``)."""
+    return isinstance(url, str) and re.fullmatch(SAFE_URL, url) is not None
 
 
 def _pieces(r: requests.Response) -> Iterator[bytes]:

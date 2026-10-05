@@ -6,6 +6,7 @@
     - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
+    - [Security](#security)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added-1)
@@ -67,6 +68,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+
+### Security
+
+- Image URLs from the logo manifest (`archive_url`) and from nflverse's player table (`headshot`) must be plain https
+  URLs: a host, then only RFC 3986 characters, with no quote, `<`, `>`, whitespace, backslash or control character. A
+  manifest row that fails is dropped and a headshot that fails is treated as missing (the player gets their ESPN
+  headshot when nflverse has their ESPN id), each with one `SdvplotWarning`. Such a URL used to reach the web adapters
+  unchanged, and Altair's HTML export wrote it into a `<script>` block unescaped, so a poisoned manifest or player table
+  could run script in an exported page. The web adapters also percent-encode any such character left in an image URL.
 
 ## [0.1.0] - Unreleased
 

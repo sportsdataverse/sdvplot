@@ -6,8 +6,8 @@ import functools
 import io
 from typing import TYPE_CHECKING, Any
 
-from sdvplot._cache import fetch_cached
-from sdvplot._errors import InputError
+from sdvplot._cache import fetch_cached, safe_url
+from sdvplot._errors import InputError, warn
 from sdvplot._normalize import norm_value
 from sdvplot._types import HeadshotIdSystem
 
@@ -33,7 +33,18 @@ PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
 @functools.cache
 def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]]:
     p = pl.read_parquet(path, columns=PLAYER_COLUMNS).drop_nulls("gsis_id")
-    return {g: (e, h) for g, e, h in p.iter_rows()}
+    players, bad = {}, []
+    for g, e, h in p.iter_rows():
+        if h and not safe_url(h):  # it would reach the web adapters' HTML: treat it as missing instead
+            bad.append(h)
+            h = None
+        players[g] = (e, h)
+    if bad:
+        warn(
+            f"ignored {len(bad)} nflverse headshot URL(s) that are not plain https URLs, e.g. {bad[0]!r:.100}; "
+            "those players get their ESPN headshot when nflverse has their ESPN id"
+        )
+    return players
 
 
 def _is_valid_espn_id(normalized_id: str) -> bool:
