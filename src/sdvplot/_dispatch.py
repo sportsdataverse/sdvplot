@@ -21,9 +21,24 @@ from __future__ import annotations
 import importlib
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 from sdvplot._errors import OptionalDependencyError, UnsupportedTargetError
+
+if TYPE_CHECKING:
+    from bokeh.models import Plot
+    from folium import Map
+    from great_tables import GT
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from plotly.basedatatypes import BaseFigure
+    from plotnine import ggplot
+
+# The targets whose verbs return the target itself, or a new object of its type (plotnine, great_tables), so the
+# result has the type the target had. Altair is not one: a Chart comes back as a LayerChart.
+_Target = TypeVar("_Target", bound="Axes | Figure | BaseFigure | ggplot | GT | Plot | Map")
+# The same, for the libraries that draw axis logos
+_AxisTarget = TypeVar("_AxisTarget", bound="Axes | Figure | BaseFigure | ggplot")
 
 
 @dataclass(frozen=True)
@@ -71,6 +86,10 @@ def adapter_for(target: Any) -> ModuleType:
         raise
 
 
+@overload
+def add_logos(target: _Target, *args: Any, **kwargs: Any) -> _Target: ...
+@overload
+def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any: ...
 def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add team logos to a plot or table of any supported library.
 
@@ -118,6 +137,10 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     return adapter_for(target).add_logos(target, *args, **kwargs)
 
 
+@overload
+def add_wordmarks(target: _Target, *args: Any, **kwargs: Any) -> _Target: ...
+@overload
+def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any: ...
 def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add team wordmarks to a plot or table of any supported library.
 
@@ -163,6 +186,10 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
     return adapter_for(target).add_wordmarks(target, *args, **kwargs)
 
 
+@overload
+def add_headshots(target: _Target, *args: Any, **kwargs: Any) -> _Target: ...
+@overload
+def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any: ...
 def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add player headshots to a plot or table of any supported library.
 
@@ -209,6 +236,10 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
     return adapter_for(target).add_headshots(target, *args, **kwargs)
 
 
+@overload
+def axis_logos(target: _AxisTarget, *args: Any, **kwargs: Any) -> _AxisTarget: ...
+@overload
+def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any: ...
 def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Replace an axis' team labels with team logos on a plot of any supported library.
 

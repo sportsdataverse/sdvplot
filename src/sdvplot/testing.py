@@ -142,7 +142,7 @@ def _xyz(marks: list[tuple[Any, ...]]) -> list[tuple[Any, ...]]:
     return [m[:3] for m in marks]
 
 
-def _check_urls(rule: str, marks: list[tuple[Any, ...]], want: dict[str, Callable[[], str | None]]) -> None:
+def _check_urls(rule: str, marks: list[tuple[Any, ...]], want: dict[str | None, Callable[[], str | None]]) -> None:
     """Only adapters that report the url (5-tuples) are checked; the expected url is looked up lazily."""
     for m in marks:
         if len(m) >= 5 and m[0] in want and m[4] != (expected := want[m[0]]()):
@@ -155,8 +155,8 @@ def _check_marks(
     make_target: Callable[[], Any],
     league: str,
     pair: Sequence[str],
-    ids: Sequence[str],
-    urls: dict[str, Callable[[], str | None]],
+    ids: Sequence[str | None],
+    urls: dict[str | None, Callable[[], str | None]],
     names: tuple[str, str],
 ) -> None:
     """Rules 1 and 2 (named by ``names``) for one verb."""
@@ -383,9 +383,9 @@ def _check_table_verb(
     make_table: Callable[[Any], Any],
     league: str,
     pair: Sequence[str],
-    ids: Sequence[str],
+    ids: Sequence[str | None],
     unknown: str,
-    urls: dict[str, Callable[[], str | None]],
+    urls: dict[str | None, Callable[[], str | None]],
     rules: tuple[str, str, str, str],
 ) -> None:
     """Rules T1-T4 (named by ``rules``) for one verb."""

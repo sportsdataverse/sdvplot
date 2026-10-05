@@ -120,12 +120,19 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 "tests/**" = ["E501"]
 
 [tool.mypy]
-files = ["src/sdvplot"]
+files = ["src/sdvplot", "tests/test_types.py"]
 ignore_missing_imports = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+# plotly ships no py.typed: read its source, so the front door's plotly Figure overload is checked, not Any
+# (tests/test_types.py). It re-exports its classes without __all__, which --strict would flag at every go.Figure.
+[[tool.mypy.overrides]]
+module = ["plotly", "plotly.*"]
+follow_untyped_imports = true
+implicit_reexport = true
 
 [tool.coverage.run]
 branch = true

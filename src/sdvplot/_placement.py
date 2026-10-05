@@ -11,13 +11,16 @@ import numbers
 import os
 import warnings
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from sdvplot._errors import InputError, SdvplotWarning
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
 from sdvplot._normalize import norm_value
 from sdvplot._resolve import _resolve_ids, _seasons, _unpack, resolve
+
+if TYPE_CHECKING:
+    from sdvplot._types import HeadshotIdSystem, IdSystem
 
 KINDS = ("logo", "wordmark", "headshot")
 
@@ -102,7 +105,8 @@ def place(
             if _missing(xi) or _missing(yi):
                 missing_xy.append(pid)
                 continue
-            url = headshot_url(pid, league, id_system=id_system)
+            # id_system is a team or a headshot id system by kind; the callee validates it
+            url = headshot_url(pid, league, id_system=cast("HeadshotIdSystem", id_system))
             if url is None:
                 no_image.append(pid)
                 continue
@@ -113,8 +117,8 @@ def place(
         skipped("with no headshot", no_image)
     else:
         seasons = _seasons(season, len(ts))
-        if _warn:
-            ids = resolve(ts, league, season=seasons, id_system=id_system)  # one warning for unknown values
+        if _warn:  # one warning for unknown values
+            ids = resolve(ts, league, season=seasons, id_system=cast("IdSystem", id_system))
         else:
             ids, _ = _resolve_ids(ts, league, seasons, id_system)
         rows: dict[tuple[str, int | None], dict[str, Any] | None] = {}

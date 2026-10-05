@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 from sdvplot._cache import fetch_cached
 from sdvplot._errors import InputError
 from sdvplot._normalize import norm_value
+from sdvplot._types import HeadshotIdSystem
 
 if TYPE_CHECKING:
     import polars as pl
@@ -58,7 +59,7 @@ def _transform_nfl_headshot(url: str) -> str:
     return transformed
 
 
-def headshot_url(player_id: Any, league: str, *, id_system: str = "espn") -> str | None:
+def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "espn") -> str | None:
     """A headshot URL for one player.
 
     Args:
