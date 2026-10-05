@@ -10,7 +10,7 @@ from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
 from sdvplot._errors import DownloadError, InputError, IntegrityError, SdvplotError, SdvplotWarning
-from tests.conftest import FakeResponse, FakeSession
+from tests.conftest import FakeResponse, FakeSession, in_threads, slow_download
 
 
 def _png(w, h):
@@ -288,3 +288,17 @@ def test_the_decoded_image_cache_counts_bytes_per_sample(cache, monkeypatch):
     img = _images.load_mark_image({"sha256": sha, "ext": "png", "archive_url": f"https://cdn/{sha}.png"})
     assert img.mode == "I;16"
     assert _images._decoded_bytes == len(img.tobytes()) == 40 * 30 * 2
+
+
+def test_threads_asking_for_one_uncached_logo_download_and_decode_it_once(cache, monkeypatch):
+    body = _png(500, 250)
+    _manifest_with(monkeypatch, body, "png")
+    downloads, decodes = [], []
+    monkeypatch.setattr(
+        _cache, "_download", slow_download({f"https://cdn/{hashlib.sha256(body).hexdigest()}.png": body}, downloads)
+    )
+    decode = _images._decode_mark
+    monkeypatch.setattr(_images, "_decode_mark", lambda *key: decodes.append(key) or decode(*key))
+    imgs = in_threads(lambda: _images.logo_image("LV", "nfl", size=64))  # raised PermissionError on Windows
+    assert len(downloads) == 1 and len(decodes) == 1
+    assert len({(im.size, im.tobytes()) for im in imgs}) == 1 and imgs[0].size == (64, 32)
