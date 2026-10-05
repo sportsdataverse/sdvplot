@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
+from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
 from sdvplot._normalize import _is_na, norm_season, norm_value
 
 if TYPE_CHECKING:
@@ -235,7 +235,7 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: str = "a
 
 def _systems(id_system: str) -> tuple[str, ...]:
     if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
-        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
+        raise InputError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
     return PRIORITY if id_system == "auto" else (id_system,)
 
 

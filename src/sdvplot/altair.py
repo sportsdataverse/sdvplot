@@ -15,6 +15,7 @@ from typing import Any
 
 import altair as alt
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
@@ -54,7 +55,7 @@ def _check_chart(chart: Any) -> None:
             f"sdvplot cannot draw on a {name}; draw on one of its charts (chart.{_SUBCHARTS[name]}), then combine"
         )
     if not isinstance(chart, (alt.Chart, alt.LayerChart)):
-        raise TypeError(f"sdvplot.altair draws on an altair Chart or LayerChart, got {name}")
+        raise UnsupportedTargetError(f"sdvplot.altair draws on an altair Chart or LayerChart, got {name}")
 
 
 def _units(spec: dict[str, Any]) -> list[dict[str, Any]]:

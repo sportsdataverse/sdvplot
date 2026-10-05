@@ -38,10 +38,13 @@ SECTIONS = [
 ERRORS = [
     "SdvplotWarning",
     "SdvplotError",
+    "InputError",
     "UnresolvedTeamError",
     "OfflineError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
+    "UnsafeDownloadError",
+    "UnsafeCachePathError",
 ]
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
@@ -195,7 +198,8 @@ def _errors_page(position: int) -> str:
     for n in ERRORS:
         cls = getattr(sdvplot, n)
         bases = ", ".join(f"`{b.__name__}`" for b in cls.__bases__)
-        lines.append(f"| `{n}` | {bases} | {inspect.getdoc(cls) or ''} |")
+        meaning = " ".join((inspect.getdoc(cls) or "").split())  # one table row, however the docstring wraps
+        lines.append(f"| `{n}` | {bases} | {meaning} |")
     return "\n".join(lines) + "\n"
 
 

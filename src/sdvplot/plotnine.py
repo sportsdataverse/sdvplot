@@ -1,6 +1,6 @@
 """The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines.
 
-The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
+The geoms draw through the matplotlib adapter's drawing step, so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
 """
 
@@ -33,7 +33,7 @@ from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
@@ -347,6 +347,12 @@ class geom_median_lines(_geom_ref_lines):
     _ref = staticmethod(np.median)
 
 
+def _ggplot(target: Any) -> ggplot:
+    if not isinstance(target, ggplot):
+        raise UnsupportedTargetError(f"sdvplot.plotnine draws on a plotnine ggplot, got {type(target).__name__}")
+    return target
+
+
 def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:
     """The layer data: one row per point, with its season, so plotnine's per-panel copies of a row keep it."""
     xs, ys, ts = _unpack(x)[0], _unpack(y)[0], _unpack(ids)[0]
@@ -398,7 +404,7 @@ def add_logos(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_wordmarks(
@@ -443,7 +449,7 @@ def add_wordmarks(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_headshots(
@@ -484,7 +490,7 @@ def add_headshots(
         aes("x", "y", player_id="player_id"), data=_frame(x, y, players, "player_id"), inherit_aes=False,
         league=league, height=height, alpha=alpha, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 class _AxisLogos:
@@ -553,7 +559,7 @@ def axis_logos(
             p = ggplot(df, aes("team", "epa")) + geom_col()
             p2 = sdvplot.axis_logos(p, "x", league="nfl")
     """
-    return target + _AxisLogos(
+    return _ggplot(target) + _AxisLogos(
         axis, league=league, season=season, height=height, variant=variant, mark_type=mark_type, id_system=id_system
     )
 

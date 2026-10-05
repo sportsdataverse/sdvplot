@@ -1,10 +1,11 @@
 import importlib
 import inspect
+import pkgutil
 
 import pytest
 
 import sdvplot
-from sdvplot import _dispatch, _errors, _marks
+from sdvplot import _dispatch, _errors, _marks, _placement, _tables
 
 PUBLIC = {
     "resolve",
@@ -26,10 +27,13 @@ PUBLIC = {
     "court_coords",
     "SdvplotWarning",
     "SdvplotError",
+    "InputError",
     "UnresolvedTeamError",
     "OfflineError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
+    "UnsafeDownloadError",
+    "UnsafeCachePathError",
     "__version__",
 }
 
@@ -84,8 +88,9 @@ ERRORS = {
     sdvplot.OfflineError: RuntimeError,
     sdvplot.OptionalDependencyError: ImportError,
     sdvplot.UnsupportedTargetError: TypeError,
-    _errors.UnsafeCachePathError: ValueError,
-    _errors.UnsafeDownloadError: OSError,
+    sdvplot.UnsafeCachePathError: ValueError,
+    sdvplot.UnsafeDownloadError: OSError,
+    sdvplot.InputError: ValueError,
 }
 
 
@@ -114,15 +119,31 @@ def test_a_raised_sdvplot_error_is_caught_by_the_base():
         sdvplot.resolve("XYZ", "nfl", strict=True)
 
 
-SUBMODULES = [
-    "matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal", "reactable", "plottable",
-    "testing", "great_tables",
-]  # fmt: skip
+# every public submodule, found rather than listed: a new one cannot skip the checks below
+SUBMODULES = sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
+# the optional library each adapter module needs: the registered adapters, plus the two column helpers. Any other
+# submodule (sdvplot.testing, or a new one) is imported unguarded, so it cannot hide behind a skip
+LIBRARY = {"reactable": "reactable", "plottable": "plottable"}
+for _a in _dispatch.ADAPTERS.values():
+    _name = _a.module.split(".")[1]
+    if _name not in LIBRARY or _a.package == _name:  # seaborn also routes to sdvplot.matplotlib
+        LIBRARY[_name] = _a.package
+
+
+def _submodule(name):
+    """sdvplot.<name>, skipping (as each adapter's own tests do) when its optional library is not installed."""
+    if name in LIBRARY:
+        pytest.importorskip(LIBRARY[name])
+    return importlib.import_module(f"sdvplot.{name}")
+
+
+def test_the_submodules_are_found():
+    assert {"matplotlib", "great_tables", "testing", "pygal"} <= set(SUBMODULES)
 
 
 @pytest.mark.parametrize("name", SUBMODULES)
 def test_a_public_submodule_shows_only_its_all(name):
-    mod = importlib.import_module(f"sdvplot.{name}")
+    mod = _submodule(name)
     # what dir(), tab completion and `import *` show: no numpy, no imported helpers, no test hooks
     assert {n for n in dir(mod) if not n.startswith("_")} == set(mod.__all__)
     for n in mod.__all__:
@@ -136,12 +157,24 @@ def test_a_public_submodule_shows_only_its_all(name):
     assert own <= set(mod.__all__), own - set(mod.__all__)
 
 
-def test_the_adapter_modules_keep_their_test_hooks_private():
-    for name in ("matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal"):
-        mod = importlib.import_module(f"sdvplot.{name}")
-        assert callable(mod._drawn_marks) and isinstance(mod._SUPPORTS_AXIS_LOGOS, bool)
-        assert not hasattr(mod, "drawn_marks") and not hasattr(mod, "SUPPORTS_AXIS_LOGOS")
-    gt = importlib.import_module("sdvplot.great_tables")
+def test_the_top_level_shows_only_its_all_and_the_submodules():
+    shown = {n for n in dir(sdvplot) if not n.startswith("_")}
+    assert shown - set(sdvplot.__all__) <= set(SUBMODULES), shown - set(sdvplot.__all__) - set(SUBMODULES)
+    assert "version" not in shown and "PackageNotFoundError" not in shown
+
+
+ADAPTERS = ["matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal"]
+
+
+@pytest.mark.parametrize("name", ADAPTERS)
+def test_the_adapter_modules_keep_their_test_hooks_private(name):
+    mod = _submodule(name)
+    assert callable(mod._drawn_marks) and isinstance(mod._SUPPORTS_AXIS_LOGOS, bool)
+    assert not hasattr(mod, "drawn_marks") and not hasattr(mod, "SUPPORTS_AXIS_LOGOS")
+
+
+def test_the_table_adapter_keeps_its_test_hooks_private():
+    gt = _submodule("great_tables")
     assert callable(gt._drawn_cells) and callable(gt._rendered_html) and not hasattr(gt, "drawn_cells")
 
 
@@ -189,8 +222,60 @@ def test_palette_and_team_colors_take_the_league_first_as_sdvplotr_does():
     assert sdvplot.palette("nfl", ["LV"]) == {"LV": "#000000"}
     assert sdvplot.team_colors("nfl", ["LV"]) == ["#000000"]
     assert sdvplot.team_colors("nfl", "LV", which="secondary") == "#a5acaf"
-    with pytest.raises(ValueError, match="unknown league 'LV'"):  # the old team-first order fails loudly
+    with pytest.raises(sdvplot.InputError, match="unknown league 'LV'"):  # the old team-first order fails loudly
         sdvplot.team_colors("LV", "nfl")
+
+
+@pytest.mark.parametrize("teams", [["LV"], ("LV",), "series"])
+def test_the_old_team_colors_order_with_several_teams_names_the_new_order(teams):
+    if teams == "series":
+        teams = pytest.importorskip("polars").Series(["LV"])
+    message = r"league must be a league key such as 'nfl', got \w+; .* team_colors\(league, teams\)"
+    with pytest.raises(sdvplot.InputError, match=message):
+        sdvplot.team_colors(teams, "nfl")
+
+
+@pytest.mark.parametrize("teams", ["secondary", "primary", ["LV", "secondary"]])
+def test_a_color_slot_passed_as_teams_shows_the_keyword_form(teams):
+    # pre-0.1, palette(league, "secondary") meant which="secondary"; now it would silently match no team
+    slot = "secondary" if "secondary" in teams else "primary"
+    message = (
+        rf"'{slot}' is a color slot, not a team; pass it by keyword: palette\(league, teams=\.\.\., which=\"{slot}\"\)"
+    )
+    with pytest.raises(sdvplot.InputError, match=message):
+        sdvplot.palette("nfl", teams)
+
+
+# every shared argument check raises an SdvplotError that is still the builtin a caller already catches
+INPUT_ERRORS = {
+    "unknown league": lambda: sdvplot.team_colors("nfll", "KC"),
+    "league not a string": lambda: sdvplot.resolve("KC", ["nfl"]),
+    "which": lambda: sdvplot.palette("nfl", which="tertiary"),
+    "id_system": lambda: sdvplot.resolve("KC", "nfl", id_system="nflfastr"),
+    "mark_type": lambda: sdvplot.logo_url("KC", "nfl", mark_type="helmet"),
+    "color slot as a team": lambda: sdvplot.palette("nfl", "secondary"),
+    "height": lambda: _placement.check_height(1.5),
+    "alpha": lambda: _placement.check_alpha(-1),
+    "kind": lambda: _placement.place([1], [1], ["LV"], league="nfl", kind="helmet"),
+    "pixels": lambda: _tables.check_px(0.5),
+    "headshot league": lambda: sdvplot.headshot_url("1", "ohl"),
+    "headshot id_system": lambda: sdvplot.headshot_url("1", "nba", id_system="gsis"),
+}
+
+
+@pytest.mark.parametrize("call", INPUT_ERRORS.values(), ids=INPUT_ERRORS.keys())
+def test_argument_checks_raise_an_input_error(call):
+    with pytest.raises(sdvplot.InputError) as info:
+        call()
+    assert isinstance(info.value, sdvplot.SdvplotError) and isinstance(info.value, ValueError)
+
+
+@pytest.mark.parametrize("name", ADAPTERS)
+def test_a_wrong_target_is_an_unsupported_target_error(name):
+    mod = _submodule(name)
+    with pytest.raises(sdvplot.UnsupportedTargetError) as info:
+        mod.add_logos(object(), [1], [1], ["LV"], league="nfl")
+    assert isinstance(info.value, TypeError)
 
 
 def _adapter_modules():
@@ -203,22 +288,23 @@ def test_the_front_door_docstring_tells_plots_from_tables():
     plots = [m for m in _adapter_modules() if m != "sdvplot.great_tables"]
     for m in plots:  # every plot adapter is named where the docstring says what a plot takes
         assert m.split(".")[1].lower() in doc.lower(), m
-    gt = importlib.import_module("sdvplot.great_tables")
+    gt = _submodule("great_tables")
     table = inspect.signature(gt.add_logos).parameters
     assert "columns" in table and f"pixels (default {table['height'].default})" in doc
 
 
-def test_the_axis_logos_docstring_matches_the_adapters():
+@pytest.mark.parametrize("module", _adapter_modules())
+def test_the_axis_logos_docstring_matches_the_adapters(module):
     doc = " ".join(inspect.getdoc(sdvplot.axis_logos).split())
     drawing, raising = doc.split("have no axis logos")[0].rsplit(".", 1)
-    for m in _adapter_modules():
-        mod = importlib.import_module(m)
-        name = m.split(".")[1].replace("_", "").lower()
-        if mod._SUPPORTS_AXIS_LOGOS:
-            assert name in drawing.replace("_", "").lower(), m
-            kw = {p.name for p in inspect.signature(mod.axis_logos).parameters.values() if p.kind is p.KEYWORD_ONLY}
-            assert {"league", "season", "height", "variant", "mark_type", "id_system"} <= kw, m
-        else:
-            assert name in raising.replace("_", "").lower(), m
-            with pytest.raises(TypeError):
-                mod.axis_logos(object(), "x", league="nfl")
+    name = module.split(".")[1]
+    mod = _submodule(name)
+    key = name.replace("_", "").lower()
+    if mod._SUPPORTS_AXIS_LOGOS:
+        assert key in drawing.replace("_", "").lower(), module
+        kw = {p.name for p in inspect.signature(mod.axis_logos).parameters.values() if p.kind is p.KEYWORD_ONLY}
+        assert {"league", "season", "height", "variant", "mark_type", "id_system"} <= kw, module
+    else:
+        assert key in raising.replace("_", "").lower(), module
+        with pytest.raises(sdvplot.UnsupportedTargetError):
+            mod.axis_logos(object(), "x", league="nfl")

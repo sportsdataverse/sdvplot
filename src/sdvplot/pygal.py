@@ -18,6 +18,7 @@ import pygal
 from pygal.style import Style
 
 from sdvplot._colors import team_colors
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
 from sdvplot._web import aspect, image_src
@@ -36,7 +37,7 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 
 def _check_chart(chart: Any) -> None:
     if not isinstance(chart, pygal.XY):
-        raise TypeError(
+        raise UnsupportedTargetError(
             f"sdvplot.pygal draws on XY-family charts ({_SUPPORTED}); a {type(chart).__name__} chart places values by "
             "category or angle, not at an (x, y) point"
         )
@@ -309,7 +310,7 @@ def axis_logos(chart: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplot.matplotlib.axis_logos(): https://sdvplot.sportsdataverse.org/
     """
-    raise TypeError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
+    raise UnsupportedTargetError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
 
 
 def team_style(teams: Any, *, league: str, which: str = "primary", season: Any = None, **style_kwargs: Any) -> Style:

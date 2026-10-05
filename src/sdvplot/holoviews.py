@@ -11,6 +11,7 @@ from typing import Any
 import holoviews as hv
 
 from sdvplot import bokeh as _bokeh
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import image_sources
 
@@ -50,7 +51,9 @@ def _add(
 ) -> Any:
     h, a = check_height(height), check_alpha(alpha)
     if not isinstance(element, hv.core.Dimensioned):
-        raise TypeError(f"sdvplot.holoviews draws on a HoloViews element or overlay, got {type(element).__name__}")
+        raise UnsupportedTargetError(
+            f"sdvplot.holoviews draws on a HoloViews element or overlay, got {type(element).__name__}"
+        )
     _require_bokeh()
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
     sources = image_sources(placements, embed=embed)
@@ -260,7 +263,7 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    raise TypeError(
+    raise UnsupportedTargetError(
         "HoloViews has no axis logos yet (its Bokeh plots cannot hold them): draw them inside the plot with "
         "add_logos, or use matplotlib, Plotly or Altair for axis logos"
     )

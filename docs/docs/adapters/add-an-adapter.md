@@ -26,7 +26,7 @@ test hooks, constants) starts with an underscore.
 | --- | --- |
 | `add_logos`, `add_wordmarks` | `(target, x, y, teams, *, league, season=None, height=0.1, alpha=1, variant="default", embed=False, id_system="auto")` |
 | `add_headshots` | `(target, x, y, players, *, league, height=0.1, alpha=1, embed=False, id_system="espn")`: no `season`, no `variant` |
-| `axis_logos` | `(target, axis, ...)`: draw logos in place of tick labels, or raise `TypeError` and set `_SUPPORTS_AXIS_LOGOS = False` |
+| `axis_logos` | `(target, axis, *, league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")`: draw logos in place of tick labels; or `(target, axis, **kwargs)` that raises `UnsupportedTargetError` (a `TypeError`), with `_SUPPORTS_AXIS_LOGOS = False` |
 | `_drawn_marks` | the test hook (private): `(target) -> list[tuple]` |
 | `_SUPPORTS_AXIS_LOGOS` | (private) `False` when `axis_logos` is not supported. The default, when absent, is `True` |
 
@@ -64,6 +64,7 @@ from typing import Any
 
 import newlib
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_src
 
@@ -81,7 +82,7 @@ def _add(
     variant: str, embed: bool, id_system: str,
 ) -> Any:
     if not isinstance(canvas, newlib.Canvas):
-        raise TypeError(f"sdvplot.newlib draws on a newlib.Canvas, got {type(canvas).__name__}")
+        raise UnsupportedTargetError(f"sdvplot.newlib draws on a newlib.Canvas, got {type(canvas).__name__}")
     h, a = check_height(height), check_alpha(alpha)  # raise when the verb is called, not at render time
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
     for p in placements:  # unknown teams and missing x/y are already gone, with one warning per reason
@@ -124,7 +125,7 @@ def add_headshots(
 
 def axis_logos(canvas: Any, axis: str, **kwargs: Any) -> Any:
     """Not supported: newlib has no axis tick labels to replace."""
-    raise TypeError("sdvplot.newlib does not draw axis logos")
+    raise UnsupportedTargetError("sdvplot.newlib does not draw axis logos")
 
 
 def _drawn_marks(canvas: Any) -> list[tuple[Any, ...]]:
@@ -226,7 +227,7 @@ x and y values fail. Using `place()` passes rules 1, 2, 3 and most of 4 for free
 your `_drawn_marks` and your drawing. Add tests of your own for what is specific to the library (units, date axes, a
 copy of the target, `embed=True`).
 
-Also add the module's name to `SUBMODULES` in `tests/test_api.py`, which checks that `dir()` shows only `__all__` and
+`tests/test_api.py` finds every public submodule itself (`pkgutil`) and checks that `dir()` shows only `__all__` and
 that nothing the module defines is public outside it.
 
 ## 6. Add the compatibility row

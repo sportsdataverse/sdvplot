@@ -11,6 +11,7 @@ from typing import Any
 
 import folium
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
@@ -28,7 +29,7 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 
 def _map(target: Any) -> folium.Map:
     if not isinstance(target, folium.Map):
-        raise TypeError(f"sdvplot.folium draws on a folium.Map, got {type(target).__name__}")
+        raise UnsupportedTargetError(f"sdvplot.folium draws on a folium.Map, got {type(target).__name__}")
     return target
 
 
@@ -277,7 +278,7 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/
     """
-    raise TypeError("a folium map has no category axes; put the logos on the map with add_logos instead")
+    raise UnsupportedTargetError("a folium map has no category axes; put the logos on the map with add_logos instead")
 
 
 def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:

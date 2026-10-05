@@ -16,7 +16,7 @@ from typing import Any
 
 import plotly.graph_objects as go
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
@@ -35,7 +35,9 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 
 def _figure(target: Any) -> go.Figure:
     if not isinstance(target, go.Figure):  # FigureWidget subclasses Figure
-        raise TypeError(f"sdvplot.plotly draws on a plotly.graph_objects.Figure, got {type(target).__name__}")
+        raise UnsupportedTargetError(
+            f"sdvplot.plotly draws on a plotly.graph_objects.Figure, got {type(target).__name__}"
+        )
     return target
 
 

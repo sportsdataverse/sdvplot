@@ -12,6 +12,7 @@ from typing import Any
 
 from bokeh.models import ColumnDataSource
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
@@ -26,7 +27,7 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 
 def _figure(target: Any) -> Any:
     if not hasattr(target, "image_url") or not hasattr(target, "frame_height"):
-        raise TypeError(f"sdvplot.bokeh draws on a bokeh.plotting figure, got {type(target).__name__}")
+        raise UnsupportedTargetError(f"sdvplot.bokeh draws on a bokeh.plotting figure, got {type(target).__name__}")
     return target
 
 
@@ -282,7 +283,7 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    raise TypeError(
+    raise UnsupportedTargetError(
         "Bokeh has no axis logos yet: draw them inside the plot with add_logos (e.g. at a y just below the bars), "
         "or use matplotlib, Plotly or Altair for axis logos"
     )

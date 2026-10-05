@@ -42,7 +42,8 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 ## Raises
 
 - `TypeError`: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-- `ValueError`: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or ``season`` is not a year (or a list whose length does not match the teams).
+- `InputError`: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary", or ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``).
+- `ValueError`: If ``season`` is not a year (or a list whose length does not match the teams).
 
 ## Example
 

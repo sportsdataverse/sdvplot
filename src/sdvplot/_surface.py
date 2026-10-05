@@ -7,7 +7,7 @@ from typing import Any
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import contrast, on_color
-from sdvplot._errors import OptionalDependencyError
+from sdvplot._errors import InputError, OptionalDependencyError
 
 # SDV league -> (sportypy.surfaces module, class). Always the sport module: the top-level sportypy.surfaces.NCAACourt
 # is the tennis court and NCAAField the football field, shadowing the basketball court and the baseball field.
@@ -125,7 +125,7 @@ def surface(
         sportypy: https://sportypy.sportsdataverse.org/
     """
     if league not in SURFACES:
-        raise ValueError(f"no sportypy surface for league {league!r}; supported: {sorted(SURFACES)}")
+        raise InputError(f"no sportypy surface for league {league!r}; supported: {sorted(SURFACES)}")
     sport, cls_name = SURFACES[league]
     try:
         module = importlib.import_module(f"sportypy.surfaces.{sport}")

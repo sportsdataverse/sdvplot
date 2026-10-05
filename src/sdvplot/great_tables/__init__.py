@@ -18,6 +18,7 @@ from typing import Any
 
 from great_tables import GT
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot.great_tables._cells import (
     gt_538_caption,
     gt_bold_rows,
@@ -96,8 +97,10 @@ add_headshots = gt_sdv_headshots
 
 
 def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
-    """A table has no axes: always TypeError (use ``gt_sdv_cols_label`` for marks in the column labels)."""
-    raise TypeError("a great_tables table has no axes; use gt_sdv_cols_label() for marks in the column labels")
+    """A table has no axes: always UnsupportedTargetError, a TypeError (``gt_sdv_cols_label`` puts marks in labels)."""
+    raise UnsupportedTargetError(
+        "a great_tables table has no axes; use gt_sdv_cols_label() for marks in the column labels"
+    )
 
 
 def _rendered_html(gt: GT) -> str:

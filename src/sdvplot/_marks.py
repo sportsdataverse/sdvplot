@@ -6,7 +6,7 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
+from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
 from sdvplot._resolve import _covers, one_team, resolve
@@ -39,7 +39,7 @@ MARK_TYPES = ("logo", "wordmark")
 
 def _check_mark_type(mark_type: str) -> None:
     if mark_type not in MARK_TYPES:
-        raise ValueError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
+        raise InputError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
 
 
 def _union(col: str, bound: pl.Expr) -> pl.Expr:

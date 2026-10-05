@@ -23,7 +23,7 @@ from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, SdvplotWarning
+from sdvplot._errors import OfflineError, SdvplotWarning, UnsupportedTargetError
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
@@ -79,7 +79,7 @@ def _target_axes(target: Any) -> Axes:
         if len(flat) == 1 and isinstance(flat[0], Axes):
             return flat[0]
         raise ValueError(f"this grid has {len(flat)} Axes; pass the Axes to draw on, e.g. g.axes.flat[0]")
-    raise TypeError(f"sdvplot.matplotlib cannot draw on a {type(target).__name__}")
+    raise UnsupportedTargetError(f"sdvplot.matplotlib cannot draw on a {type(target).__name__}")
 
 
 def _image(p: Placement) -> np.ndarray:

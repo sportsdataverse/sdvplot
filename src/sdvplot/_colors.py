@@ -7,7 +7,7 @@ from collections import Counter
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, SdvplotWarning
 from sdvplot._resolve import _seasons, _unpack, resolve
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ _COLUMNS = {"primary": "color_primary", "secondary": "color_secondary"}
 
 def _column(which: str) -> str:
     if which not in _COLUMNS:
-        raise ValueError(f"which must be one of {sorted(_COLUMNS)}, got {which!r}")
+        raise InputError(f"which must be one of {sorted(_COLUMNS)}, got {which!r}")
     return _COLUMNS[which]
 
 
@@ -49,8 +49,9 @@ def palette(league: str, teams: Any = None, *, which: str = "primary", season: A
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        InputError: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary", or
+            ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``).
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::
@@ -77,6 +78,11 @@ def palette(league: str, teams: Any = None, *, which: str = "primary", season: A
             )
         return {(tid if not abbr or abbr in shared else abbr): colors[tid] for tid, abbr in rows if tid in colors}
     values, _ = _unpack(teams)
+    if slots := [v for v in values if isinstance(v, str) and v in _COLUMNS]:  # pre-0.1: palette(league, which)
+        raise InputError(
+            f"{slots[0]!r} is a color slot, not a team; pass it by keyword: "
+            f'palette(league, teams=..., which="{slots[0]}")'
+        )
     pairs = [p for p in dict.fromkeys(zip(values, _seasons(season, len(values)), strict=True)) if p[0] is not None]
     ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs])
     out: dict[Any, str] = {}
@@ -100,8 +106,9 @@ def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any 
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        InputError: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1
+            ``team_colors(teams, league)`` order) or ``which`` is not "primary"/"secondary".
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::
