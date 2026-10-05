@@ -37,8 +37,8 @@ class SdvplotError(Exception):
 
 class InputError(SdvplotError, ValueError):
     """An argument sdvplot cannot use: an unknown league, id system, color slot, mark type or variant, a color slot
-    such as ``"secondary"`` passed as a team, a season outside the ones sdvplot knows, or a height or alpha out of
-    range."""
+    such as ``"secondary"`` passed as a team, a season that is not a year or is outside the ones sdvplot knows, or a
+    height, alpha, image size or candidate count out of range."""
 
 
 class UnresolvedTeamError(SdvplotError, ValueError):

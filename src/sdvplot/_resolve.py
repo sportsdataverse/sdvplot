@@ -173,9 +173,9 @@ def _seasons(season: Any, n: int) -> list[int | None]:
     try:
         items, _ = _unpack(season)
     except TypeError:  # _unpack's message names values; this is the season argument
-        raise TypeError(f"season must be a year, or one per team, got {type(season).__name__}") from None
+        raise InputError(f"season must be a year, or one per team, got {type(season).__name__}") from None
     if len(items) != n:
-        raise ValueError(f"season has {len(items)} values but there are {n} teams")
+        raise InputError(f"season has {len(items)} values but there are {n} teams")
     return [norm_season(s) for s in items]
 
 
@@ -243,11 +243,11 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
         caller's library.
 
     Raises:
-        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is
-            neither a year nor a list of them.
-        ValueError: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons
-            sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next
-            year), or is a list whose length does not match the teams.
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``season`` is neither a year nor a
+            list of them (a ``pd.Timestamp``, ``"2020-21"``), is outside the seasons sdvplot knows for the league
+            (from its first dated season in the bundled index, 1920 for the NFL, to next year), or is a list whose
+            length does not match the teams.
         UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
@@ -320,7 +320,7 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
         list[tuple[str, str]]: ``(team_id, name)`` pairs, best match first; empty when nothing is close.
 
     Raises:
-        ValueError: If ``league`` is unknown.
+        InputError: (a ValueError) If ``league`` is unknown, or ``n`` is not an int of at least 1.
 
     Example:
         ::
@@ -336,6 +336,8 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     import difflib
 
     _index.check_league(league)
+    if isinstance(n, bool) or not isinstance(n, numbers.Integral) or n < 1:
+        raise InputError(f"n is the most candidates to return, an int of at least 1, got {n!r}")
     key = norm_value(value)
     if key is None:
         return []

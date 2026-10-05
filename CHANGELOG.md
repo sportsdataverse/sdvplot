@@ -93,12 +93,18 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   a download whose sha256 does not match the manifest, or an archived file that is not an image, is the new
   `sdvplot.IntegrityError` (a `DownloadError`). A 404 used to escape as `requests.HTTPError`, which
   `except sdvplot.SdvplotError` did not catch. `except OSError` still catches both.
+- Every shared input check raises `InputError`, so `except sdvplot.SdvplotError` catches bad input:
+  `logo_image(size=...)` takes an int from 1 to 4096 (`size=0` was a `ZeroDivisionError`, `size=-5` a Pillow
+  `ValueError`, and `size=2.5` or `size=True` drew a 2x2 or 1x1 image; a size far past 4096 could abort the process in
+  the SVG renderer), `suggest(n=...)` an int of at least 1 (`n=-1` was difflib's `ValueError` naming `-3`), a season
+  that is not a year (`"2020-21"`, a `pd.Timestamp`) or a season list of the wrong length is an `InputError`, and so
+  is an unknown `mark_type` in `reactable_sdv_cols_label` and `gt_sdv_cols_label`.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the
   last is next year. `logo_url("OAK", "nfl", season=1900)` and `resolve(..., season=20)` used to resolve silently. A
   split season such as `"2020-21"` gets a hint (pass the ending year), and a season of the wrong type (a `pd.Timestamp`)
-  is a `TypeError` that names `season` rather than the team values.
+  is an `InputError` that names `season` rather than the team values.
 - A `variant` that no mark in the archive has (a typo, or not a string) is an `InputError` listing the league's
   variants; it used to fall back to the default mark without a word. A variant the team lacks still falls back, as
   before.

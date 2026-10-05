@@ -6,6 +6,7 @@ import collections
 import contextlib
 import hashlib
 import io
+import numbers
 import re
 import threading
 from pathlib import Path
@@ -14,7 +15,7 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._errors import InputError, IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
 from sdvplot._types import IdSystem, MarkType
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
+MAX_SIZE = 4096  # the largest longest side logo_image() renders: resvg aborts the process on a far larger one
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 URL_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
@@ -95,7 +97,8 @@ def logo_image(
         season: A season year; None picks the current mark.
         variant: "default", "dark", or a named variant from ``marks()``.
         mark_type: "logo" or "wordmark".
-        size: The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512).
+        size: The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at
+            it (default 512).
         id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
             "nhl_id".
         strict: Raise UnresolvedTeamError instead of warning when the team does not resolve.
@@ -116,8 +119,8 @@ def logo_image(
         UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for the mark would put the file
             outside the cache directory.
         InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark",
-            ``variant`` is a name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for
-            the league.
+            ``variant`` is a name no mark in the archive has, ``season`` is not a year or is outside the seasons
+            sdvplot knows for the league, or ``size`` is not an int from 1 to 4096.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and the team does not resolve.
         ValueError: If an SVG cannot be parsed.
 
@@ -135,6 +138,10 @@ def logo_image(
     """
     _check_mark_type(mark_type)
     _check_variant(variant, league)
+    if size is not None and (
+        isinstance(size, bool) or not isinstance(size, numbers.Integral) or not 1 <= size <= MAX_SIZE
+    ):
+        raise InputError(f"size is the longest side in pixels, an int from 1 to {MAX_SIZE}, got {size!r}")
     team_id = resolve(one_team(team, "logo_image"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
