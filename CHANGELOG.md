@@ -13,6 +13,7 @@
     - [Added — web family](#added--web-family)
     - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
+    - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
