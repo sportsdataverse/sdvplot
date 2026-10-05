@@ -1,0 +1,9 @@
+{
+  "label": "Recipes",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/recipes",
+    "description": "Real-world charts and tables built end to end: get the data, shape it, plot it, polish it, export it."
+  }
+}

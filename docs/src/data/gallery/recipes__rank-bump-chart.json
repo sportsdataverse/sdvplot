@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "rank-bump-chart",
+  "label": "Rank bump chart",
+  "position": 9,
+  "page": "recipes/rank-bump-chart.md",
+  "items": [
+    {
+      "title": "Premier League bump chart",
+      "alt": "Bump chart of every Premier League club's position after each match of 2025-26, the champion and the two biggest climbers in team colors, crests at the line ends",
+      "image": "/img/gallery/recipes/rank-bump-chart_13.png",
+      "anchor": "6-export-for-the-blog-and-x"
+    }
+  ]
+}

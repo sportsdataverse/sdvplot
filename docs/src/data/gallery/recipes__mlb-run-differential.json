@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "mlb-run-differential",
+  "label": "MLB run differential",
+  "position": 5,
+  "page": "recipes/mlb-run-differential.md",
+  "items": [
+    {
+      "title": "MLB run differential, ranked and game by game",
+      "alt": "Two-panel 2026 MLB graphic: ranked run-differential bars in team colors with logos at the bar ends, and running run differential lines highlighting the top two and bottom two teams",
+      "image": "/img/gallery/recipes/mlb-run-differential_13.png",
+      "anchor": "6-one-graphic-for-the-blog"
+    }
+  ]
+}
