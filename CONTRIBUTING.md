@@ -104,7 +104,8 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
 
 - Python 3.10+, full type hints (`mypy` runs with `disallow_untyped_defs`), ruff with a 120-column limit.
 - Team ids are strings. Never cast a float id to a string; fix the dtype at the boundary.
-- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs.
+- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs. A new public
+  submodule gets a reference page by being placed in a `MODULE_SECTIONS` group in `tools/gen_docs.py`.
 - Give every public function a Google-style docstring with `Args`, `Returns`, `Raises`, `Example` and `See Also`
   sections, and link its reference page. The `uv run python tools/gen_docs.py --check` gate enforces the standard
   and fails when the committed reference differs from the docstrings.

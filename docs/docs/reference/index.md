@@ -6,7 +6,7 @@ sidebar_position: 0
 
 # API reference
 
-Every public function, grouped by what it works with. Each page gives the signature, the arguments and what the function returns and raises.
+Every public function, grouped by what it works with. Each top-level function has a page, and each public submodule (the library adapters, the table helpers, `sdvplot.testing` and `sdvplot.typing`) has one page with a section per name. Each gives the signature, the arguments and what the function returns and raises.
 
 ## Teams
 
@@ -43,12 +43,31 @@ Every public function, grouped by what it works with. Each page gives the signat
 | [surface](surface.md) | Draw the league's playing surface with sportypy, in a team's colors. |
 | [court_coords](court_coords.md) | Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws. |
 
+| Submodule | What it holds |
+|---|---|
+| [sdvplot.matplotlib](matplotlib.md) | The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figures and seaborn grids. |
+| [sdvplot.plotnine](plotnine.md) | The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines. |
+| [sdvplot.plotly](plotly.md) | The Plotly adapter: logos, wordmarks, headshots and axis logos as layout images on a Plotly Figure. |
+| [sdvplot.altair](altair.md) | The Altair adapter: logos, wordmarks and headshots as a native Vega-Lite image layer. |
+| [sdvplot.bokeh](bokeh.md) | The Bokeh adapter: logos, wordmarks and headshots as one ``image_url`` glyph per call on a Bokeh figure. |
+| [sdvplot.holoviews](holoviews.md) | The HoloViews adapter: a Bokeh plot hook that draws the marks through the Bokeh adapter when the element renders. |
+| [sdvplot.folium](folium.md) | The Folium adapter: logos, wordmarks and headshots as map markers with image icons. |
+| [sdvplot.pygal](pygal.md) | The pygal adapter: logos, wordmarks and headshots on pygal XY charts, plus team colors as a pygal Style. |
+| [sdvplot.great_tables](great_tables.md) | great_tables helpers (``pip install sdvplot[tables]``), ported from sdvplotR's ``gt_*`` functions. |
+| [sdvplot.reactable](reactable.md) | reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR's ``reactable_sdv_*`` functions. |
+| [sdvplot.plottable](plottable.md) | plottable columns of team logos, wordmarks and player headshots. |
+
 ## Housekeeping
 
 | Function | What it does |
 |---|---|
 | [versions](versions.md) | What a bug report needs: the package version, the bundled-index version, and the cached manifest's date. |
 | [clear_cache](clear_cache.md) | Delete everything sdvplot has cached (manifest, images, rasters, nflverse, URL images such as headshots). |
+
+| Submodule | What it holds |
+|---|---|
+| [sdvplot.testing](testing.md) | Shared behaviour every adapter must have. Adapter test suites call check_adapter_contract(). |
+| [sdvplot.typing](typing.md) | Types for annotating code that calls sdvplot: the ``Literal`` aliases of its closed argument vocabularies. |
 
 ## Errors and warnings
 

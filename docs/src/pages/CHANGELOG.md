@@ -61,7 +61,17 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
-- Release: a release run refuses a README that still installs from GitHub (it becomes the version's PyPI page), a
+- API reference: one page per public submodule (`sdvplot.matplotlib`, `sdvplot.plotnine`, `sdvplot.plotly`,
+  `sdvplot.altair`, `sdvplot.bokeh`, `sdvplot.holoviews`, `sdvplot.folium`, `sdvplot.pygal`, `sdvplot.great_tables`,
+  `sdvplot.reactable`, `sdvplot.plottable`, `sdvplot.testing`, `sdvplot.typing`), with a section per public name in the
+  top-level pages' format (signature, arguments, returns, raises, example, see also). Only the 17 top-level functions
+  had pages, so `gt_theme_athletic` or any adapter-only function was on none.
+- The docstring gate (`tools/gen_docs.py --check`) finds the public submodules itself, as `tests/test_api.py` does,
+  instead of reading a list a new submodule could be left off; a new one also fails until it has a reference page.
+- The submodule examples run on a seeded cache (a logo and wordmark for every NFL team, the examples' headshots and
+  images) instead of an empty one, so the 32 that stopped at their first download now run to the end: an error after
+  the first mark lookup no longer passes. Only the four that render through a headless browser stay tolerated.
+- Release: a release run refuses a README without a PyPI install line (it becomes the version's PyPI page), a
   CHANGELOG without a dated heading for the tag, or entries left under `[Unreleased]`
   (`tests/test_repo_files.py::test_the_tagged_release_is_ready`). The dist is built in its own job from a fresh
   checkout after the tests pass, with no uv cache from other workflows, a pinned uv and no persisted credentials; the

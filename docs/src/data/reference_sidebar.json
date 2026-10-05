@@ -40,7 +40,18 @@
       "reference/add_headshots",
       "reference/axis_logos",
       "reference/surface",
-      "reference/court_coords"
+      "reference/court_coords",
+      "reference/matplotlib",
+      "reference/plotnine",
+      "reference/plotly",
+      "reference/altair",
+      "reference/bokeh",
+      "reference/holoviews",
+      "reference/folium",
+      "reference/pygal",
+      "reference/great_tables",
+      "reference/reactable",
+      "reference/plottable"
     ]
   },
   {
@@ -48,7 +59,9 @@
     "label": "Housekeeping",
     "items": [
       "reference/versions",
-      "reference/clear_cache"
+      "reference/clear_cache",
+      "reference/testing",
+      "reference/typing"
     ]
   },
   {
