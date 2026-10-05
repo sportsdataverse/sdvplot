@@ -94,7 +94,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   docs deploy (which holds `contents: write`) pins its actions by commit SHA.
 - CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
   submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
-  and `--strict-config`. Python 3.14 is a declared classifier.
+  and `--strict-config`. Python 3.14 is a declared classifier. A run on `main` is never cancelled by a later push (only
+  a PR's is), and the live network tests run on manual dispatch and weekly in `live-tests-cron`, not on every push.
 - Repeated lookups are faster: with everything cached, `logo_url` takes about 0.1 ms per call instead of 2.5 ms, and
   `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
   its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's
