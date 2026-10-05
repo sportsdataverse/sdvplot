@@ -1,10 +1,12 @@
 """examples/automation/sdvplot_social.py, offline: the CLI, the manifest, image sizes, the offseason fallbacks, the
 player-of-the-game rules, the dry-run and the Bluesky request sequence (a fake HTTP session; nothing is sent)."""
 
+import ast
 import datetime as dt
 import importlib.util
 import json
 import random
+import re
 from pathlib import Path
 
 import polars as pl
@@ -516,3 +518,32 @@ def test_num_keeps_minus_signs_and_reads_pairs():
         pytest.approx(-0.5),
         ["1 CAR · -5 RUSH YDS"],
     )  # a loss, not a 5-yard gain
+
+
+SCRIPT = ROOT / "examples" / "automation" / "sdvplot_social.py"
+TEMPLATE = ROOT / "examples" / "automation" / "workflows" / "sdvplot-social.yml"
+
+
+def test_the_example_imports_only_public_sdvplot_and_the_template_pins_it():
+    tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+    modules = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)]
+    modules += [a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names]
+    private = [
+        m for m in modules if m and m.split(".")[0] == "sdvplot" and any(p.startswith("_") for p in m.split("."))
+    ]
+    assert private == []
+    pin = r'"sdvplot\[mpl,tables\] @ git\+https://github\.com/sportsdataverse/sdvplot@[0-9a-f]{40}"'
+    assert re.search(pin, TEMPLATE.read_text(encoding="utf-8"))
+    from sdvplot._contrast import (
+        contrast,
+        on_color,
+    )  # the inlined copy matches sdvplot's
+
+    for a, b in (
+        ("#000000", "#ffffff"),
+        ("#0080c6", "#0f1115"),
+        ("#fdb927", "#ffffff"),
+        ("#7bafd4", "#a5acaf"),
+    ):
+        assert social.contrast(a, b) == pytest.approx(contrast(a, b))
+        assert social.on_color(a) == on_color(a) and social.on_color(b) == on_color(b)

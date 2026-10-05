@@ -40,9 +40,13 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install sdvplot and sportsdataverse
+        # sdvplot is pinned to a commit (it has no release yet). To upgrade, replace the SHA with a newer commit of
+        # https://github.com/sportsdataverse/sdvplot/commits/main and copy that commit's examples/automation script.
         run: |
           uv venv
-          uv pip install "sdvplot[mpl,tables] @ git+https://github.com/sportsdataverse/sdvplot" "sportsdataverse>=0.1.4"
+          uv pip install \
+            "sdvplot[mpl,tables] @ git+https://github.com/sportsdataverse/sdvplot@6c5d18deb1626a9d25cdc911c7f2174b35cd6220" \
+            "sportsdataverse>=0.1.4"
       - name: Make the graphics
         # Each line adds its posts to out/<today>/manifest.json. Pick your leagues, stats and sizes.
         run: |

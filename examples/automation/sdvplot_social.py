@@ -50,7 +50,6 @@ from matplotlib.patches import Circle, FancyBboxPatch  # noqa: E402
 from PIL import Image  # noqa: E402
 
 import sdvplot  # noqa: E402
-from sdvplot._contrast import contrast, on_color  # noqa: E402
 
 # league -> (sport family, default leaders category, hashtag)
 LEAGUES = {
@@ -383,6 +382,25 @@ BOX_SCHEMA = {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Drawing
+
+
+def _luminance(color: str) -> float:
+    """WCAG relative luminance of a ``#rrggbb`` color (sdvplot's own rule, inlined so the example uses only public
+    sdvplot)."""
+    rgb = [int(color.lstrip("#")[i : i + 2], 16) / 255 for i in (0, 2, 4)]
+    lin = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in rgb]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def contrast(a: str, b: str) -> float:
+    """WCAG contrast ratio between two ``#rrggbb`` colors, 1 (same) to 21 (black on white)."""
+    dark, light = sorted((_luminance(a), _luminance(b)))
+    return (light + 0.05) / (dark + 0.05)
+
+
+def on_color(background: str) -> str:
+    """Black or white, whichever reads better on ``background``."""
+    return "#000000" if contrast("#000000", background) >= contrast("#ffffff", background) else "#ffffff"
 
 
 def team_color(team_id: str, league: str) -> str:
