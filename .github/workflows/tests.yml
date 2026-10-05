@@ -1,4 +1,4 @@
-# Offline tests on a 3.10 + 3.13 matrix; live tests (real network) on main and manual runs only.
+# Offline tests on a 3.10 + 3.13 matrix (Linux, with branch coverage), Windows + macOS, and a lowest-direct-versions job; live tests (real network) on main and manual runs only.
 name: tests
 
 on:
@@ -32,12 +32,12 @@ jobs:
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "${{ matrix.python }}" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
-      - name: Run tests (offline)
+      - name: Run tests (offline, with branch coverage)
         env:
           SDVPLOT_RENDER_TESTS: "1"   # ubuntu-latest ships Chrome: a render test that cannot render fails
         # The image baselines are rendered with the newest matplotlib, which py3.13 resolves. py3.10 resolves an older
         # matplotlib (3.10.x) whose image-edge antialiasing differs, so only the py3.13 job compares images.
-        run: uv run --frozen pytest -q --maxfail=10 ${{ matrix.python == '3.13' && '--mpl --mpl-results-path=mpl-results' || '' }}
+        run: uv run --frozen pytest -q --maxfail=10 --cov=sdvplot --cov-branch --cov-report=term-missing:skip-covered ${{ matrix.python == '3.13' && '--mpl --mpl-results-path=mpl-results' || '' }}
       - name: Upload image comparisons (baseline, result, diff) when they fail
         if: failure()
         uses: actions/upload-artifact@v7
@@ -45,6 +45,40 @@ jobs:
           name: mpl-results-py${{ matrix.python }}
           path: mpl-results/
           if-no-files-found: ignore
+
+  # Windows and macOS: the cache (atomic replace, paths, platformdirs), images and the front door are OS-sensitive.
+  # Render tests and image baselines stay on Linux (they need Chrome and the baselines' font stack).
+  os-matrix:
+    name: pytest (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "${{ matrix.python }}" }
+      - name: Install project + extras + test group
+        run: uv sync --all-extras --no-default-groups --group test --frozen
+      - name: Run tests (offline)
+        run: uv run --frozen pytest -q --maxfail=10
+
+  # Every declared floor must work: resolve each direct dependency to its lowest allowed version and run the suite.
+  lowest-direct:
+    name: pytest (lowest direct versions, py3.10)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, python-version: "3.10" }
+      - name: Install project + extras + test group at their floors
+        run: uv sync --resolution lowest-direct --all-extras --no-default-groups --group test
+      - name: Run tests (offline, no image comparison)
+        run: uv run --no-sync pytest -q --maxfail=10
 
   live:
     name: pytest (live, py3.13)
@@ -61,4 +95,4 @@ jobs:
       - name: Run tests (live network tests included)
         env:
           SDVPLOT_LIVE_TESTS: ${{ github.event.inputs.live_tests != 'false' && '1' || '' }}
-        run: uv run --frozen pytest -q --maxfail=10 --mpl --cov=sdvplot --cov-report=term-missing:skip-covered
+        run: uv run --frozen pytest -q --maxfail=10 --mpl

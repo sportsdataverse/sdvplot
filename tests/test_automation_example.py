@@ -282,7 +282,7 @@ def test_fetch_games_gives_up_with_no_data(monkeypatch):
 
 
 def test_fetch_leaders_falls_back_a_season_and_says_so(monkeypatch):
-    from sportsdataverse.errors import NoDataError
+    NoDataError = pytest.importorskip("sportsdataverse.errors").NoDataError  # the examples group
 
     ref = "http://x/seasons/{y}/{kind}/{i}?lang=en"
 
