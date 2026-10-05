@@ -19,6 +19,7 @@
     - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
     - [Documentation](#documentation)
     - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
+    - [Fixed — content findings (team index, team tiers, surface)](#fixed--content-findings-team-index-team-tiers-surface)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -36,7 +37,7 @@
 - A download cache (`SDVPLOT_CACHE_DIR`, `SDVPLOT_CACHE_TTL`) with `clear_cache()`.
 - The adapter registry and contract harness (`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos`, `sdvplot.testing`).
 - A bundled index of 5,876 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
-- sdvplotR parity: 99.8% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,232 of 4,241 checked).
+- sdvplotR parity: 99.7% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,230 of 4,241 checked; `docs/PARITY.md` lists the deliberate differences).
 
 ### Added — repository standards
 
@@ -244,3 +245,17 @@
 - A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
   writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
 - The weekly `live-tests-cron` render executes every notebook and publishes every generated path.
+
+### Fixed — content findings (team index, team tiers, surface)
+
+- MLB historical codes are season-dated and reach their franchise. A new snapshot, `data-raw/mlbstats_history.csv`
+  (the MLB Stats API's teams for every season since 1901; its team ids are franchise ids), dates each abbreviation
+  and teamCode by the seasons the API used it: `KCA` is the 1955-67 Kansas City Athletics (the Athletics) and never
+  the Royals, `PHA`, `BSN`, `BRO`, `NYG`, `SLB`, `WS1`/`WS2`, `MON`, `CAL`, `ANA`, `FLA` and `OAK` reach today's
+  team, and `WAS` is the Twins' Senators to 1960 and the Rangers' 1961-71. A teamCode or fileCode that spells another
+  franchise's abbreviation (the Royals' teamCode `kca`) is dropped. Baseball-Reference/sportsipy MLB codes now go
+  through that history instead of today's team names, which sent the 1901 Milwaukee Brewers (`MLA`) to today's
+  Brewers and the 1872 Washington Nationals to today's Nationals; `PHA`, `KCA`, `MLN`, `SEP`, `WSH` (1901-60),
+  `WSA` and the rest now resolve. An ESPN abbreviation another franchise held first starts the season after it (`MIL`
+  from 1966, `SEA` from 1970, `WSH` from 1961), so `MIL` in 1960 is the Milwaukee Braves. An sdvplotR key that a dated alias gives another team drops, so `KCA` diverges
+  from sdvplotR (Lahman's Royals) and `WAS` without a season is ambiguous (`docs/PARITY.md`).

@@ -4,6 +4,7 @@
 
 - [sdvplotR parity extras](#sdvplotr-parity-extras)
   - [Ported](#ported)
+  - [Team index](#team-index)
   - [Recipes](#recipes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -71,6 +72,20 @@ ggplot2, where they are position aesthetics, `x0`/`y0` go through each panel's p
 scale averages the logs, and values outside the scale's limits become missing (so `na_rm=True` leaves them out, and
 `na_rm=False` draws no line). Unlike ggplot2 they do not train the scale, so a reference value outside the plotted
 data's range is not brought into view.
+
+## Team index
+
+sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`),
+except where a dated source disagrees: sdvplotR's keys have no seasons, so a key that a dated alias gives another
+team is dropped.
+
+- **`KCA` (MLB).** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics, so sdvplot
+  resolves it to the Athletics in every season; sdvplotR follows Lahman, whose `KCA` is the Royals. The Royals'
+  internal MLB Stats teamCode `kca` is not an alias either.
+- **`WAS` (MLB).** The MLB Stats API's abbreviation for the Senators of 1901-60 (now the Twins) and of 1961-71 (the
+  Rangers); sdvplotR maps it to the Nationals (`WSH`). With a season in either range sdvplot picks that franchise;
+  without one, or in another season, it is ambiguous (`None` and one `SdvplotWarning`). Use `WSH` or `WSN` for the
+  Nationals.
 
 ## Recipes
 

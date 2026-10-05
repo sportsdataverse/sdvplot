@@ -179,6 +179,44 @@ def sr_code_rows(rows: list[dict]) -> list[dict]:
     ]
 
 
+MLB_HISTORY_COLUMNS = ["mlbstats_id", "abbreviation", "team_code", "name", "valid_from", "valid_to"]
+MLB_FIRST_SEASON = 1901
+
+
+def mlbstats_history_rows(seasons: dict[int, list[dict]]) -> list[dict]:
+    """The MLB Stats API codes of today's franchises over time: one row per run of consecutive seasons with the same
+    (id, abbreviation, teamCode, name). API team ids are franchise ids (the 1960 Kansas City Athletics are 133, the
+    Athletics today), so a code maps to the franchise that used it. Clubs absent from the latest season (the Negro
+    League and Federal League teams sportId=1 also lists) have no ESPN team and are left out."""
+    current = {t["id"] for t in seasons[max(seasons)]}
+    runs: dict[tuple, list[list[int]]] = {}
+    for season in sorted(seasons):
+        for t in seasons[season]:
+            if t["id"] not in current:
+                continue
+            key = (str(t["id"]), t.get("abbreviation"), t.get("teamCode"), t.get("name"))
+            spans = runs.setdefault(key, [])
+            if spans and spans[-1][1] == season - 1:
+                spans[-1][1] = season
+            else:
+                spans.append([season, season])
+    return [
+        dict(zip(MLB_HISTORY_COLUMNS, (*key, lo, hi), strict=True)) for key, spans in runs.items() for lo, hi in spans
+    ]
+
+
+def fetch_mlbstats_seasons(s: requests.Session, last: int) -> dict[int, list[dict]]:
+    """Every big-league season's teams, MLB_FIRST_SEASON to ``last`` (plain http: see fetch_all)."""
+    out = {}
+    for season in range(MLB_FIRST_SEASON, last + 1):
+        r = s.get(f"http://statsapi.mlb.com/api/v1/teams?sportId=1&season={season}", timeout=60)
+        r.raise_for_status()
+        out[season] = r.json().get("teams", [])
+        if not out[season]:
+            raise RuntimeError(f"mlbstats: no teams for season {season}")
+    return out
+
+
 def main() -> None:
     import tempfile
 
@@ -308,6 +346,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         mlb,
         ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"],
     )
+    write("mlbstats_history", mlbstats_history_rows(fetch_mlbstats_seasons(direct, season)), MLB_HISTORY_COLUMNS)
 
     import polars as pl
 

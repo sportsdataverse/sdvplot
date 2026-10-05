@@ -2,6 +2,7 @@
 except the gated live test at the end."""
 
 import os
+import warnings
 
 import polars as pl
 import pytest
@@ -66,6 +67,63 @@ def test_fangraphs_codes(code, team):
 @pytest.mark.parametrize(("code", "team"), [("KCR", "7"), ("TBR", "30")])
 def test_baseball_reference_codes(code, team):
     assert sdvplot.resolve(code, "mlb", id_system="bref") == team
+
+
+@pytest.mark.parametrize(
+    ("code", "season", "team"),
+    [
+        ("KCA", 1960, "11"),  # the Kansas City Athletics (1955-67): the Athletics, in every season
+        ("KCA", 1990, "11"),
+        ("KCA", None, "11"),
+        ("PHA", 1930, "11"),  # the Philadelphia Athletics (1901-54)
+        ("PHA", None, "11"),
+        ("BSN", 1948, "15"),  # the Boston Braves
+        ("MLN", 1957, "15"),  # the Milwaukee Braves (Baseball-Reference)
+        ("BRO", 1955, "19"),  # the Brooklyn Dodgers
+        ("NYG", 1954, "26"),  # the New York Giants
+        ("SEP", 1969, "8"),  # the Seattle Pilots: the Brewers
+        ("SLB", 1944, "1"),  # the St. Louis Browns: the Orioles
+        ("MLA", 1901, "1"),  # the 1901 Milwaukee Brewers: the Orioles too, not today's Brewers
+        ("WS1", 1924, "9"),  # the Senators who became the Twins (an MLB Stats API teamCode)
+        ("WS2", 1965, "13"),  # ... and the ones who became the Rangers
+        ("WAS", 1924, "9"),
+        ("WAS", 1965, "13"),
+        ("WSA", 1965, "13"),
+        ("MON", 1994, "20"),
+        ("CAL", 1980, "3"),
+        ("ANA", 2002, "3"),
+        ("FLA", 2003, "28"),
+        ("TBD", 2005, "30"),
+        ("OAK", 1990, "11"),
+        ("MIL", 1960, "15"),  # today's ESPN codes another franchise held first: the Milwaukee Braves
+        ("MIL", 1901, "1"),
+        ("MIL", 1990, "8"),
+        ("MIL", None, "8"),
+        ("SEA", 1969, "8"),  # the Seattle Pilots
+        ("SEA", None, "12"),
+        ("WSH", 1950, "9"),  # Baseball-Reference's first Senators
+        ("WSH", 2010, "20"),
+    ],
+)
+def test_mlb_historical_codes_reach_their_franchise(code, season, team):
+    assert sdvplot.resolve(code, "mlb", season=season) == team
+
+
+def test_no_mlb_id_system_gives_kca_to_the_royals():  # the Royals' teamCode is "kca"; sdvplotR maps KCA to KC
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", sdvplot.SdvplotWarning)
+        got = {s: sdvplot.resolve("KCA", "mlb", season=1990, id_system=s) for s in PRIORITY}
+    assert "7" not in got.values() and got["mlbstats"] == got["bref"] == "11"
+
+
+def test_baseball_reference_codes_go_to_the_franchise_not_a_namesake():
+    assert sdvplot.resolve("MLA", "mlb", id_system="bref") == "1"  # was today's Brewers (8) by name
+    assert sdvplot.resolve("WSH", "mlb", season=1950, id_system="bref") == "9"  # Baseball-Reference's first Senators
+
+
+def test_an_mlb_code_two_franchises_used_needs_a_season():
+    with pytest.warns(sdvplot.SdvplotWarning, match="WAS"):
+        assert sdvplot.resolve("WAS", "mlb") is None  # the Senators of 1901-60 and of 1961-71
 
 
 def test_cfbd_school_names():

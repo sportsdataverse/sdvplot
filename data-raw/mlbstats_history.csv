@@ -1,0 +1,70 @@
+mlbstats_id,abbreviation,team_code,name,valid_from,valid_to
+108,ANA,ana,Anaheim Angels,1997,2004
+108,CAL,cal,California Angels,1966,1996
+108,LAA,ana,Los Angeles Angels,2005,2026
+108,LAA,laa,Los Angeles Angels,1961,1965
+109,AZ,ari,Arizona Diamondbacks,1996,2026
+110,BAL,bal,Baltimore Orioles,1954,2026
+110,MIL,mla,Milwaukee Brewers,1901,1901
+110,SLB,sla,St. Louis Browns,1902,1953
+111,BOS,bos,Boston Americans,1901,1906
+111,BOS,bos,Boston Red Sox,1907,2026
+112,CHC,chn,Chicago Cubs,1903,2026
+112,CHI,chn,Chicago Orphans,1901,1902
+113,CIN,cin,Cincinnati Redlegs,1954,1959
+113,CIN,cin,Cincinnati Reds,1901,1953
+113,CIN,cin,Cincinnati Reds,1960,2026
+114,CLE,cle,Cleveland Blues,1901,1901
+114,CLE,cle,Cleveland Bronchos,1902,1902
+114,CLE,cle,Cleveland Guardians,2022,2026
+114,CLE,cle,Cleveland Indians,1915,2021
+114,CLE,cle,Cleveland Naps,1903,1914
+115,COL,col,Colorado Rockies,1992,2026
+116,DET,det,Detroit Tigers,1901,2026
+117,HOU,hou,Houston Astros,1965,2026
+117,HOU,hou,Houston Colt 45's,1962,1964
+118,KC,kca,Kansas City Royals,1968,2026
+119,BRO,bkl,Brooklyn Dodgers,1911,1912
+119,BRO,bkl,Brooklyn Dodgers,1932,1957
+119,BRO,bkl,Brooklyn Robins,1914,1931
+119,BRO,bkl,Brooklyn Superbas,1901,1910
+119,BRO,bkl,Brooklyn Superbas,1913,1913
+119,LA,lan,Los Angeles Dodgers,1958,2004
+119,LAD,lan,Los Angeles Dodgers,2005,2026
+120,MON,mtl,Montreal Expos,1968,2004
+120,WSH,was,Washington Nationals,2005,2026
+121,NYM,nyn,New York Mets,1962,2026
+133,ATH,ath,Athletics,2025,2026
+133,KCA,kc1,Kansas City Athletics,1955,1967
+133,OAK,oak,Oakland Athletics,1968,2024
+133,PHA,pha,Philadelphia Athletics,1901,1954
+134,PIT,pit,Pittsburgh Pirates,1901,2026
+135,SD,sdn,San Diego Padres,1969,2026
+136,SEA,sea,Seattle Mariners,1977,2026
+137,NYG,ny1,New York Giants,1901,1957
+137,SF,sfn,San Francisco Giants,1958,2026
+138,STL,sln,St. Louis Cardinals,1901,2026
+139,TB,tba,Tampa Bay Devil Rays,1996,2007
+139,TB,tba,Tampa Bay Rays,2008,2026
+140,TEX,tex,Texas Rangers,1972,2026
+140,WAS,ws2,Washington Senators,1961,1971
+141,TOR,tor,Toronto Blue Jays,1977,2026
+142,MIN,min,Minnesota Twins,1961,2026
+142,WAS,ws1,Washington Senators,1901,1960
+143,PHI,phi,Philadelphia Phillies,1901,2026
+144,ATL,atl,Atlanta Braves,1966,2026
+144,BSN,bsn,Boston Beaneaters,1901,1906
+144,BSN,bsn,Boston Bees,1936,1940
+144,BSN,bsn,Boston Braves,1912,1935
+144,BSN,bsn,Boston Braves,1941,1952
+144,BSN,bsn,Boston Doves,1907,1910
+144,BSN,bsn,Boston Rustlers,1911,1911
+144,MIL,ml1,Milwaukee Braves,1953,1965
+145,CWS,cha,Chicago White Sox,1901,2026
+146,FLA,flo,Florida Marlins,1992,2011
+146,MIA,mia,Miami Marlins,2012,2026
+147,NYH,nya,New York Highlanders,1903,1912
+147,NYY,nya,New York Yankees,1913,2026
+158,MIL,mil,Milwaukee Brewers,1998,2026
+158,MIL,ml4,Milwaukee Brewers,1970,1997
+158,SEA,se1,Seattle Pilots,1968,1969

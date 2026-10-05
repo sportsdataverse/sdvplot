@@ -236,3 +236,23 @@ def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
 def test_snapshots_use_lf_line_endings(tmp_path):
     fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)  # same call shape as Task 0's test
     assert b"\r\n" not in (tmp_path / "t.csv").read_bytes()
+
+
+def test_mlbstats_history_keeps_runs_of_todays_franchises():
+    def t(i, abbr, code, name):
+        return {"id": i, "abbreviation": abbr, "teamCode": code, "name": name}
+
+    seasons = {
+        1967: [t(133, "KCA", "kc1", "Kansas City Athletics"), t(1520, "KCM", "kcm", "Kansas City Monarchs")],
+        1968: [t(133, "OAK", "oak", "Oakland Athletics")],
+        1969: [t(133, "OAK", "oak", "Oakland Athletics"), t(118, "KC", "kca", "Kansas City Royals")],
+        1970: [t(133, "KCA", "kc1", "Kansas City Athletics"), t(118, "KC", "kca", "Kansas City Royals")],
+    }  # 1970's KCA is made up: a code that comes back starts a new run
+    rows = fs.mlbstats_history_rows(seasons)
+    assert set(rows[0]) == set(fs.MLB_HISTORY_COLUMNS)
+    assert sorted(tuple(r.values()) for r in rows) == [
+        ("118", "KC", "kca", "Kansas City Royals", 1969, 1970),
+        ("133", "KCA", "kc1", "Kansas City Athletics", 1967, 1967),
+        ("133", "KCA", "kc1", "Kansas City Athletics", 1970, 1970),
+        ("133", "OAK", "oak", "Oakland Athletics", 1968, 1969),
+    ]  # the Monarchs, absent from the latest season, have no ESPN team
