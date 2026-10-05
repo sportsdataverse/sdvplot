@@ -116,6 +116,9 @@ def run_example(code: str, root: Path, monkeypatch, *, timeout: float = EXAMPLE_
     for target, name in [(socket.socket, "connect"), (socket.socket, "connect_ex"), (socket, "getaddrinfo"),
                          (socket, "create_connection"), (socket, "gethostbyname")]:  # fmt: skip
         monkeypatch.setattr(target, name, blocked)
+    # a keep-alive connection pooled by an earlier (live) test sends without connect or getaddrinfo: block sdvplot's
+    # downloads at their one entry point too
+    monkeypatch.setattr(_cache, "_session", blocked)
 
     def on_alarm(*_a):
         raise ExampleTimeout(f"timed out after {timeout} s")
@@ -209,6 +212,17 @@ def test_every_socket_entry_point_is_blocked(call, tmp_path, monkeypatch):
     args = {"connect_ex": "s.connect_ex(('127.0.0.1', 9))", "getaddrinfo": "socket.getaddrinfo('example.com', 80)",
             "gethostbyname": "socket.gethostbyname('example.com')"}  # fmt: skip
     exc = _run(f"import socket\ns = socket.socket()\n{args[call]}", tmp_path, monkeypatch)
+    assert isinstance(exc, NetworkBlocked)
+
+
+def test_a_pooled_connection_cannot_bypass_the_blocker(tmp_path, monkeypatch):
+    # an earlier live test leaves a session whose pooled keep-alive connection needs no connect: stand in for it
+    class Pooled:
+        def get(self, *_a, **_k):
+            return "served from a pooled connection"
+
+    monkeypatch.setitem(_cache.__dict__, "SESSION", Pooled())
+    exc = _run("from sdvplot import _cache\n_cache._session().get('https://example.com')", tmp_path, monkeypatch)
     assert isinstance(exc, NetworkBlocked)
 
 

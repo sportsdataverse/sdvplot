@@ -523,3 +523,119 @@ def test_a_scoreboard_team_espn_lists_but_the_archive_lacks_joins_the_index(tmp_
     assert got == [("NYMS", "SUNY Morrisville Mustangs", "mens")]  # a listed team keeps its list row
     espn = aliases.filter((pl.col("id_system") == "espn") & (pl.col("value") == "126813"))
     assert espn["team_id"].to_list() == ["126813"]
+
+
+# Colors beyond the teams list: ESPN's per-team endpoint, then logo-derived (data-raw/espn_colors.csv, logo_colors.csv)
+ESPN_COLORS = "league,team_id,espn_league,display_name,location,color,alternate_color\n"
+LOGO_COLORS = "league,team_id,primary,secondary,sha256\n"
+
+
+def _colors(tmp_path, espn_colors="", logo_colors="", teams=()):
+    raw = _raw(tmp_path)
+    for line in teams:
+        _add(raw, "manifest_teams.csv", line)
+    (raw / "espn_colors.csv").write_text(ESPN_COLORS + espn_colors, encoding="utf-8", newline="")
+    (raw / "logo_colors.csv").write_text(LOGO_COLORS + logo_colors, encoding="utf-8", newline="")
+    teams, _, _ = bi.build(raw)
+    return {
+        (r["league"], r["team_id"]): (r["color_source"], r["color_primary"], r["color_secondary"])
+        for r in teams.iter_rows(named=True)
+    }
+
+
+def test_a_college_team_takes_its_schools_espn_color_from_another_sport_by_id_and_location(tmp_path):
+    got = _colors(
+        tmp_path,
+        "ncaa_mhockey,103,ncaa_mhockey,Boston College Falcons,Boston College,,\n"  # ESPN hockey's names vary
+        "ncaa_mhockey,103,mbb,Boston College Eagles,Boston College,8C2232,dbcca6\n"
+        "ncaa_mhockey,5,ncaa_mhockey,Alpha Owls,Alpha,,\n"
+        "ncaa_mhockey,5,cfb,Beta Bears,Beta,123456,654321\n"  # the same id at another location: not this school
+        "ncaa_mhockey,6,mbb,Gamma Goats,Gamma,abcdef,\n",  # no row in its own league: nothing to compare with
+        teams=[
+            "ncaa_mhockey,103,Boston College Eagles,mens",
+            "ncaa_mhockey,5,Alpha Owls,mens",
+            "ncaa_mhockey,6,Gamma Goats,mens",
+        ],  # fmt: skip
+    )
+    assert got["ncaa_mhockey", "103"] == ("espn", "#8c2232", "#dbcca6")
+    assert got["ncaa_mhockey", "5"][0] == got["ncaa_mhockey", "6"][0] == "fallback"
+
+
+def test_a_teams_own_espn_endpoint_color_comes_before_another_sports(tmp_path):
+    got = _colors(
+        tmp_path,
+        "ncaa_baseball,9,ncaa_baseball,Delta Dogs,Delta,0000ff,\nncaa_baseball,9,cfb,Delta Dogs,Delta,ff0000,00ff00\n",
+        teams=["ncaa_baseball,9,Delta Dogs,mens"],
+    )
+    assert got["ncaa_baseball", "9"] == ("espn", "#0000ff", None)  # R38: its own source's null secondary
+
+
+def test_color_sources_by_precedence_and_never_mixed(tmp_path):
+    got = _colors(
+        tmp_path,
+        # LV has nflverse colors, KC ESPN's list primary without a secondary
+        "nfl,13,nfl,Las Vegas Raiders,Las Vegas,111111,222222\nmlb,7,mlb,Kansas City Royals,Kansas City,333333,444444\n"
+        "soccer,10,soccer,Huracan,Buenos Aires,c60000,000000\n",
+        "nfl,13,a1a1a1,b2b2b2,s\nmlb,7,a1a1a1,b2b2b2,s\nsoccer,10,a1a1a1,b2b2b2,s\nohl,7,c3c3c3,d4d4d4,s\n",
+        teams=["soccer,10,Huracan,"],
+    )
+    assert got["nfl", "13"] == ("nflverse", "#000000", "#a5acaf")
+    assert got["mlb", "7"] == ("espn", "#004687", None)  # never the endpoint's or the logo's secondary
+    assert got["soccer", "10"] == ("espn", "#c60000", "#000000")
+    assert got["ohl", "7"] == ("logo", "#c3c3c3", "#d4d4d4")
+
+
+def test_new_color_rows_are_validated_and_a_secondary_differs_from_its_primary(tmp_path):
+    got = _colors(
+        tmp_path,
+        "soccer,10,soccer,Huracan,Buenos Aires,zzzzzz,000000\n",  # no valid primary: the endpoint gives nothing
+        "soccer,10,123abc,123ABC,s\nohl,7,NULL,d4d4d4,s\n",
+        teams=["soccer,10,Huracan,"],
+    )
+    assert got["soccer", "10"] == ("logo", "#123abc", None)  # the same color twice is one color
+    assert got["ohl", "7"][0] == "fallback"
+
+
+def test_espns_stand_in_colors_are_no_colors(tmp_path):  # black alone, or with ESPN's stock red
+    raw = _raw(tmp_path)
+    for line in ("cfb,2,Campbell Fighting Camels,football", "cfb,3,Army Black Knights,football", "soccer,4,Some FC,"):
+        _add(raw, "manifest_teams.csv", line)
+    for line in ("cfb,2,CAM,Campbell Fighting Camels,Campbell,Campbell,Fighting Camels,000000,NULL",
+                 "cfb,3,ARMY,Army Black Knights,Army,Army,Black Knights,000000,ffffff"):  # fmt: skip
+        _add(raw, "espn_teams.csv", line)
+    (raw / "espn_colors.csv").write_text(
+        ESPN_COLORS + "cfb,2,mbb,Campbell Fighting Camels,Campbell,ff7900,000000\n"
+        "cfb,2,cfb,Campbell Fighting Camels,Campbell,000000,\nsoccer,4,soccer,Some FC,Some,000000,C60000\n",
+        encoding="utf-8",
+    )
+    (raw / "logo_colors.csv").write_text(LOGO_COLORS + "soccer,4,123abc,,s\n", encoding="utf-8")
+    teams, _, _ = bi.build(raw)
+    got = {r[0]: r[1:] for r in teams.select("team_id", "color_source", "color_primary", "color_secondary").rows()}
+    assert got["2"] == ("espn", "#ff7900", "#000000")  # the school's color from another sport, not the black
+    assert got["3"] == ("espn", "#000000", "#ffffff")  # black beside a second color is a team's
+    assert got["4"] == ("logo", "#123abc", None)
+
+
+def test_college_baseball_reaches_its_school_by_a_unique_exact_name_never_by_id(tmp_path):
+    # ESPN numbers college baseball and softball teams apart from the school: Rutgers is 102 in baseball, 164 elsewhere
+    raw = _raw(tmp_path)
+    for line in ("ncaa_baseball,102,Rutgers Scarlet Knights,mens", "ncaa_baseball,371,Rowan Profs,mens",
+                 "ncaa_baseball,5,Concordia Golden Bears,mens", "ncaa_baseball,6,Delta Dogs,mens"):  # fmt: skip
+        _add(raw, "manifest_teams.csv", line)
+    for line in (
+        "ncaa_baseball,102,RUTG,Rutgers Scarlet Knights,Rutgers,Rutgers,Scarlet Knights,000000,",  # a stand-in
+        "cfb,164,RUTG,Rutgers Scarlet Knights,Rutgers,Rutgers,Scarlet Knights,ce0e2d,ffffff",
+        "ncaa_baseball,371,ROW,Rowan Profs,Rowan,Rowan,Profs,,",
+        "wbb,371,RN,Rutgers-Newark Raiders,Rutgers-Newark,Rowan,Raiders,ff0000,",  # same id, same place: not by id
+        "ncaa_baseball,5,CON,Concordia Golden Bears,Concordia,Concordia,Golden Bears,,",
+        "cfb,50,CON,Concordia Golden Bears,Concordia,Concordia,Golden Bears,123456,",
+        "cfb,51,CON,Concordia Golden Bears,Concordia,Concordia,Golden Bears,654321,",  # two of that name: neither
+        "ncaa_baseball,6,DEL,Delta Dogs,Delta,Delta,Dogs,,",
+        "mbb,60,DEL,Delta Dogs,Delta,Delta State,Dogs,abcdef,",  # the same name at another location
+    ):
+        _add(raw, "espn_teams.csv", line)
+    teams, _, _ = bi.build(raw)
+    got = {r[0]: r[1:] for r in teams.filter(pl.col("league") == "ncaa_baseball").select(
+        "team_id", "color_source", "color_primary", "color_secondary").rows()}  # fmt: skip
+    assert got["102"] == ("espn", "#ce0e2d", "#ffffff")
+    assert got["371"][0] == got["5"][0] == got["6"][0] == "fallback"

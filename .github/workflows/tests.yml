@@ -1,4 +1,5 @@
-# Offline tests on a 3.10 + 3.13 matrix (Linux, with branch coverage), Windows + macOS, and a lowest-direct-versions job; live tests (real network) on main and manual runs only.
+# Offline tests on 3.10-3.13 (Linux, with branch coverage), Windows + macOS, a lowest-direct-versions job, the sdist's own
+# tests, and the built wheel with no extras (3.10 + 3.14); live tests (real network) on main and manual runs only.
 name: tests
 
 on:
@@ -24,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.13"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
@@ -108,6 +109,35 @@ jobs:
         run: |
           cd sdvplot-*/
           .venv/bin/python -m pytest -q --maxfail=10
+
+  # The wheel a user gets from PyPI, installed with no extras: every other job installs extras, so a core module that
+  # imported an optional library would pass them all. Then [all] imports every public submodule. 3.14 is the newest
+  # Python the classifiers claim.
+  wheel:
+    name: wheel (no extras, then [all]; py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with: { version: "latest", enable-cache: true, python-version: "${{ matrix.python }}" }
+      - name: Build the wheel
+        run: uv build --wheel --out-dir "$RUNNER_TEMP/dist"
+      - name: Core with no extras
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv venv bare
+          uv pip install --python bare dist/sdvplot-*.whl
+          bare/bin/python -c 'import sdvplot as s, sdvplot.typing; assert len(s.teams("nfl")) == 32; assert s.team_colors("nfl", "KC") == "#e31837"; assert s.palette("nfl")["KC"] == "#e31837"'
+      - name: Every public submodule with [all]
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv venv all
+          uv pip install --python all "$(ls dist/sdvplot-*.whl)[all]"
+          all/bin/python -c 'import importlib, pkgutil, sdvplot; [importlib.import_module(f"sdvplot.{m.name}") for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_")]'
 
   live:
     name: pytest (live, py3.13)

@@ -47,6 +47,18 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
+  leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
+  ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in
+  another ESPN sport, through the same school id at the same location or, for college baseball and softball (which
+  number their teams apart from the school), a unique exact name and location. The other 1,364 carry the two dominant
+  colors of their archived logo, flagged `color_source="logo"` because no source publishes them (`teamcolors` was
+  surveyed and not used: GPL data from 2020 that adds 5 teams). Two scoreboard-only men's college hockey teams, with no
+  logo and no ESPN color, keep a fallback. ESPN's stand-in colors (black alone, or black with its stock red) no longer
+  count as a team's: 417 college teams that showed them now show their school's ESPN colors (119) or their logo's
+  (298). A secondary equal to its primary is dropped (5 teams). `tools/fetch_sources.py --colors-only` refreshes the
+  two new snapshots, `data-raw/espn_colors.csv` and `data-raw/logo_colors.csv`.
+
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
 - API reference: one page per public submodule (`sdvplot.matplotlib`, `sdvplot.plotnine`, `sdvplot.plotly`,
@@ -59,6 +71,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - The submodule examples run on a seeded cache (a logo and wordmark for every NFL team, the examples' headshots and
   images) instead of an empty one, so the 32 that stopped at their first download now run to the end: an error after
   the first mark lookup no longer passes. Only the four that render through a headless browser stay tolerated.
+- Release: a release run refuses a README without a PyPI install line (it becomes the version's PyPI page), a
+  CHANGELOG without a dated heading for the tag, or entries left under `[Unreleased]`
+  (`tests/test_repo_files.py::test_the_tagged_release_is_ready`). The dist is built in its own job from a fresh
+  checkout after the tests pass, with no uv cache from other workflows, a pinned uv and no persisted credentials; the
+  docs deploy (which holds `contents: write`) pins its actions by commit SHA.
+- CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
+  submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
+  and `--strict-config`. Python 3.14 is a declared classifier.
 
 ### Fixed
 

@@ -173,4 +173,11 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
 3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
    an emptied `## [Unreleased]`, which always stays at the top (a test asserts it).
 4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
-5. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates.
+5. First release only: merge the install-line PR (#50: README, intro and quickstart switch to `pip install sdvplot`)
+   just before tagging. The README is the PyPI page and cannot be changed for a version once it is uploaded. For 0.1.0,
+   step 3 means folding the `[Unreleased]` entries into the existing `## [0.1.0]` section and replacing its
+   `Unreleased` with the date.
+6. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates. Its test run sets
+   `SDVPLOT_RELEASE_VERSION` from the tag, and `tests/test_repo_files.py::test_the_tagged_release_is_ready` then refuses
+   a README that still installs from GitHub, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, or
+   entries left under `[Unreleased]`.

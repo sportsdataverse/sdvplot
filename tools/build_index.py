@@ -9,13 +9,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 import polars as pl
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools")]
-from fetch_sources import IDENTITY_SOURCES  # noqa: E402  (the team universe and the mark crosswalk share it)
+from fetch_sources import ESPN_COLLEGE, ESPN_PLACEHOLDER, ESPN_SCHOOL_IDS, IDENTITY_SOURCES  # noqa: E402
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
 from sdvplot._resolve import PRIORITY  # noqa: E402  (the R50 tri-code fallback follows resolve()'s order)
@@ -51,6 +52,15 @@ def _hex(col: str) -> pl.Expr:
     return pl.when(c.str.contains(r"^[0-9a-f]{6}$")).then(pl.lit("#") + c).otherwise(None)
 
 
+def _espn_colors(prefix: str) -> list[pl.Expr]:
+    """ESPN's color and alternate_color as {prefix}_primary and {prefix}_secondary, both null where they are ESPN's
+    stand-in (fetch_sources.ESPN_PLACEHOLDER: black alone, or with its stock red) and not the team's colors."""
+    black, alts = ESPN_PLACEHOLDER
+    p, s = _hex("color"), _hex("alternate_color")
+    stand_in = (p == f"#{black}") & (s.is_null() | s.is_in([f"#{a}" for a in alts if a]))
+    return [pl.when(~stand_in).then(e).alias(f"{prefix}_{side}") for e, side in ((p, "primary"), (s, "secondary"))]
+
+
 def _norm(e: pl.Expr) -> pl.Expr:
     return e.str.strip_chars().str.to_lowercase()
 
@@ -83,6 +93,87 @@ def espn_teams(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
     return pl.concat([listed, new]), own, twins.select("league", "team_id", "espn_id")
 
 
+def espn_school_colors(raw: Path, listed: pl.DataFrame) -> pl.DataFrame:
+    """ESPN colors beyond a team's teams-list row, as (league, team_id, ep_primary, ep_secondary), from ESPN's entries:
+    the teams lists (``listed``) and the per-team endpoint's rows (data-raw/espn_colors.csv), stand-ins dropped. In
+    order: the team's own entry; the entry with its id in another ESPN_SCHOOL_IDS league at the same location (one
+    school, one id); then, in ESPN_COLLEGE order, the college entry with exactly its display name and location, a name
+    no other entry of either league has (college baseball and softball number their teams apart from the school, so
+    this is how they reach it). No own entry, no colors."""
+    entry = ["espn_league", "espn_id", "display_name", "location", "color", "alternate_color"]
+    path = raw / "espn_colors.csv"
+    ep = _csv(raw, path.name) if path.exists() else pl.DataFrame(schema=dict.fromkeys(["team_id", *entry], pl.String))
+    entries = (
+        pl.concat(
+            [
+                listed.select(pl.col("league").alias("espn_league"), pl.col("team_id").alias("espn_id"), *entry[2:]),
+                ep.select("espn_league", pl.col("team_id").alias("espn_id"), *entry[2:]),
+            ]
+        )
+        .with_columns(
+            *_espn_colors("ep"), _norm(pl.col("display_name")).alias("_name"), _norm(pl.col("location")).alias("_loc")
+        )
+        .sort("espn_league", "espn_id", pl.col("ep_primary").is_null())  # an entry with colors first
+        .unique(["espn_league", "espn_id"], keep="first", maintain_order=True)
+    )
+    own = entries.select(
+        pl.col("espn_league").alias("league"), pl.col("espn_id").alias("team_id"), "_name", "_loc", "ep_primary",
+        "ep_secondary", pl.lit(0).alias("_rank"),
+    )  # fmt: skip
+    colored = entries.drop_nulls("ep_primary")
+
+    def ranked(leagues: list[str], start: int) -> pl.DataFrame:
+        return pl.DataFrame({"espn_league": leagues, "_rank": range(start, start + len(leagues))})
+
+    school = (
+        own.filter(pl.col("league").is_in(ESPN_SCHOOL_IDS))
+        .drop("ep_primary", "ep_secondary", "_rank")
+        .join(colored, left_on=["team_id", "_loc"], right_on=["espn_id", "_loc"])
+        .join(ranked(ESPN_SCHOOL_IDS, 1), on="espn_league")
+    )
+    unique_name = entries.group_by("espn_league", "_name").len().filter(pl.col("len") == 1).drop("len")
+    named = (
+        own.filter(pl.col("league").is_in(ESPN_COLLEGE))
+        .drop("ep_primary", "ep_secondary", "_rank")
+        .join(unique_name, left_on=["league", "_name"], right_on=["espn_league", "_name"], how="semi")
+        .join(colored.join(unique_name, on=["espn_league", "_name"], how="semi"), on=["_name", "_loc"])
+        .join(ranked(ESPN_COLLEGE, 1 + len(ESPN_SCHOOL_IDS)), on="espn_league")
+    )
+    cols = ["league", "team_id", "ep_primary", "ep_secondary", "_rank"]
+    return (
+        pl.concat([part.filter(pl.col("espn_league") != pl.col("league")).select(cols) for part in (school, named)])
+        .vstack(own.select(cols).cast({"_rank": pl.Int64}))
+        .drop_nulls("ep_primary")
+        .sort("league", "team_id", "_rank")
+        .unique(["league", "team_id"], keep="first", maintain_order=True)
+        .drop("_rank")
+    )
+
+
+def logo_colors(raw: Path) -> pl.DataFrame:
+    """Colors derived from each team's logo (data-raw/logo_colors.csv, tools/fetch_sources.py logo_colors), as
+    (league, team_id, logo_primary, logo_secondary): the last resort, for a team no source publishes colors for."""
+    cols = ["league", "team_id", "logo_primary", "logo_secondary"]
+    if not (raw / "logo_colors.csv").exists():
+        return pl.DataFrame(schema=dict.fromkeys(cols, pl.String))
+    lc = _csv(raw, "logo_colors.csv")
+    return lc.select(
+        "league", "team_id", _hex("primary").alias("logo_primary"), _hex("secondary").alias("logo_secondary")
+    )
+
+
+# Color sources by precedence, as (color_source, column prefix): the first with a primary gives both colors, so one
+# source's secondary never sits beside another's primary
+COLOR_SOURCES = [("nflverse", "nflv"), ("espn", "espn"), ("espn", "ep"), ("logo", "logo")]
+
+
+def _first_source(value: Callable[[str, str], pl.Expr]) -> pl.Expr:
+    e: pl.Expr = pl.lit(None, pl.String)
+    for name, prefix in reversed(COLOR_SOURCES):
+        e = pl.when(pl.col(f"{prefix}_primary").is_not_null()).then(value(name, prefix)).otherwise(e)
+    return e
+
+
 def build_teams(raw: Path) -> pl.DataFrame:
     all_espn, unlisted, _ = espn_teams(raw)
     base = _csv(raw, "manifest_teams.csv")
@@ -98,8 +189,7 @@ def build_teams(raw: Path) -> pl.DataFrame:
         pl.col("abbreviation").alias("abbr"),
         pl.col("short_display_name").alias("short_name"),
         "location",
-        _hex("color").alias("espn_primary"),
-        _hex("alternate_color").alias("espn_secondary"),
+        *_espn_colors("espn"),
     )
     # nflverse also lists relocated codes (OAK, SD, STL) and LAR on the current team's ESPN logo; the curated file
     # names their canonical code, so only the current code is kept
@@ -131,18 +221,17 @@ def build_teams(raw: Path) -> pl.DataFrame:
         base.join(espn, on=["league", "team_id"], how="left")
         .join(nflv, on=["league", "team_id"], how="left")
         .join(groups, on=["league", "team_id"], how="left")
+        .join(espn_school_colors(raw, all_espn), on=["league", "team_id"], how="left")
+        .join(logo_colors(raw), on=["league", "team_id"], how="left")
     )
     assert not t.select("league", "team_id").is_duplicated().any(), "a source repeats a (league, team_id)"
     t = t.with_columns(
         pl.coalesce("nflv_abbr", "abbr").alias("abbr"),
-        pl.when(pl.col("nflv_primary").is_not_null())
-        .then(pl.lit("nflverse"))
-        .when(pl.col("espn_primary").is_not_null())
-        .then(pl.lit("espn"))
-        .otherwise(pl.lit("fallback"))
-        .alias("color_source"),
-        pl.coalesce("nflv_primary", "espn_primary").alias("color_primary"),
-        pl.coalesce("nflv_secondary", "espn_secondary").alias("color_secondary"),
+        _first_source(lambda name, _: pl.lit(name)).fill_null("fallback").alias("color_source"),
+        _first_source(lambda _, p: pl.col(f"{p}_primary")).alias("color_primary"),
+        _first_source(lambda _, p: pl.col(f"{p}_secondary")).alias("color_secondary"),
+    ).with_columns(  # a secondary is a second color: one equal to the primary is none
+        pl.when(pl.col("color_secondary") != pl.col("color_primary")).then(pl.col("color_secondary"))
     )
     t = t.with_columns(
         pl.struct("league", "team_id", "color_primary")

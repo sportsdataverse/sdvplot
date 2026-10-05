@@ -26,7 +26,7 @@ The bundled team index: one row per (league, team_id), with names, abbreviation,
 
 ## Returns
 
-`polars.DataFrame` — The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``, ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``.
+`polars.DataFrame` — The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``, ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``: "nflverse" or "espn" (published colors), "logo" (derived from the team's archived logo, where no source publishes any) or "fallback" (a placeholder).
 
 ## Raises
 
