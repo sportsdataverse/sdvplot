@@ -22,7 +22,7 @@ from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, UnsupportedTargetError, warn
+from sdvplot._errors import InputError, OfflineError, UnsupportedTargetError, warn
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
@@ -607,11 +607,12 @@ class _TitleImage(AnnotationBbox):
 
 
 def _check_title_image(side: Any, height: Any) -> float:
-    """``height`` as a float, or ValueError unless ``side`` is "left"/"right" and ``height`` is a positive number."""
+    """``height`` as a float, or ValueError unless ``side`` is "left"/"right" (InputError unless ``height`` is a number
+    of points of at least 1)."""
     if side not in ("left", "right"):
         raise ValueError(f"side must be 'left' or 'right', got {side!r}")
-    if not _real(height) or height <= 0:
-        raise ValueError(f"height is the image height in points, > 0, got {height!r}")
+    if not _real(height) or height < 1:
+        raise InputError(f"height is the image height in points (1/72 inch), at least 1, got {height!r}")
     return float(height)
 
 
@@ -683,8 +684,8 @@ def title_image(
         path that cannot be read gives one SdvplotWarning and the title without it.
 
     Raises:
-        ValueError: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several
-            Axes.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        ValueError: If ``side`` is not "left"/"right", or the target has several Axes.
         OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:

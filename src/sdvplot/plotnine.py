@@ -734,7 +734,8 @@ def title_image(
         ``title_image`` added to the same plot replaces the first.
 
     Raises:
-        ValueError: If ``side`` is not "left"/"right" or ``height`` is not a positive number.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        ValueError: If ``side`` is not "left"/"right".
         OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:

@@ -99,6 +99,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   the SVG renderer), `suggest(n=...)` an int of at least 1 (`n=-1` was difflib's `ValueError` naming `-3`), a season
   that is not a year (`"2020-21"`, a `pd.Timestamp`) or a season list of the wrong length is an `InputError`, and so
   is an unknown `mark_type` in `reactable_sdv_cols_label` and `gt_sdv_cols_label`.
+- `matplotlib.title_image` and `plotnine.title_image` take `height` in points of at least 1: `height=0.1` (a plot
+  fraction, as `add_logos` takes) drew a 0.1 pt image without a word, and now raises an `InputError` naming points.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the
