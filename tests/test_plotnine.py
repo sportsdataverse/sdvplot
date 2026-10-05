@@ -200,7 +200,10 @@ def test_geom_from_path_draws_each_image_on_its_facet(tmp_path, lib):
     a, b = _pngs(tmp_path, "a.png", "b.png")
     df = lib.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0], "img": [a, b], "panel": ["p", "q"]})
     p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path(height=0.2, alpha=0.5) + facet_wrap("panel")
-    assert sorted(sp9.drawn_marks(p)) == [(a, 1.0, 1.0, 0.2, a), (b, 2.0, 2.0, 0.2, b)]
+    marks = sorted(sp9.drawn_marks(p))
+    # the hook measures the drawn height, which matplotlib 3.10 (py3.10) rounds a hair off 0.2
+    assert [(m[0], m[1], m[2], m[4]) for m in marks] == [(a, 1.0, 1.0, a), (b, 2.0, 2.0, b)]
+    assert [m[3] for m in marks] == [pytest.approx(0.2), pytest.approx(0.2)]
 
 
 def test_geom_from_path_skips_unreadable_images_with_one_warning(tmp_path):
