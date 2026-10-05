@@ -37,6 +37,9 @@ Determinism / safety:
 * Polars frames print as markdown tables (a hidden first cell sets ``pl.Config``).
 * Kernels run with ``PYTHONHASHSEED=0``, so set order (Bokeh's glyph columns, for one) is the same in every render,
   and consecutive prints land in one text block however the kernel happened to flush them.
+* Kernels run without the IDE variables great_tables reads (``VSCODE_PID``, ``POSITRON_VERSION``, ``QUARTO_BIN_PATH``,
+  ``DATABRICKS_RUNTIME_VERSION``): in VS Code it marks every CSS rule ``!important``, so a render from a VS Code
+  terminal differed from the CI cron's.
 * The source ``.ipynb`` files are never modified -- execution happens on an in-memory copy. A notebook that fails
   keeps its previous page; one that is deleted loses its page, outputs, figures and gallery cards.
 """
@@ -223,6 +226,15 @@ def _metadata(nb, name: str) -> dict:
     return meta
 
 
+_IDE_VARS = ("VSCODE_PID", "POSITRON_VERSION", "QUARTO_BIN_PATH", "DATABRICKS_RUNTIME_VERSION")
+
+
+def _kernel_env() -> dict[str, str]:
+    """This process's environment for a kernel: str hashes seeded, and no IDE variable great_tables renders by."""
+    env = {k: v for k, v in os.environ.items() if k not in _IDE_VARS}
+    return {**env, "PYTHONHASHSEED": "0"}  # str hashes, so set order, alike in every render
+
+
 def _execute(nb, timeout: float = DEFAULT_TIMEOUT):
     """Execute a notebook in-memory behind the SETUP cell, then drop that cell; raise on the first failing cell."""
     import nbformat
@@ -231,7 +243,7 @@ def _execute(nb, timeout: float = DEFAULT_TIMEOUT):
     nb.cells.insert(0, nbformat.v4.new_code_cell(SETUP, id="sdvplot-render-setup"))
     try:
         client = NotebookClient(nb, timeout=timeout, kernel_name="python3", allow_errors=False)
-        client.execute(env={**os.environ, "PYTHONHASHSEED": "0"})  # str hashes, so set order, alike in every render
+        client.execute(env=_kernel_env())
     finally:
         nb.cells.pop(0)
 
