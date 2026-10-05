@@ -430,7 +430,6 @@ team_tiers(
     subtitle="The top 32 by adjusted efficiency margin, four teams to a seed line",
     caption="Data: SportsDataverse adjusted ratings via sportsdataverse-py",
     tier_desc={1: "1 seeds", 2: "2 seeds", 3: "3-4 seeds", 4: "5-8 seeds"},
-    theme="light",
 ) + theme(figure_size=(10, 6))
 ```
 
