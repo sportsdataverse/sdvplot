@@ -1,6 +1,11 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
+import functools
 import hashlib
+import io
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import polars as pl
@@ -202,6 +207,21 @@ def pytest_configure(config: pytest.Config) -> None:
     # Not in pyproject's filterwarnings: pytest imports a named category while parsing the ini file, which imported
     # sdvplot before pytest-cov started and left every import-time line unmeasured.
     config.addinivalue_line("filterwarnings", "error::sdvplot._errors.SdvplotWarning")
+    _daemon_pipe_readers()
+
+
+def _daemon_pipe_readers() -> None:
+    """kaleido's browser driver (choreographer) reads Chrome's stderr through logistro's pipe reader, a non-daemon
+    thread that ends only when every write end of the pipe closes. choreographer closes its own copy only after the
+    browser closes, so a Chrome that will not close (a loaded machine) leaves the reader blocked forever and pytest
+    hangs after printing its summary. As daemon threads, the readers can no longer keep the run alive."""
+    # ponytail: patches a third-party module global for the test run only; drop it once choreographer closes the pipe
+    # in a finally (choreographer 1.4.0 browser_async.close / browser_sync.close).
+    try:
+        from logistro import _api
+    except ImportError:  # no kaleido in this environment
+        return
+    _api.Thread = functools.partial(threading.Thread, daemon=True)  # type: ignore[assignment,misc]
 
 
 @pytest.fixture(autouse=True)
@@ -227,13 +247,17 @@ def fixture_index(request, tmp_path, monkeypatch):
     _index.reload_index()
 
 
+class FakeRaw(io.BytesIO):
+    """The body as urllib3's HTTPResponse serves it to _cache: read1() returns at most the amount asked for."""
+
+    def read1(self, size=-1, decode_content=True):
+        return super().read1(size)
+
+
 class FakeResponse:
     def __init__(self, status=200, body=b"", headers=None):
         self.status_code, self.content, self.headers = status, body, headers or {}
-
-    def iter_content(self, chunk_size=1):
-        for i in range(0, len(self.content), chunk_size):
-            yield self.content[i : i + chunk_size]
+        self.raw = FakeRaw(body)
 
     def close(self):
         pass
@@ -260,6 +284,29 @@ class FakeSession:
         if isinstance(nxt, Exception):
             raise nxt
         return nxt
+
+
+def slow_download(bodies, calls):
+    """A _download that takes 0.05 s and records each URL, so threads that all miss the cache overlap."""
+
+    def fake(url, headers, max_bytes):
+        calls.append(url)
+        time.sleep(0.05)
+        return FakeResponse(200, bodies[url]), bodies[url]
+
+    return fake
+
+
+def in_threads(fn, n=8):
+    """fn() in n threads released together; re-raises the first exception (an SdvplotWarning is one in tests)."""
+    barrier = threading.Barrier(n)
+
+    def run(_):
+        barrier.wait()
+        return fn()
+
+    with ThreadPoolExecutor(n) as ex:
+        return list(ex.map(run, range(n)))
 
 
 @pytest.fixture

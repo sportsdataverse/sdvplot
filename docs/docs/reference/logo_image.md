@@ -54,7 +54,7 @@ PIL.Image.Image | None: The image, or None when the team does not resolve or has
 - `UnsafeCachePathError`: (a ValueError) If the manifest's sha256 or extension for the mark would put the file outside the cache directory.
 - `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has, ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``size`` is not an int from 1 to 4096.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and the team does not resolve.
-- `ValueError`: If an SVG cannot be parsed.
+- `ValueError`: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide.
 
 ## Example
 

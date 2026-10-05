@@ -295,7 +295,7 @@ panel height, default 0.1) and ``alpha``. The port of ggpath's ``geom_from_path(
 
 | Name | Description |
 |---|---|
-| `mapping` | ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or http(s) URL per row. |
+| `mapping` | ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or https URL per row (http is refused). |
 | `data` | The layer's data (pandas or polars), when not the plot's. |
 | `**kwargs` | ``height`` in (0, 1], ``alpha`` in [0, 1], and plotnine's layer arguments (``inherit_aes``, ...). |
 
@@ -778,7 +778,7 @@ lone title and left-aligns one with a subtitle.
 
 | Name | Type | Description |
 |---|---|---|
-| `image` | `Any` | A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL (http or https) or a local file path. |
+| `image` | `Any` | A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL (https; http is refused) or a local file path. |
 | `title` | `str` | The title text; it replaces ``labs(title=...)``, so add ``title_image`` after any ``labs``. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path. |
 | `season` | `Any` | One season, to pick the team's logo for that era. |

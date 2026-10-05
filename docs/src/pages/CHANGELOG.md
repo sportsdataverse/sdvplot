@@ -6,6 +6,7 @@
     - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
+    - [Security](#security)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added-1)
@@ -105,6 +106,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   the decoded-image cache, so a few of them pushed out everything else and every plot decoded them again (about 0.5 s
   each). Now a repeated `add_logos` with a 4096 px mark takes about 0.02 s instead of 0.5 s; the first one still pays
   the decode.
+- Documentation: `sdvplot.matplotlib.add_images` and `title_image`, and `sdvplot.plotnine.geom_from_path` and
+  `title_image`, say an image URL must be https. They said "http or https", but an http URL is refused with
+  `UnsafeDownloadError`.
 
 ### Fixed
 
@@ -146,9 +150,42 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- Threads that ask for the same uncached mark at once (`logo_image()` from a thread pool) download and decode it once:
+  the cache runs one fetch per file and the others wait for it, and the decoded-image cache decodes each key once. On
+  Windows every thread used to download its own copy, and replacing the file while another thread had it open raised
+  `PermissionError: [WinError 5] Access is denied`; the logo manifest's first load warned `could not refresh ...`
+  the same way. A replace that another process refuses, over the same content-addressed file it already wrote, is
+  no longer an error.
 - A long-running session no longer keeps every logo manifest (about 17 MiB parsed) or nflverse player table it has read:
   when the cached file is refreshed, the previous one is freed. `clear_cache()` now also frees the parsed manifest, the
   player table and the per-league tables built from the manifest, as it already freed the decoded images.
+- `clear_cache()` unlinks a cache subdirectory that is a symlink in the default cache directory (what it points to is
+  untouched) and leaves one alone with a warning in a directory you chose. It used to raise `OSError` from
+  `shutil.rmtree` after deleting `manifest/`, leaving the later subdirectories and the in-memory caches as they were;
+  the in-memory caches are now emptied even when a removal fails.
+- The in-memory cache of decoded images counts bytes per sample: a 16-bit image (mode `I;16`) is two bytes a pixel and
+  a 32-bit one (`I`, `F`) four. They were counted at one byte a sample, so they could hold two to four times the
+  256 MB budget.
+
+### Security
+
+- Image URLs from the logo manifest (`archive_url`) and from nflverse's player table (`headshot`) must be plain https
+  URLs: a host, then only RFC 3986 characters, with no quote, `<`, `>`, whitespace, backslash or control character. A
+  manifest row that fails is dropped and a headshot that fails is treated as missing (the player gets their ESPN
+  headshot when nflverse has their ESPN id), each with one `SdvplotWarning`. Such a URL used to reach the web adapters
+  unchanged, and Altair's HTML export wrote it into a `<script>` block unescaped, so a poisoned manifest or player table
+  could run script in an exported page. The web adapters also percent-encode any such character left in an image URL.
+- SVG rendering is bounded. An SVG mark is rendered inside a `size` x `size` box (its longest side `size` pixels, at
+  most `sdvplot._images.MAX_SIZE`, 4096) after a small probe render measures its aspect ratio. An SVG more than 64 times
+  longer than it is wide, or a `size` over 4096, is an `InputError` before anything is rendered. resvg used to render
+  at `width=size` first, so a tall SVG or a large `size` asked for gigabytes and could abort the Python process.
+- `urllib3>=2.6` is a dependency. `requests>=2.33` still allowed urllib3 1.26 and 2.0 to 2.5, which decompress a
+  whole received chunk at once: a 275-byte gzip body cost 4 GB of memory before the download byte cap saw it
+  (CVE-2025-66471). The download loop's fallback for urllib3 below 2 is removed.
+- A download's 120 s deadline covers the TLS handshake and the response headers, not only the body: a watchdog shuts
+  the connection's socket down at the deadline, across every redirect hop, and no single read waits past it. Each read
+  had a 60 s timeout of its own, so a server sending a header byte every 59 s held the call open almost indefinitely.
+  Through a proxy, the watchdog covers the body only.
 
 ## [0.1.0] - Unreleased
 

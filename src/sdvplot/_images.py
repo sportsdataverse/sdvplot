@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
-from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
+from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable, key_lock
 from sdvplot._errors import InputError, IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
@@ -24,7 +24,12 @@ if TYPE_CHECKING:
     from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
-MAX_SIZE = 4096  # the largest longest side logo_image() renders: resvg aborts the process on a far larger one
+# The largest longest side an image is rendered at: 4096 x 4096 RGBA is 64 MiB, DECODED_BUDGET // 4, the largest image
+# the decoded cache keeps. resvg allocates the whole canvas before Pillow's bomb guard sees it (a far larger one aborted
+# the process), so an SVG's size and aspect ratio are checked before rendering.
+MAX_SIZE = 4096
+MAX_ASPECT = 64  # an SVG more than 64 times longer than it is wide is refused
+_PROBE = 1024  # the box of the probe render that measures an SVG's aspect ratio
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 URL_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
@@ -33,6 +38,8 @@ IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     from PIL import Image
 
+    if not 1 <= size <= MAX_SIZE:
+        raise InputError(f"an SVG mark is rasterized at 1 to {MAX_SIZE} pixels, got size={size!r}")
     try:
         import importlib.metadata
 
@@ -63,13 +70,18 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     except UnicodeDecodeError as e:
         raise ValueError(f"SVG {sha}.{ext}: {e}") from e
 
-    try:
-        png = bytes(resvg_py.svg_to_bytes(svg_string=svg, width=size))
-        probe = Image.open(io.BytesIO(png))
-        if probe.height > size:  # portrait: fit the longest side instead
-            png = bytes(resvg_py.svg_to_bytes(svg_string=svg, height=size))
-    except ValueError as e:
-        raise ValueError(f"SVG {sha}.{ext}: {e}") from e
+    def render(box: int) -> bytes:
+        # given a width and a height, resvg fits the SVG inside that box keeping its aspect ratio: the longest side is
+        # box pixels and nothing larger is allocated, however tall, wide or large the SVG says it is
+        try:
+            return bytes(resvg_py.svg_to_bytes(svg_string=svg, width=box, height=box))
+        except ValueError as e:
+            raise ValueError(f"SVG {sha}.{ext}: {e}") from e
+
+    w, h = Image.open(io.BytesIO(render(_PROBE))).size
+    if max(w, h) > MAX_ASPECT * min(w, h):
+        raise InputError(f"SVG {sha}.{ext} renders {w} x {h}: an aspect ratio beyond 1:{MAX_ASPECT}, not drawn")
+    png = render(size)
 
     with contextlib.suppress(OSError):  # a read-only cache still gets the image, just not cached
         atomic_write(out, png)
@@ -122,7 +134,7 @@ def logo_image(
             ``variant`` is a name no mark in the archive has, ``season`` is not a year or is outside the seasons
             sdvplot knows for the league, or ``size`` is not an int from 1 to 4096.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and the team does not resolve.
-        ValueError: If an SVG cannot be parsed.
+        ValueError: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide.
 
     Example:
         ::
@@ -187,29 +199,34 @@ _decoded_lock = threading.Lock()
 
 
 def _nbytes(img: Image.Image) -> int:
-    return img.width * img.height * len(img.getbands())
+    from PIL import ImageMode
+
+    # bytes per sample from the mode's array type: 2 for I;16, 4 for I and F, 1 for the 8-bit modes
+    return img.width * img.height * len(img.getbands()) * int(ImageMode.getmode(img.mode).typestr[-1])
 
 
 def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
     """The decoded image of one mark, kept per (sha256, ext, url, size) so repeated calls decode a team's logo once.
-    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Callers must go
-    through ``load_mark_image``, which hands out a copy."""
+    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Threads after the
+    same key decode it once (the others wait for it). Callers must go through ``load_mark_image``, which hands out a
+    copy."""
     global _decoded_bytes
     key = (sha, ext, url, size)
-    with _decoded_lock:
-        if (hit := _decoded.get(key)) is not None:
-            _decoded.move_to_end(key)
-            return hit
-    img = _decode_mark(*key)
-    nbytes = _nbytes(img)
-    if nbytes <= DECODED_BUDGET // 4:
+    with key_lock(key):
         with _decoded_lock:
-            if key not in _decoded:
-                _decoded[key] = img
-                _decoded_bytes += nbytes
-                while _decoded_bytes > DECODED_BUDGET:
-                    _, old = _decoded.popitem(last=False)
-                    _decoded_bytes -= _nbytes(old)
+            if (hit := _decoded.get(key)) is not None:
+                _decoded.move_to_end(key)
+                return hit
+        img = _decode_mark(*key)
+        nbytes = _nbytes(img)
+        if nbytes <= DECODED_BUDGET // 4:
+            with _decoded_lock:
+                if key not in _decoded:
+                    _decoded[key] = img
+                    _decoded_bytes += nbytes
+                    while _decoded_bytes > DECODED_BUDGET:
+                        _, old = _decoded.popitem(last=False)
+                        _decoded_bytes -= _nbytes(old)
     return img
 
 
@@ -260,8 +277,8 @@ def load_url_image(url: str) -> Image.Image:
 
 
 def load_path_image(path: str) -> Image.Image:
-    """Any image by http(s) URL (cached like a headshot), file:// URI or local path; raises OSError, ValueError or
-    OfflineError."""
+    """Any image by https URL (cached like a headshot), file:// URI or local path; raises OSError, ValueError or
+    OfflineError (an http URL is refused with UnsafeDownloadError, an OSError)."""
     scheme = urlsplit(path).scheme.lower()  # URL schemes are case-insensitive; a Windows drive letter is no scheme
     if scheme in ("http", "https"):
         return load_url_image(path)
