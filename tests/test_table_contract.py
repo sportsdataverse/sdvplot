@@ -90,6 +90,16 @@ def test_rule_t4_catches_an_adapter_that_ignores_height(manifest, monkeypatch):
         _check()
 
 
+def test_rule_t4_catches_an_adapter_that_takes_a_fraction_of_a_pixel(manifest, monkeypatch):
+    # a plot's height unit (a fraction) on a table drew a 0.1 px image; the contract makes the adapter refuse it
+    def fractional(gt, columns, *, height=30, **kw):
+        return real_logos(gt, columns, height=30 if isinstance(height, float) and 0 < height < 1 else height, **kw)
+
+    monkeypatch.setattr(sgt, "add_logos", fractional)
+    with pytest.raises(AssertionError, match=r"rule T4 \(height in pixels\).*height=0\.5"):
+        _check()
+
+
 def test_rule_t5_catches_wordmarks_drawn_as_logos(manifest, monkeypatch):
     monkeypatch.setattr(sgt, "add_wordmarks", real_logos)
     with pytest.raises(AssertionError, match=r"rule T5"):

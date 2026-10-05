@@ -35,7 +35,14 @@ SECTIONS = [
     ("Plots and tables", ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface", "court_coords"]),
     ("Housekeeping", ["versions", "clear_cache"]),
 ]
-ERRORS = ["SdvplotWarning", "UnresolvedTeamError", "OfflineError", "OptionalDependencyError", "UnsupportedTargetError"]
+ERRORS = [
+    "SdvplotWarning",
+    "SdvplotError",
+    "UnresolvedTeamError",
+    "OfflineError",
+    "OptionalDependencyError",
+    "UnsupportedTargetError",
+]
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
 # never typed), and two-color swatches for six teams in three leagues, from palette().
@@ -44,8 +51,8 @@ HOME_INSTALL = "pip install git+https://github.com/sportsdataverse/sdvplot"
 HOME_SAMPLE = [
     'sdvplot.resolve(["KC", "Kansas City Chiefs", 12], "nfl")',
     'sdvplot.palette("nfl", teams=["KC", "SF"])',
-    'sdvplot.team_colors(["LAL", "BOS"], "nba")',
-    'sdvplot.team_colors("NYY", "mlb", which="secondary")',
+    'sdvplot.team_colors("nba", ["LAL", "BOS"])',
+    'sdvplot.team_colors("mlb", "NYY", which="secondary")',
 ]
 HOME_TEAMS = [("nfl", "KC"), ("nfl", "SF"), ("nba", "LAL"), ("nba", "BOS"), ("mlb", "NYY"), ("mlb", "LAD")]
 
@@ -187,7 +194,8 @@ def _errors_page(position: int) -> str:
     ]
     for n in ERRORS:
         cls = getattr(sdvplot, n)
-        lines.append(f"| `{n}` | `{cls.__mro__[1].__name__}` | {inspect.getdoc(cls) or ''} |")
+        bases = ", ".join(f"`{b.__name__}`" for b in cls.__bases__)
+        lines.append(f"| `{n}` | {bases} | {inspect.getdoc(cls) or ''} |")
     return "\n".join(lines) + "\n"
 
 
@@ -213,7 +221,7 @@ def home_data() -> dict[str, object]:
         team_id = sdvplot.resolve(team, league)
         name = sdvplot.teams(league).filter(pl.col("team_id") == team_id)["name"][0]
         primary = sdvplot.palette(league, teams=[team])[team]
-        secondary = sdvplot.palette(league, "secondary", teams=[team])[team]
+        secondary = sdvplot.palette(league, which="secondary", teams=[team])[team]
         swatches.append(
             {"league": league.upper(), "team": team, "name": name, "primary": primary, "secondary": secondary}
         )

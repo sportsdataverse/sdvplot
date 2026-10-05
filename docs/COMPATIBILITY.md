@@ -99,14 +99,14 @@ sdvplot.add_logos(ax, [pos[n][0] for n in nodes], [pos[n][1] for n in nodes], no
 ### PyPalettes: a colormap of team colors
 
 ```python
-cmap = pypalettes.create_cmap(sdvplot.team_colors(["KC", "BUF"], "nfl"), cmap_type="discrete")
+cmap = pypalettes.create_cmap(sdvplot.team_colors("nfl", ["KC", "BUF"]), cmap_type="discrete")
 ```
 
 ### wordcloud: each team in its color
 
 ```python
 names = ["Kansas City Chiefs", "Buffalo Bills"]
-color = dict(zip(names, sdvplot.team_colors(names, "nfl")))
+color = dict(zip(names, sdvplot.team_colors("nfl", names)))
 cloud = WordCloud(color_func=lambda word, **kw: color[word]).generate_from_frequencies({"Kansas City Chiefs": 3, "Buffalo Bills": 2})
 ```
 

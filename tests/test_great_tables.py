@@ -41,7 +41,7 @@ FRAMES = pytest.mark.parametrize("kind", ["polars", "pandas"])
 
 
 def _cells(gt):
-    return [c[:3] for c in sgt.drawn_cells(gt)]
+    return [c[:3] for c in sgt._drawn_cells(gt)]
 
 
 def test_the_front_door_routes_a_gt_to_gt_sdv_logos(manifest):
@@ -109,7 +109,7 @@ def test_a_repeated_team_is_resolved_once(manifest, monkeypatch):
     real = _placement.select_mark
     monkeypatch.setattr(_placement, "select_mark", lambda *a, **k: calls.append(a[0]) or real(*a, **k))
     gt = gt_sdv_logos(GT(pl.DataFrame({"team": ["LV"] * 50})), "team", league="nfl")
-    assert len(sgt.drawn_cells(gt)) == 50 and calls == ["13"]
+    assert len(sgt._drawn_cells(gt)) == 50 and calls == ["13"]
 
 
 def test_logos_in_the_stub_and_row_group_labels(manifest):
@@ -119,14 +119,14 @@ def test_logos_in_the_stub_and_row_group_labels(manifest):
     grouped = GT(df, groupname_col="conf")
     html = gt_sdv_logos(grouped, None, league="nfl", locations=loc.row_groups()).as_raw_html()
     assert re.search(r'<th class="gt_group_heading" colspan="\d+"><img [^>]*data-sdvplot-team="14">', html)
-    # drawn_cells counts data rows only: a group heading is not a row
+    # _drawn_cells counts data rows only: a group heading is not a row
     assert _cells(gt_sdv_logos(grouped, "team", league="nfl")) == [("13", 0, "team"), ("14", 1, "team")]
 
 
 @FRAMES
 def test_wordmark_cells_use_the_wordmark(manifest, kind):
     gt = gt_sdv_wordmarks(GT(_frame(kind, {"team": ["LV", "LAC"]})), "team", league="nfl", height=20)
-    assert [(c[0], c[3], c[4]) for c in sgt.drawn_cells(gt)] == [
+    assert [(c[0], c[3], c[4]) for c in sgt._drawn_cells(gt)] == [
         ("13", 20.0, "https://cdn/4444.png"),
         ("24", 20.0, "https://cdn/d2.png"),
     ]
@@ -136,7 +136,7 @@ def test_wordmark_cells_use_the_wordmark(manifest, kind):
 def test_headshot_cells_use_the_espn_headshot(kind):
     gt = gt_sdv_headshots(GT(_frame(kind, {"player": ["3139477"]})), "player", league="nfl", height=40)
     html = gt.as_raw_html()
-    assert sgt.drawn_cells(gt) == [("3139477", 0, "player", 40.0, sdvplot.headshot_url("3139477", "nfl"))]
+    assert sgt._drawn_cells(gt) == [("3139477", 0, "player", 40.0, sdvplot.headshot_url("3139477", "nfl"))]
     assert 'alt="3139477"' in html
 
 
@@ -149,7 +149,7 @@ def test_a_data_frame_instead_of_a_gt_is_a_clear_type_error():
 def test_cols_label_puts_marks_in_team_named_column_labels(manifest, kind):
     gt = GT(_frame(kind, {"LV": [1], "LAR": [2], "rank": [1]}))
     out = gt_sdv_cols_label(gt, ["LV", "LAR"], league="nfl", height=24)
-    assert sgt.drawn_cells(out) == [
+    assert sgt._drawn_cells(out) == [
         ("13", -1, "LV", 24.0, "https://cdn/1111.png"),
         ("14", -1, "LAR", 24.0, "https://cdn/6666.png"),
     ]
@@ -159,15 +159,15 @@ def test_cols_label_warns_for_columns_that_are_not_teams_and_keeps_their_labels(
     gt = GT(pl.DataFrame({"LV": [1], "rank": [1]})).cols_label(rank="Rank")
     with pytest.warns(SdvplotWarning, match="'rank'"):
         out = gt_sdv_cols_label(gt, league="nfl")
-    assert [c[2] for c in sgt.drawn_cells(out)] == ["LV"]
+    assert [c[2] for c in sgt._drawn_cells(out)] == ["LV"]
     assert ">Rank</th>" in out.as_raw_html()
 
 
 def test_cols_label_wordmarks_and_headshots(manifest):
     out = gt_sdv_cols_label(GT(pl.DataFrame({"LV": [1]})), league="nfl", mark_type="wordmark")
-    assert sgt.drawn_cells(out)[0][4] == "https://cdn/4444.png"
+    assert sgt._drawn_cells(out)[0][4] == "https://cdn/4444.png"
     out = gt_sdv_cols_label(GT(pl.DataFrame({"3139477": [1]})), league="nfl", mark_type="headshot")
-    assert sgt.drawn_cells(out)[0][:3] == ("3139477", -1, "3139477")
+    assert sgt._drawn_cells(out)[0][:3] == ("3139477", -1, "3139477")
     with pytest.raises(ValueError, match="mark_type"):
         gt_sdv_cols_label(GT(pl.DataFrame({"LV": [1]})), league="nfl", mark_type="helmet")
 
@@ -360,7 +360,7 @@ def test_a_player_id_read_through_a_float_keeps_its_integer_form():
     """pandas stores [3139477, None] as floats, so the cell reads "3139477.0": the alt text and team attribute are the
     id the headshot URL was built from, not "3139477.0"."""
     gt = gt_sdv_headshots(GT(pd.DataFrame({"player": [3139477, None]})), "player", league="nfl")
-    assert sgt.drawn_cells(gt) == [("3139477", 0, "player", 30.0, sdvplot.headshot_url("3139477", "nfl"))]
+    assert sgt._drawn_cells(gt) == [("3139477", 0, "player", 30.0, sdvplot.headshot_url("3139477", "nfl"))]
     assert 'alt="3139477"' in gt.as_raw_html()
 
 

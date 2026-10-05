@@ -31,7 +31,7 @@ def test_geopandas_plot_takes_logos_at_centroids(mark_images):
     centers = states.to_crs(3857).centroid.to_crs(4326)  # centroids in a projected CRS, back to lon/lat
     sdvplot.add_logos(ax, centers.x, centers.y, states["team"], league="nfl", height=0.15)
     want = list(zip(["13", "14"], centers.x, centers.y, strict=True))
-    assert [m[:3] for m in smpl.drawn_marks(ax)] == want  # read by position: the frame's index is [7, 9]
+    assert [m[:3] for m in smpl._drawn_marks(ax)] == want  # read by position: the frame's index is [7, 9]
 
 
 def test_geoplot_takes_logos_on_its_plain_and_projected_axes(mark_images):
@@ -40,10 +40,10 @@ def test_geoplot_takes_logos_on_its_plain_and_projected_axes(mark_images):
     states = _states()
     ax = gplt.polyplot(states)  # no projection: a plain matplotlib Axes in longitude/latitude
     sdvplot.add_logos(ax, [-117.0], [38.5], ["LV"], league="nfl")
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13"]
 
     ax = gplt.polyplot(states, projection=gplt.crs.AlbersEqualArea())  # a Cartopy GeoAxes
     with pytest.raises(ValueError, match="transform="):
         sdvplot.add_logos(ax, [-117.0], [38.5], ["LV"], league="nfl")
     sdvplot.add_logos(ax, [-117.0], [38.5], ["LV"], league="nfl", transform=ccrs.PlateCarree())
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13"]

@@ -70,12 +70,13 @@ imported lazily:
   `OptionalDependencyError` naming the extra, for example `pip install sdvplot[plotly]`.
 - Any other `ImportError` inside the adapter is a real bug, so it propagates unchanged.
 
-## The `drawn_marks` test hook
+## The `_drawn_marks` test hook
 
-Every adapter module also exposes a test hook:
+Every adapter module also exposes a test hook. Its name starts with an underscore: an adapter module's public API
+is its `__all__` (the verbs and any documented extras), and hooks and helpers stay out of it.
 
 ```python
-drawn_marks(target) -> list[tuple[str, float, float, float]]
+_drawn_marks(target) -> list[tuple[str, float, float, float]]
 ```
 
 It returns one `(team_id, x, y, height)` tuple per image the adapter drew, in draw order:
@@ -84,7 +85,7 @@ It returns one `(team_id, x, y, height)` tuple per image the adapter drew, in dr
 - `x` and `y` are the caller's position values for that image.
 - `height` is the fraction of the plot height the adapter **actually** used, not the value it was asked for.
 
-The harness reads `drawn_marks` from the object `add_logos` returned when that is not `None`, and from the target
+The harness reads `_drawn_marks` from the object `add_logos` returned when that is not `None`, and from the target
 otherwise.
 
 ## The contract check
@@ -106,7 +107,7 @@ A broken rule raises an `AssertionError` whose message starts with `rule N`:
 ## A minimal adapter
 
 This is the dummy adapter from sdvplot's own tests (`tests/test_dispatch.py`). Its "plot" is a list, and drawing appends
-a tuple to it, so `drawn_marks` is just `list`:
+a tuple to it, so `_drawn_marks` is just `list`:
 
 ```python
 import sys
@@ -137,7 +138,7 @@ def add_logos(target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0
 
 adapter = types.ModuleType("fakeplot_adapter")
 adapter.add_logos = add_logos
-adapter.drawn_marks = list
+adapter._drawn_marks = list
 sys.modules["fakeplot_adapter"] = adapter
 register_adapter(Adapter(name="fakeplot", package="fakeplot", module="fakeplot_adapter", extra="fakeplot"))
 

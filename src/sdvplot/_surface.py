@@ -140,7 +140,7 @@ def surface(
         # Naming that default draws the same numbers (bar sportypy's Clarendon-only nudge of one "1") and logs nothing.
         sportypy_kwargs["field_updates"] = {"number_font": "DejaVu Sans", **sportypy_kwargs.get("field_updates", {})}
     if team is not None:
-        primary, secondary = (team_colors([team], league, which=w, season=season)[0] for w in ("primary", "secondary"))
+        primary, secondary = (team_colors(league, [team], which=w, season=season)[0] for w in ("primary", "secondary"))
         if primary is not None:
             sportypy_kwargs["color_updates"] = {
                 **color_updates(sport, primary, secondary),

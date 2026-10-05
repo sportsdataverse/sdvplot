@@ -57,7 +57,7 @@ def _transform_nfl_headshot(url: str) -> str:
     return transformed
 
 
-def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | None:
+def headshot_url(player_id: Any, league: str, *, id_system: str = "espn") -> str | None:
     """A headshot URL for one player.
 
     Args:

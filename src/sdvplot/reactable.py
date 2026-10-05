@@ -22,6 +22,19 @@ from sdvplot._normalize import norm_season
 from sdvplot._placement import KINDS, _missing, check_alpha
 from sdvplot._tables import check_px, img_tag, mark_html
 
+__all__ = [
+    "reactable_sdv_logos",
+    "reactable_sdv_wordmarks",
+    "reactable_sdv_headshots",
+    "reactable_sdv_cols_label",
+    "reactable_sdv_team_color_bar",
+    "reactable_sdv_team_color_bg",
+]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
+
 
 def _image_column(
     kind: str,
@@ -82,7 +95,7 @@ def reactable_sdv_logos(
         reactable.Column: The column, with ``html=True`` and a cell renderer.
 
     Raises:
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year.
 
     Example:
         ::
@@ -125,7 +138,7 @@ def reactable_sdv_wordmarks(
         reactable.Column: The column, with ``html=True`` and a cell renderer.
 
     Raises:
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year.
 
     Example:
         ::
@@ -161,7 +174,7 @@ def reactable_sdv_headshots(
         reactable.Column: The column, with ``html=True`` and a cell renderer.
 
     Raises:
-        ValueError: If ``height`` is not a positive number of pixels.
+        ValueError: If ``height`` is not a number of pixels of at least 1.
 
     Example:
         ::
@@ -204,7 +217,7 @@ def reactable_sdv_cols_label(
         column whose name resolves; the others are left out, with one SdvplotWarning.
 
     Raises:
-        ValueError: If ``height`` is not a positive number of pixels, ``mark_type`` is not "logo"/"wordmark", or
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``mark_type`` is not "logo"/"wordmark", or
             ``season`` is not one year.
 
     Example:
@@ -232,7 +245,7 @@ def _row_colors(data: Any, team_col: str, league: str, which: str, na_color: str
     frame = nw.from_native(data, eager_only=True)
     if team_col not in frame.columns:
         raise ValueError(f"column {team_col!r} not found in data; columns are {frame.columns}")
-    colors = team_colors(frame[team_col].to_list(), league, which)
+    colors = team_colors(league, frame[team_col].to_list(), which=which)
     return frame, [c or na_color for c in colors]
 
 

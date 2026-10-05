@@ -4,7 +4,7 @@ Each adapter registers at the end of this module (registering imports nothing; t
 use). The full adapter contract, its rules and its test hooks are documented in sdvplot.testing; in short, an adapter
 module exposes add_logos, add_wordmarks, add_headshots and axis_logos, plus the test hook
 
-    drawn_marks(target) -> list[tuple]
+    _drawn_marks(target) -> list[tuple]
 
 which returns one (team_id, x, y, height) or (team_id, x, y, height, url) tuple per image the adapter drew, in draw
 order. team_id is the canonical string id, x/y are the position values passed in (positional, never index labels),
@@ -12,7 +12,7 @@ height is the fraction of the plot height the image was drawn at (measured, not 
 image source it drew.
 
 add_logos must return the object that was drawn on: the target itself when the library mutates in place
-(matplotlib), or the new object when it builds one (plotnine, altair, tables). The harness reads drawn_marks from
+(matplotlib), or the new object when it builds one (plotnine, altair, tables). The harness reads _drawn_marks from
 the returned object when it is not None, and from the target otherwise.
 """
 
@@ -75,16 +75,20 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add team logos to a plot or table of any supported library.
 
     Routes to the adapter for ``target``'s library (matplotlib, plotnine, Plotly, Altair, great_tables, ...) and returns
-    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Every
-    adapter takes the same arguments.
+    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Plots and
+    tables take different arguments. A plot (matplotlib, plotnine, Plotly, Altair, Bokeh, HoloViews, folium and pygal)
+    takes ``x``, ``y`` and ``teams``, and a ``height`` that is a fraction of the plot height. A great_tables ``GT``
+    takes ``columns`` and a ``height`` in pixels, with no ``alpha`` or ``variant`` (see
+    ``sdvplot.great_tables.gt_sdv_logos``).
 
     Args:
         target: The plot or table object. Its type picks the adapter.
-        *args: Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and
-            ``teams`` (the team values to draw), in that order.
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team),
-            ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and
-            ``variant`` (a mark variant, as in ``logo_url``).
+        *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
+            ``teams`` (the team values to draw), in that order. For a table: ``columns`` (the columns whose cells
+            become marks).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (one season or one per team).
+            For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and
+            ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30).
 
     Returns:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
@@ -92,6 +96,9 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     Raises:
         UnsupportedTargetError: If no adapter is registered for ``target``'s library.
         OptionalDependencyError: If the adapter's optional extra is not installed.
+        TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
+        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
+            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
 
     Example:
         ::
@@ -115,16 +122,20 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add team wordmarks to a plot or table of any supported library.
 
     Routes to the adapter for ``target``'s library (matplotlib, plotnine, Plotly, Altair, great_tables, ...) and returns
-    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Every
-    adapter takes the same arguments.
+    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Plots and
+    tables take different arguments. A plot (matplotlib, plotnine, Plotly, Altair, Bokeh, HoloViews, folium and pygal)
+    takes ``x``, ``y`` and ``teams``, and a ``height`` that is a fraction of the plot height. A great_tables ``GT``
+    takes ``columns`` and a ``height`` in pixels, with no ``alpha`` or ``variant`` (see
+    ``sdvplot.great_tables.gt_sdv_wordmarks``).
 
     Args:
         target: The plot or table object. Its type picks the adapter.
-        *args: Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and
-            ``teams`` (the team values to draw), in that order.
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key), ``season`` (one season or one per team),
-            ``height`` (the mark's height as a fraction of the plot height), ``alpha`` (opacity, 0 to 1) and
-            ``variant`` (a mark variant, as in ``logo_url``).
+        *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
+            ``teams`` (the team values to draw), in that order. For a table: ``columns`` (the columns whose cells
+            become marks).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (one season or one per team).
+            For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and
+            ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30).
 
     Returns:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
@@ -132,6 +143,9 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
     Raises:
         UnsupportedTargetError: If no adapter is registered for ``target``'s library.
         OptionalDependencyError: If the adapter's optional extra is not installed.
+        TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
+        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
+            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
 
     Example:
         ::
@@ -153,16 +167,21 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Add player headshots to a plot or table of any supported library.
 
     Routes to the adapter for ``target``'s library (matplotlib, plotnine, Plotly, Altair, great_tables, ...) and returns
-    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Every
-    adapter takes the same arguments. For headshots, ``teams`` holds player ids and ``league`` picks the ESPN league.
+    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. For
+    headshots, ``teams`` holds player ids and ``league`` picks the ESPN league. Plots and tables take different
+    arguments. A plot (matplotlib, plotnine, Plotly, Altair, Bokeh, HoloViews, folium and pygal) takes ``x``, ``y`` and
+    ``teams``, and a ``height`` that is a fraction of the plot height. A great_tables ``GT`` takes ``columns`` and a
+    ``height`` in pixels, with no ``alpha`` (see ``sdvplot.great_tables.gt_sdv_headshots``).
 
     Args:
         target: The plot or table object. Its type picks the adapter.
-        *args: Passed to the adapter. By convention ``x``, ``y`` (positions in the target's own coordinates) and
-            ``teams`` (the team values to draw), in that order.
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key), ``height`` (the headshot's height as a
-            fraction of the plot height), ``alpha`` (opacity, 0 to 1) and ``id_system`` (``"espn"`` or
-            ``"gsis"``, as in ``headshot_url``). Headshots take no ``season`` or ``variant``.
+        *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
+            ``teams`` (the player ids to draw), in that order. For a table: ``columns`` (the columns whose cells
+            become headshots).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``id_system`` (``"espn"`` or
+            ``"gsis"``, as in ``headshot_url``). For a plot, also ``height`` (a fraction of the plot height, in
+            (0, 1]) and ``alpha`` (opacity, 0 to 1); for a table, ``height`` is in pixels (default 30). Headshots take
+            no ``season`` or ``variant``.
 
     Returns:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
@@ -170,6 +189,9 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
     Raises:
         UnsupportedTargetError: If no adapter is registered for ``target``'s library.
         OptionalDependencyError: If the adapter's optional extra is not installed.
+        TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
+        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
+            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
 
     Example:
         ::
@@ -191,22 +213,26 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     """Replace an axis' team labels with team logos on a plot of any supported library.
 
     Routes to the adapter for ``target``'s library (matplotlib, plotnine, Plotly, Altair, great_tables, ...) and returns
-    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. Every
-    adapter takes the same arguments: ``axis_logos(target, axis, *, league, season=None, height=0.1)``.
+    the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. The
+    adapters that draw axis logos (matplotlib, plotnine, Plotly and Altair) all take ``axis_logos(target, axis, *,
+    league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")``, and Plotly and Altair
+    also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no axis logos: there it raises TypeError.
 
     Args:
-        target: The plot or table object. Its type picks the adapter.
-        *args: Passed to the adapter. By the adapter contract, ``axis`` (which axis' tick labels to replace, ``"x"`` or
-            ``"y"``).
+        target: The plot object. Its type picks the adapter.
+        *args: Passed to the adapter: ``axis`` (which axis' tick labels to replace, ``"x"`` or ``"y"``).
         **kwargs: Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season or one per
-            team, default ``None``) and ``height`` (the mark's height as a fraction of the plot height, default 0.1).
+            team, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1),
+            and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``.
 
     Returns:
-        object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
+        object: The drawn-on plot: ``target`` itself, or the new object the adapter built.
 
     Raises:
         UnsupportedTargetError: If no adapter is registered for ``target``'s library.
         OptionalDependencyError: If the adapter's optional extra is not installed.
+        TypeError: If ``target``'s library has no axis logos (Bokeh, HoloViews, folium, pygal, great_tables).
+        ValueError: If ``height`` is outside (0, 1].
 
     Example:
         ::

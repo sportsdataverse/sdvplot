@@ -184,7 +184,7 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     )
 
 
-def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
+def resolve(values: Any, league: str, *, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
     """Canonical team_id(s) for team values in one league.
 
     Accepts ids and names from any supported source (ESPN, nflverse, MLB Stats, nba_api, HockeyTech, CFBD, sdvplotR) and
@@ -266,7 +266,7 @@ def _resolve_ids(
     return out, unresolved
 
 
-def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
+def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     """Up to n (team_id, name) candidates for a value that did not resolve, best first.
 
     It never picks one for you: similar names can be different teams ("Bethany (KS)" and "Bethany (WV)").

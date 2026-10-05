@@ -29,13 +29,13 @@ def test_secondary_colors_and_bad_which():
 
 
 def test_team_colors_keeps_the_container():
-    out = team_colors(pd.Series(["LV", "LAC"], name="t"), "nfl")
+    out = team_colors("nfl", pd.Series(["LV", "LAC"], name="t"))
     assert isinstance(out, pd.Series) and list(out) == ["#000000", "#0080c6"]
 
 
 def test_unresolved_teams_get_no_color_and_one_warning():
     with pytest.warns(SdvplotWarning) as w:
-        assert team_colors(["LV", "XXX"], "nfl") == ["#000000", None]
+        assert team_colors("nfl", ["LV", "XXX"]) == ["#000000", None]
     assert len(w) == 1
 
 

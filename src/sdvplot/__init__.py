@@ -9,6 +9,7 @@ from sdvplot._dispatch import add_headshots, add_logos, add_wordmarks, axis_logo
 from sdvplot._errors import (
     OfflineError,
     OptionalDependencyError,
+    SdvplotError,
     SdvplotWarning,
     UnresolvedTeamError,
     UnsupportedTargetError,
@@ -45,6 +46,7 @@ __all__ = [
     "surface",
     "court_coords",
     "SdvplotWarning",
+    "SdvplotError",
     "UnresolvedTeamError",
     "OfflineError",
     "OptionalDependencyError",

@@ -58,7 +58,7 @@ def test_logos_sit_on_factor_ranges(mark_images):
     p = figure(x_range=["LV", "LAR"], frame_height=300)
     p.vbar(x=["LV", "LAR"], top=[3, 2], width=0.8)
     sdvplot.add_logos(p, ["LV", "LAR"], [3, 2], ["LV", "LAR"], league="nfl")
-    assert [m[:3] for m in sbokeh.drawn_marks(p)] == [("13", "LV", 3), ("14", "LAR", 2)]
+    assert [m[:3] for m in sbokeh._drawn_marks(p)] == [("13", "LV", 3), ("14", "LAR", 2)]
 
 
 def test_alpha_and_embed(mark_images):

@@ -22,11 +22,11 @@ def _close_figures():
 
 
 def _xyz(ax):
-    return [m[:3] for m in smpl.drawn_marks(ax)]
+    return [m[:3] for m in smpl._drawn_marks(ax)]
 
 
 def _teams(ax):
-    return [m[0] for m in smpl.drawn_marks(ax)]
+    return [m[0] for m in smpl._drawn_marks(ax)]
 
 
 def _logo_centres(ax):

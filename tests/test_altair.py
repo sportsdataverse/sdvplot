@@ -55,7 +55,7 @@ def test_a_logo_is_its_fraction_of_the_chart_height_in_pixels(mark_images):
 def test_without_a_height_the_theme_view_height_is_used(mark_images):
     out = sdvplot.add_logos(_chart(), [10], [-3], ["LV"], league="nfl", height=0.1)
     assert _layer(out, "sdvplot_logo")["mark"]["height"] == pytest.approx(30)  # 0.1 of 300 px
-    assert salt.drawn_marks(out)[0][3] == pytest.approx(0.1)
+    assert salt._drawn_marks(out)[0][3] == pytest.approx(0.1)
 
 
 def test_a_step_sized_discrete_y_needs_a_pixel_height(mark_images):
@@ -106,7 +106,7 @@ def test_logo_layer_is_a_native_layer(mark_images):
     assert spec["encoding"]["x"] == {"field": "x", "type": "quantitative"}
     assert spec["data"]["values"] == [{"x": 10, "y": -3, "sdvplot_url": "https://cdn/1111.png", "sdvplot_team": "13"}]
     out = alt.layer(_chart(height=400), layer)
-    assert salt.drawn_marks(out) == [("13", 10, -3, pytest.approx(0.1), "https://cdn/1111.png")]
+    assert salt._drawn_marks(out) == [("13", 10, -3, pytest.approx(0.1), "https://cdn/1111.png")]
 
 
 @pytest.mark.parametrize("chart_height", [0, -100, float("nan"), float("inf")])
@@ -159,30 +159,30 @@ def test_dates_are_written_as_iso_strings(mark_images):
     days = pd.to_datetime(["2025-09-07", "2025-09-14"])
     chart = alt.Chart(pd.DataFrame({"day": days, "v": [1, 2]})).mark_line().encode(x="day:T", y="v:Q")
     out = sdvplot.add_logos(chart, pd.Series(days), [1, 2], ["LV", "LAR"], league="nfl")
-    assert [m[1] for m in salt.drawn_marks(out)] == ["2025-09-07T00:00:00", "2025-09-14T00:00:00"]
+    assert [m[1] for m in salt._drawn_marks(out)] == ["2025-09-07T00:00:00", "2025-09-14T00:00:00"]
 
 
 def test_embed_inlines_the_cached_image(mark_images):
     out = sdvplot.add_logos(_chart(), [10], [-3], ["LV"], league="nfl", embed=True)
-    assert salt.drawn_marks(out)[0][4].startswith("data:image/png;base64,")
+    assert salt._drawn_marks(out)[0][4].startswith("data:image/png;base64,")
 
 
 def test_empty_input_adds_an_empty_layer_quietly(mark_images):
     out = sdvplot.add_logos(_chart(), [], [], [], league="nfl")
-    assert salt.drawn_marks(out) == []
+    assert salt._drawn_marks(out) == []
 
 
 def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
     chart = _axis_chart(["LV", "XXX", "LAR"], height=200)
     with pytest.warns(SdvplotWarning):
         out = sdvplot.axis_logos(chart, "x", league="nfl", height=0.1)
-    assert salt.drawn_axis_marks(out, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
-    assert salt.visible_axis_labels(out, "x") == ["XXX"]
+    assert salt._drawn_axis_marks(out, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
+    assert salt._visible_axis_labels(out, "x") == ["XXX"]
     axis = out.layer[0].to_dict()["encoding"]["x"]["axis"]
     assert axis["labelExpr"] == 'indexof(["LV", "LAR"], datum.label) >= 0 ? \'\' : datum.label'
-    assert axis["labelPadding"] == 2 + 20 + salt.AXIS_GAP  # past the 20 px images
+    assert axis["labelPadding"] == 2 + 20 + salt._AXIS_GAP  # past the 20 px images
     layer = _layer(out, "sdvplot_axis_x")
-    assert layer["encoding"]["y"] == {"value": 200 + salt.AXIS_GAP} and layer["mark"]["baseline"] == "top"
+    assert layer["encoding"]["y"] == {"value": 200 + salt._AXIS_GAP} and layer["mark"]["baseline"] == "top"
     assert "axis" not in chart.to_dict()["encoding"]["x"]  # the caller's chart is unchanged
 
 
@@ -199,10 +199,10 @@ def test_y_axis_logos(mark_images):
     df = pd.DataFrame({"team": ["LV", "LAR"], "v": [1, 2]})
     chart = alt.Chart(df).mark_bar().encode(y=alt.Y("team:N", sort=None), x="v:Q").properties(height=100)
     out = sdvplot.axis_logos(chart, "y", league="nfl", height=0.2)
-    assert salt.drawn_axis_marks(out, "y") == [("13", 0.0, pytest.approx(0.2)), ("14", 1.0, pytest.approx(0.2))]
-    assert salt.visible_axis_labels(out, "y") == []
+    assert salt._drawn_axis_marks(out, "y") == [("13", 0.0, pytest.approx(0.2)), ("14", 1.0, pytest.approx(0.2))]
+    assert salt._visible_axis_labels(out, "y") == []
     layer = _layer(out, "sdvplot_axis_y")
-    assert layer["encoding"]["x"] == {"value": -salt.AXIS_GAP} and layer["mark"]["align"] == "right"
+    assert layer["encoding"]["x"] == {"value": -salt._AXIS_GAP} and layer["mark"]["align"] == "right"
 
 
 def test_axis_logos_need_a_visible_discrete_axis(mark_images):
@@ -220,5 +220,5 @@ def test_categories_of_url_data_need_an_explicit_sort(mark_images):
     with pytest.raises(ValueError, match="explicit sort"):
         sdvplot.axis_logos(chart, "x", league="nfl")
     listed = chart.encode(x=alt.X("team:N", sort=["LV", "LAR"]))
-    marks = salt.drawn_axis_marks(sdvplot.axis_logos(listed, "x", league="nfl"), "x")
+    marks = salt._drawn_axis_marks(sdvplot.axis_logos(listed, "x", league="nfl"), "x")
     assert [m[:2] for m in marks] == [("13", 0.0), ("14", 1.0)]

@@ -79,6 +79,7 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
 def logo_image(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = "default",
     mark_type: str = "logo",

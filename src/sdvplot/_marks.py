@@ -110,7 +110,7 @@ def _ranked(league: str) -> pl.DataFrame:
     return ranked
 
 
-def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
+def marks(team: Any, league: str, *, season: Any = None, id_system: str = "auto") -> pl.DataFrame:
     """Every archived mark for one team, best first.
 
     Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a unique
@@ -163,7 +163,7 @@ def select_mark(
     if team_id is None:
         return None
     # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45)
-    rows = [r for r in marks(team_id, league, s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
+    rows = [r for r in marks(team_id, league, season=s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
     side = "dark" if variant == "dark" else "light"
 
     def polarity(v: str) -> bool:
@@ -191,7 +191,7 @@ def select_mark(
 
 
 def logo_url(
-    team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
+    team: Any, league: str, *, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
     """The CDN URL of a team's logo or wordmark, chosen for the season.
 

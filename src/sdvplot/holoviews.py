@@ -14,7 +14,13 @@ from sdvplot import bokeh as _bokeh
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import image_sources
 
-SUPPORTS_AXIS_LOGOS = False
+_SUPPORTS_AXIS_LOGOS = False
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _require_bokeh() -> None:
@@ -50,7 +56,7 @@ def _add(
     sources = image_sources(placements, embed=embed)
 
     def hook(plot: Any, _element: Any) -> None:
-        _bokeh.draw(plot.state, placements, sources, kind=kind, height=h, alpha=a)
+        _bokeh._draw(plot.state, placements, sources, kind=kind, height=h, alpha=a)
 
     hooks = hv.Store.lookup_options("bokeh", element, "plot").kwargs.get("hooks", [])
     return element.opts(hooks=[*hooks, hook], clone=True, backend="bokeh")
@@ -260,6 +266,6 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     )
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: render the element with Bokeh and read the marks the hook drew."""
-    return _bokeh.drawn_marks(hv.render(target, backend="bokeh"))
+    return _bokeh._drawn_marks(hv.render(target, backend="bokeh"))

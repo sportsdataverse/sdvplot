@@ -29,7 +29,7 @@ def _colors(league: str, column: str) -> dict[str, str]:
     return {tid: c for tid, c in t.select("team_id", column).iter_rows() if c}
 
 
-def palette(league: str, which: str = "primary", teams: Any = None, season: Any = None) -> dict[Any, str]:
+def palette(league: str, teams: Any = None, *, which: str = "primary", season: Any = None) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
     Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
@@ -38,8 +38,8 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
 
     Args:
         league: The SDV league key, e.g. "nfl".
-        which: "primary" or "secondary".
         teams: Team values to key the dict by; None returns the whole league.
+        which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
 
     Returns:
@@ -86,12 +86,12 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
     return out
 
 
-def team_colors(teams: Any, league: str, which: str = "primary", season: Any = None) -> Any:
+def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any = None) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in.
 
     Args:
-        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
         league: The SDV league key, e.g. "nfl".
+        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
         which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
 
@@ -108,8 +108,8 @@ def team_colors(teams: Any, league: str, which: str = "primary", season: Any = N
 
             import sdvplot
 
-            sdvplot.team_colors(["KC", "SF"], "nfl")      # ['#e31837', '#aa0000']
-            sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
+            sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
+            sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;

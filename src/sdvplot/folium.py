@@ -1,7 +1,7 @@
 """The Folium adapter: logos, wordmarks and headshots as map markers with image icons.
 
 On a map, ``x`` is longitude and ``y`` latitude. A map has no plot height, so ``height`` is a fraction of the map's
-pixel height when it is given in pixels, else of FOLIUM_REFERENCE_HEIGHT (a notebook map's usual height). The markers
+pixel height when it is given in pixels, else of _FOLIUM_REFERENCE_HEIGHT (a notebook map's usual height). The markers
 go into one ``FeatureGroup`` named "sdvplot logos", so a ``LayerControl`` can toggle them.
 """
 
@@ -15,9 +15,15 @@ from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
-SUPPORTS_AXIS_LOGOS = False
-FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
-GROUP_NAME = "sdvplot logos"
+_SUPPORTS_AXIS_LOGOS = False
+_FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
+_GROUP_NAME = "sdvplot logos"
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _map(target: Any) -> folium.Map:
@@ -26,17 +32,17 @@ def _map(target: Any) -> folium.Map:
     return target
 
 
-def reference_height(m: folium.Map) -> float:
-    """The pixel height ``height`` is a fraction of: the map's own when in pixels, else FOLIUM_REFERENCE_HEIGHT."""
+def _reference_height(m: folium.Map) -> float:
+    """The pixel height ``height`` is a fraction of: the map's own when in pixels, else _FOLIUM_REFERENCE_HEIGHT."""
     value, unit = m.height
-    return float(value) if unit == "px" else float(FOLIUM_REFERENCE_HEIGHT)
+    return float(value) if unit == "px" else float(_FOLIUM_REFERENCE_HEIGHT)
 
 
 def _group(m: folium.Map) -> folium.FeatureGroup:
     for child in m._children.values():
-        if isinstance(child, folium.FeatureGroup) and child.layer_name == GROUP_NAME:
+        if isinstance(child, folium.FeatureGroup) and child.layer_name == _GROUP_NAME:
             return child
-    group = folium.FeatureGroup(name=GROUP_NAME)
+    group = folium.FeatureGroup(name=_GROUP_NAME)
     group.add_to(m)
     return group
 
@@ -62,7 +68,7 @@ def _add(
     if not placements:
         return m
     names = {} if kind == "headshot" else dict(team_index(league).select("team_id", "name").iter_rows())
-    px = max(1, round(h * reference_height(m)))  # Leaflet icon sizes are whole pixels
+    px = max(1, round(h * _reference_height(m)))  # Leaflet icon sizes are whole pixels
     group = _group(m)
     for p, src in zip(placements, image_sources(placements, embed=embed), strict=True):
         w = max(1, round(px * aspect(p)))
@@ -100,7 +106,7 @@ def add_logos(
         teams: The team for each point, in any id system ``resolve()`` understands.
         league: The SDV league key, e.g. "nfl".
         season: One season, or one per point, to pick each team's mark for that era.
-        height: The logo height as a fraction of the map's pixel height (or of FOLIUM_REFERENCE_HEIGHT, 500 px, when
+        height: The logo height as a fraction of the map's pixel height (or of _FOLIUM_REFERENCE_HEIGHT, 500 px, when
             the map height is not in pixels), in (0, 1].
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
@@ -274,13 +280,13 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     raise TypeError("a folium map has no category axes; put the logos on the map with add_logos instead")
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) for each marker sdvplot added; height = icon px / reference px."""
     m = _map(target)
-    ref = reference_height(m)
+    ref = _reference_height(m)
     out = []
     for group in m._children.values():
-        if isinstance(group, folium.FeatureGroup) and group.layer_name == GROUP_NAME:
+        if isinstance(group, folium.FeatureGroup) and group.layer_name == _GROUP_NAME:
             markers: list[Any] = list(group._children.values())
             for marker in markers:
                 if hasattr(marker, "_sdvplot_mark"):

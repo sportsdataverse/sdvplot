@@ -406,13 +406,13 @@ def on_color(background: str) -> str:
 
 def team_color(team_id: str, league: str) -> str:
     """The team's primary color from sdvplot's index, or a neutral grey when the team is not in it."""
-    return sdvplot.team_colors(team_id, league) or NEUTRAL
+    return sdvplot.team_colors(league, team_id) or NEUTRAL
 
 
 def readable_on_white(team_id: str, league: str) -> str:
     """A team color that reads as small text on white (4.5:1): the primary, else the secondary, else dark grey."""
     for which in ("primary", "secondary"):
-        color = sdvplot.team_colors(team_id, league, which)
+        color = sdvplot.team_colors(league, team_id, which=which)
         if color and contrast(color, "#ffffff") >= 4.5:
             return str(color)
     return "#4a4f57"

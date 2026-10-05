@@ -18,15 +18,21 @@ import altair as alt
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
-SUPPORTS_AXIS_LOGOS = True
-VEGA_LITE_DEFAULT_HEIGHT = 300  # px: Vega-Lite's continuous view height when neither chart nor theme sets one
-AXIS_GAP = 6  # px between the axis line and the axis images (past Vega-Lite's 5 px ticks)
-VEGA_LITE_LABEL_PADDING = 2  # px: Vega-Lite's default axis labelPadding
-URL, TEAM = "sdvplot_url", "sdvplot_team"  # the image layer's own columns
+_SUPPORTS_AXIS_LOGOS = True
+_VEGA_LITE_DEFAULT_HEIGHT = 300  # px: Vega-Lite's continuous view height when neither chart nor theme sets one
+_AXIS_GAP = 6  # px between the axis line and the axis images (past Vega-Lite's 5 px ticks)
+_VEGA_LITE_LABEL_PADDING = 2  # px: Vega-Lite's default axis labelPadding
+_URL, _TEAM = "sdvplot_url", "sdvplot_team"  # the image layer's own columns
 _DISCRETE = ("nominal", "ordinal")
 _SUBCHARTS = {"FacetChart": "spec", "RepeatChart": "spec", "HConcatChart": "hconcat[i]",
               "VConcatChart": "vconcat[i]", "ConcatChart": "concat[i]"}  # fmt: skip
 _BLANKED = re.compile(r"^indexof\((\[.*?\]), datum\.label\) >= 0")
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "logo_layer"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _jsonable(v: Any) -> Any:
@@ -87,7 +93,7 @@ def _chart_height(spec: dict[str, Any]) -> float:
         raise ValueError(
             "a discrete y axis is sized by its step; set the chart height in pixels: .properties(height=...)"
         )
-    h = spec.get("config", {}).get("view", {}).get("continuousHeight", VEGA_LITE_DEFAULT_HEIGHT)
+    h = spec.get("config", {}).get("view", {}).get("continuousHeight", _VEGA_LITE_DEFAULT_HEIGHT)
     return _pixels(h, "config.view.continuousHeight")
 
 
@@ -145,14 +151,14 @@ def _layer(
 ) -> alt.Chart:
     h_px = height * chart_height
     rows = [
-        {_key(x["field"]): _jsonable(p.x), _key(y["field"]): _jsonable(p.y), URL: src, TEAM: p.team_id}
+        {_key(x["field"]): _jsonable(p.x), _key(y["field"]): _jsonable(p.y), _URL: src, _TEAM: p.team_id}
         for p, src in zip(placements, image_sources(placements, embed=embed), strict=True)
     ]
     widest = max((aspect(p) for p in placements), default=1.0)
     return (
         alt.Chart(alt.Data(values=rows), name=f"sdvplot_{kind}")
         .mark_image(width=h_px * widest, height=h_px, aspect=True, opacity=alpha)
-        .encode(x=alt.X(**x), y=alt.Y(**y), url=alt.Url(URL, type="nominal"))
+        .encode(x=alt.X(**x), y=alt.Y(**y), url=alt.Url(_URL, type="nominal"))
     )
 
 
@@ -220,7 +226,7 @@ def logo_layer(
     placements = place(x, y, teams, league=league, season=season, kind="logo", variant=variant, id_system=id_system)
     return _layer(
         placements, kind="logo", height=h, alpha=a,
-        chart_height=VEGA_LITE_DEFAULT_HEIGHT if chart_height is None else _pixels(chart_height, "chart_height"),
+        chart_height=_VEGA_LITE_DEFAULT_HEIGHT if chart_height is None else _pixels(chart_height, "chart_height"),
         x={"field": "x", "type": x_type}, y={"field": "y", "type": y_type}, embed=embed,
     )  # fmt: skip
 
@@ -542,27 +548,27 @@ def axis_logos(
     blank = json.dumps([str(cats[i]) for i in pos])
     # the axis: blank the labels that became images, and move the rest past the images
     old = dict(enc.get("axis", {}))
-    room = (h_px if letter == "x" else h_px * widest) + AXIS_GAP
+    room = (h_px if letter == "x" else h_px * widest) + _AXIS_GAP
     expr = f"indexof({blank}, datum.label) >= 0 ? '' : " + (
         f"({old['labelExpr']})" if "labelExpr" in old else "datum.label"
     )
     base = chart.copy(deep=True)
     _target_channel(base, letter).axis = alt.Axis(
-        **{**old, "labelExpr": expr, "labelPadding": old.get("labelPadding", VEGA_LITE_LABEL_PADDING) + room}
+        **{**old, "labelExpr": expr, "labelPadding": old.get("labelPadding", _VEGA_LITE_LABEL_PADDING) + room}
     )
     key = _key(enc["field"])
-    rows = [{key: cats[i], URL: src, TEAM: p.team_id}
+    rows = [{key: cats[i], _URL: src, _TEAM: p.team_id}
             for i, p, src in zip(pos, placements, image_sources(placements, embed=embed), strict=True)]  # fmt: skip
     channel = {"field": enc["field"], "type": enc["type"], **({"sort": sort} if "sort" in enc else {})}
     layer = alt.Chart(alt.Data(values=rows), name=f"sdvplot_axis_{letter}")
-    url = alt.Url(URL, type="nominal")
+    url = alt.Url(_URL, type="nominal")
     if letter == "x":  # under the plot: the images hang from just below the x axis
         layer = layer.mark_image(width=h_px * widest, height=h_px, aspect=True, baseline="top").encode(
-            x=alt.X(**channel), y=alt.value(chart_h + AXIS_GAP), url=url
+            x=alt.X(**channel), y=alt.value(chart_h + _AXIS_GAP), url=url
         )
     else:  # left of the plot: the images end just left of the y axis
         layer = layer.mark_image(width=h_px * widest, height=h_px, aspect=True, align="right").encode(
-            y=alt.Y(**channel), x=alt.value(-AXIS_GAP), url=url
+            y=alt.Y(**channel), x=alt.value(-_AXIS_GAP), url=url
         )
     return base + layer
 
@@ -575,7 +581,7 @@ def _named(chart: Any, prefix: str) -> list[Any]:
     return found
 
 
-def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) per image of the sdvplot layers; height = image px / chart px."""
     ref = _chart_height(chart.to_dict())
     out = []
@@ -583,11 +589,11 @@ def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
         if layer.name.startswith("sdvplot_axis_"):
             continue
         xk, yk = _key(layer.encoding.x.to_dict()["field"]), _key(layer.encoding.y.to_dict()["field"])
-        out += [(r[TEAM], r[xk], r[yk], layer.mark.height / ref, r[URL]) for r in layer.data.values]
+        out += [(r[_TEAM], r[xk], r[yk], layer.mark.height / ref, r[_URL]) for r in layer.data.values]
     return out
 
 
-def drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
+def _drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: (team_id, category position, height) for each image on ``axis``, in tick order; height = image px /
     chart px."""
     letter = _letter(axis)
@@ -598,11 +604,11 @@ def drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
     marks = []
     for layer in _named(chart, f"sdvplot_axis_{letter}"):
         key = _key(getattr(layer.encoding, letter).to_dict()["field"])
-        marks += [(r[TEAM], float(cats.index(r[key])), layer.mark.height / ref) for r in layer.data.values]
+        marks += [(r[_TEAM], float(cats.index(r[key])), layer.mark.height / ref) for r in layer.data.values]
     return sorted(marks, key=lambda m: m[1])
 
 
-def visible_axis_labels(chart: Any, axis: str) -> list[str]:
+def _visible_axis_labels(chart: Any, axis: str) -> list[str]:
     """Test hook: the labels on ``axis`` the axis' labelExpr still shows as text."""
     letter = _letter(axis)
     spec = chart.to_dict()

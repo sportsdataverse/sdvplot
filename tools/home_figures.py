@@ -77,7 +77,7 @@ def afc_contrast(ax: Any, variant: str) -> str:
     """Each AFC team's primary-secondary contrast, a bar in its two colors, logos on the axis."""
     afc = sdvplot.teams("nfl").filter(pl.col("conference_id") == "nfl:afc")["abbr"].to_list()
     primary = sdvplot.palette("nfl", teams=afc)
-    secondary = sdvplot.palette("nfl", "secondary", teams=afc)
+    secondary = sdvplot.palette("nfl", which="secondary", teams=afc)
     ratio = {t: contrast(primary[t], secondary[t]) for t in afc}
     order = sorted(afc, key=lambda t: (ratio[t], t))
     ax.bar(
