@@ -62,6 +62,18 @@ def _image_cells(
     _check_gt(gt)
     h = check_px(height)
     locs = loc.body(columns) if locations is None else locations
+    for where in locs if isinstance(locs, list) else [locs]:
+        # the locations great_tables' text_transform reaches; it escapes column labels and ignores every other one
+        if not isinstance(where, (loc.body, loc.stub, loc.row_groups)):
+            hint = (
+                "; for marks in the column labels use gt_sdv_cols_label()"
+                if isinstance(where, loc.column_labels)
+                else ""
+            )
+            raise ValueError(
+                "locations must be loc.body(), loc.stub() or loc.row_groups(), or a list of them, "
+                f"not {type(where).__name__}{hint}"
+            )
     texts = _cell_texts(gt, locs)
     imgs = mark_html([html.unescape(t) for t in texts], league=league, kind=kind, height=h, season=season,
                      include_name=include_name, id_system=id_system)  # fmt: skip
@@ -91,8 +103,9 @@ def gt_sdv_logos(
             ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``, e.g. ``loc.stub()`` or
-            ``loc.row_groups()``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         include_name: Keep the cell's text after the logo.
         season: One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for
             today's.
@@ -102,7 +115,8 @@ def gt_sdv_logos(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+            holds another location.
 
     Example:
         ::
@@ -130,7 +144,9 @@ def gt_sdv_wordmarks(
         columns: The columns whose body cells become wordmarks. Ignored when ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         season: One season whose marks every cell shows; None for today's.
 
     Returns:
@@ -138,7 +154,8 @@ def gt_sdv_wordmarks(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+            holds another location.
 
     Example:
         ::
@@ -164,7 +181,9 @@ def gt_sdv_headshots(
         columns: The columns of player ids. Ignored when ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         id_system: "espn" (ESPN athlete ids, any ESPN league) or "gsis" (NFL), as in ``headshot_url``.
 
     Returns:
@@ -172,7 +191,7 @@ def gt_sdv_headshots(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels.
+        ValueError: If ``height`` is not a positive number of pixels, or ``locations`` holds another location.
 
     Example:
         ::

@@ -140,3 +140,7 @@
   DataFrame. It looks like raw data: wrap it in great_tables.GT() first."), as sdvplotR's `.check_gt` words it; an
   unknown `density` and an unknown `*_style` key are worded alike across the table modules too, and the style error
   names the argument.
+- `gt_sdv_logos`, `gt_sdv_wordmarks` and `gt_sdv_headshots` document exactly which `locations` they take
+  (`loc.body()`, `loc.stub()`, `loc.row_groups()`) and raise `ValueError` for any other: column labels used to come out
+  as escaped `<img>` text, and a title or source note was silently left alone. `gt_sdv_cols_label` puts marks in the
+  column labels.

@@ -328,3 +328,14 @@ def test_every_wave_words_a_bad_density_and_style_key_alike():
     with pytest.raises(ValueError) as d:
         sgt.gt_grid([GT(RAW)], title="T", title_style={"colour": "red"})  # wave D
     assert str(c.value) == str(d.value) and str(c.value).startswith("title_style has unknown key(s) ['colour']")
+
+
+@pytest.mark.parametrize("fn", [gt_sdv_logos, gt_sdv_wordmarks, gt_sdv_headshots])
+def test_locations_are_body_stub_or_row_groups_only(fn):
+    """great_tables' text_transform reaches only those three; column labels came out as escaped <img> text and any
+    other location (a title, a source note) was silently ignored."""
+    gt = GT(pl.DataFrame({"LV": ["LV"]})).tab_header("LV")
+    with pytest.raises(ValueError, match=r"gt_sdv_cols_label\(\)"):
+        fn(gt, None, league="nfl", locations=loc.column_labels())
+    with pytest.raises(ValueError, match=r"loc\.body\(\), loc\.stub\(\) or loc\.row_groups\(\).*not LocTitle"):
+        fn(gt, None, league="nfl", locations=[loc.body(), loc.title()])
