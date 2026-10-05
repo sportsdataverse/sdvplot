@@ -1,0 +1,33 @@
+{
+  "section": "cookbooks",
+  "stem": "tables",
+  "label": "Tables",
+  "position": 4,
+  "page": "cookbooks/tables.md",
+  "items": [
+    {
+      "title": "Four great_tables themes side by side",
+      "alt": "The same MLB standings table in four sdvplot great_tables themes, saved as one image with gt_grid",
+      "image": "/img/gallery/cookbooks/tables_7.png",
+      "anchor": "2-compare-themes-and-save-them-as-one-image"
+    },
+    {
+      "title": "NBA scoring leaders table with headshots",
+      "alt": "A great_tables leaderboard of the NBA's top ten scorers with headshots, team logos and stacked names",
+      "image": "/img/gallery/cookbooks/tables_9.png",
+      "anchor": "3-headshots-and-a-two-line-name-cell"
+    },
+    {
+      "title": "NFL tier list built with gt_tiers",
+      "alt": "A great_tables tier list of NFL teams by net EPA per play, five colored tiers of team logos",
+      "image": "/img/gallery/cookbooks/tables_19.png",
+      "anchor": "8-a-tier-list-as-a-table"
+    },
+    {
+      "title": "A WNBA team percentile card as a square social image",
+      "alt": "A great_tables percentile card for the WNBA's best team, centered on a 1080 by 1080 canvas",
+      "image": "/img/gallery/cookbooks/tables_23.png",
+      "anchor": "10-save-for-social-a-trimmed-image-and-a-square-post"
+    }
+  ]
+}

@@ -110,6 +110,40 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 </div>
 
+## Cookbooks
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/cookbooks/matplotlib-logos_5.png" alt="Scatter of NFL offensive and defensive EPA per play with each team&#x27;s logo as its marker" loading="lazy"/><br/>NFL offense vs defense with logos as points<br/><small>Logos in matplotlib</small>](cookbooks/matplotlib-logos.md#1-use-logos-as-scatter-points)
+
+[<img src="/img/gallery/cookbooks/matplotlib-logos_11.png" alt="Cumulative goal differential lines for the eight Pacific Division teams, each ending in the team&#x27;s logo" loading="lazy"/><br/>NHL Pacific Division goal differential with logos at the line ends<br/><small>Logos in matplotlib</small>](cookbooks/matplotlib-logos.md#4-label-each-lines-last-point-with-a-logo)
+
+[<img src="/img/gallery/cookbooks/plotnine_5.png" alt="plotnine scatter of WNBA points scored and allowed per game with team logos as points" loading="lazy"/><br/>WNBA points scored vs allowed in plotnine<br/><small>plotnine</small>](cookbooks/plotnine.md#1-logos-as-points)
+
+[<img src="/img/gallery/cookbooks/plotnine_15.png" alt="Eight plotnine panels, one per NFL division, of offensive vs defensive EPA with team logos" loading="lazy"/><br/>NFL divisions faceted with logos in plotnine<br/><small>plotnine</small>](cookbooks/plotnine.md#6-facet-a-logo-plot)
+
+[<img src="/img/gallery/cookbooks/interactive-web_23.png" alt="Plotly scatter of MLB runs scored and allowed per game with team logos, exported at 1200 by 675 pixels" loading="lazy"/><br/>MLB runs scored vs allowed, a Plotly chart exported to PNG<br/><small>Interactive charts</small>](cookbooks/interactive-web.md#10-export-a-plotly-chart-as-a-png-for-social)
+
+[<img src="/img/gallery/cookbooks/interactive-web_25.png" alt="Altair scatter of NHL goals for and against per game with team logos, exported with vl-convert" loading="lazy"/><br/>NHL goals for vs against, an Altair chart exported to PNG<br/><small>Interactive charts</small>](cookbooks/interactive-web.md#11-export-an-altair-chart-as-a-png)
+
+[<img src="/img/gallery/cookbooks/tables_7.png" alt="The same MLB standings table in four sdvplot great_tables themes, saved as one image with gt_grid" loading="lazy"/><br/>Four great_tables themes side by side<br/><small>Tables</small>](cookbooks/tables.md#2-compare-themes-and-save-them-as-one-image)
+
+[<img src="/img/gallery/cookbooks/tables_9.png" alt="A great_tables leaderboard of the NBA&#x27;s top ten scorers with headshots, team logos and stacked names" loading="lazy"/><br/>NBA scoring leaders table with headshots<br/><small>Tables</small>](cookbooks/tables.md#3-headshots-and-a-two-line-name-cell)
+
+[<img src="/img/gallery/cookbooks/tables_19.png" alt="A great_tables tier list of NFL teams by net EPA per play, five colored tiers of team logos" loading="lazy"/><br/>NFL tier list built with gt_tiers<br/><small>Tables</small>](cookbooks/tables.md#8-a-tier-list-as-a-table)
+
+[<img src="/img/gallery/cookbooks/tables_23.png" alt="A great_tables percentile card for the WNBA&#x27;s best team, centered on a 1080 by 1080 canvas" loading="lazy"/><br/>A WNBA team percentile card as a square social image<br/><small>Tables</small>](cookbooks/tables.md#10-save-for-social-a-trimmed-image-and-a-square-post)
+
+[<img src="/img/gallery/cookbooks/colors-and-themes_3.png" alt="Swatches of each NFL team&#x27;s primary and secondary colors beside its logo, in eight division columns" loading="lazy"/><br/>Every NFL team's primary and secondary color by division<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#1-see-a-leagues-palette)
+
+[<img src="/img/gallery/cookbooks/colors-and-themes_15.png" alt="Hexbin density of Shai Gilgeous-Alexander&#x27;s shots on a half court, shaded pale blue to Thunder blue to orange" loading="lazy"/><br/>A shot-density map shaded in the Thunder's colors with PyPalettes<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#7-a-colormap-from-a-teams-colors-with-pypalettes)
+
+[<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_9.png" alt="Made and missed field goals of Nikola Jokic on a half court in Denver Nuggets colors" loading="lazy"/><br/>Nikola Jokic shot chart on a Nuggets-colored court<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#4-an-nba-shot-chart-from-the-stats-api-frame)
+
+[<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_19.png" alt="Every shot of Manchester City vs Aston Villa on a dark mplsoccer pitch, goals drawn as the scorer&#x27;s logo" loading="lazy"/><br/>Premier League shot map with goal logos on an mplsoccer pitch<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#9-a-soccer-shot-map-on-an-mplsoccer-pitch)
+
+</div>
+
 ## Recipes
 
 <div class="sdv-gallery">
