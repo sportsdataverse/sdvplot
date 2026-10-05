@@ -123,7 +123,7 @@ def _call(
     """Run adapter.<verb> on a fresh target; return (drawn marks, warnings). A raise becomes a named AssertionError."""
     try:
         _, marks, count = _draw(adapter, verb, make_target(), adapter._drawn_marks, *args, **kw)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
     return marks, count
 
@@ -191,7 +191,7 @@ def _check_height(rule: str, verb: str, heights: Callable[[float, bool], list[fl
     for h in (0.1, 0.25):
         try:
             got = heights(h, True)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
         if not got or not all(math.isclose(g, h, rel_tol=_HEIGHT_TOLERANCE) for g in got):
             _fail(rule, f"height={h} must be the height of every mark {verb} draws, it drew heights {got}")
@@ -361,7 +361,7 @@ def check_adapter_contract(
         try:
             drawn, axis_marks, count = _draw(adapter, "axis_logos", make_axis([a, "XXX", b]), read_axis, "x",
                                              league=league)  # fmt: skip
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             raise AssertionError(f"{r7}: axis_logos raised {e!r}") from e
         with warnings.catch_warnings():  # counted above: a hook that renders again (plotnine) warns again
             warnings.simplefilter("ignore", SdvplotWarning)
@@ -406,7 +406,7 @@ def _table_call(
         warnings.simplefilter("always")
         try:
             out = getattr(adapter, verb)(t, "team", **kw)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
     drawn = t if out is None else out
     with warnings.catch_warnings(record=True) as rendered:
@@ -534,7 +534,7 @@ def check_table_adapter_contract(
     r0 = "rule T0 (registration)"
     try:
         routed = adapter_for(make_table(pl.DataFrame({"team": list(known)})))
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise AssertionError(f"{r0}: sdvplot cannot route this table: {e!r}") from e
     if routed is not adapter:
         _fail(r0, f"sdvplot routes this table to {routed.__name__}, not {adapter.__name__}")

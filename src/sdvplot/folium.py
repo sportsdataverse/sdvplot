@@ -20,7 +20,7 @@ _SUPPORTS_AXIS_LOGOS = False
 _FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
 _GROUP_NAME = "sdvplot logos"
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

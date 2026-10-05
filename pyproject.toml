@@ -129,10 +129,13 @@ extend-exclude = [
 line-ending = "lf"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+# RUF022: __all__ stays sorted. RUF100: no stale noqa in the package (tests/, tools/ and examples/ still carry ~140
+# unused ones, nearly all E402; not cleaned up yet)
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF022", "RUF100"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["E501"]
+"tests/**" = ["E501", "RUF100"]
+"{tools,examples}/**" = ["RUF100"]
 
 [tool.mypy]
 files = ["src/sdvplot", "tests/test_types.py"]

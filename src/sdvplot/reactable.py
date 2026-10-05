@@ -23,12 +23,12 @@ from sdvplot._placement import KINDS, _missing, check_alpha
 from sdvplot._tables import check_px, img_tag, mark_html
 
 __all__ = [
-    "reactable_sdv_logos",
-    "reactable_sdv_wordmarks",
-    "reactable_sdv_headshots",
     "reactable_sdv_cols_label",
+    "reactable_sdv_headshots",
+    "reactable_sdv_logos",
     "reactable_sdv_team_color_bar",
     "reactable_sdv_team_color_bg",
+    "reactable_sdv_wordmarks",
 ]
 
 

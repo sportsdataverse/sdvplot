@@ -31,7 +31,7 @@ _MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Ax
 _TITLE_GAP = 4  # points between a title image and its title text
 _HA = {"left": 0.0, "center": 0.5, "right": 1.0}
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "add_images", "title_image", "team_tiers"]
+__all__ = ["add_headshots", "add_images", "add_logos", "add_wordmarks", "axis_logos", "team_tiers", "title_image"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
