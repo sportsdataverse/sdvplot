@@ -24,6 +24,9 @@ counterpart to the R package [sdvplotR](https://sdvplotR.sportsdataverse.org/). 
 overview. This document captures the conventions to follow when changing this repository; it mirrors
 [sdv-py's](https://github.com/sportsdataverse/sportsdataverse-py/blob/main/CONTRIBUTING.md).
 
+Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report a vulnerability privately, as
+[SECURITY.md](SECURITY.md) describes, not in a public issue.
+
 ## Development setup
 
 The project uses [uv](https://docs.astral.sh/uv/). Dependencies live in `pyproject.toml` (PEP 621 and PEP 735
