@@ -303,6 +303,29 @@ def test_a_vega_lite_spec_becomes_a_page_with_vega_embed(site):
     assert 'vegaEmbed("#vis", spec, embedOpt)' in page
 
 
+def test_a_vega_lite_mime_key_without_the_plus_still_frames():  # Altair 6 names it application/vnd.vegalite.v6.json
+    assert rn.VEGALITE.fullmatch("application/vnd.vegalite.v6.json")
+    assert rn.VEGALITE.fullmatch("application/vnd.vegalite.v5+json")
+
+
+def test_a_real_altair_chart_embeds_with_the_svg_renderer(site):
+    # Altair 6's default renderer sends text/html only, so the frame is Altair's own embed; the logo CDN sends no CORS
+    # header, so Vega's canvas renderer would drop every image mark while its SVG renderer draws them
+    code = (
+        "import altair as alt\nimport polars as pl\n"
+        "df = pl.DataFrame({'x': [1], 'y': [2], 'logo': ['https://example.org/kc.png']})\n"
+        "alt.Chart(df).mark_image(width=40, height=40).encode(x='x', y='y', url='logo')"
+    )
+    nb = new_notebook(cells=[new_code_cell(code)])
+    rn._execute(nb, 120)
+    rn._clean_outputs(nb)
+    body = rn._to_markdown(nb, _book(site))
+    assert 'src="/outputs/cookbooks/t/0_0.html" title="HTML output"' in body
+    page = (site / "static" / "outputs" / "cookbooks" / "t" / "0_0.html").read_text(encoding="utf-8")
+    assert '"mark": {"type": "image"' in page
+    assert '{"renderer": "svg", "actions": false, "mode": "vega-lite"}' in page
+
+
 def test_bokeh_joins_its_div_and_script_and_loads_bokehjs(site):
     loader = {"application/javascript": "load()", "application/vnd.bokehjs_load.v0+json": "load()"}
     nb = new_notebook()
@@ -388,10 +411,18 @@ def test_moving_a_cell_leaves_no_stale_framed_page(site):
     assert sorted(p.name for p in book.outputs_dir.iterdir()) == ["1_0.html"]
 
 
-def test_the_setup_cell_prints_polars_frames_as_markdown_tables():
-    with pl.Config():
-        exec(rn.SETUP, {})
-        text = repr(pl.DataFrame({"team": ["KC"], "epa": [0.12]}))
+def test_the_setup_cell_prints_polars_frames_as_markdown_tables_and_embeds_altair_as_svg():
+    import altair as alt
+
+    options = dict(alt.renderers.options)
+    try:
+        with pl.Config():
+            exec(rn.SETUP, {})
+            text = repr(pl.DataFrame({"team": ["KC"], "epa": [0.12]}))
+        assert alt.renderers.options["embed_options"] == {"renderer": "svg", "actions": False}
+    finally:  # the setup cell sets Altair's global options; leave them as the other tests expect
+        alt.renderers.options.clear()
+        alt.renderers.options.update(options)
     assert text.splitlines() == ["| team | epa  |", "|------|------|", "| KC   | 0.12 |"]
 
 

@@ -71,7 +71,8 @@ GITHUB_NB = "https://github.com/sportsdataverse/sdvplot/blob/main/examples/noteb
 DEFAULT_TIMEOUT = 600  # seconds per cell
 FRAME_HEIGHT = 480  # px, an iframe's height until its page reports one (or for good, without JavaScript)
 THUMB_WIDTH = 640  # px, the widest a gallery thumbnail gets
-# Run before the notebook's own cells, then dropped from the page: frames print as markdown tables.
+# Run before the notebook's own cells, then dropped from the page: frames print as markdown tables, and Altair embeds
+# its charts with Vega's SVG renderer (the logo CDN sends no CORS header, so the canvas renderer drops image marks).
 SETUP = (
     "import polars as pl\n"
     'pl.Config.set_tbl_formatting("MARKDOWN")\n'
@@ -80,10 +81,15 @@ SETUP = (
     "pl.Config.set_tbl_cols(-1)\n"
     "pl.Config.set_fmt_str_lengths(200)\n"
     "pl.Config.set_tbl_width_chars(10000)\n"
+    "try:\n"
+    "    import altair as alt\n"
+    '    alt.renderers.set_embed_options(renderer="svg", actions=False)\n'
+    "except ImportError:\n"
+    "    pass\n"
 )
 
 PLOTLY = "application/vnd.plotly.v1+json"
-VEGALITE = re.compile(r"application/vnd\.vegalite\.v\d+\+json")
+VEGALITE = re.compile(r"application/vnd\.vegalite\.v\d+[.+]json")  # Altair 6 sends ...v6.json, not v6+json
 WIDGET_VIEW = "application/vnd.jupyter.widget-view+json"
 WIDGET_STATE = "application/vnd.jupyter.widget-state+json"
 BOKEH_EXEC = "application/vnd.bokehjs_exec.v0+json"
