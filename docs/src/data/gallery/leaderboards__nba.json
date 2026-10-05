@@ -1,0 +1,27 @@
+{
+  "section": "leaderboards",
+  "stem": "nba",
+  "label": "NBA",
+  "position": 3,
+  "page": "leaderboards/nba.md",
+  "items": [
+    {
+      "title": "NBA standings with net rating",
+      "alt": "NBA standings table by conference with team logos, records and offensive, defensive and net ratings.",
+      "image": "/img/gallery/leaderboards/nba_10.png",
+      "anchor": "1-standings-with-net-rating"
+    },
+    {
+      "title": "NBA net rating bars",
+      "alt": "Bars of every NBA team's net rating this season in team colors, team logos on the x axis.",
+      "image": "/img/gallery/leaderboards/nba_12.png",
+      "anchor": "2-net-rating-best-to-worst"
+    },
+    {
+      "title": "NBA scoring leaders with headshots",
+      "alt": "Horizontal bars of the NBA's top scorers in points per game, with player headshots and team logos.",
+      "image": "/img/gallery/leaderboards/nba_14.png",
+      "anchor": "3-scoring-leaders-with-headshots"
+    }
+  ]
+}

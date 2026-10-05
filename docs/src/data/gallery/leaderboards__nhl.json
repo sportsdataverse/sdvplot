@@ -1,0 +1,27 @@
+{
+  "section": "leaderboards",
+  "stem": "nhl",
+  "label": "NHL",
+  "position": 6,
+  "page": "leaderboards/nhl.md",
+  "items": [
+    {
+      "title": "NHL standings",
+      "alt": "NHL standings table grouped by division with team logos, points, goal differential and last ten games.",
+      "image": "/img/gallery/leaderboards/nhl_8.png",
+      "anchor": "1-standings"
+    },
+    {
+      "title": "NHL goal differential",
+      "alt": "Bars of every NHL team's goal differential this season in team colors, team logos on the x axis.",
+      "image": "/img/gallery/leaderboards/nhl_10.png",
+      "anchor": "2-goal-differential"
+    },
+    {
+      "title": "NHL points leaders with headshots",
+      "alt": "Top ten NHL scorers as stacked goal and assist bars with ESPN headshots and team logos.",
+      "image": "/img/gallery/leaderboards/nhl_12.png",
+      "anchor": "3-scoring-leaders-with-headshots"
+    }
+  ]
+}
