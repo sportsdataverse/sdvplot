@@ -21,7 +21,6 @@
     - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
-      - [The public API frozen for 0.1 (breaking)](#the-public-api-frozen-for-01-breaking)
     - [Fixed](#fixed)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
@@ -39,6 +38,23 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- The public API is frozen for 0.1 (breaking):
+  - `palette(league, teams=None, *, which="primary", season=None)` and `team_colors(league, teams, *, which="primary",
+    season=None)` both take the league first, as sdvplotR's `sdv_color_palette(sport, teams, type)` and
+    `sdv_team_colors(sport, team, type)` do. `team_colors(teams, league)` calls must swap their first two arguments; the
+    old order now fails with "unknown league".
+  - The secondary arguments of the core functions are keyword-only: `season`, `id_system` and `strict` on `resolve`;
+    `season`, `variant`, `mark_type` and `size` on `logo_url` and `logo_image`; `season` on `marks`; `n` on `suggest`;
+    `id_system` on `headshot_url`; `x` and `y` on `court_coords`.
+  - `SdvplotError` is the base of every sdvplot error (exported from `sdvplot`); each error still subclasses the builtin
+    it did before (`UnresolvedTeamError` is a `ValueError`, ...).
+  - Every public submodule (`sdvplot.matplotlib`, `.plotnine`, `.plotly`, `.altair`, `.bokeh`, `.holoviews`, `.folium`,
+    `.pygal`, `.reactable`, `.plottable`, `.testing`, `.great_tables`) declares `__all__`, and `dir()` shows only it.
+    Helpers and the adapter test hooks are private: `_drawn_marks`, `_drawn_axis_marks`, `_visible_axis_labels`,
+    `_SUPPORTS_AXIS_LOGOS`, `_drawn_title_images`, and great_tables' `_drawn_cells` and `_rendered_html`.
+  - A table's `height` is pixels: the great_tables and reactable helpers (and the front door on a `GT`) raise
+    `ValueError` for a fractional height such as 0.1, which drew a 0.1 px image. The front-door docstrings now say what
+    a plot and a table each take.
 
 ## [0.1.0] - Unreleased
 
@@ -208,25 +224,6 @@ First release. The date is set when v0.1.0 is tagged.
 - A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
   writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
 - The weekly `live-tests-cron` render executes every notebook and publishes every generated path.
-
-#### The public API frozen for 0.1 (breaking)
-
-- `palette(league, teams=None, *, which="primary", season=None)` and `team_colors(league, teams, *, which="primary",
-  season=None)` both take the league first, as sdvplotR's `sdv_color_palette(sport, teams, type)` and
-  `sdv_team_colors(sport, team, type)` do. `team_colors(teams, league)` calls must swap their first two arguments; the
-  old order now fails with "unknown league".
-- The secondary arguments of the core functions are keyword-only: `season`, `id_system` and `strict` on `resolve`;
-  `season`, `variant`, `mark_type` and `size` on `logo_url` and `logo_image`; `season` on `marks`; `n` on `suggest`;
-  `id_system` on `headshot_url`; `x` and `y` on `court_coords`.
-- `SdvplotError` is the base of every sdvplot error (exported from `sdvplot`); each error still subclasses the builtin
-  it did before (`UnresolvedTeamError` is a `ValueError`, ...).
-- Every public submodule (`sdvplot.matplotlib`, `.plotnine`, `.plotly`, `.altair`, `.bokeh`, `.holoviews`, `.folium`,
-  `.pygal`, `.reactable`, `.plottable`, `.testing`, `.great_tables`) declares `__all__`, and `dir()` shows only it.
-  Helpers and the adapter test hooks are private: `_drawn_marks`, `_drawn_axis_marks`, `_visible_axis_labels`,
-  `_SUPPORTS_AXIS_LOGOS`, `_drawn_title_images`, and great_tables' `_drawn_cells` and `_rendered_html`.
-- A table's `height` is pixels: the great_tables and reactable helpers (and the front door on a `GT`) raise
-  `ValueError` for a fractional height such as 0.1, which drew a 0.1 px image. The front-door docstrings now say what a
-  plot and a table each take.
 
 ### Fixed
 
