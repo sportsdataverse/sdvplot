@@ -88,6 +88,9 @@ def _mark_aliases(league: str) -> pl.DataFrame:
 # a refreshed manifest is a new object and rebuilds; an index reload clears it (R45)
 _RANKED: dict[str, tuple[pl.DataFrame, pl.DataFrame]] = {}
 _index.on_reload(_RANKED.clear)
+# league -> (its ranked table, that table's rows as dicts by team_id, filled per team on first use): select_mark's
+# lookup, a dict hit instead of a polars filter per call
+_TEAM_ROWS: dict[str, tuple[pl.DataFrame, dict[str, list[dict[str, Any]]]]] = {}
 
 
 def _ranked(league: str) -> pl.DataFrame:
@@ -126,6 +129,17 @@ def _ranked(league: str) -> pl.DataFrame:
     )
     _RANKED[league] = (manifest, ranked)
     return ranked
+
+
+def _team_rows(team_id: str, league: str) -> list[dict[str, Any]]:
+    """``_ranked(league)``'s rows for one team as dicts, best first; computed once per team per manifest load."""
+    ranked = _ranked(league)
+    hit = _TEAM_ROWS.get(league)
+    if hit is None or hit[0] is not ranked:
+        hit = _TEAM_ROWS[league] = (ranked, {})
+    if team_id not in hit[1]:
+        hit[1][team_id] = ranked.filter(pl.col("team_id") == team_id).to_dicts()
+    return hit[1][team_id]
 
 
 def marks(team: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto") -> pl.DataFrame:
@@ -181,8 +195,9 @@ def select_mark(
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
-    # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45)
-    rows = [r for r in marks(team_id, league, season=s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
+    # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45); the rows are
+    # shared with _TEAM_ROWS, so the chosen one is handed out as a copy
+    rows = [r for r in _team_rows(team_id, league) if r["mark_type"] == mark_type]
     side = "dark" if variant == "dark" else "light"
 
     def polarity(v: str) -> bool:
@@ -203,9 +218,9 @@ def select_mark(
             dated = [r for r in covering if r["valid_from"] is not None or r["valid_to"] is not None]
             for df in (dated, covering):
                 if df:
-                    return df[0]
+                    return dict(df[0])
         if found:
-            return found[0]
+            return dict(found[0])
     return None
 
 
