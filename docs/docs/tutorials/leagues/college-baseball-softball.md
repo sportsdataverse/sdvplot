@@ -241,7 +241,7 @@ gt = gt_theme_ncaa(
         subtitle=f"{SEASON} Women's College World Series",
     )
     .tab_source_note(ESPN)
-)
+).opt_row_striping(row_striping=False)  # stripes would cover the result rows' white text
 gt = gt_sdv_logos(gt, "opponent_logo", league="ncaa_softball", height=26)
 gt_color_results(gt, "result")
 ```
