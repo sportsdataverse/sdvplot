@@ -20,21 +20,25 @@
 
 Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
 resolves team abbreviations, names and provider ids across 28 leagues and picks the right era's mark for a season. Colors
-and logos work with any library today through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`. The
-`add_logos` adapters for matplotlib, plotnine, plotly, altair, bokeh, holoviews, great_tables and folium arrive in later
-releases. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
+and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
+`add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib, plotnine, plotly, altair, bokeh,
+holoviews, great_tables, folium and pygal plots, tables and maps. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
 [CHANGELOG.md](https://sdvplot.sportsdataverse.org/CHANGELOG).
 
 ## Installation
 
 ```bash
-pip install sdvplot
+pip install git+https://github.com/sportsdataverse/sdvplot
 # or
-uv add sdvplot
+uv add git+https://github.com/sportsdataverse/sdvplot
 ```
 
-Plotting libraries are optional extras, for example `pip install "sdvplot[mpl]"`. matplotlib (and seaborn), plotnine,
-sportypy surfaces and plottable have adapters today; the other extras install their library ahead of its adapter:
+sdvplot is not on PyPI yet, so install it from GitHub. Plotting libraries are optional extras, for example
+`pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"`. Each extra adds the libraries for one feature: `[svg]` lets `logo_image()`
+rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
+`[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
+maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()`, and
+`[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
 
 | Extra | Adds |
 | --- | --- |
