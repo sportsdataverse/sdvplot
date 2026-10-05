@@ -131,7 +131,8 @@ def test_file_mode_is_world_readable(cache, monkeypatch):
     assert actual_mode == expected_mode
 
 
-def test_atomic_write_never_touches_the_process_umask(tmp_path, monkeypatch):
+def test_atomic_write_never_touches_the_process_umask(cache, monkeypatch):
+    tmp_path = cache
     """F4: os.umask(0) + restore races between threads and can leave the process umask at 0."""
     before = os.umask(0o022)
     os.umask(before)
@@ -273,3 +274,29 @@ def test_cache_path_refuses_a_relpath_outside_the_cache(cache):
     with pytest.raises(UnsafeCachePathError):
         _cache.fetch_immutable("https://x/a", "images/../../outside.png", "0" * 64)
     assert _cache.cache_path("images/ab/x.png").is_relative_to(cache.resolve())
+
+
+def test_cache_path_refuses_the_cache_root_itself(cache):
+    from sdvplot._errors import UnsafeCachePathError
+
+    for rel in ("", ".", "images/.."):
+        with pytest.raises(UnsafeCachePathError):
+            _cache.cache_path(rel)
+
+
+def test_atomic_write_refuses_a_target_outside_the_cache(cache, tmp_path):
+    from sdvplot._errors import UnsafeCachePathError
+
+    with pytest.raises(UnsafeCachePathError):
+        _cache.atomic_write(tmp_path / "outside.txt", b"x")
+    assert not (tmp_path / "outside.txt").exists()
+
+
+def test_a_bmp_manifest_row_is_accepted(cache, monkeypatch):
+    from sdvplot import _images
+
+    body = b"BM fake bitmap"
+    sha = hashlib.sha256(body).hexdigest()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    path = _images.mark_file({"sha256": sha, "ext": "bmp", "archive_url": "https://x/a"})
+    assert path.name == f"{sha}.bmp" and path.read_bytes() == body

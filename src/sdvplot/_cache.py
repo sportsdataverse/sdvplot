@@ -31,11 +31,15 @@ def cache_dir() -> Path:
 
 def cache_path(relpath: str) -> Path:
     """cache_dir() / relpath, refusing any relpath whose resolved location is outside the cache directory."""
-    root = cache_dir().resolve()
-    path = (root / relpath).resolve()
-    if not path.is_relative_to(root):
-        raise UnsafeCachePathError(f"cache path {relpath!r} resolves outside the cache directory")
+    path = (cache_dir().resolve() / relpath).resolve()
+    _check_contained(path, relpath)
     return path
+
+
+def _check_contained(path: Path, label: object) -> None:
+    root = cache_dir().resolve()
+    if path == root or not path.is_relative_to(root):
+        raise UnsafeCachePathError(f"cache path {label!r} is not inside the cache directory")
 
 
 def ttl_seconds() -> float:
@@ -59,6 +63,7 @@ def read_meta(relpath: str) -> dict | None:
 
 def atomic_write(path: Path, data: bytes) -> None:
     """Write to a temp file beside the target, then rename: a reader never sees a partial file."""
+    _check_contained(path.resolve(), str(path))
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.urandom(8).hex()}.part")
     # mode 0o666 with the kernel applying the umask: world-readable like any file, and the process umask is never

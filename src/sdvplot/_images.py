@@ -14,14 +14,14 @@ from urllib.request import url2pathname
 
 from PIL import Image
 
-from sdvplot._cache import atomic_write, cache_dir, fetch_cached, fetch_immutable
+from sdvplot._cache import atomic_write, cache_path, fetch_cached, fetch_immutable
 from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsafeCachePathError
 from sdvplot._marks import _check_mark_type, select_mark
 from sdvplot._resolve import one_team, resolve
 
 DEFAULT_SVG_SIZE = 512
 _SHA256 = re.compile(r"[0-9a-f]{64}")
-IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif"})
+IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 
 
 def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
@@ -36,7 +36,7 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
         version = importlib.metadata.version("resvg-py")
     except importlib.metadata.PackageNotFoundError as e:
         raise OptionalDependencyError("SVG logos need the svg extra: pip install sdvplot[svg]") from e
-    out = cache_dir() / "rasters" / f"{sha}_{size}_v{version}.png"
+    out = cache_path(f"rasters/{sha}_{size}_v{version}.png")
 
     # Try to open cached raster; if corrupt, treat as cache miss
     if out.exists():
