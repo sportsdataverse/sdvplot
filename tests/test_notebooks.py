@@ -150,6 +150,11 @@ def test_the_sidebar_lists_every_notebook_section():
         assert f"'{section.dir}'" in sidebars, section.dir
 
 
+def test_the_api_reference_comes_before_the_notebook_sections():  # owner's order: reference, then the examples
+    sidebars = (ROOT / "docs" / "sidebars.ts").read_text(encoding="utf-8")
+    assert sidebars.index("label: 'API reference'") < sidebars.index("...sections") < sidebars.index("id: 'gallery'")
+
+
 # --- discovery and metadata --------------------------------------------------------------------------------------
 
 
