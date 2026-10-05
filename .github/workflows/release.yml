@@ -1,8 +1,7 @@
-# Build on a GitHub Release (or manual dry run) and publish to PyPI with an API
-# token held in the repo secrets PYPI_USERNAME (`__token__`) and PYPI_PASSWORD
-# (the `pypi-...` token). Switching to Trusted Publishing later: register the
-# publisher on PyPI, restore `permissions: id-token: write` on the publish job,
-# and drop the user/password inputs.
+# Build on a GitHub Release (or manual dry run) and publish to PyPI with Trusted Publishing (OIDC): no token is
+# stored. The build job has no OIDC permission; only publish-pypi holds `id-token: write`, behind the `pypi`
+# environment. One-time setup on pypi.org: a pending Trusted Publisher for project `sdvplot` (owner
+# sportsdataverse, repo sdvplot, workflow release.yml, environment pypi).
 name: release
 on:
   release:
@@ -15,9 +14,9 @@ jobs:
     name: Build sdist + wheel
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
@@ -36,7 +35,7 @@ jobs:
       - name: Build sdist + wheel
         run: uv build
       - name: Upload build artifacts for the publish job
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dist
           path: dist/*
@@ -52,18 +51,17 @@ jobs:
       name: pypi
       url: https://pypi.org/p/sdvplot
     permissions:
-      contents: read
+      id-token: write
     steps:
       - name: Download build artifacts from the build job
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: dist
           path: dist
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        # v1.14.2, pinned by commit SHA
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33
         with:
           packages-dir: dist
-          user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
           # a re-run after a partial upload skips the files already on PyPI instead of failing on them
           skip-existing: true
