@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
 from sdvplot._resolve import _covers, one_team, resolve
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 # Official sources first, then archived copies, then derived crops (sdv-assets source names)
 SOURCE_RANK: dict[str, int] = {

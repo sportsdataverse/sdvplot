@@ -261,6 +261,8 @@ def cache(tmp_path, monkeypatch):
     root = tmp_path / "cache"
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(root))
     _cache._warned.clear()
+    for clear in _cache.MEMORY_CACHES:  # decoded images from an earlier test's cache directory
+        clear()
     return root
 
 

@@ -6,31 +6,50 @@ import functools
 from collections.abc import Callable
 from importlib import resources
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import polars as pl
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
-TEAM_SCHEMA: dict[str, pl.DataType] = {
-    "league": pl.String(),
-    "team_id": pl.String(),
-    "abbr": pl.String(),
-    "name": pl.String(),
-    "short_name": pl.String(),
-    "location": pl.String(),
-    "program": pl.String(),
-    "conference_id": pl.String(),
-    "conference": pl.String(),
-    "color_primary": pl.String(),
-    "color_secondary": pl.String(),
-    "color_source": pl.String(),
-}
-ALIAS_SCHEMA: dict[str, pl.DataType] = {
-    "league": pl.String(),
-    "id_system": pl.String(),
-    "value": pl.String(),
-    "team_id": pl.String(),
-    "valid_from": pl.Int32(),
-    "valid_to": pl.Int32(),
-}
+
+def _team_schema() -> dict[str, pl.DataType]:
+    return {
+        "league": pl.String(),
+        "team_id": pl.String(),
+        "abbr": pl.String(),
+        "name": pl.String(),
+        "short_name": pl.String(),
+        "location": pl.String(),
+        "program": pl.String(),
+        "conference_id": pl.String(),
+        "conference": pl.String(),
+        "color_primary": pl.String(),
+        "color_secondary": pl.String(),
+        "color_source": pl.String(),
+    }
+
+
+def _alias_schema() -> dict[str, pl.DataType]:
+    return {
+        "league": pl.String(),
+        "id_system": pl.String(),
+        "value": pl.String(),
+        "team_id": pl.String(),
+        "valid_from": pl.Int32(),
+        "valid_to": pl.Int32(),
+    }
+
+
+def __getattr__(name: str) -> dict[str, pl.DataType]:
+    # TEAM_SCHEMA / ALIAS_SCHEMA stay importable (tests, tools/build_index.py) but are built on first use
+    if name == "TEAM_SCHEMA":
+        return _team_schema()
+    if name == "ALIAS_SCHEMA":
+        return _alias_schema()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 _RELOAD_HOOKS: list[Callable[[], None]] = []
 

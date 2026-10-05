@@ -93,6 +93,7 @@ def test_svg_raster_cache_includes_version(cache, monkeypatch):
         return "99.9.9" if dist == "resvg-py" else "0.1.0"
 
     monkeypatch.setattr("importlib.metadata.version", mock_version)
+    _images._decoded_mark.cache_clear()  # an upgrade means a new process, which has no decoded image in memory
 
     # Second call with different version should create a new raster file
     img = _images.logo_image("LV", "nfl", size=200)

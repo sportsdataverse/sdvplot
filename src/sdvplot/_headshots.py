@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import functools
 import io
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any
 
 from sdvplot._cache import fetch_cached
 from sdvplot._normalize import norm_value
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 ESPN_HEADSHOT_LEAGUES = {
     "nfl": "nfl",

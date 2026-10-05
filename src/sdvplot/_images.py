@@ -3,21 +3,23 @@
 from __future__ import annotations
 
 import contextlib
+import functools
 import hashlib
 import io
 import re
 import warnings
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
-from PIL import Image
-
-from sdvplot._cache import atomic_write, cache_path, fetch_cached, fetch_immutable
+from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
 from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsafeCachePathError
 from sdvplot._marks import _check_mark_type, select_mark
 from sdvplot._resolve import one_team, resolve
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
 _SHA256 = re.compile(r"[0-9a-f]{64}")
@@ -26,6 +28,8 @@ IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 
 
 def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
+    from PIL import Image
+
     try:
         import importlib.metadata
 
@@ -132,13 +136,13 @@ def mark_file(row: dict[str, Any]) -> Path:
     return fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
 
 
-def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
-    """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
+@functools.lru_cache(maxsize=256)
+def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
+    """The decoded image of one mark, kept per (sha256, ext, url, size) so a plot of n points decodes a team's logo
+    once, not n times. Callers must go through ``load_mark_image``, which hands out a copy."""
+    from PIL import Image
 
-    ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
-    """
-    sha, ext = str(row["sha256"]), str(row["ext"])
-    path = mark_file(row)
+    path = mark_file({"sha256": sha, "ext": ext, "archive_url": url})
     if ext == "svg":
         return _rasterize(path, sha, size or DEFAULT_SVG_SIZE, ext)
     img: Image.Image = Image.open(path)
@@ -149,7 +153,21 @@ def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image
     return img
 
 
+MEMORY_CACHES.append(_decoded_mark.cache_clear)  # clear_cache() also drops the decoded images held in memory
+
+
+def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
+    """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
+
+    ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
+    Decoded images are kept in memory (256 most recent); the caller gets its own copy, free to modify.
+    """
+    return _decoded_mark(str(row["sha256"]), str(row["ext"]), str(row["archive_url"]), size).copy()
+
+
 def _check_image(body: bytes) -> None:
+    from PIL import Image
+
     Image.open(io.BytesIO(body)).verify()
 
 
@@ -162,6 +180,8 @@ def url_file(url: str) -> Path:
 
 def load_url_image(url: str) -> Image.Image:
     """An image that is not content-addressed (a headshot): cached by sha256(url), refreshed after SDVPLOT_CACHE_TTL."""
+    from PIL import Image
+
     path = url_file(url)
     img: Image.Image = Image.open(path)
     img.load()
@@ -176,6 +196,8 @@ def load_path_image(path: str) -> Image.Image:
         return load_url_image(path)
     if scheme == "file":  # what pathlib.Path.as_uri() writes
         path = url2pathname(urlsplit(path).path)
+    from PIL import Image
+
     img: Image.Image = Image.open(path)
     img.load()
     return img

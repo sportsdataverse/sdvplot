@@ -11,12 +11,15 @@ import time
 import warnings
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin, urlsplit
 
 import platformdirs
-import requests
 
 from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeCachePathError, UnsafeDownloadError
+
+if TYPE_CHECKING:
+    import requests
 
 CACHE_ENV = "SDVPLOT_CACHE_DIR"
 TTL_ENV = "SDVPLOT_CACHE_TTL"
@@ -27,10 +30,26 @@ MAX_BYTES = 200 * 1024 * 1024  # default body cap, for the tables (the logo mani
 IMAGE_MAX_BYTES = 25 * 1024 * 1024
 DEADLINE_SECONDS = 120.0  # total wall-clock budget for one download (the (5, 60) timeout is per socket read)
 MAX_REDIRECTS = 5
-SESSION = requests.Session()
-SESSION.headers["User-Agent"] = "sdvplot (+https://github.com/sportsdataverse/sdvplot)"
+MEMORY_CACHES: list[Callable[[], object]] = []  # in-memory caches (decoded images) that clear_cache() empties
 _warned: set[str] = set()
 _intact: set[str] = set()  # cached files already checked this process
+
+
+def _session() -> Any:
+    """The shared requests Session, created on first use so ``import sdvplot`` does not import requests (~0.1 s)."""
+    session = globals().get("SESSION")
+    if session is None:
+        import requests
+
+        session = globals()["SESSION"] = requests.Session()
+        session.headers["User-Agent"] = "sdvplot (+https://github.com/sportsdataverse/sdvplot)"
+    return session
+
+
+def __getattr__(name: str) -> Any:
+    if name == "SESSION":  # `_cache.SESSION` stays reachable (and patchable) although it is created lazily
+        return _session()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def cache_dir() -> Path:
@@ -136,7 +155,7 @@ def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.
     deadline = time.monotonic() + DEADLINE_SECONDS
     for _ in range(MAX_REDIRECTS + 1):
         _check_https(url)
-        r = SESSION.get(url, headers=headers, timeout=(5, 60), stream=True, allow_redirects=False)
+        r = _session().get(url, headers=headers, timeout=(5, 60), stream=True, allow_redirects=False)
         try:
             if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("Location"):
                 url = urljoin(url, r.headers["Location"])
@@ -195,6 +214,8 @@ def fetch_cached(
     if url in _warned and path.exists():
         return path
     headers = {"If-None-Match": meta["etag"]} if path.exists() and meta.get("etag") else {}
+    import requests  # lazy: only a download needs it
+
     try:
         r, body = _download(url, headers, max_bytes)
         if r.status_code == 304 and path.exists():
@@ -244,6 +265,8 @@ def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMA
     path = cache_path(relpath)
     if path.exists() and _heal(path, None, sha256):
         return path
+    import requests  # lazy: only a download needs it
+
     try:
         r, body = _download(url, None, max_bytes)
         r.raise_for_status()
@@ -299,3 +322,5 @@ def clear_cache() -> None:
             )
     _warned.clear()
     _intact.clear()
+    for clear in MEMORY_CACHES:
+        clear()

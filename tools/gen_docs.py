@@ -123,7 +123,9 @@ def render_function(name: str, fn: object, position: int) -> tuple[str, list[str
     raw = inspect.getdoc(fn) or ""
     doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
     try:  # the package uses `from __future__ import annotations`; resolve them so pages show types, not strings
-        sig = inspect.signature(fn, eval_str=True)  # type: ignore[arg-type]
+        from PIL import Image  # imported under TYPE_CHECKING in the package, so that `import sdvplot` stays light
+
+        sig = inspect.signature(fn, eval_str=True, locals={"Image": Image})  # type: ignore[arg-type]
     except NameError:
         sig = inspect.signature(fn)  # type: ignore[arg-type]
     errors: list[str] = []
