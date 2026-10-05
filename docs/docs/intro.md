@@ -72,3 +72,13 @@ img = sdvplot.logo_image("LV", "nfl", size=128)             # a 128x128 PIL imag
 - [API reference](reference/index.md): every public function.
 - Tutorials: executed notebooks, starting with the [quickstart](tutorials/01_quickstart.md).
 - [For adapter authors](adapters/contract.md): the contract every plotting adapter meets.
+
+## Logos, trademarks and data
+
+Team names, logos, wordmarks and player headshots are trademarks or copyrighted works of their respective leagues,
+teams, schools and other rights holders. sdvplot is not affiliated with, sponsored by or endorsed by any of them, and
+using sdvplot to draw a mark grants no right to use it. The package ships no logo files: the wheel carries only an
+index of team names, ids and colors, and marks are fetched at runtime from the
+[SportsDataverse logo archive](https://github.com/sportsdataverse/sdv-assets). Use of any mark in your own work is
+governed by that owner's terms, and following them is your responsibility. The [MIT license](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)
+covers the sdvplot code only; team data belongs to its respective owners and sources.

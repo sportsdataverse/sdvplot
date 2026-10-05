@@ -415,6 +415,7 @@ const config: Config = {
             {label: 'API reference', to: '/docs/reference/'},
             {label: 'Tutorials', to: '/docs/tutorials/quickstart'},
             {label: 'Gallery', to: '/docs/gallery'},
+            {label: 'Logos, trademarks and data', to: '/docs/intro#logos-trademarks-and-data'},
           ],
         },
         {
@@ -435,7 +436,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} <strong>sdvplot</strong>, developed by <a href='https://twitter.com/saiemgilani'>Saiem Gilani</a>, part of the <a href='https://sportsdataverse.org'>SportsDataverse</a>.`,
+      copyright: `Copyright © ${new Date().getFullYear()} <strong>sdvplot</strong>, developed by <a href='https://twitter.com/saiemgilani'>Saiem Gilani</a>, part of the <a href='https://sportsdataverse.org'>SportsDataverse</a>.<br/>Team names, logos and headshots belong to their leagues, teams and other rights holders. sdvplot is not affiliated with or endorsed by them; use of each mark follows its owner's terms.`,
     },
     prism: {
       // The family themes defined above: one surface per mode, every token at 4.5:1 or better.
