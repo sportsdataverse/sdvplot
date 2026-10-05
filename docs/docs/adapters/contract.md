@@ -229,8 +229,8 @@ adapter._drawn_marks = list
 sys.modules["fakeplot_adapter"] = adapter
 register_adapter(Adapter(name="fakeplot", package="fakeplot", module="fakeplot_adapter", extra="fakeplot"))
 
-sdvplot.add_logos(Canvas(), [0], [0], ["LV"], league="nfl")   # [('13', 0, 0, 0.1)]
-check_adapter_contract(adapter, make_target=Canvas)           # passes: no AssertionError
+sdvplot.add_logos(Canvas(), [0], [0], ["LV"], league="nfl")  # [('13', 0, 0, 0.1)]
+check_adapter_contract(adapter, make_target=Canvas)  # passes: no AssertionError
 ```
 
 `resolve()` already warns once about the unknown teams of a call, so the adapter gets rule 2 for free: it must only

@@ -20,15 +20,15 @@ For example, the Quebec Nordiques' last season was 1994-95 and the Colorado Aval
 ```python
 import sdvplot
 
-sdvplot.logo_url("COL", "nhl", season=1995)   # the Quebec Nordiques mark (archived for 1980-1995)
-sdvplot.logo_url("COL", "nhl", season=1996)   # the first Avalanche mark (1996-1999)
+sdvplot.logo_url("COL", "nhl", season=1995)  # the Quebec Nordiques mark (archived for 1980-1995)
+sdvplot.logo_url("COL", "nhl", season=1996)  # the first Avalanche mark (1996-1999)
 ```
 
 A season is a year: `2010`, `2010.0` or `"2010"`. `None` or NaN means no season. Anything else, such as `"2019-20"`,
 raises `ValueError`. Pass one season for every value, or a list with one season per value:
 
 ```python
-sdvplot.resolve(["OAK", "LV"], "nfl", season=[2010, 2024])   # ['13', '13']
+sdvplot.resolve(["OAK", "LV"], "nfl", season=[2010, 2024])  # ['13', '13']
 ```
 
 ## Reused codes
@@ -56,8 +56,8 @@ are dated the same way:
 | WNBA | `TUL` | Wings (`"3"`), in Tulsa | 2010-2015 |
 
 ```python
-sdvplot.resolve(["OAK", "SD", "STL"], "nfl")              # ['13', '24', '14']
-sdvplot.resolve(["SAS", "SA", "DET", "TUL"], "wnba")      # ['17', '17', '3', '3']
+sdvplot.resolve(["OAK", "SD", "STL"], "nfl")  # ['13', '24', '14']
+sdvplot.resolve(["SAS", "SA", "DET", "TUL"], "wnba")  # ['17', '17', '3', '3']
 ```
 
 ## Today's mark, or that era's
@@ -66,8 +66,8 @@ Without a season, `logo_url()` and `logo_image()` return the team's current mark
 in use that season. The season picks the mark, not the code you passed:
 
 ```python
-sdvplot.logo_url("LV", "nfl")                # the Las Vegas mark
-sdvplot.logo_url("LV", "nfl", season=2010)   # the Oakland mark
+sdvplot.logo_url("LV", "nfl")  # the Las Vegas mark
+sdvplot.logo_url("LV", "nfl", season=2010)  # the Oakland mark
 sdvplot.logo_url("OAK", "nfl", season=2010)  # the same Oakland mark
 sdvplot.logo_url("OAK", "nfl", season=2024)  # the Las Vegas mark again
 ```

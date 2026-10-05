@@ -63,7 +63,7 @@ MLB wordmarks show the polarity fallback. The archive has no `"default"` MLB wor
 SVGs from mlbstatic:
 
 ```python
-sdvplot.logo_url("NYY", "mlb", mark_type="wordmark")                  # the on_light wordmark (.svg)
+sdvplot.logo_url("NYY", "mlb", mark_type="wordmark")  # the on_light wordmark (.svg)
 sdvplot.logo_url("NYY", "mlb", mark_type="wordmark", variant="dark")  # the on_dark wordmark (.svg)
 ```
 
@@ -92,5 +92,5 @@ Some sources publish SVGs: mlbstatic (MLB and MiLB), the NHL, NCAA.com and Shift
   scaled down to `size`.
 
 ```python
-img = sdvplot.logo_image("LV", "nfl", size=128)   # a 128x128 RGBA PIL image
+img = sdvplot.logo_image("LV", "nfl", size=128)  # a 128x128 RGBA PIL image
 ```

@@ -17,7 +17,7 @@ Every team in sdvplot has one canonical key: **`(league, team_id)`**.
 ```python
 import sdvplot
 
-sdvplot.teams("nfl").shape   # (32, 12)
+sdvplot.teams("nfl").shape  # (32, 12)
 ```
 
 ## Resolving what you have
@@ -25,7 +25,7 @@ sdvplot.teams("nfl").shape   # (32, 12)
 `resolve()` turns the identifiers in your data into canonical `team_id`s:
 
 ```python
-sdvplot.resolve("LV", "nfl")                                          # '13'
+sdvplot.resolve("LV", "nfl")  # '13'
 sdvplot.resolve(["KC", "kc", "Kansas City Chiefs", 12, "12.0"], "nfl")  # ['12', '12', '12', '12', '12']
 ```
 
@@ -89,7 +89,7 @@ Pass `strict=True` to raise `UnresolvedTeamError` (a `ValueError`) instead.
 one for you:
 
 ```python
-sdvplot.suggest("Kansas Cty Chiefs", "nfl")   # [('12', 'Kansas City Chiefs')]
+sdvplot.suggest("Kansas Cty Chiefs", "nfl")  # [('12', 'Kansas City Chiefs')]
 sdvplot.suggest("New York", "nfl")
 # [('19', 'New York Giants'), ('20', 'New York Jets'), ('18', 'New Orleans Saints')]
 ```
@@ -101,9 +101,9 @@ number is read as an ESPN id, so pass `id_system="nhl_id"` for NHL API ids. `"au
 (`sdvplot._resolve.EXPLICIT_ONLY`). NHL tri-codes resolve under `"auto"`.
 
 ```python
-sdvplot.resolve(1, "nhl")                       # '1'  (ESPN id 1: the Boston Bruins)
-sdvplot.resolve(1, "nhl", id_system="nhl_id")   # '11' (NHL API id 1: the New Jersey Devils)
-sdvplot.resolve("NJD", "nhl")                   # '11'
+sdvplot.resolve(1, "nhl")  # '1'  (ESPN id 1: the Boston Bruins)
+sdvplot.resolve(1, "nhl", id_system="nhl_id")  # '11' (NHL API id 1: the New Jersey Devils)
+sdvplot.resolve("NJD", "nhl")  # '11'
 ```
 
 ## Containers
