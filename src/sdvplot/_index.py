@@ -57,8 +57,9 @@ def __getattr__(name: str) -> dict[str, pl.DataType]:
 _RELOAD_HOOKS: list[Callable[[], None]] = []
 
 
+@functools.cache
 def data_dir() -> Path:
-    """Where the generated index lives inside the installed package."""
+    """Where the generated index lives inside the installed package (looked up once: every check_league reads it)."""
     return Path(str(resources.files("sdvplot") / "data"))
 
 

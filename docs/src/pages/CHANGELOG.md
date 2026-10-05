@@ -77,7 +77,17 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `gt_color_pills(gt, "pts", palette=...)`, `gt_save_batch(df, "conf", build, "{group}.png", dir="out")`.
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
-- Release: a release run refuses a README that still installs from GitHub (it becomes the version's PyPI page), a
+- API reference: one page per public submodule (`sdvplot.matplotlib`, `sdvplot.plotnine`, `sdvplot.plotly`,
+  `sdvplot.altair`, `sdvplot.bokeh`, `sdvplot.holoviews`, `sdvplot.folium`, `sdvplot.pygal`, `sdvplot.great_tables`,
+  `sdvplot.reactable`, `sdvplot.plottable`, `sdvplot.testing`, `sdvplot.typing`), with a section per public name in the
+  top-level pages' format (signature, arguments, returns, raises, example, see also). Only the 17 top-level functions
+  had pages, so `gt_theme_athletic` or any adapter-only function was on none.
+- The docstring gate (`tools/gen_docs.py --check`) finds the public submodules itself, as `tests/test_api.py` does,
+  instead of reading a list a new submodule could be left off; a new one also fails until it has a reference page.
+- The submodule examples run on a seeded cache (a logo and wordmark for every NFL team, the examples' headshots and
+  images) instead of an empty one, so the 32 that stopped at their first download now run to the end: an error after
+  the first mark lookup no longer passes. Only the four that render through a headless browser stay tolerated.
+- Release: a release run refuses a README without a PyPI install line (it becomes the version's PyPI page), a
   CHANGELOG without a dated heading for the tag, or entries left under `[Unreleased]`
   (`tests/test_repo_files.py::test_the_tagged_release_is_ready`). The dist is built in its own job from a fresh
   checkout after the tests pass, with no uv cache from other workflows, a pinned uv and no persisted credentials; the
@@ -85,6 +95,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
   submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
   and `--strict-config`. Python 3.14 is a declared classifier.
+- Repeated lookups are faster: with everything cached, `logo_url` takes about 0.1 ms per call instead of 2.5 ms, and
+  `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
+  its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's
+  directory is looked up once, and each team's marks are taken from the manifest once per manifest load.
+- The matplotlib-family adapters (matplotlib, seaborn, plotnine, plottable, `title_image`) keep a mark in memory no
+  bigger than they draw it, 512 px tall. Half of the logo archive is 4096 px: each such mark held 64 MiB, a quarter of
+  the decoded-image cache, so a few of them pushed out everything else and every plot decoded them again (about 0.5 s
+  each). Now a repeated `add_logos` with a 4096 px mark takes about 0.02 s instead of 0.5 s; the first one still pays
+  the decode.
 
 ### Fixed
 
@@ -126,6 +145,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- A long-running session no longer keeps every logo manifest (about 17 MiB parsed) or nflverse player table it has read:
+  when the cached file is refreshed, the previous one is freed. `clear_cache()` now also frees the parsed manifest, the
+  player table and the per-league tables built from the manifest, as it already freed the decoded images.
 
 ## [0.1.0] - Unreleased
 

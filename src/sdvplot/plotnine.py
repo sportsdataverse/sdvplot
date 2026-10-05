@@ -68,20 +68,20 @@ _MARK_PARAMS = {
 }
 
 __all__ = [
+    "add_headshots",
     "add_logos",
     "add_wordmarks",
-    "add_headshots",
     "axis_logos",
-    "geom_sdv_logos",
-    "geom_sdv_wordmarks",
-    "geom_sdv_headshots",
     "geom_from_path",
     "geom_mean_lines",
     "geom_median_lines",
+    "geom_sdv_headshots",
+    "geom_sdv_logos",
+    "geom_sdv_wordmarks",
     "scale_color_sdv",
     "scale_fill_sdv",
-    "title_image",
     "team_tiers",
+    "title_image",
 ]
 
 

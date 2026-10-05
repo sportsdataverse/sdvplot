@@ -31,7 +31,7 @@ _SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
 _MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "team_style"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos", "team_style"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

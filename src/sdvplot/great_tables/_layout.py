@@ -232,8 +232,10 @@ def gt_set_font(
         loc.footnotes(),
         loc.source_notes(),
     ]
-    # great_tables types weight as a keyword Literal, but writes any value into font-weight (600 verified)
-    return gt.tab_style(gst.text(font=family, weight=weight, style=style), locations)  # type: ignore[arg-type]
+    # great_tables types weight and style as keyword Literals, but writes any value into the CSS (weight 600 verified);
+    # Any-typed rather than a type: ignore, which mypy calls unused when great_tables is not installed
+    text: dict[str, Any] = {"font": family, "weight": weight, "style": style}
+    return gt.tab_style(gst.text(**text), locations)
 
 
 def _watermark_svg(text: str, color: str, opacity: float, angle: float, font: str) -> tuple[str, bool]:

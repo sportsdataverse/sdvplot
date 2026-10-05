@@ -38,6 +38,9 @@ uv sync                       # runtime + the dev groups (test, lint, docs, pre-
 uv sync --all-extras          # also install every plotting extra
 ```
 
+mypy needs every extra: without the plotting libraries the adapters' types collapse to `Any` and it reports errors
+that CI (which syncs `--all-extras`) never sees. Run it as `uv run --all-extras mypy`; the pre-push hook does the same.
+
 Commit a regenerated `uv.lock` together with the `pyproject.toml` change that caused it.
 
 ### pre-commit
@@ -57,7 +60,7 @@ instead.
 uv run pytest -q                           # offline, the default
 SDVPLOT_LIVE_TESTS=1 uv run pytest -q      # adds the network tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy                   # type-checks against every extra, as CI does
 ```
 
 Tests run against a small hand-written index fixture. A test that needs the shipped index carries the `real_index`
@@ -101,7 +104,8 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
 
 - Python 3.10+, full type hints (`mypy` runs with `disallow_untyped_defs`), ruff with a 120-column limit.
 - Team ids are strings. Never cast a float id to a string; fix the dtype at the boundary.
-- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs.
+- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs. A new public
+  submodule gets a reference page by being placed in a `MODULE_SECTIONS` group in `tools/gen_docs.py`.
 - Give every public function a Google-style docstring with `Args`, `Returns`, `Raises`, `Example` and `See Also`
   sections, and link its reference page. The `uv run python tools/gen_docs.py --check` gate enforces the standard
   and fails when the committed reference differs from the docstrings.
