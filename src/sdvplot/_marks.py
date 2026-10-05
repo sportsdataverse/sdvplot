@@ -53,7 +53,7 @@ def _check_variant(variant: str, league: str) -> None:
     manifest = load_manifest()
     if not _VARIANTS or _VARIANTS[0][0] is not manifest:
         _VARIANTS[:] = [(manifest, frozenset(manifest["variant"].drop_nulls().to_list()))]
-    if variant not in _VARIANTS[0][1]:
+    if not isinstance(variant, str) or variant not in _VARIANTS[0][1]:  # a list would be unhashable in the set
         _index.check_league(league)
         known = sorted({"default", "dark", *_ranked(league)["variant"].drop_nulls().to_list()})
         raise InputError(f"unknown variant {variant!r}: no mark in the archive has it; {league} marks come in {known}")

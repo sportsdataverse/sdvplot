@@ -76,6 +76,8 @@ def _image_cells(
         _check_columns(gt, columns)
     locs = loc.body(columns) if locations is None else locations
     for where in locs if isinstance(locs, list) else [locs]:
+        if isinstance(where, loc.body):  # loc.body(columns=...) names columns too
+            _check_columns(gt, where.columns)
         # the locations great_tables' text_transform reaches; it escapes column labels and ignores every other one
         if not isinstance(where, (loc.body, loc.stub, loc.row_groups)):
             hint = (

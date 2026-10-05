@@ -49,7 +49,7 @@ def _image_column(
     column_kwargs: dict[str, Any],
 ) -> Column:
     h = check_px(height)
-    norm_season(season)  # one season for the column: fail now, not inside reactable
+    norm_season(season, league=league)  # one season for the column: fail now, not inside reactable
     rendered: dict[str, str] = {}
 
     def cell(info: CellInfo) -> str:

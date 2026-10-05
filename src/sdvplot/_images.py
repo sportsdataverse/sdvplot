@@ -109,7 +109,7 @@ def logo_image(
         OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
             (``PIL.UnidentifiedImageError`` subclasses OSError).
         InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
-            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows.
+            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
         ValueError: If an SVG cannot be parsed.
 
     Example:

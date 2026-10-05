@@ -46,9 +46,21 @@ def norm_value(value: Any) -> str | None:
 _SPLIT_SEASON = re.compile(r"\s*(\d{4})\s*[-/]\s*(\d{2}|\d{4})\s*")
 
 
-def norm_season(value: Any) -> int | None:
+def check_season(year: int, league: str | None = None) -> None:
+    """InputError unless ``year`` is a season sdvplot knows for ``league`` (any league when None): the bounds come from
+    the bundled index (``_index.season_bounds``)."""
+    bounds = _index.season_bounds(league)
+    if bounds is not None and not bounds[0] <= year <= bounds[1]:
+        scope = "" if league is None else f" for {league}"
+        raise InputError(
+            f"season {year} is outside the seasons sdvplot knows{scope} ({bounds[0]} to {bounds[1]}); pass a year such "
+            "as 2020"
+        )
+
+
+def norm_season(value: Any, league: str | None = None) -> int | None:
     """A season as an int year. Accepts 2020, 2020.0, "2020"; None/NaN mean no season; anything else is an error, and
-    so is a year outside the seasons the bundled index holds (``_index.season_bounds``)."""
+    so is a year outside the seasons the bundled index holds for ``league`` (any league when None)."""
     if _is_na(value):
         return None
     year = None
@@ -66,9 +78,5 @@ def norm_season(value: Any) -> int | None:
             end = int(m.group(1)) + 1
             hint = f"; for a split season pass its ending year ({end} for {value.strip()!r})"
         raise ValueError(f"season must be a year such as 2020, got {value!r}{hint}")
-    bounds = _index.season_bounds()
-    if bounds is not None and not bounds[0] <= year <= bounds[1]:
-        raise InputError(
-            f"season {year} is outside the seasons sdvplot knows ({bounds[0]} to {bounds[1]}); pass a year such as 2020"
-        )
+    check_season(year, league)
     return year

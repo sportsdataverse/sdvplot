@@ -28,7 +28,7 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color, solid
 from sdvplot._errors import warn
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id, important
+from sdvplot.great_tables._marks import _background, _check_columns, _check_gt, _constant, _table_id, important
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -50,7 +50,9 @@ def _frame(gt: GT) -> Any:
 
 
 def _columns(gt: GT, columns: Any) -> list[str]:
-    """The body columns a great_tables column selection names (``None`` means every body column)."""
+    """The body columns a great_tables column selection names (``None`` means every body column). A name the table
+    lacks is the same ValueError on pandas and polars (great_tables matched nothing on pandas, raised on polars)."""
+    _check_columns(gt, columns)
     return resolve_cols_c(data=gt, expr=columns)
 
 
