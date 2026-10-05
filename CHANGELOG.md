@@ -48,6 +48,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
   name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
   III and NAIA players on teams the index does not hold, and score cards keep games between two of its teams.
+- Documentation: "The adapter contract" page follows `sdvplot.testing` again: rules 0 to 8 (exactly one warning per
+  skip reason, `height` and `alpha` checked on every verb when called, drawn heights measured within 1%), the axis
+  hooks `_drawn_axis_marks` (`(team_id, tick, height)`) and `_visible_axis_labels`, the table harness's rules T0 to T6,
+  and a minimal adapter that passes the current harness.
 
 ### Fixed
 
