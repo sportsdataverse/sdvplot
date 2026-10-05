@@ -46,6 +46,17 @@ def test_place_reads_pandas_by_position_not_label(manifest):
     assert [(p.team_id, p.x, p.y) for p in lout] == [("13", 10.0, -3.0), ("14", 20.0, -7.0)]
 
 
+def test_place_takes_range_coordinates(manifest):
+    out = place(range(1, 3), [0, 0], ["LV", "LAR"], league="nfl")  # add_logos(ax, range(1, 3), ...) in the README
+    assert [(p.team_id, p.x, p.y) for p in out] == [("13", 1, 0), ("14", 2, 0)]
+
+
+def test_an_unsupported_container_names_no_one_function(manifest):
+    # one helper unpacks teams, coordinates and seasons, so a "resolve() takes ..." message misled an x= mistake
+    with pytest.raises(TypeError, match=r"^expected a scalar, list, tuple, range, .* got dict$"):
+        place({1: 1}, [0], ["LV"], league="nfl")
+
+
 def test_place_reads_numpy_datetimes_as_python_datetimes(manifest):
     days = [dt.datetime(2025, 9, 7, 13), dt.datetime(2025, 9, 14, 16)]
     out = place(np.array(days, dtype="datetime64[ns]"), [3, 7], ["LV", "LAR"], league="nfl")

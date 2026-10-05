@@ -127,7 +127,7 @@ def _unpack(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
     one, values = _scalar(values)
     if one:
         return [values], lambda out: out[0]
-    if isinstance(values, (list, tuple)):
+    if isinstance(values, (list, tuple, range)):  # range: coordinates such as add_logos(ax, range(1, 8), ...)
         return list(values), list
     if hasattr(values, "tolist") and not hasattr(values, "to_list"):  # numpy arrays
         kind = getattr(values.dtype, "kind", "")
@@ -148,8 +148,9 @@ def _unpack_series(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
     try:
         s = nw.from_native(values, series_only=True)
     except TypeError as e:
+        # shared by every caller (teams, coordinates, seasons), so the message names no one function
         raise TypeError(
-            f"resolve() takes a scalar, list, tuple, numpy array or a pandas/polars Series, got {type(values).__name__}"
+            f"expected a scalar, list, tuple, range, numpy array or a pandas/polars Series, got {type(values).__name__}"
         ) from e
     backend = nw.get_native_namespace(s)
     # Capture the original index for pandas-like Series
