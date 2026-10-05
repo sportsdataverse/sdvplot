@@ -82,3 +82,19 @@ def test_baseline_court_coords_half_court():
     ax.scatter(shots["court_x"].filter(made), shots["court_y"].filter(made), s=14, c="#1a9850", zorder=50)
     ax.scatter(shots["court_x"].filter(~made), shots["court_y"].filter(~made), s=14, c="#d73027", marker="x", zorder=50)
     return fig
+
+
+@COMPARE
+def test_baseline_add_images(tmp_path):
+    from PIL import Image
+
+    from sdvplot.matplotlib import add_images
+
+    wide, tall = tmp_path / "wide.png", tmp_path / "tall.png"
+    Image.new("RGBA", (60, 20), (31, 119, 180, 255)).save(wide)
+    Image.new("RGBA", (20, 40), (214, 39, 40, 255)).save(tall)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 10)
+    add_images(_bare(ax), [3, 7], [5, 5], [wide, tall], height=0.25, alpha=0.8)
+    return fig

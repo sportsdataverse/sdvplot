@@ -158,3 +158,12 @@ def load_url_image(url: str) -> Image.Image:
     img: Image.Image = Image.open(path)
     img.load()
     return img
+
+
+def load_path_image(path: str) -> Image.Image:
+    """Any image by http(s) URL (cached like a headshot) or local path; raises OSError, ValueError or OfflineError."""
+    if path.startswith(("http://", "https://")):
+        return load_url_image(path)
+    img: Image.Image = Image.open(path)
+    img.load()
+    return img

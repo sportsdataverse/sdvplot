@@ -1,4 +1,4 @@
-"""The plotnine adapter: logo, wordmark and headshot geoms, axis logos, and team color scales.
+"""The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, and team color scales.
 
 The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
@@ -15,10 +15,10 @@ from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
 from sdvplot._marks import _check_mark_type
-from sdvplot._placement import check_alpha, check_height, place
+from sdvplot._placement import check_alpha, check_height, place, place_images
 from sdvplot._resolve import _unpack
 from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import draw_placements
+from sdvplot.matplotlib import draw_images, draw_placements
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
 from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
 from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
@@ -38,16 +38,17 @@ _MARK_PARAMS = {
 
 
 class _geom_sdv_marks(geom):
-    """Shared drawing for the three mark geoms; subclasses set the kind and the id aesthetic."""
+    """Shared drawing for the image geoms; subclasses set the kind and the id aesthetic."""
 
     _kind = "logo"
     _id_aes = "team"
+    _needs_league = True
     DEFAULT_AES: dict[str, Any] = {}
     REQUIRED_AES = {"x", "y", "team"}
     DEFAULT_PARAMS = _MARK_PARAMS
 
     def __init__(self, mapping: Any = None, data: Any = None, **kwargs: Any) -> None:
-        if kwargs.get("league") is None:
+        if self._needs_league and kwargs.get("league") is None:
             raise TypeError(f"{type(self).__name__}() needs league=, e.g. league='nfl'")
         check_height(kwargs.get("height", 0.1))
         check_alpha(kwargs.get("alpha", 1))
@@ -106,6 +107,48 @@ class geom_sdv_headshots(_geom_sdv_marks):
     _id_aes = "player_id"
     REQUIRED_AES = {"x", "y", "player_id"}
     DEFAULT_PARAMS = {**_MARK_PARAMS, "id_system": "espn"}
+
+
+class geom_from_path(_geom_sdv_marks):
+    """Any image, by local path or URL, at (x, y): ``aes(x=..., y=..., path=...)``, plus ``height`` (fraction of the
+    panel height, default 0.1) and ``alpha``. The port of ggpath's ``geom_from_path()``, sized like the logo geoms.
+
+    Args:
+        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path or an http(s) URL per row.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``height`` in (0, 1], ``alpha`` in [0, 1], and plotnine's layer arguments (``inherit_aes``, ...).
+
+    Returns:
+        geom: A plotnine layer to add with ``+``. Images that cannot be read (a missing file, a file that is not an
+        image, a failed download) are skipped with one SdvplotWarning when the plot is drawn; SVG is not read.
+
+    Raises:
+        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+
+    Example:
+        ::
+
+            import pandas as pd
+            from plotnine import aes, ggplot
+            from sdvplot.plotnine import geom_from_path
+
+            df = pd.DataFrame({"x": [1, 2], "y": [1, 2], "img": ["a.png", "https://www.python.org/static/favicon.ico"]})
+            p = ggplot(df, aes("x", "y", path="img")) + geom_from_path(height=0.15)
+
+    See Also:
+        ggpath geom_from_path(): https://mrcaseb.github.io/ggpath/ ;
+        sdvplot.matplotlib.add_images: the matplotlib counterpart
+    """
+
+    _id_aes = "path"
+    _needs_league = False
+    REQUIRED_AES = {"x", "y", "path"}
+    DEFAULT_PARAMS = {"stat": "identity", "position": "identity", "na_rm": False, "height": 0.1, "alpha": 1}
+
+    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
+        data = coord.transform(data, panel_params)
+        placements = place_images(data["x"].tolist(), data["y"].tolist(), data["path"].tolist())
+        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 
 def _frame(x: Any, y: Any, ids: Any, column: str) -> pd.DataFrame:

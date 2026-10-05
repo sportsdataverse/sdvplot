@@ -88,3 +88,39 @@ def test_bad_arguments_fail_when_built_not_when_drawn():
         sdvplot.axis_logos(_axis_plot(["LV"]), "x", league="nfl", mark_type="banner")
     with pytest.raises(ValueError):
         sp9.scale_color_sdv("nfl", which="tertiary")
+
+
+# geom_from_path: any image by local path or URL (the port of ggpath's geom_from_path)
+
+
+def _pngs(tmp_path, *names):
+    from PIL import Image
+
+    out = []
+    for i, name in enumerate(names):
+        Image.new("RGBA", (40, 20), (30 * i, 90, 200, 255)).save(tmp_path / name, format="PNG")
+        out.append(str(tmp_path / name))
+    return out
+
+
+@pytest.mark.parametrize("lib", [pd, pl])
+def test_geom_from_path_draws_each_image_on_its_facet(tmp_path, lib):
+    a, b = _pngs(tmp_path, "a.png", "b.png")
+    df = lib.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0], "img": [a, b], "panel": ["p", "q"]})
+    p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path(height=0.2, alpha=0.5) + facet_wrap("panel")
+    assert sorted(sp9.drawn_marks(p)) == [(a, 1.0, 1.0, 0.2, a), (b, 2.0, 2.0, 0.2, b)]
+
+
+def test_geom_from_path_skips_unreadable_images_with_one_warning(tmp_path):
+    (a,) = _pngs(tmp_path, "a.png")
+    df = pd.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0], "img": [a, str(tmp_path / "missing.png")]})
+    p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path()
+    with pytest.warns(SdvplotWarning, match=r"skipped 1 point\(s\) whose image could not be read"):
+        assert [m[0] for m in sp9.drawn_marks(p)] == [a]
+
+
+def test_geom_from_path_checks_height_and_alpha_when_built():
+    with pytest.raises(ValueError, match="fraction of the plot height"):
+        sp9.geom_from_path(height=0)
+    with pytest.raises(ValueError, match="opacity"):
+        sp9.geom_from_path(alpha=-1)

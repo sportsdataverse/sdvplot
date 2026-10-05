@@ -18,8 +18,9 @@ from matplotlib.ticker import FixedFormatter, FixedLocator
 from matplotlib.transforms import Bbox
 from PIL import Image
 
-from sdvplot._images import load_mark_image, load_url_image
-from sdvplot._placement import Placement, check_alpha, check_height, place
+from sdvplot._errors import OfflineError
+from sdvplot._images import load_mark_image, load_path_image, load_url_image
+from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 
 SUPPORTS_AXIS_LOGOS = True
 MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
@@ -93,12 +94,14 @@ def draw_placements(
     alpha: float = 1.0,
     zorder: float = 3,
     xycoords: Any = "data",
+    images: dict[str, np.ndarray] | None = None,
 ) -> list[AnnotationBbox]:
     """Draw each placement centred on its (x, y) in ``xycoords``, ``height`` of the Axes tall.
 
     A point outside the Axes is not drawn, whatever ``xycoords`` is (matplotlib only clips "data" by default).
+    ``images`` holds arrays already loaded, by url; the rest are loaded once each.
     """
-    images: dict[str, np.ndarray] = {}
+    images = dict(images or {})
     boxes = []
     for p in placements:
         if p.url not in images:
@@ -321,6 +324,89 @@ def add_headshots(
         target, x, y, players, kind="headshot", league=league, season=None, height=height, alpha=alpha,
         variant="default", zorder=zorder, id_system=id_system, transform=transform,
     )  # fmt: skip
+
+
+def draw_images(
+    ax: Axes,
+    placements: list[Placement],
+    *,
+    height: float,
+    alpha: float = 1.0,
+    zorder: float = 3,
+    xycoords: Any = "data",
+) -> list[AnnotationBbox]:
+    """``draw_placements`` for ``place_images``: each image is read once; the points whose image cannot be read are
+    skipped with one SdvplotWarning."""
+    images: dict[str, np.ndarray] = {}
+    unreadable: set[str] = set()
+    for p in placements:
+        if p.url not in images and p.url not in unreadable:
+            try:
+                images[p.url] = rgba_array(load_path_image(p.url))
+            except (OSError, ValueError, OfflineError):  # missing file, not an image, failed download
+                unreadable.add(p.url)
+    _warn_skipped("whose image could not be read", [p.url for p in placements if p.url in unreadable])
+    drawable = [p for p in placements if p.url in images]
+    return draw_placements(ax, drawable, height=height, alpha=alpha, zorder=zorder, xycoords=xycoords, images=images)
+
+
+def add_images(
+    target: Any,
+    x: Any,
+    y: Any,
+    paths: Any,
+    *,
+    height: float = 0.1,
+    alpha: float = 1,
+    zorder: float = 3,
+    transform: Any = None,
+) -> Any:
+    """Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot.
+
+    The image counterpart of ``add_logos``, with the same sizing: ``height`` is a fraction of the Axes height, and
+    each image keeps its aspect ratio. URLs are downloaded once and cached (like headshots); local files are read
+    as they are. PNG, JPEG, GIF, WebP and the other formats Pillow reads work; SVG does not.
+
+    Args:
+        target: A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid).
+        x: The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position).
+        y: The points' y positions, the same length as ``x``.
+        paths: The image for each point: a local path (str or ``pathlib.Path``) or an http(s) URL. A null path draws
+            nothing.
+        height: The image height as a fraction of the Axes height, in (0, 1].
+        alpha: Opacity, 0 to 1.
+        zorder: matplotlib drawing order (3 draws above lines and markers).
+        transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS (required on a GeoAxes) or
+            a matplotlib Transform such as ``ax.transAxes``.
+
+    Returns:
+        object: ``target`` itself, drawn on. Points whose image cannot be read (a missing file, a file that is not
+        an image, a failed download) or whose x or y is missing are skipped, with one SdvplotWarning per reason.
+
+    Raises:
+        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target
+            has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            from sdvplot.matplotlib import add_images
+
+            fig, ax = plt.subplots()
+            ax.set_xlim(0, 10)
+            ax.set_ylim(0, 10)
+            add_images(ax, [3, 7], [5, 5], ["court.png", "https://www.python.org/static/img/python-logo.png"],
+                       height=0.2)
+
+    See Also:
+        ggpath geom_from_path(): https://mrcaseb.github.io/ggpath/ ;
+        sdvplotR: https://sdvplotR.sportsdataverse.org/
+    """
+    h, a = check_height(height), check_alpha(alpha)
+    ax = target_axes(target)
+    draw_images(ax, place_images(x, y, paths), height=h, alpha=a, zorder=zorder, xycoords=_xycoords(ax, transform))
+    return target
 
 
 def _axis(ax: Axes, axis: str) -> Any:

@@ -24,7 +24,7 @@ KINDS = ("logo", "wordmark", "headshot")
 class Placement:
     """One mark to draw: whose it is, where, and which image."""
 
-    team_id: str  # canonical team id; the player id for headshots
+    team_id: str  # canonical team id; the player id for headshots; the path for place_images
     x: Any  # the caller's x value (number, category or datetime), read positionally
     y: Any
     url: str  # archive_url of the selected mark, or the headshot URL
@@ -123,5 +123,26 @@ def place(
             aspect = float(w) / float(h) if w and h else None
             out.append(Placement(team_id, xi, yi, str(row["archive_url"]), aspect, row))
         _warn_skipped(f"with no {kind} archived", no_mark)
+    _warn_skipped("with a missing x or y", missing_xy)
+    return out
+
+
+def place_images(x: Any, y: Any, paths: Any) -> list[Placement]:
+    """``place`` for arbitrary images: one Placement per (x, y, path), keyed by the path (a local file or URL).
+
+    A null path is skipped silently (as a null team is); a missing x or y is skipped with one warning.
+    """
+    xs, ys, ps = _unpack(x)[0], _unpack(y)[0], _unpack(paths)[0]
+    if not len(xs) == len(ys) == len(ps):
+        raise ValueError(f"x, y and paths must have the same length, got {len(xs)}, {len(ys)} and {len(ps)}")
+    out: list[Placement] = []
+    missing_xy: list[Any] = []
+    for xi, yi, path in zip(xs, ys, ps, strict=True):
+        if _missing(path):
+            continue
+        if _missing(xi) or _missing(yi):
+            missing_xy.append(path)
+            continue
+        out.append(Placement(str(path), xi, yi, str(path), None, None))
     _warn_skipped("with a missing x or y", missing_xy)
     return out
