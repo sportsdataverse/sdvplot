@@ -77,6 +77,39 @@ def test_baseline_title_image(mark_images):
 
 
 @COMPARE
+def test_baseline_court_coords_half_court():
+    pytest.importorskip("sportypy")
+    from pathlib import Path
+
+    import polars as pl
+
+    raw = pl.read_csv(Path(__file__).parent / "fixtures" / "nba_shotchartdetail_2023.csv")  # real shots (README)
+    shots = sdvplot.court_coords(raw, x="loc_x", y="loc_y")
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+    sdvplot.surface("nba", ax=ax, display_range="defense")
+    made = shots["shot_made_flag"] == 1
+    ax.scatter(shots["court_x"].filter(made), shots["court_y"].filter(made), s=14, c="#1a9850", zorder=50)
+    ax.scatter(shots["court_x"].filter(~made), shots["court_y"].filter(~made), s=14, c="#d73027", marker="x", zorder=50)
+    return fig
+
+
+@COMPARE
+def test_baseline_add_images(tmp_path):
+    from PIL import Image
+
+    from sdvplot.matplotlib import add_images
+
+    wide, tall = tmp_path / "wide.png", tmp_path / "tall.png"
+    Image.new("RGBA", (60, 20), (31, 119, 180, 255)).save(wide)
+    Image.new("RGBA", (20, 40), (214, 39, 40, 255)).save(tall)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 10)
+    add_images(_bare(ax), [3, 7], [5, 5], [wide, tall], height=0.25, alpha=0.8)
+    return fig
+
+
+@COMPARE
 def test_baseline_team_tiers(mark_images):
     from sdvplot.matplotlib import team_tiers
 
@@ -111,4 +144,22 @@ def test_baseline_plotnine_team_tiers(mark_images):
 
     df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
     p = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2) + p9.theme(figure_size=(4, 3))
+    return p.draw()
+
+
+@COMPARE
+def test_baseline_plotnine_mean_and_median_lines():
+    p9 = pytest.importorskip("plotnine")
+    from sdvplot.plotnine import geom_mean_lines, geom_median_lines
+
+    df = pd.DataFrame({"x": [1.0, 2.0, 6.0, 1.0, 3.0, 8.0], "y": [1.0, 2.0, 9.0, 4.0, 5.0, 6.0], "f": list("aaabbb")})
+    p = (
+        p9.ggplot(df, p9.aes("x", "y", x0="x", y0="y"))
+        + p9.geom_point()
+        + geom_mean_lines()
+        + geom_median_lines(color="blue", linetype="dotted")
+        + p9.facet_wrap("f")
+        + p9.theme_void()
+        + p9.theme(figure_size=(4, 2), strip_text=p9.element_blank())
+    )
     return p.draw()

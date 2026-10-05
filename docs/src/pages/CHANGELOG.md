@@ -13,6 +13,9 @@
     - [Added — web family](#added--web-family)
     - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
+    - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
+    - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
+    - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
     - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -111,6 +114,9 @@
 - pygal: `add_logos`, `add_wordmarks` and `add_headshots` on XY-family charts (`XY`, `DateTimeLine`, `DateLine`,
   `TimeLine`, `TimeDeltaLine`), drawn in every render; `embed=True` makes SVG and PNG exports work offline;
   `team_style()` colors series by team (`sdvplot.pygal`, new `[pygal]` extra).
+- pygal: a deep copy of a chart (`copy.deepcopy`) renders the marks it was copied with, marks added to the copy or to
+  the original afterwards stay on that chart, and a chart with marks pickles. Copy with `copy.deepcopy`; a shallow
+  copy (`copy.copy`) shares pygal's own series and filters and is not supported.
 - Cartopy: the matplotlib adapter's `add_logos`, `add_wordmarks` and `add_headshots` take `transform=` (e.g.
   `ccrs.PlateCarree()` for longitude/latitude, or any matplotlib transform); a `GeoAxes` without it raises
   `ValueError`. A mark whose point falls outside the Axes is not drawn, in any coordinate system.
@@ -127,6 +133,76 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Fixed — adapter contract follow-ups
+
+- plotnine: a faceted plot warns once per render for each reason points are skipped (an unknown team, a missing
+  mark), naming the values of every panel, instead of once per panel; `axis_logos` on a faceted plot likewise warns
+  once.
+- plotnine: `add_logos`/`add_wordmarks` with one season per team draw on a faceted plot (each panel's copy of a
+  point keeps its season); the mark geoms take a per-row season as the `season` aesthetic.
+- plotnine: the mark geoms leave missing and out-of-limits x/y to plotnine (`na_rm`, scale limits), so a row
+  plotnine drops itself no longer also warns `skipped ... missing x or y`.
+- plotnine: a point that plotnine copies into every panel (a layer without the facet column) counts once in the
+  warning, not once per panel.
+- plotnine: drawing no longer swaps the interpreter's warning filters (`warnings.catch_warnings`, not thread-safe)
+  to keep the per-panel placement quiet; it uses a private quiet path instead.
+- The adapters' test hooks report the height an image was drawn at, not the height they were asked for: matplotlib
+  and plotnine measure each image's extent after a draw, pygal renders the chart and reads the SVG, and the axis-logo
+  hooks of matplotlib, plotnine, Plotly and Altair report each image's height too.
+- `sdvplot.testing.check_adapter_contract` is stricter: a call that skips nothing must not warn and each reason it
+  skips points for gives exactly one `SdvplotWarning` (rules 1, 2, 6 and 7); `height` (including its out-of-range
+  values) is checked on `add_headshots` and `axis_logos` as well as `add_logos` and `add_wordmarks`, and `alpha` on
+  every verb that takes it; heights are compared within 1% of the requested value, as measured by the hooks.
+  An out-of-range `height` must raise when the verb is called, not only when the marks are rendered.
+  `drawn_axis_marks` now returns `(team_id, tick position, height)`. `check_table_adapter_contract` likewise requires
+  no warning for known values and exactly one for all-unknown input.
+
+### Fixed — tables follow-ups
+
+- Muted text (`gt_theme_sdv_team`'s subtitle, the `gt_legend_discrete` subtitle) blends at sdvplotR's exact weights,
+  as the table themes already did; a few colors were one step off in a channel.
+- A table whose id is the empty string gets a random id before a theme or cell, border or watermark helper scopes CSS
+  to it; only `gt_theme_sdv` did this before, and elsewhere the CSS (`# td`) reached no cell.
+- Every `sdvplot.great_tables` function refuses raw data with one message ("gt must be a great_tables GT, not
+  DataFrame. It looks like raw data: wrap it in great_tables.GT() first."), as sdvplotR's `.check_gt` words it; an
+  unknown `density` and an unknown `*_style` key are worded alike across the table modules too, and the style error
+  names the argument.
+- `gt_sdv_logos`, `gt_sdv_wordmarks` and `gt_sdv_headshots` document exactly which `locations` they take
+  (`loc.body()`, `loc.stub()`, `loc.row_groups()`) and raise `ValueError` for any other: column labels used to come out
+  as escaped `<img>` text, and a title or source note was silently left alone. `gt_sdv_cols_label` puts marks in the
+  column labels.
+- A headshot whose ESPN player id was read through a float (pandas stores `[3139477, None]` as floats, so the cell reads
+  `3139477.0`) carries `3139477` in its alt text and team attribute, in every adapter; the URL was already right.
+- `gt_theme_preview(n=...)` takes only a positive whole number of rows (numpy integers included); 0, negative numbers,
+  booleans, floats and strings raise `ValueError` instead of showing no rows, all but the last, one row or a polars
+  error.
+- A table theme swaps out the fonts an earlier sdvplot theme put in front of the table's fonts instead of stacking on
+  them: a table themed twice no longer lists every font twice, and a second theme no longer keeps the first one's font
+  as its fallback (with `gt_theme_sdv`, directly behind Lato). Fonts you set with `opt_table_font()` stay, behind the
+  theme's, as in sdvplotR. `gt_theme_sdv` and `gt_theme_sdv_team` fall back to gt's `default_fonts()`, as sdvplotR's
+  do.
+- A translucent `#rgba`/`#rrggbbaa` color is refused (`ValueError`) where sdvplot draws the color it computes (palette
+  stops and ramps, legend and tier swatches, theme accents), instead of being drawn solid with its alpha silently
+  dropped; an opaque alpha (`f`/`ff`) is accepted and `#rgba` is now read. A color sdvplot passes to CSS as given and
+  only measures for its ink (`gt_color_pills(na_color=)`, `gt_indicator_boxes(color_yes=, color_no=, color_na=)`,
+  `gt_outliers(fill=)`) is still drawn translucent, and its ink is now read on the color it shows over the table
+  background rather than on the color with its alpha dropped. `reactable_sdv_team_color_bg` still replaces
+  `na_color`'s alpha with its own `alpha`, as sdvplotR does; CSS-only color arguments take any CSS color.
+- A translucent table background (`tab_options(table_background_color="#111111CC")`) is read as the color it shows
+  over the page when `gt_legend_discrete` and `gt_marginalia` pick their ink, so a near-black one gets light text.
+
+### Added — parity extras (court coordinates, images by path, reference lines)
+
+- `sdvplot.court_coords()`: stats.nba.com / stats.wnba.com legacy shot locations (`LOC_X`/`LOC_Y`, `x_legacy`/`y_legacy`)
+  to the court frame sportypy and `surface("nba")` draw, on pandas or polars, the port of sdvplotR's
+  `sdv_court_coords()`; bit-identical to it on real `shotchartdetail` rows.
+- `sdvplot.matplotlib.add_images()` and `sdvplot.plotnine.geom_from_path()`: any image by local path or URL at (x, y),
+  sized like the logo verbs, the port of ggpath's `geom_from_path()`; unreadable images are skipped with one warning.
+- `sdvplot.plotnine.geom_mean_lines()` and `geom_median_lines()`: per-panel reference lines, the ports of ggpath's,
+  matching its values on real data.
+- `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
+  exports the sdvplotR and ggpath oracles the parity tests read.
 
 ### Added — parity extras (title images, team tiers)
 

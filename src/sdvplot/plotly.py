@@ -534,24 +534,29 @@ def _span(fig: go.Figure, ref: str) -> float:
     return abs(float(rng[1]) - float(rng[0]))
 
 
+def _height(fig: go.Figure, im: Any) -> float:
+    """A layout image's emitted height as a fraction of the plot height: sizey over its y reference's span."""
+    return float(im.sizey) / (1.0 if im.yref == "paper" else _span(fig, im.yref))
+
+
 def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, source) for each image add_logos/add_wordmarks/add_headshots drew."""
     out = []
     for im in _figure(target).layout.images:
         parts = (im.name or "").split(":", 2)
         if parts[0] == "sdvplot" and parts[1] != "axis":
-            out.append((parts[2], im.x, im.y, im.sizey / _span(target, im.yref), im.source))
+            out.append((parts[2], im.x, im.y, _height(target, im), im.source))
     return out
 
 
-def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float]]:
-    """Test hook: (team_id, category index) for each image on ``axis``, in tick order."""
+def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: (team_id, category index, height) for each image on ``axis``, in tick order."""
     letter = _letter(axis)
     marks = []
     for im in _figure(target).layout.images:
         parts = (im.name or "").split(":", 3)
         if parts[:3] == ["sdvplot", "axis", letter]:
-            marks.append((parts[3], float(im.x if letter == "x" else im.y)))
+            marks.append((parts[3], float(im.x if letter == "x" else im.y), _height(target, im)))
     return sorted(marks, key=lambda m: m[1])
 
 

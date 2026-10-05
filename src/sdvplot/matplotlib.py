@@ -24,8 +24,8 @@ from PIL import Image
 
 from sdvplot import _tiers
 from sdvplot._errors import OfflineError, SdvplotWarning
-from sdvplot._images import load_mark_image, load_url_image, logo_image
-from sdvplot._placement import Placement, _real, check_alpha, check_height, place
+from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
+from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
 SUPPORTS_AXIS_LOGOS = True
 MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
@@ -101,12 +101,14 @@ def draw_placements(
     alpha: float = 1.0,
     zorder: float = 3,
     xycoords: Any = "data",
+    images: dict[str, np.ndarray] | None = None,
 ) -> list[AnnotationBbox]:
     """Draw each placement centred on its (x, y) in ``xycoords``, ``height`` of the Axes tall.
 
     A point outside the Axes is not drawn, whatever ``xycoords`` is (matplotlib only clips "data" by default).
+    ``images`` holds arrays already loaded, by url; the rest are loaded once each.
     """
-    images: dict[str, np.ndarray] = {}
+    images = dict(images or {})
     boxes = []
     for p in placements:
         if p.url not in images:
@@ -120,7 +122,7 @@ def draw_placements(
             zorder=zorder,
             annotation_clip=True,
         )
-        box._sdvplot_mark = (p.team_id, p.x, p.y, height, p.url)  # type: ignore[attr-defined]
+        box._sdvplot_mark = (p.team_id, p.x, p.y, p.url)  # type: ignore[attr-defined]
         ax.add_artist(box)
         boxes.append(box)
     return boxes
@@ -331,6 +333,100 @@ def add_headshots(
     )  # fmt: skip
 
 
+def read_images(placements: list[Placement], cache: dict[str, np.ndarray | None]) -> list[str]:
+    """Read each placement's image into ``cache`` (url -> RGBA array, or None when it cannot be read), each url once
+    across calls; return the urls of the points whose image cannot be read, one per point."""
+    for p in placements:
+        if p.url not in cache:
+            try:
+                cache[p.url] = rgba_array(load_path_image(p.url))
+            except (OSError, ValueError, OfflineError):  # missing file, not an image, failed download
+                cache[p.url] = None
+    return [p.url for p in placements if cache[p.url] is None]
+
+
+def draw_images(
+    ax: Axes,
+    placements: list[Placement],
+    *,
+    height: float,
+    alpha: float = 1.0,
+    zorder: float = 3,
+    xycoords: Any = "data",
+    cache: dict[str, np.ndarray | None] | None = None,
+    warn: bool = True,
+) -> list[AnnotationBbox]:
+    """``draw_placements`` for ``place_images``: each image is read once; the points whose image cannot be read are
+    skipped with one SdvplotWarning. ``cache`` holds images already read (``read_images``); ``warn=False`` skips
+    without warning, for a caller that already warned (plotnine reads and warns once per render, then draws panels)."""
+    cache = {} if cache is None else cache
+    unreadable = read_images(placements, cache)
+    if warn:
+        _warn_skipped("whose image could not be read", unreadable)
+    images = {url: img for url, img in cache.items() if img is not None}
+    drawable = [p for p in placements if p.url in images]
+    return draw_placements(ax, drawable, height=height, alpha=alpha, zorder=zorder, xycoords=xycoords, images=images)
+
+
+def add_images(
+    target: Any,
+    x: Any,
+    y: Any,
+    paths: Any,
+    *,
+    height: float = 0.1,
+    alpha: float = 1,
+    zorder: float = 3,
+    transform: Any = None,
+) -> Any:
+    """Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot.
+
+    The image counterpart of ``add_logos``, with the same sizing: ``height`` is a fraction of the Axes height, and
+    each image keeps its aspect ratio. URLs are downloaded once and cached (like headshots); local files are read
+    as they are. PNG, JPEG, GIF, WebP and the other formats Pillow reads work; SVG does not.
+
+    Args:
+        target: A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid).
+        x: The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position).
+        y: The points' y positions, the same length as ``x``.
+        paths: The image for each point (or one ``pathlib.Path`` for one point): a local path (str or
+            ``pathlib.Path``), a ``file://`` URI or an http(s) URL. A null path draws nothing.
+        height: The image height as a fraction of the Axes height, in (0, 1].
+        alpha: Opacity, 0 to 1.
+        zorder: matplotlib drawing order (3 draws above lines and markers).
+        transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS (required on a GeoAxes) or
+            a matplotlib Transform such as ``ax.transAxes``.
+
+    Returns:
+        object: ``target`` itself, drawn on. Points whose image cannot be read (a missing file, a file that is not
+        an image, a failed download) or whose x or y is missing are skipped, with one SdvplotWarning per reason.
+
+    Raises:
+        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target
+            has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            from sdvplot.matplotlib import add_images
+
+            fig, ax = plt.subplots()
+            ax.set_xlim(0, 10)
+            ax.set_ylim(0, 10)
+            add_images(ax, [3, 7], [5, 5], ["court.png", "https://www.python.org/static/img/python-logo.png"],
+                       height=0.2)
+
+    See Also:
+        ggpath geom_from_path(): https://mrcaseb.github.io/ggpath/ ;
+        sdvplotR: https://sdvplotR.sportsdataverse.org/
+    """
+    h, a = check_height(height), check_alpha(alpha)
+    ax = target_axes(target)
+    draw_images(ax, place_images(x, y, paths), height=h, alpha=a, zorder=zorder, xycoords=_xycoords(ax, transform))
+    return target
+
+
 def _axis(ax: Axes, axis: str) -> Any:
     if axis not in ("x", "y"):
         raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
@@ -340,6 +436,14 @@ def _axis(ax: Axes, axis: str) -> Any:
 def _ticks(which: Any) -> tuple[list[float], list[str]]:
     locs = [float(v) for v in which.get_majorticklocs()]
     return locs, [str(s) for s in which.get_major_formatter().format_ticks(locs)]
+
+
+def _in_view(ax: Axes, axis: str) -> tuple[list[float], list[str]]:
+    """The positions and labels of the ticks of ``axis`` inside the view: the ones axis_logos turns into images."""
+    locs, labels = _ticks(_axis(ax, axis))
+    low, high = sorted(ax.get_xlim() if axis == "x" else ax.get_ylim())
+    in_view = [(loc, lab) for loc, lab in zip(locs, labels, strict=True) if low <= loc <= high]
+    return [loc for loc, _ in in_view], [lab for _, lab in in_view]
 
 
 def axis_logos(
@@ -387,19 +491,35 @@ def axis_logos(
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
+    return _axis_logos(target, axis, league=league, season=season, height=height, variant=variant,
+                       mark_type=mark_type, id_system=id_system)  # fmt: skip
+
+
+def _axis_logos(
+    target: Any,
+    axis: str,
+    *,
+    league: str,
+    season: Any = None,
+    height: float = 0.1,
+    variant: str = "default",
+    mark_type: str = "logo",
+    id_system: str = "auto",
+    warn: bool = True,
+) -> Any:
+    """axis_logos; ``warn=False`` skips the labels that are not teams without warning (plotnine warns once for every
+    panel's labels, then draws each panel quietly)."""
     h = check_height(height)
     ax = target_axes(target)
     which = _axis(ax, axis)
     locs, labels = _ticks(which)
-    low, high = sorted(ax.get_xlim() if axis == "x" else ax.get_ylim())
-    in_view = [(loc, lab) for loc, lab in zip(locs, labels, strict=True) if low <= loc <= high]
-    view_locs, view_labels = [loc for loc, _ in in_view], [lab for _, lab in in_view]
+    view_locs, view_labels = _in_view(ax, axis)
     if axis == "x":
         positions: tuple[list[Any], list[Any]] = (view_locs, [0.0] * len(view_locs))
     else:
         positions = ([0.0] * len(view_locs), view_locs)
     placements = place(*positions, view_labels, league=league, season=season, kind=mark_type, variant=variant,
-                       id_system=id_system)  # fmt: skip
+                       id_system=id_system, _warn=warn)  # fmt: skip
     drawn = {(p.x if axis == "x" else p.y) for p in placements}
     which.set_major_locator(FixedLocator(locs))
     which.set_major_formatter(
@@ -500,12 +620,9 @@ def title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarra
         img = logo_image(image, league, season=season)
         return None if img is None else (rgba_array(img), str(image))
     source = str(image)
-    try:  # ponytail: a second URL-or-path image loader; PR #23 adds _images.load_path_image, use it once main has it
-        if source.startswith(("http://", "https://")):
-            return rgba_array(load_url_image(source)), source
-        with Image.open(source) as opened:
-            return rgba_array(opened), source
-    except (OSError, ValueError, OfflineError) as e:  # PIL's UnidentifiedImageError is an OSError
+    try:
+        return rgba_array(load_path_image(source)), source
+    except (OSError, ValueError, OfflineError) as e:  # missing file, not an image, failed download (as read_images)
         warnings.warn(f"title_image: could not read {source!r} ({e}); drawn without it", SdvplotWarning, stacklevel=3)
         return None
 
@@ -705,15 +822,32 @@ def drawn_title_images(target: Any) -> list[tuple[str, str]]:
     return [a._sdvplot_title_image for a in container.artists if hasattr(a, "_sdvplot_title_image")]
 
 
+def _drawn_boxes(target: Any, tag: str) -> tuple[Axes, list[Any]]:
+    """The Axes and its sdvplot image boxes tagged ``tag``, after a draw. A layout engine (constrained, tight) resizes
+    the Axes on draw, so an image sized before that only shows the wrong fraction afterwards."""
+    ax = target_axes(target)
+    ax.figure.canvas.draw()
+    return ax, [a for a in ax.artists if hasattr(a, tag)]
+
+
+def _drawn_height(ax: Axes, box: Any) -> float:
+    """The height the box's image is drawn at, measured from its extent, as a fraction of the Axes height."""
+    return float(box.offsetbox.get_window_extent().height / ax.bbox.height)
+
+
 def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
-    """Test hook: (team_id, x, y, height, url) for each image add_logos/add_wordmarks/add_headshots drew."""
-    return [a._sdvplot_mark for a in target_axes(target).artists if hasattr(a, "_sdvplot_mark")]
+    """Test hook: (team_id, x, y, height, url) for each image add_logos/add_wordmarks/add_headshots drew; height is
+    measured from the drawn image."""
+    ax, boxes = _drawn_boxes(target, "_sdvplot_mark")
+    return [(*b._sdvplot_mark[:3], _drawn_height(ax, b), b._sdvplot_mark[3]) for b in boxes]
 
 
-def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float]]:
-    """Test hook: (team_id, tick position) for each axis image on ``axis``, in tick order."""
-    marks = [a._sdvplot_axis_mark for a in target_axes(target).artists if hasattr(a, "_sdvplot_axis_mark")]
-    return sorted(((team_id, loc) for which, team_id, loc in marks if which == axis), key=lambda m: m[1])
+def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: (team_id, tick position, height) for each axis image on ``axis``, in tick order; height is measured
+    from the drawn image."""
+    ax, boxes = _drawn_boxes(target, "_sdvplot_axis_mark")
+    marks = [(b._sdvplot_axis_mark, _drawn_height(ax, b)) for b in boxes]
+    return sorted(((team_id, loc, h) for (which, team_id, loc), h in marks if which == axis), key=lambda m: m[1])
 
 
 def visible_axis_labels(target: Any, axis: str) -> list[str]:

@@ -157,8 +157,9 @@ def test_prep_title_height_and_alpha():
 def test_matplotlib_tiers_draw_each_logo_at_its_rank_and_tier(mark_images):
     fig = smpl.team_tiers(_frame(tier_no=[1, 2, 2], team=["LV", "LV", "LAR"]), "nfl")
     (ax,) = fig.axes
-    assert [m[:4] for m in smpl.drawn_marks(ax)] == [("13", 1, 1, _tiers.DEFAULT_HEIGHT), ("13", 1, 2, _tiers.DEFAULT_HEIGHT),
-                                                     ("14", 2, 2, _tiers.DEFAULT_HEIGHT)]  # fmt: skip
+    marks = smpl.drawn_marks(ax)
+    assert [m[:3] for m in marks] == [("13", 1, 1), ("13", 1, 2), ("14", 2, 2)]
+    assert [m[3] for m in marks] == pytest.approx([_tiers.DEFAULT_HEIGHT] * 3)  # a measured height
     assert ax.get_ylim() == pytest.approx((2.6, 0.4))  # tier 1 on top
     assert list(ax.get_yticks()) == [1, 2] and [t.get_text() for t in ax.get_yticklabels()] == ["Elite", "Very Good"]
     assert sorted(line.get_ydata()[0] for line in ax.lines) == [0.5, 1.5, 2.5]
@@ -278,3 +279,18 @@ def test_matplotlib_tier_title_is_1_2_times_the_subtitle(mark_images):
     ax = fig.axes[0]
     (title,) = [t for t in ax.texts if isinstance(t, Annotation) and t.get_text() == "NFL Team Tiers"]
     assert title.get_fontsize() == pytest.approx(1.2 * ax._left_title.get_fontsize())  # sdvplotR: rel(1.2)
+
+
+def test_one_warning_per_skip_reason_in_both_adapters(mark_images):
+    data = _frame(tier_no=[1, 1, 2], team=["LV", "XXX", "LAC"])  # an unknown team; a team with no logo archived
+    with pytest.warns(SdvplotWarning) as rec:
+        smpl.team_tiers(data, "nfl")
+    assert sorted("archived" in str(w.message) for w in rec) == [False, True]
+
+    sp9 = _sp9()
+    with pytest.warns(SdvplotWarning) as built:
+        p = sp9.team_tiers(data, "nfl")
+    assert len(built) == 1  # the unknown team, when built
+    with pytest.warns(SdvplotWarning, match="archived") as drawn:
+        p.draw()
+    assert len(drawn) == 1  # the missing logo, once per render

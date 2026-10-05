@@ -34,7 +34,7 @@ def _raw(tmp_path):
         "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
     }
     for name, text in files.items():
-        (raw / name).write_text(text)
+        (raw / name).write_text(text, encoding="utf-8", newline="")  # LF on every OS, like the eol=lf checkout
     return raw
 
 

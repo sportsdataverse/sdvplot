@@ -290,7 +290,10 @@ PLAYERS = ("3139477", "4241479")  # ESPN athlete ids used by the headshot tests
 
 @pytest.fixture
 def headshot_images(cache):
-    """The PLAYERS' NFL headshots as cached, fresh PNGs (4:3, like ESPN's), so add_headshots never downloads."""
+    """The PLAYERS' NFL headshots as cached, fresh PNGs, so add_headshots never downloads.
+
+    150 x 109 is ESPN's measured 600 x 436 (``sdvplot._web.HEADSHOT_ASPECT``) at a quarter of the size.
+    """
     import hashlib
     import json
     import time
@@ -300,6 +303,6 @@ def headshot_images(cache):
     for pid in PLAYERS:
         url = headshot_url(pid, "nfl")
         key = hashlib.sha256(url.encode()).hexdigest()
-        path = seed_image(cache / "urlimages" / key[:2] / key, size=(40, 30))
+        path = seed_image(cache / "urlimages" / key[:2] / key, size=(150, 109))
         _cache._meta_path(path).write_text(json.dumps({"fetched_at": time.time()}))
     return cache

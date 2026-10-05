@@ -141,7 +141,7 @@ def test_headshot_cells_use_the_espn_headshot(kind):
 
 
 def test_a_data_frame_instead_of_a_gt_is_a_clear_type_error():
-    with pytest.raises(TypeError, match=r"wrap the data in great_tables\.GT\(\)"):
+    with pytest.raises(TypeError, match=r"It looks like raw data: wrap it in great_tables\.GT\(\) first"):
         gt_sdv_logos(pl.DataFrame({"team": ["LV"]}), "team", league="nfl")
 
 
@@ -275,3 +275,129 @@ def test_the_team_theme_without_a_team_and_its_errors(monkeypatch):
     with pytest.warns(SdvplotWarning, match="no colors on file"):
         html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), "LV", league="nfl").as_raw_html()
     assert "background: #0B1A33;}" in html
+
+
+@pytest.mark.parametrize(
+    "scoped",
+    [
+        lambda gt: sgt.gt_theme_sdv(gt),  # wave A
+        lambda gt: sgt.gt_theme_almanac(gt),  # wave B
+        lambda gt: sgt.gt_border_grid(gt),  # wave C1
+        lambda gt: sgt.gt_watermark(gt, "DRAFT"),  # wave C2
+    ],
+    ids=["gt_theme_sdv", "gt_theme_almanac", "gt_border_grid", "gt_watermark"],
+)
+def test_a_table_with_an_empty_id_gets_a_random_one_for_its_scoped_css(scoped):
+    """An empty id scopes nothing ("# td" selects no cell), so every helper that scopes CSS assigns one."""
+    html = scoped(GT(pl.DataFrame({"w": [1]}), id="")).as_raw_html()
+    table_id = re.search(r'<div id="([^"]*)"', html).group(1)
+    assert table_id and f"#{table_id} " in html
+
+
+RAW = pl.DataFrame({"team": ["LV"], "w": [1]})
+
+
+@pytest.mark.parametrize(
+    ("call", "arg"),
+    [
+        (lambda: gt_sdv_logos(RAW, "team", league="nfl"), "gt"),  # wave A
+        (lambda: sgt.gt_theme_kenpom(RAW), "gt"),  # wave B
+        (lambda: sgt.gt_bold_rows(RAW), "gt"),  # wave C1
+        (lambda: sgt.gt_title_header(RAW, "Week 5"), "gt"),  # wave C2
+        (lambda: sgt.gt_save_crop(RAW), "data"),  # wave D
+    ],
+    ids=["A", "B", "C1", "C2", "D"],
+)
+def test_every_wave_refuses_raw_data_with_one_message(call, arg):
+    want = (
+        f"{arg} must be a great_tables GT, not DataFrame. It looks like raw data: wrap it in great_tables.GT() first."
+    )
+    with pytest.raises(TypeError) as err:
+        call()
+    assert str(err.value) == want
+
+
+def test_every_wave_words_a_bad_density_and_style_key_alike():
+    with pytest.raises(ValueError) as a:
+        gt_theme_sdv(GT(RAW), density="roomy")  # wave A
+    with pytest.raises(ValueError) as b:
+        sgt.gt_theme_kenpom(GT(RAW), density="roomy")  # wave B
+    assert str(a.value) == str(b.value) == "density must be 'comfortable', 'compact' or 'social', not 'roomy'"
+    with pytest.raises(ValueError) as c:
+        sgt.gt_title_header(GT(RAW), "Week 5", title_style={"colour": "red"})  # wave C2
+    with pytest.raises(ValueError) as d:
+        sgt.gt_grid([GT(RAW)], title="T", title_style={"colour": "red"})  # wave D
+    assert str(c.value) == str(d.value) and str(c.value).startswith("title_style has unknown key(s) ['colour']")
+
+
+@pytest.mark.parametrize("fn", [gt_sdv_logos, gt_sdv_wordmarks, gt_sdv_headshots])
+def test_locations_are_body_stub_or_row_groups_only(fn):
+    """great_tables' text_transform reaches only those three; column labels came out as escaped <img> text and any
+    other location (a title, a source note) was silently ignored."""
+    gt = GT(pl.DataFrame({"LV": ["LV"]})).tab_header("LV")
+    with pytest.raises(ValueError, match=r"gt_sdv_cols_label\(\)"):
+        fn(gt, None, league="nfl", locations=loc.column_labels())
+    with pytest.raises(ValueError, match=r"loc\.body\(\), loc\.stub\(\) or loc\.row_groups\(\).*not LocTitle"):
+        fn(gt, None, league="nfl", locations=[loc.body(), loc.title()])
+
+
+def test_drawn_cells_leaves_out_images_in_the_footer(manifest):
+    """Not a bug (round-5 review): great_tables puts source notes and footnotes in <tfoot>, whose cells are not
+    gt_row cells, so their images are never read as body cells."""
+    from great_tables import html as gt_html
+
+    from sdvplot._tables import img_tag
+
+    mark = gt_html(img_tag("https://cdn/1111.png", 30, "Las Vegas Raiders", team="13"))
+    gt = gt_sdv_logos(GT(pl.DataFrame({"team": ["LAR"]})), "team", league="nfl")
+    gt = gt.tab_source_note(mark).tab_footnote(mark, locations=loc.body(columns="team", rows=[0]))
+    html = gt.as_raw_html()
+    assert html.count('data-sdvplot-team="13"') == 2 and "<tfoot" in html
+    assert _cells(gt) == [("14", 0, "team")]
+
+
+def test_a_player_id_read_through_a_float_keeps_its_integer_form():
+    """pandas stores [3139477, None] as floats, so the cell reads "3139477.0": the alt text and team attribute are the
+    id the headshot URL was built from, not "3139477.0"."""
+    gt = gt_sdv_headshots(GT(pd.DataFrame({"player": [3139477, None]})), "player", league="nfl")
+    assert sgt.drawn_cells(gt) == [("3139477", 0, "player", 30.0, sdvplot.headshot_url("3139477", "nfl"))]
+    assert 'alt="3139477"' in gt.as_raw_html()
+
+
+def test_css_only_color_arguments_still_take_named_and_translucent_colors():
+    """hex6 refuses a translucent color where a color is measured or blended; one passed straight to CSS is not."""
+    for color in ("rebeccapurple", "#ff000080"):
+        assert color in sgt.gt_border_grid(GT(pl.DataFrame({"w": [1]})), color=color).as_raw_html()
+
+
+TRANSLUCENT = "#FFEB3B66"  # 40% yellow: it shows as #fff7b1 on a white table, which wants black ink
+
+
+def test_translucent_fills_go_to_css_as_given_and_the_ink_is_read_on_what_shows():
+    """sdvplotR accepts these colors; they are drawn as given, and only the text color is measured, on the color the
+    fill shows as over the table background."""
+    pills = sgt.gt_color_pills(GT(pl.DataFrame({"v": [1.0, None, 3.0]})), "v", domain=(1, 3), na_color=TRANSLUCENT)
+    pills = pills.as_raw_html()
+    assert f"background-color: {TRANSLUCENT}; color: #000000;" in pills
+    boxes = sgt.gt_indicator_boxes(
+        GT(pl.DataFrame({"v": [1.0, 0.0, None]})),
+        "v",
+        color_yes=TRANSLUCENT,
+        color_no=TRANSLUCENT,
+        color_na=TRANSLUCENT,
+    ).as_raw_html()
+    assert boxes.count(f"background-color: {TRANSLUCENT}; color: #000000;") == 3
+    outliers = sgt.gt_outliers(GT(pl.DataFrame({"v": [1, 2, 2, 3, 100]})), "v", fill=TRANSLUCENT).as_raw_html()
+    assert re.search(rf"color: #B3261E;[^\"]*background-color: {TRANSLUCENT}", outliers, re.IGNORECASE)
+
+
+def test_a_translucent_table_background_is_read_as_it_shows_not_as_white():
+    # #111111CC is 80% near-black: over the page it shows as #414141, which wants white ink (main read it as #111111)
+    dark = GT(pl.DataFrame({"team": ["LV"], "note": ["Lost the starting QB"]})).tab_options(
+        table_background_color="#111111CC"
+    )
+    legend = sgt.gt_legend_discrete(dark, {"Home": "#ff0000"}, heading="Key").as_raw_html()
+    assert 'font-size:16px;color:#ffffff;font-weight:600;">Key<' in legend
+    notes = sgt.gt_marginalia(dark, "note").as_raw_html()
+    ink = re.search(r'style="[^"]*color: (#[0-9a-fA-F]{6})[^"]*"[^>]*>Lost the starting QB', notes).group(1)
+    assert _marks.contrast(ink, "#ffffff") < _marks.contrast(ink, "#000000")  # a light ink

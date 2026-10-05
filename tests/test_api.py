@@ -20,6 +20,7 @@ PUBLIC = {
     "add_headshots",
     "axis_logos",
     "surface",
+    "court_coords",
     "SdvplotWarning",
     "UnresolvedTeamError",
     "OfflineError",
