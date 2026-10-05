@@ -92,7 +92,7 @@ packages = ["src/sdvplot"]
 exclude = [
   "docs", ".github", ".vscode", "examples", "CLAUDE.md",
   "uv.lock", "tools", "data-raw", ".coderabbit.yaml", ".env.example", ".markdownlint-cli2.yaml",
-  ".pre-commit-config.yaml", ".yamlfmt", ".python-version",
+  ".pre-commit-config.yaml", ".yamlfmt", ".python-version", ".omc",
 ]
 
 [tool.pytest.ini_options]
