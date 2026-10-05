@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import warnings
 from collections import Counter
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
 from sdvplot._errors import SdvplotWarning
 from sdvplot._resolve import _seasons, _unpack, resolve
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 _COLUMNS = {"primary": "color_primary", "secondary": "color_secondary"}
 

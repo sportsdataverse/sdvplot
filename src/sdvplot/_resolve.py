@@ -6,13 +6,16 @@ import functools
 import numbers
 import warnings
 from collections.abc import Callable, Sequence
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 from sdvplot._normalize import _is_na, norm_season, norm_value
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 # The order "auto" tries id systems in; the first system with a candidate decides
 PRIORITY: tuple[str, ...] = (
