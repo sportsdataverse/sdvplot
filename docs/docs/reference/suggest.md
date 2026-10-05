@@ -12,6 +12,7 @@ sidebar_position: 2
 suggest(
     value: Any,
     league: str,
+    *,
     n: int = 5,
 ) -> list[tuple[str, str]]
 ```

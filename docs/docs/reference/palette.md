@@ -11,8 +11,9 @@ sidebar_position: 4
 ```python
 palette(
     league: str,
-    which: str = 'primary',
     teams: Any = None,
+    *,
+    which: str = 'primary',
     season: Any = None,
 ) -> dict[Any, str]
 ```
@@ -30,8 +31,8 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 | Name | Type | Description |
 |---|---|---|
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary". |
 | `teams` | `Any` | Team values to key the dict by; None returns the whole league. |
+| `which` | `str` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 
 ## Returns
@@ -41,7 +42,8 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 ## Raises
 
 - `TypeError`: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-- `ValueError`: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or ``season`` is not a year (or a list whose length does not match the teams).
+- `InputError`: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary", or ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``).
+- `ValueError`: If ``season`` is not a year (or a list whose length does not match the teams).
 
 ## Example
 

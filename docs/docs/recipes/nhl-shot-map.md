@@ -133,7 +133,7 @@ same drawing goes in a function so the final layout can reuse it.
 def draw_shots(ax):
     sdvplot.surface("nhl", ax=ax)
     for (team,), g in shots.group_by("team", maintain_order=True):
-        color = sdvplot.team_colors(team, "nhl")
+        color = sdvplot.team_colors("nhl", team)
         on_goal, missed, goals = (g.filter(pl.col("kind") == k) for k in ("shot-on-goal", "missed-shot", "goal"))
         ax.scatter(on_goal["x"], on_goal["y"], s=34, color=color, alpha=0.85, lw=0, zorder=20)
         ax.scatter(missed["x"], missed["y"], s=30, facecolor="none", edgecolor=color, lw=1.2, zorder=20)

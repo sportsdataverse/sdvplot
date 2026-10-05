@@ -8,6 +8,8 @@ from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from sdvplot._errors import InputError
+
 if TYPE_CHECKING:
     import polars as pl
 else:
@@ -71,9 +73,14 @@ def _leagues(directory: str) -> frozenset[str]:
 
 def check_league(league: str) -> None:
     """The one unknown-league error every public function raises."""
+    if not isinstance(league, str):  # a list or Series here is a pre-0.1 call: team_colors(teams, league)
+        raise InputError(
+            f"league must be a league key such as 'nfl', got {type(league).__name__}; team_colors and palette take "
+            "the league first: team_colors(league, teams)"
+        )
     known = _leagues(str(data_dir()))
     if league not in known:
-        raise ValueError(f"unknown league {league!r}; known leagues: {sorted(known)}")
+        raise InputError(f"unknown league {league!r}; known leagues: {sorted(known)}")
 
 
 def on_reload(fn: Callable[[], None]) -> None:

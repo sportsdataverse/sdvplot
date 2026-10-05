@@ -9,6 +9,12 @@ from plottable import ColumnDefinition
 from sdvplot._placement import place
 from sdvplot.matplotlib import _image
 
+__all__ = ["logo_column", "headshot_column"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
+
 
 def _cell(kind: str, league: str, season: Any, variant: str, id_system: str) -> Any:
     def draw(ax: Any, value: Any, **_: Any) -> None:

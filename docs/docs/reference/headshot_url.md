@@ -12,6 +12,7 @@ sidebar_position: 9
 headshot_url(
     player_id: Any,
     league: str,
+    *,
     id_system: str = 'espn',
 ) -> str | None
 ```

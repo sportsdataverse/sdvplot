@@ -10,7 +10,7 @@ out as plain `"#rrggbb"` strings, so no plotting library needs an adapter for th
 
 ## `palette()`
 
-`palette(league, which="primary", teams=None, season=None)` returns a `{team: "#hex"}` dict.
+`palette(league, teams=None, *, which="primary", season=None)` returns a `{team: "#hex"}` dict.
 
 **With `teams`,** the keys are your own values, exactly as you passed them. That way the dict matches a seaborn `hue`
 column or a Plotly color column without any renaming:
@@ -44,12 +44,12 @@ Express, `alt.Scale(domain=list(p), range=list(p.values()))` to Altair, or the k
 
 ## `team_colors()`
 
-`team_colors(teams, league, which="primary", season=None)` returns one color per value, in the container you passed
+`team_colors(league, teams, *, which="primary", season=None)` returns one color per value, in the container you passed
 (see [Team identity](identity.md#containers)). It returns `None` where a team does not resolve or has no color:
 
 ```python
-sdvplot.team_colors(["KC", "SF"], "nfl")        # ['#e31837', '#aa0000']
-sdvplot.team_colors("KC", "nfl", "secondary")   # '#ffb612'
+sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
+sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
 ```
 
 ## `which`

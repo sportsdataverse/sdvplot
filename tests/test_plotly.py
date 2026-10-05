@@ -53,7 +53,7 @@ def test_a_reversed_axis_stays_reversed(mark_images):
     sdvplot.add_logos(fig, [10], [-3], ["LV"], league="nfl", height=0.2)
     lo, hi = fig.layout.yaxis.range
     assert lo > hi
-    assert splotly.drawn_marks(fig)[0][3] == pytest.approx(0.2)
+    assert splotly._drawn_marks(fig)[0][3] == pytest.approx(0.2)
 
 
 def test_a_bar_chart_keeps_zero_and_whole_bars_in_the_pinned_ranges(mark_images):
@@ -63,7 +63,7 @@ def test_a_bar_chart_keeps_zero_and_whole_bars_in_the_pinned_ranges(mark_images)
     assert lo < 0 and hi > 3
     lo, hi = fig.layout.xaxis.range
     assert lo < -0.5 and hi > 1.5  # each category's whole band
-    assert [m[:3] for m in splotly.drawn_marks(fig)] == [("13", 0, 3), ("14", 1, 2)]  # categories at their index
+    assert [m[:3] for m in splotly._drawn_marks(fig)] == [("13", 0, 3), ("14", 1, 2)]  # categories at their index
     fig = go.Figure(go.Bar(x=[1, 2, 3], y=[3, 2, 1]))
     sdvplot.add_logos(fig, [1], [3], ["LV"], league="nfl", height=0.1)
     lo, hi = fig.layout.xaxis.range
@@ -141,7 +141,7 @@ def test_category_order_follows_the_axis(mark_images):
     fig = go.Figure(go.Bar(x=["LV", "LAR"], y=[3, 2]))
     fig.update_xaxes(categoryorder="array", categoryarray=["LAR", "LV"])
     sdvplot.add_logos(fig, ["LV"], [3], ["LV"], league="nfl")
-    assert splotly.drawn_marks(fig)[0][1] == 1
+    assert splotly._drawn_marks(fig)[0][1] == 1
     fig.update_xaxes(categoryorder="total descending")
     with pytest.raises(ValueError, match="categoryorder='total descending'"):
         sdvplot.add_logos(fig, ["LV"], [3], ["LV"], league="nfl")
@@ -151,7 +151,7 @@ def test_a_category_not_on_the_axis_is_skipped_with_a_warning(mark_images):
     fig = go.Figure(go.Bar(x=["LV", "LAR"], y=[3, 2]))
     with pytest.warns(SdvplotWarning, match="not on the axis"):
         sdvplot.add_logos(fig, ["LV", "KC"], [3, 2], ["LV", "LAR"], league="nfl")
-    assert [m[0] for m in splotly.drawn_marks(fig)] == ["13"]
+    assert [m[0] for m in splotly._drawn_marks(fig)] == ["13"]
 
 
 @pytest.mark.parametrize("axis_type", ["log", "date"])
@@ -188,7 +188,7 @@ def test_subplots_place_on_the_named_axes(mark_images):
     (im,) = fig.layout.images
     assert (im.xref, im.yref) == ("x2", "y2")
     assert fig.layout.yaxis.range is None and fig.layout.yaxis2.range is not None and fig.layout.xaxis2.range
-    assert splotly.drawn_marks(fig)[0][3] == pytest.approx(0.2)
+    assert splotly._drawn_marks(fig)[0][3] == pytest.approx(0.2)
     with pytest.raises(ValueError, match="yref must name a y axis"):
         sdvplot.add_logos(fig, [5], [50], ["LV"], league="nfl", yref="x2")
 
@@ -205,13 +205,13 @@ def test_a_repeated_team_reads_its_image_once_and_draws_every_point(mark_images,
     monkeypatch.setattr(_web, "image_src", lambda p, *, embed=False: calls.append(p.url) or real(p, embed=embed))
     fig = _fig()
     sdvplot.add_logos(fig, [5, 10, 15], [-1, -2, -3], ["LV", "LV", "LV"], league="nfl", embed=True)
-    assert len(splotly.drawn_marks(fig)) == 3 and calls == ["https://cdn/1111.png"]
+    assert len(splotly._drawn_marks(fig)) == 3 and calls == ["https://cdn/1111.png"]
 
 
 def test_empty_input_draws_nothing_and_leaves_the_axes_alone(mark_images):
     fig = _fig()
     assert sdvplot.add_logos(fig, [], [], [], league="nfl") is fig
-    assert splotly.drawn_marks(fig) == [] and fig.layout.xaxis.range is None and fig.layout.yaxis.range is None
+    assert splotly._drawn_marks(fig) == [] and fig.layout.xaxis.range is None and fig.layout.yaxis.range is None
 
 
 def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
@@ -219,8 +219,8 @@ def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
     fig.update_layout(height=400, margin={"t": 50, "b": 50})
     with pytest.warns(SdvplotWarning):
         sdvplot.axis_logos(fig, "x", league="nfl", height=0.1)
-    assert splotly.drawn_axis_marks(fig, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
-    assert splotly.visible_axis_labels(fig, "x") == ["XXX"]
+    assert splotly._drawn_axis_marks(fig, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
+    assert splotly._visible_axis_labels(fig, "x") == ["XXX"]
     assert fig.layout.margin.b == 50 + math.ceil(0.1 * 300 / 1.1)  # the image height in the shrunk plot area
     im = fig.layout.images[0]
     assert (im.yref, im.y, im.sizey, im.yanchor) == ("paper", 0, 0.1, "top")
@@ -229,8 +229,8 @@ def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
 def test_y_axis_logos(mark_images):
     fig = go.Figure(go.Bar(y=["LV", "LAR"], x=[1, 2], orientation="h"))
     sdvplot.axis_logos(fig, "y", league="nfl", height=0.1)
-    assert splotly.drawn_axis_marks(fig, "y") == [("13", 0.0, pytest.approx(0.1)), ("14", 1.0, pytest.approx(0.1))]
-    assert splotly.visible_axis_labels(fig, "y") == []
+    assert splotly._drawn_axis_marks(fig, "y") == [("13", 0.0, pytest.approx(0.1)), ("14", 1.0, pytest.approx(0.1))]
+    assert splotly._visible_axis_labels(fig, "y") == []
     assert tuple(fig.layout.yaxis.range) == (-0.5, 1.5)
     assert fig.layout.images[0].sizey == pytest.approx(0.2)  # 0.1 of the two-category span
     assert fig.layout.margin.l > 80

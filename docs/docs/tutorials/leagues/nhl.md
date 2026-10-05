@@ -208,7 +208,7 @@ mine = (
     .with_columns(x=pl.col("x_fixed") * pl.col("flip"), y=pl.col("y_fixed") * pl.col("flip"))
 )
 goals, others = mine.filter(pl.col("event_type") == "GOAL"), mine.filter(pl.col("event_type") != "GOAL")
-color = sdvplot.team_colors(team, "nhl")
+color = sdvplot.team_colors("nhl", team)
 
 fig, ax = plt.subplots(figsize=(8, 6))
 sdvplot.surface("nhl", team, ax=ax, display_range="offense")
@@ -265,7 +265,7 @@ finish = (
     .sort("gax", descending=True)
 )
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(finish["team"], finish["gax"], color=sdvplot.team_colors(finish["team"], "nhl"))
+ax.bar(finish["team"], finish["gax"], color=sdvplot.team_colors("nhl", finish["team"]))
 ax.axhline(0, color="black", lw=0.8)
 ax.margins(x=0.01)
 sdvplot.axis_logos(ax, "x", league="nhl", season=SEASON, height=0.05)

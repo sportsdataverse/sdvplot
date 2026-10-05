@@ -13,7 +13,7 @@ import warnings
 from dataclasses import dataclass
 from typing import Any
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, SdvplotWarning
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
 from sdvplot._normalize import norm_value
@@ -41,14 +41,14 @@ def _real(value: Any) -> bool:
 def check_height(height: Any) -> float:
     """``height`` as a float, or ValueError unless it is a fraction of the plot height in (0, 1]."""
     if not _real(height) or not 0 < height <= 1:
-        raise ValueError(f"height is a fraction of the plot height in (0, 1], got {height!r}")
+        raise InputError(f"height is a fraction of the plot height in (0, 1], got {height!r}")
     return float(height)
 
 
 def check_alpha(alpha: Any) -> float:
     """``alpha`` as a float, or ValueError unless it is an opacity in [0, 1]."""
     if not _real(alpha) or not 0 <= alpha <= 1:
-        raise ValueError(f"alpha is an opacity in [0, 1], got {alpha!r}")
+        raise InputError(f"alpha is an opacity in [0, 1], got {alpha!r}")
     return float(alpha)
 
 
@@ -86,7 +86,7 @@ def place(
     """
     skipped = _warn_skipped if _warn else lambda reason, values: None
     if kind not in KINDS:
-        raise ValueError(f"kind must be one of {KINDS}, got {kind!r}")
+        raise InputError(f"kind must be one of {KINDS}, got {kind!r}")
     xs, _ = _unpack(x)
     ys, _ = _unpack(y)
     ts, _ = _unpack(teams)

@@ -118,8 +118,8 @@ def luminance(color):
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
-primary = sdvplot.team_colors(leaders["team"], "wnba")
-secondary = sdvplot.team_colors(leaders["team"], "wnba", which="secondary")
+primary = sdvplot.team_colors("wnba", leaders["team"])
+secondary = sdvplot.team_colors("wnba", leaders["team"], which="secondary")
 leaders = leaders.with_columns(
     color=pl.Series([p if luminance(p) < 0.3 else s for p, s in zip(primary, secondary, strict=True)])
 )

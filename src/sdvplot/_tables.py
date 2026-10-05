@@ -13,6 +13,7 @@ from typing import Any
 import polars as pl
 
 from sdvplot import _index
+from sdvplot._errors import InputError
 from sdvplot._normalize import norm_season
 from sdvplot._placement import place
 
@@ -37,9 +38,14 @@ def row_positions(rows: Any) -> Any:
 
 
 def check_px(height: Any) -> float:
-    """``height`` as a float, or ValueError unless it is a positive, finite number of pixels."""
+    """``height`` as a float, or ValueError unless it is a finite number of pixels, at least 1."""
     if isinstance(height, bool) or not isinstance(height, numbers.Real) or not math.isfinite(height) or height <= 0:
-        raise ValueError(f"height is the image height in pixels, a number > 0, got {height!r}")
+        raise InputError(f"height is the image height in pixels, a number > 0, got {height!r}")
+    if height < 1:  # a plot's height is a fraction of the plot; a table's is pixels, so 0.1 would draw a 0.1 px image
+        raise InputError(
+            f"height is the image height in pixels for a table (such as 30), got {height!r}; a fraction of the plot "
+            "height is the unit for plots, not tables"
+        )
     return float(height)
 
 

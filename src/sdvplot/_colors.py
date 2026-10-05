@@ -7,7 +7,7 @@ from collections import Counter
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, SdvplotWarning
 from sdvplot._resolve import _seasons, _unpack, resolve
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ _COLUMNS = {"primary": "color_primary", "secondary": "color_secondary"}
 
 def _column(which: str) -> str:
     if which not in _COLUMNS:
-        raise ValueError(f"which must be one of {sorted(_COLUMNS)}, got {which!r}")
+        raise InputError(f"which must be one of {sorted(_COLUMNS)}, got {which!r}")
     return _COLUMNS[which]
 
 
@@ -29,7 +29,7 @@ def _colors(league: str, column: str) -> dict[str, str]:
     return {tid: c for tid, c in t.select("team_id", column).iter_rows() if c}
 
 
-def palette(league: str, which: str = "primary", teams: Any = None, season: Any = None) -> dict[Any, str]:
+def palette(league: str, teams: Any = None, *, which: str = "primary", season: Any = None) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
     Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
@@ -38,8 +38,8 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
 
     Args:
         league: The SDV league key, e.g. "nfl".
-        which: "primary" or "secondary".
         teams: Team values to key the dict by; None returns the whole league.
+        which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
 
     Returns:
@@ -49,8 +49,9 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        InputError: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary", or
+            ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``).
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::
@@ -77,6 +78,11 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
             )
         return {(tid if not abbr or abbr in shared else abbr): colors[tid] for tid, abbr in rows if tid in colors}
     values, _ = _unpack(teams)
+    if slots := [v for v in values if isinstance(v, str) and v in _COLUMNS]:  # pre-0.1: palette(league, which)
+        raise InputError(
+            f"{slots[0]!r} is a color slot, not a team; pass it by keyword: "
+            f'palette(league, teams=..., which="{slots[0]}")'
+        )
     pairs = [p for p in dict.fromkeys(zip(values, _seasons(season, len(values)), strict=True)) if p[0] is not None]
     ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs])
     out: dict[Any, str] = {}
@@ -86,12 +92,12 @@ def palette(league: str, which: str = "primary", teams: Any = None, season: Any 
     return out
 
 
-def team_colors(teams: Any, league: str, which: str = "primary", season: Any = None) -> Any:
+def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any = None) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in.
 
     Args:
-        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
         league: The SDV league key, e.g. "nfl".
+        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
         which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
 
@@ -100,16 +106,17 @@ def team_colors(teams: Any, league: str, which: str = "primary", season: Any = N
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        InputError: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1
+            ``team_colors(teams, league)`` order) or ``which`` is not "primary"/"secondary".
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
 
     Example:
         ::
 
             import sdvplot
 
-            sdvplot.team_colors(["KC", "SF"], "nfl")      # ['#e31837', '#aa0000']
-            sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
+            sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
+            sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;

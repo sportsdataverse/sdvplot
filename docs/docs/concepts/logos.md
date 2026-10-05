@@ -39,7 +39,7 @@ Raiders, the `OAK` rows carry `1960`-`2019`, and the current Las Vegas rows are 
 
 ## How a mark is chosen
 
-`logo_url(team, league, season=None, variant="default", mark_type="logo")` and `logo_image()` pick one row:
+`logo_url(team, league, *, season=None, variant="default", mark_type="logo")` and `logo_image()` pick one row:
 
 1. **Variant.** sdvplot tries the requested variant first, then a fallback that keeps the background polarity:
    - for `"default"` or any other named variant, `"default"` and then an on-light variant (`"on_light"` or

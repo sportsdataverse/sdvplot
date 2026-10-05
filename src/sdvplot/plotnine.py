@@ -1,6 +1,6 @@
 """The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines.
 
-The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
+The geoms draw through the matplotlib adapter's drawing step, so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
 """
 
@@ -33,26 +33,26 @@ from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
 from sdvplot.matplotlib import (
+    _add_title_image,
     _align,
+    _check_title_image,
+    _draw_images,
+    _draw_placements,
     _in_view,
-    add_title_image,
-    check_title_image,
-    draw_images,
-    draw_placements,
-    read_images,
-    title_source,
+    _read_images,
+    _title_source,
 )
 from sdvplot.matplotlib import _axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
-from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
-from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
+from sdvplot.matplotlib import _drawn_axis_marks as _mpl_drawn_axis_marks
+from sdvplot.matplotlib import _drawn_marks as _mpl_drawn_marks
+from sdvplot.matplotlib import _visible_axis_labels as _mpl_visible_axis_labels
 
-SUPPORTS_AXIS_LOGOS = True
+_SUPPORTS_AXIS_LOGOS = True
 _MARK_PARAMS = {
     "stat": "identity",
     "position": "identity",
@@ -64,6 +64,27 @@ _MARK_PARAMS = {
     "variant": "default",
     "id_system": "auto",
 }
+
+__all__ = [
+    "add_logos",
+    "add_wordmarks",
+    "add_headshots",
+    "axis_logos",
+    "geom_sdv_logos",
+    "geom_sdv_wordmarks",
+    "geom_sdv_headshots",
+    "geom_from_path",
+    "geom_mean_lines",
+    "geom_median_lines",
+    "scale_color_sdv",
+    "scale_fill_sdv",
+    "title_image",
+    "team_tiers",
+]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 class _geom_sdv_marks(geom):
@@ -105,7 +126,7 @@ class _geom_sdv_marks(geom):
         # setup_data already warned for this layer's rows in every panel, so each panel places its rows quietly
         data = coord.transform(data, panel_params)
         placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
-        draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
+        _draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 
 class geom_sdv_logos(_geom_sdv_marks):
@@ -201,7 +222,7 @@ class geom_from_path(_geom_sdv_marks):
         rows = data.drop(columns="PANEL", errors="ignore").drop_duplicates()  # a row plotnine copies to every panel
         zeros = [0.0] * len(rows)
         self._sdv_images = {}
-        _warn_skipped("whose image could not be read", read_images(self._place(rows, zeros, zeros, warn=True),
+        _warn_skipped("whose image could not be read", _read_images(self._place(rows, zeros, zeros, warn=True),
                                                                    self._sdv_images))  # fmt: skip
         return data
 
@@ -209,7 +230,7 @@ class geom_from_path(_geom_sdv_marks):
         # setup_data already read the images and warned, so each panel draws its rows quietly
         data = coord.transform(data, panel_params)
         placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
-        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
+        _draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
                     cache=self._sdv_images, warn=False)  # fmt: skip
 
 
@@ -326,6 +347,12 @@ class geom_median_lines(_geom_ref_lines):
     _ref = staticmethod(np.median)
 
 
+def _ggplot(target: Any) -> ggplot:
+    if not isinstance(target, ggplot):
+        raise UnsupportedTargetError(f"sdvplot.plotnine draws on a plotnine ggplot, got {type(target).__name__}")
+    return target
+
+
 def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:
     """The layer data: one row per point, with its season, so plotnine's per-panel copies of a row keep it."""
     xs, ys, ts = _unpack(x)[0], _unpack(y)[0], _unpack(ids)[0]
@@ -377,7 +404,7 @@ def add_logos(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_wordmarks(
@@ -422,7 +449,7 @@ def add_wordmarks(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_headshots(
@@ -463,7 +490,7 @@ def add_headshots(
         aes("x", "y", player_id="player_id"), data=_frame(x, y, players, "player_id"), inherit_aes=False,
         league=league, height=height, alpha=alpha, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 class _AxisLogos:
@@ -532,7 +559,7 @@ def axis_logos(
             p = ggplot(df, aes("team", "epa")) + geom_col()
             p2 = sdvplot.axis_logos(p, "x", league="nfl")
     """
-    return target + _AxisLogos(
+    return _ggplot(target) + _AxisLogos(
         axis, league=league, season=season, height=height, variant=variant, mark_type=mark_type, id_system=id_system
     )
 
@@ -542,9 +569,9 @@ class _TitleImage:
     beside the rendered title, aligned with it as the theme's ``plot_title`` alignment says."""
 
     def __init__(self, image: Any, title: str, league: str | None, season: Any, side: str, height: float) -> None:
-        self.height = check_title_image(side, height)
+        self.height = _check_title_image(side, height)
         self.side, self.title = side, title or " "  # a blank title still gives the image a line to sit on
-        self.source = title_source(image, league, season)  # resolved (and warned about) when built, not drawn
+        self.source = _title_source(image, league, season)  # resolved (and warned about) when built, not drawn
 
     def __radd__(self, gg: ggplot) -> ggplot:
         gg += labs(title=self.title)
@@ -567,7 +594,7 @@ class _TitleImage:
             theme_ = getattr(figure.get_layout_engine(), "theme", None)
             return _align(theme_.getp(("plot_title", "ha")) if theme_ is not None else "left")
 
-        add_title_image(figure, text, self.source, self.side, self.height, align)
+        _add_title_image(figure, text, self.source, self.side, self.height, align)
 
 
 def title_image(
@@ -726,7 +753,7 @@ def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwarg
 
         def map(self, x: Any, limits: Any = None) -> Any:
             values = [v for v in (limits if limits is not None else self.final_limits) if v is not None]
-            colors = team_colors(values, league, which=which, season=season)
+            colors = team_colors(league, values, which=which, season=season)
             self._values = {v: c for v, c in zip(values, colors, strict=True) if c is not None}
             self.palette = lambda n: [self._values.get(v, na_value) for v in values]
             return [self._values.get(v, na_value) for v in x]
@@ -784,7 +811,7 @@ def _drawn(target: ggplot) -> Figure:
     return target.draw()
 
 
-def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
     """Test hook: draw the plot, then (team_id, x, y, height, url) for each mark image on any panel."""
     import matplotlib.pyplot as plt
 
@@ -795,7 +822,7 @@ def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
         plt.close(fig)
 
 
-def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
+def _drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: draw the plot, then (team_id, tick position, measured height) for each axis image on the first
     panel."""
     import matplotlib.pyplot as plt
@@ -807,7 +834,7 @@ def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]
         plt.close(fig)
 
 
-def visible_axis_labels(target: ggplot, axis: str) -> list[str]:
+def _visible_axis_labels(target: ggplot, axis: str) -> list[str]:
     """Test hook: draw the plot, then the first panel's tick labels still shown as text."""
     import matplotlib.pyplot as plt
 

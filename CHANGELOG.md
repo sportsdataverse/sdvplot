@@ -5,6 +5,7 @@
   - [[Unreleased]](#unreleased)
     - [Changed](#changed)
   - [[0.1.0] - Unreleased](#010---unreleased)
+    - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
       - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
       - [Repository standards](#repository-standards)
@@ -42,6 +43,35 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 ## [0.1.0] - Unreleased
 
 First release. The date is set when v0.1.0 is tagged.
+
+### Migrating from the git pre-release
+
+0.1.0 freezes the public API. Code written against a git install from before it needs these changes; each old call now
+fails loudly, with the message shown:
+
+- `palette("nfl", "secondary")` is `palette("nfl", which="secondary")`: `palette` is `palette(league, teams=None, *,
+  which="primary", season=None)`, as sdvplotR's `sdv_color_palette(sport, teams, type)`. The old call raises
+  `InputError: 'secondary' is a color slot, not a team; pass it by keyword: palette(league, teams=...,
+  which="secondary")`.
+- `team_colors(teams, "nfl")` is `team_colors("nfl", teams)`: the league comes first, as in sdvplotR's
+  `sdv_team_colors(sport, team, type)`. With a list or Series of teams the old order raises `InputError: league must be
+  a league key such as 'nfl', got list; team_colors and palette take the league first: team_colors(league, teams)`;
+  with one team, `InputError: unknown league 'KC'; known leagues: [...]`.
+- Secondary arguments are keyword-only: `season`, `id_system` and `strict` on `resolve`; `season`, `variant`,
+  `mark_type` and `size` on `logo_url` and `logo_image`; `season` on `marks`; `n` on `suggest`; `id_system` on
+  `headshot_url`; `x` and `y` on `court_coords`. `resolve(v, "nfl", 2020)` raises `TypeError: resolve() takes 2
+  positional arguments but 3 were given`; write `resolve(v, "nfl", season=2020)`.
+- Each public submodule exports only its `__all__`, and `dir()` shows only that. Helpers and the adapter test hooks are
+  underscored (`_drawn_marks`, `_drawn_axis_marks`, `_visible_axis_labels`, `_SUPPORTS_AXIS_LOGOS`,
+  `_drawn_title_images`, great_tables' `_drawn_cells` and `_rendered_html`), so `sdvplot.matplotlib.draw_placements`
+  raises `AttributeError: module 'sdvplot.matplotlib' has no attribute 'draw_placements'`.
+- A table's `height` is pixels: `gt_sdv_logos(gt, "team", league="nfl", height=0.1)` (and the front door on a `GT`)
+  raises `InputError: height is the image height in pixels for a table (such as 30), got 0.1; a fraction of the plot
+  height is the unit for plots, not tables` instead of drawing a 0.1 px image.
+- New errors, each still the builtin you may already catch: `SdvplotError` is the base of them all; `InputError` (a
+  `ValueError`) is raised by the shared argument checks (league, `which`, `id_system`, `mark_type`, height, alpha);
+  `UnsupportedTargetError` (a `TypeError`) by an adapter given the wrong kind of object or asked for axis logos it
+  cannot draw; `UnsafeDownloadError` (an `OSError`) and `UnsafeCachePathError` (a `ValueError`) are exported.
 
 ### Added
 

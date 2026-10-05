@@ -90,7 +90,7 @@ def draw() -> Image.Image:
     grid = BASE + np.array([0.2, 0.4, 0.6, 0.8]) * SPAN
     halves = np.array([safe_halfwidth(y) - 0.04 for y in grid])
     ax.hlines(grid, -halves, halves, colors=ICE, alpha=0.18, linewidth=0.85, zorder=1)
-    colors = [sdvplot.team_colors([team], league)[0] for league, team in TEAMS]
+    colors = [sdvplot.team_colors(league, [team])[0] for league, team in TEAMS]
     ax.bar(x, np.array(HEIGHTS) * SPAN, width=0.08, bottom=BASE, color=colors, alpha=0.95, zorder=2)
     ax.plot([-0.58, 0.58], [BASE, BASE], color=ICE, alpha=0.7, linewidth=1.28, solid_capstyle="butt", zorder=2)
     for xi, (league, team) in zip(x, TEAMS, strict=True):

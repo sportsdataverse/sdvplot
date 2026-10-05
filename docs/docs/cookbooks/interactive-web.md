@@ -168,7 +168,7 @@ fig = go.Figure(
     go.Bar(
         x=ranked["team_abbreviation"],
         y=ranked["point_differential"],
-        marker_color=sdvplot.team_colors(ranked["team_abbreviation"], "mlb"),
+        marker_color=sdvplot.team_colors("mlb", ranked["team_abbreviation"]),
         customdata=ranked["team_display_name"],
         hovertemplate="%{customdata}<br>Run differential %{y:+d}<extra></extra>",
     )
@@ -297,7 +297,7 @@ Bokeh glyphs cannot sit outside the plot frame, so `axis_logos` raises on Bokeh 
 top = nhl_teams.sort(["gf", "team_abbrev"], descending=[True, False]).head(12)
 teams = top["team_abbrev"].to_list()
 p = figure(x_range=teams, frame_width=700, frame_height=360, title="NHL goals per game, 2025-26 (top 12)")
-p.vbar(x=teams, top=top["gf"].to_list(), width=0.7, color=sdvplot.team_colors(teams, "nhl"))
+p.vbar(x=teams, top=top["gf"].to_list(), width=0.7, color=sdvplot.team_colors("nhl", teams))
 try:
     sdvplot.axis_logos(p, "x", league="nhl")
 except TypeError as e:

@@ -6163,7 +6163,7 @@ requires-dist = [
     { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.15" },
     { name = "plottable", marker = "extra == 'plottable'", specifier = ">=0.1.5" },
     { name = "polars", specifier = ">=1.24,<2" },
-    { name = "pygal", marker = "extra == 'pygal'", specifier = ">=3.0" },
+    { name = "pygal", marker = "extra == 'pygal'", specifier = ">=3.0.1" },
     { name = "reactable", marker = "extra == 'reactable'", specifier = ">=0.1.6" },
     { name = "requests", specifier = ">=2.33" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2.5" },

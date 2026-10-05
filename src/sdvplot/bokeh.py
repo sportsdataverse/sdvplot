@@ -3,7 +3,7 @@
 Images are sized in screen pixels, so they keep their size when the user zooms: ``height`` times the reference height,
 which is the figure's ``frame_height`` (the plot area) when set, else its ``height`` (the whole canvas: set
 ``frame_height`` for exact sizing). Factor (categorical) and datetime axes work natively, because ``x``/``y`` hold the
-caller's own values. HoloViews draws through ``draw`` too.
+caller's own values. HoloViews draws through ``_draw`` too.
 """
 
 from __future__ import annotations
@@ -12,19 +12,26 @@ from typing import Any
 
 from bokeh.models import ColumnDataSource
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources
 
-SUPPORTS_AXIS_LOGOS = False
+_SUPPORTS_AXIS_LOGOS = False
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _figure(target: Any) -> Any:
     if not hasattr(target, "image_url") or not hasattr(target, "frame_height"):
-        raise TypeError(f"sdvplot.bokeh draws on a bokeh.plotting figure, got {type(target).__name__}")
+        raise UnsupportedTargetError(f"sdvplot.bokeh draws on a bokeh.plotting figure, got {type(target).__name__}")
     return target
 
 
-def reference_height(fig: Any) -> float:
+def _reference_height(fig: Any) -> float:
     """The pixel height ``height`` is a fraction of: ``frame_height`` when set, else the figure's ``height``."""
     h = fig.frame_height or fig.height
     if not h:  # a responsive figure (e.g. a HoloViews plot with responsive=True) has neither
@@ -35,11 +42,11 @@ def reference_height(fig: Any) -> float:
     return float(h)
 
 
-def draw(fig: Any, placements: list[Placement], sources: list[str], *, kind: str, height: float, alpha: float) -> Any:
+def _draw(fig: Any, placements: list[Placement], sources: list[str], *, kind: str, height: float, alpha: float) -> Any:
     """One ``image_url`` renderer named ``sdvplot_<kind>`` with every placement, centred on its (x, y)."""
     if not placements:
         return None
-    h = height * reference_height(fig)
+    h = height * _reference_height(fig)
     data = {
         "url": sources,
         "x": [p.x for p in placements],
@@ -72,7 +79,7 @@ def _add(
     h, a = check_height(height), check_alpha(alpha)
     fig = _figure(target)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
-    draw(fig, placements, image_sources(placements, embed=embed), kind=kind, height=h, alpha=a)
+    _draw(fig, placements, image_sources(placements, embed=embed), kind=kind, height=h, alpha=a)
     return fig
 
 
@@ -276,15 +283,15 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    raise TypeError(
+    raise UnsupportedTargetError(
         "Bokeh has no axis logos yet: draw them inside the plot with add_logos (e.g. at a y just below the bars), "
         "or use matplotlib, Plotly or Altair for axis logos"
     )
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) for each image of the sdvplot renderers, height = h / reference."""
-    ref = reference_height(target)
+    ref = _reference_height(target)
     out = []
     for r in target.renderers:
         if (r.name or "").startswith("sdvplot_"):

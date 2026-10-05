@@ -26,7 +26,7 @@ def test_real_logos_draw(league, teams, tmp_path, monkeypatch):
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
     _, ax = plt.subplots()
     sdvplot.add_logos(ax, [0.3, 0.7], [0.5, 0.5], teams, league=league, height=0.2)
-    assert [m[0] for m in smpl.drawn_marks(ax)] == sdvplot.resolve(teams, league)
+    assert [m[0] for m in smpl._drawn_marks(ax)] == sdvplot.resolve(teams, league)
     plt.close("all")
 
 
@@ -34,5 +34,5 @@ def test_a_real_headshot_draws(tmp_path, monkeypatch):
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
     _, ax = plt.subplots()
     sdvplot.add_headshots(ax, [0.5], [0.5], ["3139477"], league="nfl", height=0.3)
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["3139477"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["3139477"]
     plt.close("all")

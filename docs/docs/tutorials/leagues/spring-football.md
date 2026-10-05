@@ -301,7 +301,7 @@ for (team_id, name), rows in running.group_by("team_id", "name", maintain_order=
             y=rows["running"],
             mode="lines+markers",
             name=name,
-            line={"color": sdvplot.team_colors(team_id, "ufl", season=2026), "width": 2},
+            line={"color": sdvplot.team_colors("ufl", team_id, season=2026), "width": 2},
             hovertemplate=f"{name}<br>week %{{x}}: %{{y:+d}}<extra></extra>",
         )
     )

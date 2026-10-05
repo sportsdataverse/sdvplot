@@ -141,7 +141,7 @@ def test_live_readme_logo_examples(tmp_path, monkeypatch):
 
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
     _manifest._read.cache_clear()
-    oak = sdvplot.marks("OAK", "nfl", 2010)  # the README's "Oakland-era mark"
+    oak = sdvplot.marks("OAK", "nfl", season=2010)  # the README's "Oakland-era mark"
     assert sdvplot.logo_url("OAK", "nfl", season=2010) == oak.filter(oak["entity_id"] == "OAK")["archive_url"][0]
     assert max(sdvplot.logo_image("LV", "nfl", size=128).size) == 128
 

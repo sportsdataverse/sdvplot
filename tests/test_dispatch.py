@@ -51,8 +51,8 @@ def _dummy_adapter():
     mod.add_wordmarks = add_logos  # the dummy resolves only, so a wordmark is drawn like a logo
     mod.add_headshots = add_headshots
     mod.axis_logos = axis_logos
-    mod.SUPPORTS_AXIS_LOGOS = False
-    mod.drawn_marks = list
+    mod._SUPPORTS_AXIS_LOGOS = False
+    mod._drawn_marks = list
     return mod
 
 
@@ -196,7 +196,7 @@ def test_rule_4_catches_an_adapter_that_checks_height_only_when_rendered(dummy, 
         return list(target)
 
     _mutant(dummy, monkeypatch, lazy)
-    monkeypatch.setattr(dummy, "drawn_marks", render)
+    monkeypatch.setattr(dummy, "_drawn_marks", render)
     with pytest.raises(AssertionError, match=r"rule 4 \(height semantics\): height=0 must raise ValueError"):
         check_adapter_contract(dummy, make_target=Canvas)
 
@@ -304,7 +304,7 @@ def test_rule_7_catches_an_adapter_without_axis_support_that_does_not_raise(dumm
 
 
 def test_rule_7_requires_an_axis_target_from_an_adapter_that_supports_axis_logos(dummy, monkeypatch):
-    monkeypatch.setattr(dummy, "SUPPORTS_AXIS_LOGOS", True)
+    monkeypatch.setattr(dummy, "_SUPPORTS_AXIS_LOGOS", True)
     with pytest.raises(AssertionError, match="make_axis_target is required"):
         check_adapter_contract(dummy, make_target=Canvas)
 
@@ -407,9 +407,9 @@ def axis_dummy(dummy, monkeypatch):
         return target
 
     monkeypatch.setattr(dummy, "axis_logos", axis_logos)
-    monkeypatch.setattr(dummy, "SUPPORTS_AXIS_LOGOS", True)
-    monkeypatch.setattr(dummy, "drawn_axis_marks", lambda t, axis: [m[1:] for m in t if m[0] == "axis"], raising=False)
-    monkeypatch.setattr(dummy, "visible_axis_labels", lambda t, axis: [lab for lab in t.labels if lab], raising=False)
+    monkeypatch.setattr(dummy, "_SUPPORTS_AXIS_LOGOS", True)
+    monkeypatch.setattr(dummy, "_drawn_axis_marks", lambda t, axis: [m[1:] for m in t if m[0] == "axis"], raising=False)
+    monkeypatch.setattr(dummy, "_visible_axis_labels", lambda t, axis: [lab for lab in t.labels if lab], raising=False)
     return dummy
 
 

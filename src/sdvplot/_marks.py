@@ -6,7 +6,7 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
+from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
 from sdvplot._resolve import _covers, one_team, resolve
@@ -39,7 +39,7 @@ MARK_TYPES = ("logo", "wordmark")
 
 def _check_mark_type(mark_type: str) -> None:
     if mark_type not in MARK_TYPES:
-        raise ValueError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
+        raise InputError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
 
 
 def _union(col: str, bound: pl.Expr) -> pl.Expr:
@@ -110,7 +110,7 @@ def _ranked(league: str) -> pl.DataFrame:
     return ranked
 
 
-def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto") -> pl.DataFrame:
+def marks(team: Any, league: str, *, season: Any = None, id_system: str = "auto") -> pl.DataFrame:
     """Every archived mark for one team, best first.
 
     Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a unique
@@ -163,7 +163,7 @@ def select_mark(
     if team_id is None:
         return None
     # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45)
-    rows = [r for r in marks(team_id, league, s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
+    rows = [r for r in marks(team_id, league, season=s, id_system="team_id").to_dicts() if r["mark_type"] == mark_type]
     side = "dark" if variant == "dark" else "light"
 
     def polarity(v: str) -> bool:
@@ -191,7 +191,7 @@ def select_mark(
 
 
 def logo_url(
-    team: Any, league: str, season: Any = None, variant: str = "default", mark_type: str = "logo"
+    team: Any, league: str, *, season: Any = None, variant: str = "default", mark_type: str = "logo"
 ) -> str | None:
     """The CDN URL of a team's logo or wordmark, chosen for the season.
 

@@ -12,6 +12,7 @@ sidebar_position: 1
 resolve(
     values: Any,
     league: str,
+    *,
     season: Any = None,
     id_system: str = 'auto',
     strict: bool = False,

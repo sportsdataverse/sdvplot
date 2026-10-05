@@ -94,7 +94,7 @@ from matplotlib.ticker import MultipleLocator, PercentFormatter
 ranked = teams.sort("off_sr", descending=True)
 
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(ranked["team"], ranked["off_sr"], color=sdvplot.team_colors(ranked["team"], "nfl").to_list())
+ax.bar(ranked["team"], ranked["off_sr"], color=sdvplot.team_colors("nfl", ranked["team"]).to_list())
 ax.set_ylim(ranked["off_sr"].min() - 0.02, ranked["off_sr"].max() + 0.01)
 ax.yaxis.set_major_locator(MultipleLocator(0.04))
 ax.yaxis.set_major_formatter(PercentFormatter(1, decimals=0))
@@ -229,9 +229,9 @@ wp = pbp.filter(pl.col("game_id") == game["game_id"], pl.col("home_wp").is_not_n
     minute=(3600 - pl.col("game_seconds_remaining")) / 60, away_wp=1 - pl.col("home_wp")
 )
 away, home = game["away_team"], game["home_team"]
-away_color, home_color = sdvplot.team_colors([away, home], "nfl")
+away_color, home_color = sdvplot.team_colors("nfl", [away, home])
 if away_color == home_color:  # both teams' primary is the same navy: use the away team's second color
-    away_color = sdvplot.team_colors(away, "nfl", which="secondary")
+    away_color = sdvplot.team_colors("nfl", away, which="secondary")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 ax.fill_between(
@@ -287,7 +287,7 @@ qbs = (
 )
 
 fig, ax = plt.subplots(figsize=(9, 6))
-ax.barh(qbs["name"], qbs["epa"], height=0.7, color=sdvplot.team_colors(qbs["team"], "nfl").to_list())
+ax.barh(qbs["name"], qbs["epa"], height=0.7, color=sdvplot.team_colors("nfl", qbs["team"]).to_list())
 sdvplot.add_headshots(
     ax,
     qbs["epa"] + 0.012,
@@ -355,7 +355,7 @@ moves = {"13": (2020, "Las Vegas"), "24": (2017, "Los Angeles"), "14": (2016, "L
 fig, axes = plt.subplots(3, 1, figsize=(10, 6), sharex=True, sharey=True)
 for ax, (team_id, (moved, city)) in zip(axes, moves.items(), strict=True):
     rows = wins.filter(pl.col("team_id") == team_id)
-    ax.plot(rows["season"], rows["wins"], color=sdvplot.team_colors(team_id, "nfl"), lw=1.5)
+    ax.plot(rows["season"], rows["wins"], color=sdvplot.team_colors("nfl", team_id), lw=1.5)
     ax.axvline(moved - 0.5, color="grey", lw=0.8, ls="--")
     ax.text(moved - 0.6, 15, f"moves to {city}", fontsize=8, color="grey", va="top", ha="right")
     sdvplot.add_logos(ax, rows["season"], rows["wins"], rows["team"], league="nfl", season=rows["season"], height=0.32)

@@ -85,7 +85,7 @@ runs = (
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.plot([0, 44], [0, 22], color="grey", linewidth=1, linestyle="--")
 for (team, season), run in runs.group_by("team", "season", maintain_order=True):
-    color = sdvplot.team_colors([team], "wnba", season=season)[0]
+    color = sdvplot.team_colors("wnba", [team], season=season)[0]
     ax.plot(
         run["game_no"],
         run["wins"],
@@ -298,7 +298,7 @@ made = clark.filter(pl.col("scoring_play")).height
 
 fig, ax = plt.subplots(figsize=(7, 6.5))
 sdvplot.surface("wnba", "IND", display_range="defense", ax=ax)
-red = sdvplot.team_colors(["IND"], "wnba", which="secondary")[0]
+red = sdvplot.team_colors("wnba", ["IND"], which="secondary")[0]
 cmap = LinearSegmentedColormap.from_list("indiana", ["#fff4e0", red])
 hexes = ax.hexbin(
     clark["x"],
@@ -506,7 +506,7 @@ ax.scatter(split["road"], y, color="white", edgecolors="grey", s=70, zorder=2, l
 ax.scatter(
     split["home"],
     y,
-    color=sdvplot.team_colors(split["team_abbreviation"], "wnba"),
+    color=sdvplot.team_colors("wnba", split["team_abbreviation"]),
     edgecolors="black",
     s=70,
     zorder=3,

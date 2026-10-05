@@ -116,7 +116,7 @@ def gt_sdv_logos(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``locations``
             holds another location.
 
     Example:
@@ -155,7 +155,7 @@ def gt_sdv_wordmarks(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``locations``
             holds another location.
 
     Example:
@@ -192,7 +192,7 @@ def gt_sdv_headshots(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, or ``locations`` holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, or ``locations`` holds another location.
 
     Example:
         ::
@@ -235,8 +235,8 @@ def gt_sdv_cols_label(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, ``mark_type`` is unknown, or ``season`` is not
-            one year.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``mark_type`` is unknown, or ``season``
+            is not one year.
 
     Example:
         ::
@@ -322,7 +322,7 @@ def gt_merge_stack_team_color(
     for name in (col1, col2, team_col):
         if name not in frame.columns:
             raise ValueError(f"{name!r} is not a column of the table's data; columns are {frame.columns}")
-    colors = team_colors(frame[team_col].to_list(), league)
+    colors = team_colors(league, frame[team_col].to_list())
     top_style = f"font-weight:bold;font-variant:small-caps;color:{color};font-size:{font_size_top}px"
     for row, (top, bottom, team_color) in enumerate(
         zip(frame[col1].to_list(), frame[col2].to_list(), colors, strict=True)
@@ -632,7 +632,7 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
     primary, secondary = SDV_NAVY, SDV_CYAN
     if team is not None:
         team_id = resolve(one_team(team, "gt_theme_sdv_team"), league, strict=True)
-        p, s = team_colors(team_id, league, "primary"), team_colors(team_id, league, "secondary")
+        p, s = team_colors(league, team_id, which="primary"), team_colors(league, team_id, which="secondary")
         if p:
             primary, secondary = p, s or p
         else:

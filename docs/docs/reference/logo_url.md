@@ -12,6 +12,7 @@ sidebar_position: 6
 logo_url(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = 'default',
     mark_type: str = 'logo',

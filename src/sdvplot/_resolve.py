@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
+from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
 from sdvplot._normalize import _is_na, norm_season, norm_value
 
 if TYPE_CHECKING:
@@ -184,7 +184,7 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     )
 
 
-def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
+def resolve(values: Any, league: str, *, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
     """Canonical team_id(s) for team values in one league.
 
     Accepts ids and names from any supported source (ESPN, nflverse, MLB Stats, nba_api, HockeyTech, CFBD, sdvplotR) and
@@ -235,7 +235,7 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
 
 def _systems(id_system: str) -> tuple[str, ...]:
     if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
-        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
+        raise InputError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
     return PRIORITY if id_system == "auto" else (id_system,)
 
 
@@ -266,7 +266,7 @@ def _resolve_ids(
     return out, unresolved
 
 
-def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
+def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     """Up to n (team_id, name) candidates for a value that did not resolve, best first.
 
     It never picks one for you: similar names can be different teams ("Bethany (KS)" and "Bethany (WV)").

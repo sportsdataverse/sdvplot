@@ -173,8 +173,8 @@ navy (`#002244`), so the card would be one color on both sides. Each team's seco
 and New England's red, tells them apart.
 
 ```python
-primary = dict(zip(pair, sdvplot.team_colors(pair, "nfl"), strict=True))
-secondary = dict(zip(pair, sdvplot.team_colors(pair, "nfl", which="secondary"), strict=True))
+primary = dict(zip(pair, sdvplot.team_colors("nfl", pair), strict=True))
+secondary = dict(zip(pair, sdvplot.team_colors("nfl", pair, which="secondary"), strict=True))
 print("primary:", primary, " secondary:", secondary)
 colors = secondary if len(set(primary.values())) == 1 else primary
 

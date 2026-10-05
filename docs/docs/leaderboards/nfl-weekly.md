@@ -248,7 +248,7 @@ qbs = (
 
 fig, ax = plt.subplots(figsize=(9, 7))
 y = list(range(qbs.height))
-ax.barh(y, qbs["epa"], color=sdvplot.team_colors(qbs["team"].to_list(), "nfl"), height=0.7)
+ax.barh(y, qbs["epa"], color=sdvplot.team_colors("nfl", qbs["team"].to_list()), height=0.7)
 ax.set_yticks(y, [f"{name}  " for name in qbs["name"]])
 low = min(qbs["epa"].min(), 0)
 span = qbs["epa"].max() - low

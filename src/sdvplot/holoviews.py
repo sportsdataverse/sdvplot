@@ -11,10 +11,17 @@ from typing import Any
 import holoviews as hv
 
 from sdvplot import bokeh as _bokeh
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import image_sources
 
-SUPPORTS_AXIS_LOGOS = False
+_SUPPORTS_AXIS_LOGOS = False
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _require_bokeh() -> None:
@@ -44,13 +51,15 @@ def _add(
 ) -> Any:
     h, a = check_height(height), check_alpha(alpha)
     if not isinstance(element, hv.core.Dimensioned):
-        raise TypeError(f"sdvplot.holoviews draws on a HoloViews element or overlay, got {type(element).__name__}")
+        raise UnsupportedTargetError(
+            f"sdvplot.holoviews draws on a HoloViews element or overlay, got {type(element).__name__}"
+        )
     _require_bokeh()
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
     sources = image_sources(placements, embed=embed)
 
     def hook(plot: Any, _element: Any) -> None:
-        _bokeh.draw(plot.state, placements, sources, kind=kind, height=h, alpha=a)
+        _bokeh._draw(plot.state, placements, sources, kind=kind, height=h, alpha=a)
 
     hooks = hv.Store.lookup_options("bokeh", element, "plot").kwargs.get("hooks", [])
     return element.opts(hooks=[*hooks, hook], clone=True, backend="bokeh")
@@ -254,12 +263,12 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    raise TypeError(
+    raise UnsupportedTargetError(
         "HoloViews has no axis logos yet (its Bokeh plots cannot hold them): draw them inside the plot with "
         "add_logos, or use matplotlib, Plotly or Altair for axis logos"
     )
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: render the element with Bokeh and read the marks the hook drew."""
-    return _bokeh.drawn_marks(hv.render(target, backend="bokeh"))
+    return _bokeh._drawn_marks(hv.render(target, backend="bokeh"))
