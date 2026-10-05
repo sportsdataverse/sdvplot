@@ -177,3 +177,17 @@ def test_the_real_shots_fall_on_the_half_court_surface_draws():
         assert all(x0 <= cx <= x1 and y0 <= cy <= y1 for cx, cy in shots.select("court_x", "court_y").iter_rows())
     finally:
         plt.close(ax.figure)
+
+
+@pytest.mark.parametrize(
+    "df",
+    [pl.DataFrame({"x_legacy": pl.Series([None, None], dtype=pl.Boolean), "y_legacy": [39, 29]}),
+     pd.DataFrame({"x_legacy": pd.array([None, None], dtype="boolean"), "y_legacy": [39, 29]})],
+    ids=["polars Boolean", "pandas boolean"],
+)  # fmt: skip
+def test_an_all_null_boolean_column_gives_null_coordinates(df):
+    # sdvplotR: an all-NA column, "even a logical one", gives NA coordinates (R/arrow exports write such columns)
+    out = sdvplot.court_coords(df)
+    out = pl.from_pandas(out) if isinstance(out, pd.DataFrame) else out
+    assert out.schema["court_y"] == pl.Float64 and out["court_y"].null_count() == 2
+    assert out["court_x"].to_list() == [-41.75 + 3.9, -41.75 + 2.9]

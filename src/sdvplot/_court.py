@@ -17,7 +17,8 @@ def _tenths(frame: Any, name: str) -> Any:
     s = frame[name]
     if s.dtype.is_numeric():
         return s.cast(nw.Float64)
-    if s.dtype not in (nw.String, nw.Object, nw.Unknown):  # Unknown: a polars all-null (Null) column
+    all_null_bool = s.dtype == nw.Boolean and s.null_count() == len(s)  # R/arrow write an all-NA column as logical
+    if s.dtype not in (nw.String, nw.Object, nw.Unknown) and not all_null_bool:  # Unknown: a polars Null column
         raise TypeError(f"column {name!r} must be numeric or strings of numbers, not {s.dtype}")
     values: list[float | None] = []
     bad: list[Any] = []
