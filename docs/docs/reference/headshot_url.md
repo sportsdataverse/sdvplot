@@ -4,11 +4,19 @@ sidebar_label: headshot_url
 sidebar_position: 9
 ---
 
-# `headshot_url`
+# headshot_url
+
+<div class="sdv-signature">
 
 ```python
-headshot_url(player_id: Any, league: str, id_system: str = 'espn') -> str | None
+headshot_url(
+    player_id: Any,
+    league: str,
+    id_system: str = 'espn',
+) -> str | None
 ```
+
+</div>
 
 A headshot URL for one player.
 
@@ -41,4 +49,5 @@ sdvplot.headshot_url("00-0033873", "nfl", id_system="gsis")   # Patrick Mahomes,
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

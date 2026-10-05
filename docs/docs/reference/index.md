@@ -6,38 +6,50 @@ sidebar_position: 0
 
 # API reference
 
+Every public function, grouped by what it works with. Each page gives the signature, the arguments and what the function returns and raises.
+
 ## Teams
 
-- [`resolve`](resolve.md): Canonical team_id(s) for team values in one league.
-- [`suggest`](suggest.md): Up to n (team_id, name) candidates for a value that did not resolve, best first.
-- [`teams`](teams.md): The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors.
+| Function | What it does |
+|---|---|
+| [resolve](resolve.md) | Canonical team_id(s) for team values in one league. |
+| [suggest](suggest.md) | Up to n (team_id, name) candidates for a value that did not resolve, best first. |
+| [teams](teams.md) | The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors. |
 
 ## Colors
 
-- [`palette`](palette.md): A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
-- [`team_colors`](team_colors.md): One "#hex" (or None) per team value, in the same container the values came in.
+| Function | What it does |
+|---|---|
+| [palette](palette.md) | A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes. |
+| [team_colors](team_colors.md) | One "#hex" (or None) per team value, in the same container the values came in. |
 
 ## Logos and headshots
 
-- [`logo_url`](logo_url.md): The CDN URL of a team's logo or wordmark, chosen for the season.
-- [`logo_image`](logo_image.md): The team's mark as a PIL image (downloaded once, then cached).
-- [`marks`](marks.md): Every archived mark for one team, best first.
-- [`headshot_url`](headshot_url.md): A headshot URL for one player.
+| Function | What it does |
+|---|---|
+| [logo_url](logo_url.md) | The CDN URL of a team's logo or wordmark, chosen for the season. |
+| [logo_image](logo_image.md) | The team's mark as a PIL image (downloaded once, then cached). |
+| [marks](marks.md) | Every archived mark for one team, best first. |
+| [headshot_url](headshot_url.md) | A headshot URL for one player. |
 
 ## Plots and tables
 
-- [`add_logos`](add_logos.md): Add team logos to a plot or table of any supported library.
-- [`add_wordmarks`](add_wordmarks.md): Add team wordmarks to a plot or table of any supported library.
-- [`add_headshots`](add_headshots.md): Add player headshots to a plot or table of any supported library.
-- [`axis_logos`](axis_logos.md): Replace an axis' team labels with team logos on a plot of any supported library.
-- [`surface`](surface.md): Draw the league's playing surface with sportypy, in a team's colors.
-- [`court_coords`](court_coords.md): Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws.
+| Function | What it does |
+|---|---|
+| [add_logos](add_logos.md) | Add team logos to a plot or table of any supported library. |
+| [add_wordmarks](add_wordmarks.md) | Add team wordmarks to a plot or table of any supported library. |
+| [add_headshots](add_headshots.md) | Add player headshots to a plot or table of any supported library. |
+| [axis_logos](axis_logos.md) | Replace an axis' team labels with team logos on a plot of any supported library. |
+| [surface](surface.md) | Draw the league's playing surface with sportypy, in a team's colors. |
+| [court_coords](court_coords.md) | Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws. |
 
 ## Housekeeping
 
-- [`versions`](versions.md): What a bug report needs: the package version, the bundled-index version, and the cached manifest's date.
-- [`clear_cache`](clear_cache.md): Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
+| Function | What it does |
+|---|---|
+| [versions](versions.md) | What a bug report needs: the package version, the bundled-index version, and the cached manifest's date. |
+| [clear_cache](clear_cache.md) | Delete everything sdvplot has cached (manifest, images, rasters, nflverse). |
 
 ## Errors and warnings
 
-- [Errors and warnings](errors.md)
+[Errors and warnings](errors.md): the warning sdvplot emits and the errors it raises, with what each means.

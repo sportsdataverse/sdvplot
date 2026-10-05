@@ -89,7 +89,7 @@ repos:
         name: API reference is current (tools/gen_docs.py --check)
         entry: uv run --frozen python tools/gen_docs.py --check
         language: system
-        files: ^(src/sdvplot/|tools/gen_docs\.py$|docs/docs/reference/)
+        files: ^(src/sdvplot/|tools/gen_docs\.py$|docs/docs/reference/|docs/src/data/)
         pass_filenames: false
       - id: conventional-commit-no-ai
         name: conventional commit + no AI co-author

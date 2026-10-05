@@ -4,11 +4,15 @@ sidebar_label: versions
 sidebar_position: 16
 ---
 
-# `versions`
+# versions
+
+<div class="sdv-signature">
 
 ```python
 versions() -> dict[str, str | None]
 ```
+
+</div>
 
 What a bug report needs: the package version, the bundled-index version, and the cached manifest's date.
 
@@ -26,4 +30,5 @@ sdvplot.versions()["sdvplot"]   # '0.1.0'
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

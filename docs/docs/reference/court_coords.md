@@ -4,11 +4,19 @@ sidebar_label: court_coords
 sidebar_position: 15
 ---
 
-# `court_coords`
+# court_coords
+
+<div class="sdv-signature">
 
 ```python
-court_coords(data: Any, x: str = 'x_legacy', y: str = 'y_legacy') -> Any
+court_coords(
+    data: Any,
+    x: str = 'x_legacy',
+    y: str = 'y_legacy',
+) -> Any
 ```
+
+</div>
 
 Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws.
 
@@ -53,4 +61,6 @@ ax.scatter(out["court_x"], out["court_y"], zorder=20)
 
 ## See also
 
-sdvplotR sdv_court_coords(): https://sdvplotR.sportsdataverse.org/ ; sportypy: https://sportypy.sportsdataverse.org/ ; nba_api shotchartdetail: https://github.com/swar/nba_api
+- [sdvplotR sdv_court_coords()](https://sdvplotR.sportsdataverse.org/)
+- [sportypy](https://sportypy.sportsdataverse.org/)
+- [nba_api shotchartdetail](https://github.com/swar/nba_api)

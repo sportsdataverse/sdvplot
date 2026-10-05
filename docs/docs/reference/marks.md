@@ -4,11 +4,21 @@ sidebar_label: marks
 sidebar_position: 8
 ---
 
-# `marks`
+# marks
+
+<div class="sdv-signature">
 
 ```python
-marks(team: Any, league: str, season: Any = None, *, id_system: str = 'auto') -> polars.dataframe.frame.DataFrame
+marks(
+    team: Any,
+    league: str,
+    season: Any = None,
+    *,
+    id_system: str = 'auto',
+) -> polars.dataframe.frame.DataFrame
 ```
+
+</div>
 
 Every archived mark for one team, best first.
 
@@ -46,4 +56,5 @@ sdvplot.marks("KC", "nfl").shape   # (19, 21)
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)
