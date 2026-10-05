@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use sdvplot in your work, please cite it as below."
+title: "sdvplot: Team logos, wordmarks, headshots and colors for Python plots and tables"
+type: software
+authors:
+  - family-names: Gilani
+    given-names: Saiem
+version: 0.1.0
+url: "https://sdvplot.sportsdataverse.org"
+repository-code: "https://github.com/sportsdataverse/sdvplot"
+license: MIT
+keywords:
+  - sports
+  - logos
+  - team colors
+  - sportsdataverse
