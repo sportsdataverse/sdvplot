@@ -17,6 +17,7 @@
     - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
     - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
     - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
+    - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -216,3 +217,16 @@
   `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
   (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
   panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
+
+### Documentation — example notebooks by section, interactive outputs and the gallery
+
+- `tools/render_notebooks.py` renders every notebook under `examples/notebooks/`, its folder picking the section: the
+  top level is "Getting started", then `leagues/` (Tutorials by league), `cookbooks/`, `recipes/` and
+  `leaderboards/`, each a sidebar category, beside the hand-written Automation guide. A notebook's
+  `metadata["sdvplot"]` (`label`, `position`, `description`, optional per-cell `timeout`) replaces the renderer's
+  hard-coded list, and `--only` takes a path such as `leagues/nfl`. A deleted notebook's page and outputs go with it.
+- Interactive outputs (Plotly, Vega-Lite, Altair, great_tables, folium, Bokeh, HoloViews, reactable widgets) render
+  as standalone pages under `docs/static/outputs/`, shown in iframes that a site client module sizes to their content.
+- A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
+  writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
+- The weekly `live-tests-cron` render executes every notebook and publishes every generated path.

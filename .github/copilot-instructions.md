@@ -40,7 +40,9 @@ Conventional Commits. No AI co-author trailers or "Generated with" footers. Stag
 
 Never hand-edit `src/sdvplot/data/*` (`tools/build_index.py`), `docs/docs/reference/**`,
 `docs/src/data/reference_sidebar.json` and `docs/src/data/home.json` (`tools/gen_docs.py`),
-`docs/docs/tutorials/**` and `docs/static/notebooks/*.ipynb` (`tools/render_notebooks.py`),
+the notebook pages `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**`, `docs/docs/gallery.md`,
+`docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json` and `docs/static/notebooks/**`
+(`tools/render_notebooks.py`),
 `docs/static/img/home/*.png` and `docs/src/data/home_figures.json` (`tools/home_figures.py`) or
 `docs/src/pages/CHANGELOG.md` (copy of `CHANGELOG.md`).
 Regenerate after changing their sources.
