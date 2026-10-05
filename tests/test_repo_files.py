@@ -75,14 +75,17 @@ def test_unreleased_is_the_first_changelog_section():
 
 
 # release readiness: release.yml sets SDVPLOT_RELEASE_VERSION to the tag, and the release's test run then refuses a
-# README that still installs from GitHub (it becomes the PyPI page, immutable for that version) or an undated CHANGELOG
+# README without a PyPI install line (it becomes the PyPI page, immutable for that version) or an undated CHANGELOG
+
+# `pip install sdvplot` or `pip install "sdvplot[mpl]"`, not `pip install "sdvplot[mpl] @ git+https://..."`
+_PYPI_INSTALL = re.compile(r'pip install "?sdvplot(?:\[[\w,]*\])?"?(?![\w\[]|\s*@)')
 
 
 def release_blockers(version: str, readme: str, changelog: str) -> list[str]:
     """What stops ``version`` from being released with this README and CHANGELOG (empty when it is ready)."""
     problems = []
-    if "not on PyPI yet" in readme or "git+https://github.com/sportsdataverse/sdvplot" in readme:
-        problems.append("README.md still installs from GitHub: merge the install-line PR before tagging")
+    if "not on PyPI yet" in readme or not _PYPI_INSTALL.search(readme):
+        problems.append("README.md does not install from PyPI: merge the install-line PR before tagging")
     if not re.search(rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$", changelog, re.M):
         problems.append(f"CHANGELOG.md has no dated '## [{version}] - YYYY-MM-DD' heading")
     unreleased = re.search(r"^## \[Unreleased\]\n(.*?)(?=^## )", changelog, re.M | re.S)
@@ -95,15 +98,25 @@ _READY_README = "pip install sdvplot\n"
 _READY_CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n## [0.1.0] - 2026-10-06\n\n### Added\n- x\n"
 
 
-def test_release_blockers_pass_a_ready_release():
-    assert release_blockers("0.1.0", _READY_README, _READY_CHANGELOG) == []
+@pytest.mark.parametrize(
+    "readme",
+    [
+        _READY_README,
+        'pip install "sdvplot[mpl,svg]"\n',
+        # a development-version line beside the PyPI one is fine
+        "pip install sdvplot\n\nThe development version: pip install git+https://github.com/sportsdataverse/sdvplot\n",
+    ],
+)
+def test_release_blockers_pass_a_ready_release(readme):
+    assert release_blockers("0.1.0", readme, _READY_CHANGELOG) == []
 
 
 @pytest.mark.parametrize(
     ("readme", "changelog", "problem"),
     [
-        ("sdvplot is not on PyPI yet, so install it from GitHub", _READY_CHANGELOG, "installs from GitHub"),
-        ('pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"', _READY_CHANGELOG, "GitHub"),
+        ("sdvplot is not on PyPI yet. pip install sdvplot", _READY_CHANGELOG, "does not install from PyPI"),
+        ('pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"', _READY_CHANGELOG, "PyPI"),
+        ("pip install git+https://github.com/sportsdataverse/sdvplot", _READY_CHANGELOG, "PyPI"),
         (_READY_README, _READY_CHANGELOG.replace("2026-10-06", "Unreleased"), "no dated"),
         (_READY_README, _READY_CHANGELOG.replace("0.1.0", "0.0.9"), "no dated"),
         (
