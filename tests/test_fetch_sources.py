@@ -236,3 +236,63 @@ def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
 def test_snapshots_use_lf_line_endings(tmp_path):
     fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)  # same call shape as Task 0's test
     assert b"\r\n" not in (tmp_path / "t.csv").read_bytes()
+
+
+def test_mlbstats_history_keeps_runs_of_todays_franchises():
+    def t(i, abbr, code, name):
+        return {"id": i, "abbreviation": abbr, "teamCode": code, "name": name}
+
+    seasons = {
+        1967: [t(133, "KCA", "kc1", "Kansas City Athletics"), t(1520, "KCM", "kcm", "Kansas City Monarchs")],
+        1968: [t(133, "OAK", "oak", "Oakland Athletics")],
+        1969: [t(133, "OAK", "oak", "Oakland Athletics"), t(118, "KC", "kca", "Kansas City Royals")],
+        1970: [t(133, "KCA", "kc1", "Kansas City Athletics"), t(118, "KC", "kca", "Kansas City Royals")],
+    }  # 1970's KCA is made up: a code that comes back starts a new run
+    rows = fs.mlbstats_history_rows(seasons)
+    assert set(rows[0]) == set(fs.MLB_HISTORY_COLUMNS)
+    assert sorted(tuple(r.values()) for r in rows) == [
+        ("118", "KC", "kca", "Kansas City Royals", 1969, 1970),
+        ("133", "KCA", "kc1", "Kansas City Athletics", 1967, 1967),
+        ("133", "KCA", "kc1", "Kansas City Athletics", 1970, 1970),
+        ("133", "OAK", "oak", "Oakland Athletics", 1968, 1969),
+    ]  # the Monarchs, absent from the latest season, have no ESPN team
+
+
+def test_espn_team_abbr_rows_skip_placeholders():
+    team = {"team": {"id": "95", "abbreviation": "NCSU", "displayName": "NC State Wolfpack"}}
+    assert fs.espn_team_abbr_row("ncaa_baseball", team) == {
+        "league": "ncaa_baseball",
+        "team_id": "95",
+        "abbreviation": "NCSU",
+        "display_name": "NC State Wolfpack",
+        "valid_from": "",
+        "valid_to": "",
+    }
+    assert fs.espn_team_abbr_row("ncaa_baseball", {"team": {"id": "1153", "displayName": "TBD"}}) is None
+
+
+def test_espn_season_abbr_rows_keep_each_code_with_its_seasons():
+    def board(*teams):
+        competitors = [{"team": {"id": i, "abbreviation": a, "displayName": n}} for i, a, n in teams]
+        return {"events": [{"competitions": [{"competitors": competitors}]}]}
+
+    boards = {
+        2024: board(("112647", "ARL", "Arlington Renegades"), ("126075", "HOU", "Houston Roughnecks")),
+        2025: board(("112647", "ARL", "Arlington Renegades"), ("126075", "HOU", "Houston Roughnecks")),
+        2026: board(("112647", "DAL", "Dallas Renegades"), ("126075", "HOU", "Houston Gamblers")),
+        2027: {"events": []},  # a season not played yet
+    }
+    assert sorted(tuple(r.values()) for r in fs.espn_season_abbr_rows("ufl", boards)) == [
+        ("ufl", "112647", "ARL", "Arlington Renegades", 2024, 2025),
+        ("ufl", "112647", "DAL", "Dallas Renegades", 2026, 2026),
+        ("ufl", "126075", "HOU", "Houston Gamblers", 2026, 2026),
+        ("ufl", "126075", "HOU", "Houston Roughnecks", 2024, 2025),
+    ]
+
+
+def test_unlisted_team_ids_are_the_scoreboard_ids_the_list_lacks():
+    def board(*ids):
+        return {"events": [{"competitions": [{"competitors": [{"team": {"id": i}} for i in ids]}]}]}
+
+    boards = [board("2364", "24059"), board("48", "-2"), {"events": []}]
+    assert fs.unlisted_team_ids(boards, {"2364"}) == ["24059", "48"]  # "-2" is ESPN's TBD placeholder

@@ -2,7 +2,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
-from sdvplot import _marks
+from sdvplot import _index, _marks
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 
 
@@ -125,3 +125,19 @@ def test_the_ranked_league_frame_is_built_once_per_manifest_and_index(manifest):
     assert _marks._ranked("nfl") is first  # logo_url per point only filters this frame
     _index.reload_index()
     assert _marks._ranked("nfl") is not first and _marks._ranked("nfl").equals(first)
+
+
+def test_a_mark_alias_range_clamps_a_dated_row(monkeypatch):
+    # a manifest row's own range is narrowed, never widened, by its mark alias's range (the NHL dates the Utah
+    # Mammoth's logo from 2024-25, the Utah Hockey Club's only season; the alias starts it in 2025-26)
+    table = _index.alias_table().with_columns(
+        pl.when(pl.col("value") == "espn:7")
+        .then(pl.lit(2005, pl.Int32))
+        .otherwise(pl.col("valid_from"))
+        .alias("valid_from")
+    )
+    monkeypatch.setattr(_index, "alias_table", lambda: table)
+    _marks._RANKED.clear()
+    tie = _marks.marks("KC", "mlb").filter(pl.col("variant") == "tie")
+    assert tie["valid_from"].to_list() == [2010, 2005]  # 2000 -> 2005; 2010 stays
+    _marks._RANKED.clear()

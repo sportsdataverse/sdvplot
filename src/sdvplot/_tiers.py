@@ -6,7 +6,7 @@ from __future__ import annotations
 import textwrap
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 import narwhals as nw
 
@@ -15,6 +15,12 @@ from sdvplot._placement import _missing, _real, _warn_skipped, check_alpha, chec
 from sdvplot._resolve import _unpack, resolve
 
 BG, LINES, MUTED = "#1e1e1e", "#e0e0e0", "#8e8e93"  # sdvplotR's dark theme: background, tier lines, subtitle/caption
+# theme -> (background, tier lines, title and labels, subtitle and caption). "light" is sdvplot's: dark logos (Ohio
+# State, Texas A&M, Penn State) vanish on sdvplotR's dark background
+THEMES: dict[str, tuple[str, str, str, str]] = {
+    "dark": (BG, LINES, "#ffffff", MUTED),
+    "light": ("#ffffff", "#3a3a3c", "#1e1e1e", "#636366"),
+}
 SUBTITLE = "created with the #sdvplot Tiermaker"
 TIER_DESC = {1: "Elite", 2: "Very Good", 3: "Medium", 4: "Bad", 5: "What are they doing?", 6: "", 7: ""}
 # About the largest logo height (a fraction of the panel height) at which 32 square logos in 5 tiers (7, 7, 6, 6,
@@ -41,6 +47,10 @@ class Tiers:
     caption: str | None
     height: float
     alpha: float
+    bg: str  # the theme's colors (THEMES)
+    line_color: str
+    text: str
+    muted: str
 
 
 def _wrap(text: str) -> str:
@@ -60,8 +70,11 @@ def prepare(
     alpha: float = 0.8,
     height: float | None = None,
     no_line_below_tier: Any = None,
+    theme: Literal["dark", "light"] = "dark",
 ) -> Tiers:
     """Validate ``data`` and compute everything a tier plot draws (see the adapters' ``team_tiers``)."""
+    if theme not in THEMES:
+        raise ValueError(f"theme must be one of {sorted(THEMES)}, got {theme!r}")
     frame = nw.from_native(data, eager_only=True)  # TypeError unless a pandas/polars (narwhals-supported) frame
     missing = [c for c in ("tier_no", "team") if c not in frame.columns]
     if missing:
@@ -115,4 +128,8 @@ def prepare(
         caption=caption,
         height=h,
         alpha=a,
+        bg=THEMES[theme][0],
+        line_color=THEMES[theme][1],
+        text=THEMES[theme][2],
+        muted=THEMES[theme][3],
     )

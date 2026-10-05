@@ -7,7 +7,7 @@ is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot
 from __future__ import annotations
 
 import warnings
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -24,9 +24,9 @@ from plotnine import (
     scale_fill_manual,
     scale_x_continuous,
     scale_y_reverse,
-    theme,
     theme_minimal,
 )
+from plotnine import theme as p9_theme  # team_tiers takes a `theme` argument
 from plotnine._utils import remove_missing
 from plotnine.geoms import geom_hline, geom_vline
 from plotnine.geoms.geom import geom
@@ -481,7 +481,7 @@ class _AxisLogos:
         size = gg.theme.getp("figure_size") or (6.4, 4.8)
         points = self.kw["height"] * size[1] * 72 * 0.8  # ~ the panel's share of the figure height
         margin: Any = {"t": points, "unit": "pt"} if self.axis == "x" else {"r": points, "unit": "pt"}
-        gg += theme(**{f"axis_text_{self.axis}": element_text(margin=margin)})
+        gg += p9_theme(**{f"axis_text_{self.axis}": element_text(margin=margin)})
         gg.watermarks.append(self)
         return gg
 
@@ -631,8 +631,9 @@ def team_tiers(
     height: float | None = None,
     no_line_below_tier: Any = None,
     devel: bool = False,
+    theme: Literal["dark", "light"] = "dark",
 ) -> ggplot:
-    """A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on sdvplotR's dark theme.
+    """A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme.
 
     Args:
         data: A pandas or polars DataFrame with ``tier_no`` (1 is the top tier) and ``team`` (any id system
@@ -651,14 +652,16 @@ def team_tiers(
             figure.
         no_line_below_tier: A tier number, or several, with no separator line below.
         devel: Draw each team as text instead of its logo (fast, and needs no download).
+        theme: "dark" (sdvplotR's: a near-black background) or "light" (white, for dark logos such as Ohio State's,
+            Texas A&M's or Penn State's, which vanish on dark).
 
     Returns:
         ggplot: The plot; a team that does not resolve is skipped with one SdvplotWarning, keeping its slot.
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``height``/``alpha`` is
-            out of range.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, ``height``/``alpha`` is
+            out of range, or ``theme`` is not "dark" or "light".
 
     Example:
         ::
@@ -673,39 +676,43 @@ def team_tiers(
 
             p = team_tiers(df, "nfl", devel=True)
 
+        Dark logos on a white background::
+
+            p = team_tiers(df, "cfb", theme="light")
+
     See Also:
         sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
         sdvplot.matplotlib.team_tiers: the same as a matplotlib Figure.
     """
     t = _tiers.prepare(
         data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
-        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme,
     )  # fmt: skip
     frame = pd.DataFrame({"x": t.x, "y": t.y, "team": t.team_ids, "label": t.labels})
     if devel:
-        marks: Any = geom_text(aes(label="label"), color="white")
+        marks: Any = geom_text(aes(label="label"), color=t.text)
     else:
         marks = geom_sdv_logos(aes(team="team"), league=league, id_system="team_id", height=t.height, alpha=t.alpha)
     texts = {"title": t.title, "subtitle": t.subtitle, "caption": t.caption}
     return (
         ggplot(frame, aes("x", "y"))
-        + geom_hline(yintercept=t.lines, color=_tiers.LINES)
+        + geom_hline(yintercept=t.lines, color=t.line_color)
         + marks
         + scale_x_continuous(limits=t.xlim, expand=(0, 0))
         + scale_y_reverse(limits=t.ylim, breaks=t.breaks, labels=t.break_labels, expand=(0, 0))
         + labs(**{k: v for k, v in texts.items() if v})
         + theme_minimal(base_size=11.5)
-        + theme(
-            plot_title=element_text(color="white", weight="bold"),
-            plot_subtitle=element_text(color=_tiers.MUTED),
-            plot_caption=element_text(color=_tiers.MUTED, ha="right"),
+        + p9_theme(
+            plot_title=element_text(color=t.text, weight="bold"),
+            plot_subtitle=element_text(color=t.muted),
+            plot_caption=element_text(color=t.muted, ha="right"),
             plot_title_position="plot",
             axis_text_x=element_blank(),
-            axis_text_y=element_text(color="white", weight="bold", size=11.5 * 0.8 * 1.1),  # sdvplotR: rel(1.1)
+            axis_text_y=element_text(color=t.text, weight="bold", size=11.5 * 0.8 * 1.1),  # sdvplotR: rel(1.1)
             axis_title=element_blank(),
             panel_grid=element_blank(),
-            plot_background=element_rect(fill=_tiers.BG, color=_tiers.BG),
-            panel_background=element_rect(fill=_tiers.BG, color=_tiers.BG),
+            plot_background=element_rect(fill=t.bg, color=t.bg),
+            panel_background=element_rect(fill=t.bg, color=t.bg),
         )
     )
 

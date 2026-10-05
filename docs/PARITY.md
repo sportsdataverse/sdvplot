@@ -4,6 +4,7 @@
 
 - [sdvplotR parity extras](#sdvplotr-parity-extras)
   - [Ported](#ported)
+  - [Team index](#team-index)
   - [Recipes](#recipes)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -54,7 +55,8 @@ resolved abbreviation. The default `height`, 0.1, is about the largest height at
 `width = 0.075` npc). Differences: a tier with no `tier_desc` entry gets no label (sdvplotR shows "NA"); a null
 `tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and
 subtitle sit over the panel (sdvplotR: `plot.title.position = "plot"`, which the plotnine version keeps); there is
-no `season`.
+no `season`. Addition: `theme="light"` draws on white with dark lines and text, for dark logos (Ohio State,
+Texas A&M, Penn State) that vanish on sdvplotR's dark background, the only one it has; `"dark"` is the default.
 
 **X4 `geom_from_path` / `add_images`.** Images are sized like sdvplot's logo verbs: `height` is a fraction of the
 panel (Axes) height, default 0.1, and the image keeps its aspect ratio. ggpath's `width`, `angle`, `hjust`, `vjust` and
@@ -71,6 +73,28 @@ ggplot2, where they are position aesthetics, `x0`/`y0` go through each panel's p
 scale averages the logs, and values outside the scale's limits become missing (so `na_rm=True` leaves them out, and
 `na_rm=False` draws no line). Unlike ggplot2 they do not train the scale, so a reference value outside the plotted
 data's range is not brought into view.
+
+## Team index
+
+sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`):
+4,232 of 4,241, every miss a key sdvplot cannot pin to one team. sdvplotR's keys have no seasons, so a key that a dated
+source gives another team earlier starts the season after that team's last; a value given without a season means its
+current holder. Two MLB codes show the rule:
+
+- **`KCA`.** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics; the API's Royals
+  teamCode `kca`, Lahman and sdvplotR use it for the Royals from 1968. sdvplot gives 1955-67 to the Athletics and
+  every other season, and no season, to the Royals.
+- **`WAS`.** The MLB Stats API's abbreviation for the Senators of 1901-60 (now the Twins) and 1961-71 (the Rangers),
+  and the Nationals' teamCode `was` from 2005 (Lahman and sdvplotR agree). Those seasons go to those franchises; no
+  season, or any other, goes to the Nationals.
+
+Known gaps in the archive (recorded, not invented):
+
+- **UFL Houston, 2024-25.** ESPN id 126075 was the Houston Roughnecks in 2024 and 2025 and is the Houston Gamblers
+  from 2026, but the archive holds only the Gamblers marks for it (one undated set, one dated 2026), so any season
+  gets the Gamblers logo. The archive's Roughnecks mark belongs to the XFL Roughnecks (league `xfl`, ESPN id 112648,
+  2020-23); marks are looked up within a league, and nothing establishes that the UFL team used that logo, so it is
+  not wired to the UFL team.
 
 ## Recipes
 

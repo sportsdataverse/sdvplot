@@ -23,11 +23,12 @@ def test_historical_abbreviation_resolves_without_a_season():
     assert resolve("OAK", "nfl") == "13"
 
 
-def test_a_reused_code_needs_the_season():
+def test_a_reused_code_takes_the_season_and_without_one_its_current_holder():
     assert resolve("LA", "nfl", season=1990) == "13"  # the Los Angeles Raiders
     assert resolve("LA", "nfl", season=2020) == "14"  # the Rams
+    assert resolve("LA", "nfl") == "14"  # no season: the team holding LA in the latest season
     with pytest.warns(SdvplotWarning, match="ambiguous"):
-        assert resolve("LA", "nfl") is None  # two teams used LA: never guess
+        assert resolve("KSU", "ncaa_baseball") is None  # two teams hold KSU now: never guess
 
 
 def test_season_outside_every_range_still_resolves_a_unique_code():
@@ -84,3 +85,13 @@ def test_priority_places_nhl_after_espn_abbr_and_sdvplotr_last_before_name():  #
     assert PRIORITY.index("nhl") == PRIORITY.index("espn_abbr") + 1
     assert PRIORITY[-2:] == ("sdvplotr", "name")
     assert "nhl_id" not in PRIORITY  # R49: NHL stats ids answer only when named
+
+
+def test_no_season_means_the_current_holder_then_any():
+    from sdvplot._resolve import _match
+
+    table = {"mlbstats": {"kca": [("11", 1955, 1967), ("7", 1968, None)], "pha": [("11", 1901, 1954)]}}
+    assert _match("kca", None, ("mlbstats",), table, latest=2026) == "7"  # the code's holder in the latest season
+    assert _match("kca", 1960, ("mlbstats",), table, latest=2026) == "11"
+    assert _match("kca", 1930, ("mlbstats",), table, latest=2026) == "7"  # a season nobody used it: the holder now
+    assert _match("pha", None, ("mlbstats",), table, latest=2026) == "11"  # no current holder: any season

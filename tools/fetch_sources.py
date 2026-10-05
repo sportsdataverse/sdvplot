@@ -63,6 +63,31 @@ ESPN_LEAGUES = [
 # team_id_source == "ncaa_org" (0 ESPN rows). Add them once an ncaa_org -> ESPN id mapping exists.
 GROUP_LEAGUES = ["nfl", "nba", "wnba", "mlb", "nhl", "cfb", "mbb", "wbb"]
 MILB_SPORT_IDS = [11, 12, 13, 14, 16]
+# Leagues whose teams list abbreviations differ from the ones ESPN's per-team endpoint, scores and standings use
+# (college baseball: NCST in the list, NCSU everywhere else): espn_abbrs.csv keeps the per-team ones
+ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
+ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid_from", "valid_to"]
+# Leagues whose earlier seasons' codes the teams list no longer shows (UFL 2024-25's BIR, ARL; the defunct XFL's):
+# (sdv league, ESPN sport, ESPN league, first season, last season or None for the current year)
+ESPN_SEASON_LEAGUES = [("ufl", "football", "ufl", 2024, None), ("xfl", "football", "xfl", 2020, 2023)]
+# Leagues whose scoreboards use teams the index would lack, missing from ESPN's teams list (women's college hockey:
+# Minnesota State as 24059 beside the listed 2364, Delaware) or from the archive (men's: SUNY Morrisville):
+# espn_unlisted_teams.csv keeps those teams. Seasons as in ESPN_SEASON_LEAGUES.
+ESPN_UNLISTED_LEAGUES = [
+    ("ncaa_whockey", "hockey", "womens-college-hockey", 2025, None),
+    ("ncaa_mhockey", "hockey", "mens-college-hockey", 2023, None),
+]
+ESPN_TEAM_COLUMNS = [
+    "league",
+    "team_id",
+    "abbreviation",
+    "display_name",
+    "short_display_name",
+    "location",
+    "nickname",
+    "color",
+    "alternate_color",
+]
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -77,22 +102,103 @@ def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
     print(f"{name}.csv: {len(rows)} rows")
 
 
+def espn_team_row(league: str, t: dict) -> dict:
+    """One ESPN team object as an espn_teams.csv row."""
+    return {
+        "league": league,
+        "team_id": str(t["id"]),
+        "abbreviation": t.get("abbreviation"),
+        "display_name": t.get("displayName"),
+        "short_display_name": t.get("shortDisplayName"),
+        "location": t.get("location"),
+        "nickname": t.get("name"),
+        "color": t.get("color"),
+        "alternate_color": t.get("alternateColor"),
+    }
+
+
 def espn_rows(league: str, payload: dict) -> list[dict]:
-    teams = [t["team"] for t in payload["sports"][0]["leagues"][0]["teams"]]
+    return [espn_team_row(league, t["team"]) for t in payload["sports"][0]["leagues"][0]["teams"]]
+
+
+def espn_team_abbr_row(league: str, payload: dict) -> dict | None:
+    """One per-team endpoint payload as an espn_abbrs.csv row (current: no seasons); None for a placeholder team
+    with no abbreviation (ESPN's "TBD")."""
+    t = payload["team"]
+    if not t.get("abbreviation"):
+        return None
+    return {"league": league, "team_id": str(t["id"]), "abbreviation": t["abbreviation"],
+            "display_name": t.get("displayName"), "valid_from": "", "valid_to": ""}  # fmt: skip
+
+
+def espn_season_abbr_rows(league: str, scoreboards: dict[int, dict]) -> list[dict]:
+    """The team codes and names in a league's scoreboards, one row per (team, abbreviation, name) with the first and
+    last season it appears in."""
+    seen: dict[tuple, list[int]] = {}
+    for season, payload in scoreboards.items():
+        for event in payload.get("events", []):
+            for c in event["competitions"][0]["competitors"]:
+                t = c["team"]
+                seen.setdefault((str(t["id"]), t.get("abbreviation"), t.get("displayName")), []).append(season)
     return [
-        {
-            "league": league,
-            "team_id": str(t["id"]),
-            "abbreviation": t.get("abbreviation"),
-            "display_name": t.get("displayName"),
-            "short_display_name": t.get("shortDisplayName"),
-            "location": t.get("location"),
-            "nickname": t.get("name"),
-            "color": t.get("color"),
-            "alternate_color": t.get("alternateColor"),
-        }
-        for t in teams
+        dict(zip(ESPN_ABBR_COLUMNS, (league, *key, min(s), max(s)), strict=True)) for key, s in seen.items() if key[1]
     ]
+
+
+def fetch_espn_season_abbrs(s: requests.Session, host: str) -> list[dict]:
+    """espn_season_abbr_rows for every ESPN_SEASON_LEAGUES league, from each season's scoreboard."""
+    rows = []
+    for league, sport, el, first, last in ESPN_SEASON_LEAGUES:
+        url = f"https://{host}/apis/site/v2/sports/{sport}/{el}/scoreboard?dates={{}}&limit=1000"
+        seasons = range(first, (last or dt.date.today().year) + 1)
+        got = espn_season_abbr_rows(league, {y: _get(s, url.format(y)).json() for y in seasons})
+        if not got:
+            raise RuntimeError(f"espn: no scoreboard teams for {league}")
+        rows += got
+    return rows
+
+
+def unlisted_team_ids(scoreboards: list[dict], listed: set[str]) -> list[str]:
+    """The team ids scoreboards use that ``listed`` lacks (ESPN's "TBD" placeholders, ids <= 0, aside)."""
+    ids = {
+        c["team"]["id"]
+        for payload in scoreboards
+        for event in payload.get("events", [])
+        for c in event["competitions"][0]["competitors"]
+    }
+    return sorted(i for i in ids if i.isdigit() and int(i) > 0 and i not in listed)
+
+
+def fetch_espn_unlisted_teams(s: requests.Session, host: str, espn: list[dict], archived: list[dict]) -> list[dict]:
+    """espn_teams.csv rows, from the per-team endpoint, for the ESPN_UNLISTED_LEAGUES teams the scoreboards use that
+    ESPN's teams list (``espn``) or the archive (``archived``, manifest_team_rows) lacks."""
+    rows = []
+    for league, sport, el, first, last in ESPN_UNLISTED_LEAGUES:
+        base = f"https://{host}/apis/site/v2/sports/{sport}/{el}"
+        boards = [  # one month at a time: a year of men's college hockey passes the scoreboard's 1,000-event cap
+            _get(s, f"{base}/scoreboard?dates={y}{m:02d}&limit=1000").json()
+            for y in range(first, (last or dt.date.today().year) + 1)
+            for m in range(1, 13)
+        ]
+        listed = {t["team_id"] for t in espn if t["league"] == league}
+        listed &= {t["team_id"] for t in archived if t["league"] == league}
+        rows += [
+            espn_team_row(league, _get(s, f"{base}/teams/{i}").json()["team"])
+            for i in unlisted_team_ids(boards, listed)
+        ]
+    return rows
+
+
+def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> list[dict]:
+    """The per-team endpoint's abbreviation of every ESPN_TEAM_ENDPOINT_LEAGUES team in ``espn`` (one request each)."""
+    slugs = {league: (sport, el) for league, sport, el in ESPN_LEAGUES}
+    rows = []
+    for t in espn:
+        if t["league"] in ESPN_TEAM_ENDPOINT_LEAGUES:
+            sport, el = slugs[t["league"]]
+            payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{t['team_id']}").json()
+            rows.append(espn_team_abbr_row(t["league"], payload))
+    return [r for r in rows if r is not None]
 
 
 def publish_staged(stage: Path, out: Path) -> None:
@@ -179,6 +285,44 @@ def sr_code_rows(rows: list[dict]) -> list[dict]:
     ]
 
 
+MLB_HISTORY_COLUMNS = ["mlbstats_id", "abbreviation", "team_code", "name", "valid_from", "valid_to"]
+MLB_FIRST_SEASON = 1901
+
+
+def mlbstats_history_rows(seasons: dict[int, list[dict]]) -> list[dict]:
+    """The MLB Stats API codes of today's franchises over time: one row per run of consecutive seasons with the same
+    (id, abbreviation, teamCode, name). API team ids are franchise ids (the 1960 Kansas City Athletics are 133, the
+    Athletics today), so a code maps to the franchise that used it. Clubs absent from the latest season (the Negro
+    League and Federal League teams sportId=1 also lists) have no ESPN team and are left out."""
+    current = {t["id"] for t in seasons[max(seasons)]}
+    runs: dict[tuple, list[list[int]]] = {}
+    for season in sorted(seasons):
+        for t in seasons[season]:
+            if t["id"] not in current:
+                continue
+            key = (str(t["id"]), t.get("abbreviation"), t.get("teamCode"), t.get("name"))
+            spans = runs.setdefault(key, [])
+            if spans and spans[-1][1] == season - 1:
+                spans[-1][1] = season
+            else:
+                spans.append([season, season])
+    return [
+        dict(zip(MLB_HISTORY_COLUMNS, (*key, lo, hi), strict=True)) for key, spans in runs.items() for lo, hi in spans
+    ]
+
+
+def fetch_mlbstats_seasons(s: requests.Session, last: int) -> dict[int, list[dict]]:
+    """Every big-league season's teams, MLB_FIRST_SEASON to ``last`` (plain http: see fetch_all)."""
+    out = {}
+    for season in range(MLB_FIRST_SEASON, last + 1):
+        r = s.get(f"http://statsapi.mlb.com/api/v1/teams?sportId=1&season={season}", timeout=60)
+        r.raise_for_status()
+        out[season] = r.json().get("teams", [])
+        if not out[season]:
+            raise RuntimeError(f"mlbstats: no teams for season {season}")
+    return out
+
+
 def main() -> None:
     import tempfile
 
@@ -203,7 +347,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
 
     text = _get(s, MANIFEST_URL, timeout=120).text
     manifest = list(csv.DictReader(io.StringIO(text)))
-    write("manifest_teams", manifest_team_rows(manifest), ["league", "team_id", "name", "program"])
+    archived = manifest_team_rows(manifest)
+    write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
 
     espn: list[dict] = []
@@ -222,21 +367,10 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
             raise RuntimeError(f"espn: no teams for {league}")
         espn += got
     print(f"ESPN host used: {hosts[0]}")
-    write(
-        "espn_teams",
-        espn,
-        [
-            "league",
-            "team_id",
-            "abbreviation",
-            "display_name",
-            "short_display_name",
-            "location",
-            "nickname",
-            "color",
-            "alternate_color",
-        ],
-    )
+    write("espn_teams", espn, ESPN_TEAM_COLUMNS)
+    write("espn_unlisted_teams", fetch_espn_unlisted_teams(s, hosts[0], espn, archived), ESPN_TEAM_COLUMNS)
+    abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0])
+    write("espn_abbrs", abbrs, ESPN_ABBR_COLUMNS)
 
     nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
     write("nflverse_teams", nfl, ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])
@@ -308,6 +442,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         mlb,
         ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"],
     )
+    write("mlbstats_history", mlbstats_history_rows(fetch_mlbstats_seasons(direct, season)), MLB_HISTORY_COLUMNS)
 
     import polars as pl
 

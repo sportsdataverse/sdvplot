@@ -19,6 +19,7 @@
     - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
     - [Documentation](#documentation)
     - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
+    - [Fixed — content findings (team index, team tiers, surface)](#fixed--content-findings-team-index-team-tiers-surface)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -35,7 +36,7 @@
 - `headshot_url()`: ESPN athlete ids for NFL, NBA, WNBA, MLB, NHL and college football and basketball, plus NFL gsis ids through the nflverse player table.
 - A download cache (`SDVPLOT_CACHE_DIR`, `SDVPLOT_CACHE_TTL`) with `clear_cache()`.
 - The adapter registry and contract harness (`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos`, `sdvplot.testing`).
-- A bundled index of 5,876 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
+- A bundled index of 5,879 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
 - sdvplotR parity: 99.8% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,232 of 4,241 checked).
 
 ### Added — repository standards
@@ -244,3 +245,58 @@
 - A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
   writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
 - The weekly `live-tests-cron` render executes every notebook and publishes every generated path.
+
+### Fixed — content findings (team index, team tiers, surface)
+
+- MLB historical codes are season-dated and reach their franchise. A new snapshot, `data-raw/mlbstats_history.csv`
+  (the MLB Stats API's teams for every season since 1901; its team ids are franchise ids), dates each abbreviation
+  and teamCode by the seasons the API used it. `KCA` is the Kansas City Athletics in 1955-67 and the Royals otherwise
+  (the Royals' teamCode `kca` from 1968). `WAS` is the Twins' Senators to 1960, the Rangers' 1961-71 and otherwise the
+  Nationals (teamCode `was` from 2005). `PHA`, `BSN`, `BRO`, `NYG`, `SLB`, `WS1`/`WS2`, `MON`, `CAL`, `ANA`, `FLA`
+  and `OAK` reach today's team. A teamCode or fileCode is dropped only over seasons that overlap another franchise's
+  run of the same abbreviation. Baseball-Reference/sportsipy MLB codes now go through that history instead of today's
+  team names, which sent the 1901 Milwaukee Brewers (`MLA`) to today's Brewers and the 1872 Washington Nationals to
+  today's Nationals; `PHA`, `KCA`, `MLN`, `SEP`, `WSH` (1901-60), `WSA` and the rest now resolve. An ESPN
+  abbreviation or sdvplotR key another franchise held first starts the season after it (`MIL` from 1966, `SEA` from
+  1970, `WSH` from 1961; sdvplotR's `KCA` from 1968), so `MIL` in 1960 is the Milwaukee Braves.
+- `resolve()` without a season reads a reused code as its current holder: the team whose range covers the latest
+  season in the index, then any. A season no alias covers falls back the same way before ranges are ignored.
+  Measured over every alias of every league, undated and in each season 1870-2026, the only answers that change are
+  the MLB eras above; a code only one team ever held, and every other league, answer as before.
+- ESPN's college baseball and softball abbreviations resolve. ESPN's teams list gives NC State `NCST` and Missouri
+  `MIZZ`, while its per-team endpoint, scoreboards and standings use `NCSU`, `MIZ`, `UCR`, `KENN` and about 120 others;
+  a new snapshot, `data-raw/espn_abbrs.csv`, keeps the per-team abbreviations. One the list gives another team stays
+  with that team (LSU Alexandria's per-team `LSU`), and one ESPN gives two teams (softball's `CEN`) is left out.
+- UFL 2024-25 codes (`BIR`, `ARL`, `MEM`, `MIC`, `SA`, `HOU` for the Roughnecks) and every XFL code (2020, 2023)
+  resolve, dated by the seasons ESPN's scoreboards show them (`data-raw/espn_abbrs.csv`), with the names of those
+  seasons ("Houston Roughnecks", "Arlington Renegades"). Known gap: ESPN id 126075 was the Houston Roughnecks in
+  2024-25, but the archive has only the 2026 Houston Gamblers marks for it, so `logo_url("HOU", "ufl", season=2024)`
+  is the Gamblers logo. The archive's Roughnecks mark is the XFL team's (xfl 112648, 2020-23), another league's
+  entity, and nothing establishes that the UFL team used it, so it is not wired (`docs/PARITY.md`).
+- NHL Utah: `logo_url("UTA", "nhl", season=2025)` (2024-25; NHL seasons are end years) is the Utah Hockey Club's mark
+  again, and 2026 on the Utah Mammoth's. The NHL's logo API dates the Mammoth's (team 68) logos from 2024-25, so they
+  outranked the Hockey Club's (team 59) one-season marks. A curated range (`data-raw/curated/mark_ranges.csv`, each
+  row with its reason) now starts team 68's marks in 2026, and a mark alias's range narrows a manifest row's own range
+  instead of only filling an open one (no other archived mark changes).
+- Women's college hockey: ESPN's scoreboards use team ids its teams list lacks. A new snapshot,
+  `data-raw/espn_unlisted_teams.csv`, keeps them: one whose name and abbreviation are a listed team's is that team's
+  second ESPN id (Minnesota State's `24059` resolves to `2364`, not only by name), and any other is a team of its own
+  (Delaware, `48`, `DEL`). Men's college hockey adds the teams its scoreboards use that the archive lacks, listed by
+  ESPN or not (SUNY Morrisville, `126813`; Maryville, `132633`); the scan reads one month at a time, since a year of
+  men's games passes the scoreboard's 1,000-event cap. The archive has no mark for these teams, so their logos are
+  `None` with a warning and their colors are flagged `color_source="fallback"`; none is made up.
+- `team_tiers()` (matplotlib and plotnine) takes `theme="dark"` (the default, sdvplotR's) or `theme="light"`: dark
+  logos such as Ohio State's, Texas A&M's and Penn State's vanished on the fixed dark background. The light theme's
+  labels, lines, subtitle and caption meet WCAG contrast on white; sdvplotR has only the dark theme (`docs/PARITY.md`).
+- `surface()` no longer floods stderr with "findfont: Font family 'Clarendon-Regular' not found". sportypy numbers
+  football fields in Clarendon-Regular, a font it does not ship, so matplotlib logged a warning for every number it
+  measured and drew its default font anyway. When Clarendon is not installed, `surface()` asks sportypy for that
+  default (DejaVu Sans) by name, through `field_updates`, so the numbers look the same and nothing is logged; process
+  logging is untouched, and a `number_font` the caller passes still wins.
+- Borders and fills that sdvplot's great_tables helpers draw now show in a notebook too. great_tables' notebook repr
+  marks its own cell rules `!important` (`td, th {border-style: none}`, the stub's and row groups' backgrounds), and
+  a stylesheet `!important` beats a plain inline style, so `gt_row_accent`'s bars, for one, showed in saved images and
+  vanished in Jupyter. Every border and fill the helpers set (`gt_row_accent`, `gt_spotlight`, `gt_border_grid`,
+  `gt_cutline`, `gt_group_stripes`, `gt_marginalia`, `gt_snake`, `gt_tiers`, `gt_outliers`, `gt_bold_rows`,
+  `gt_color_results`, `gt_highlight_cells`, the team-mark row groups and the themes) is now inline `!important`, through
+  one helper.

@@ -62,8 +62,11 @@ def test_snake_carries_styles_and_cleans_the_gap():
     assert "#top td:nth-child(4) {border: 1px solid transparent !important; background: transparent !important;" in h
     assert "#top td:nth-child(3) {border-right: 1px solid transparent !important;}" in h
     assert "#top td:nth-child(5) {border-left: 1px solid transparent !important;}" in h
-    spacer = 'style="border-top: 1px solid transparent;border-bottom: 1px solid transparent;border-left: 1px solid '
-    assert spacer + 'transparent;border-right: 1px solid transparent;" scope="col" id="top-.gap1"' in h
+    spacer = (
+        'style="border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; '
+        'border-left: 1px solid transparent !important; border-right: 1px solid transparent !important;"'
+    )
+    assert spacer + ' scope="col" id="top-.gap1"' in h
 
 
 def test_snake_rows_per_col_without_gaps():

@@ -29,6 +29,7 @@ def _raw(tmp_path):
         "nba_api_teams.csv": "nba_api_id,abbreviation,nickname,full_name\n",
         "nhl_teams.csv": "nhl_id,franchise_id,tri_code,full_name,franchise_full_name,franchise_common_name\n",
         "mlbstats_teams.csv": "sport_id,mlbstats_id,abbreviation,team_code,file_code,team_name,name\n",
+        "mlbstats_history.csv": "mlbstats_id,abbreviation,team_code,name,valid_from,valid_to\n",
         "groups_latest.csv": "league,team_id,season,conference_id,conference\nnfl,13,2026,nfl:afc-west,AFC West\n",
         "curated/historical_abbrs.csv": "league,id_system,value,canonical,valid_from,valid_to\nnfl,nflverse,OAK,LV,,2019\n",
         "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
@@ -260,16 +261,73 @@ def test_mark_espn_abbreviation_rows_outside_nfl_map_only_through_dated_aliases(
     assert got == {"espn:CHA": None, "espn:DET": "3"}
 
 
+def _royals_and_athletics(raw):
+    """The Royals (MLB Stats 118, ESPN 7) and the Athletics (133, ESPN 11), with the API's codes over time."""
+    _add(raw, "manifest_teams.csv", "mlb,11,Athletics,pro")
+    _add(raw, "espn_teams.csv", "mlb,11,ATH,Athletics,Athletics,Athletics,Athletics,003831,efb21e")
+    _add(raw, "mlbstats_teams.csv", "1,118,KC,kca,kc,Royals,Kansas City Royals")
+    _add(raw, "mlbstats_teams.csv", "1,133,ATH,ath,ath,Athletics,Athletics")
+    for line in (
+        "118,KC,kca,Kansas City Royals,1968,2026",
+        "133,PHA,pha,Philadelphia Athletics,1901,1954",
+        "133,KCA,kc1,Kansas City Athletics,1955,1967",
+        "133,OAK,oak,Oakland Athletics,1968,2024",
+        "133,ATH,ath,Athletics,2025,2026",
+    ):
+        _add(raw, "mlbstats_history.csv", line)
+
+
 def test_sr_codes_are_read_in_their_aggregated_form(tmp_path):  # F5 (R47)
     raw = _raw(tmp_path)
+    _royals_and_athletics(raw)
     (raw / "sr_codes.csv").write_text(
         "league,team_code,team_name,valid_from,valid_to\n"
         "mlb,KCR,Kansas City Royals,1969,2025\nmlb,KCA,Kansas City Athletics,1955,1967\n"
+        "mlb,MLA,Milwaukee Brewers,1901,1901\n"
     )
     _, aliases, _ = bi.build(raw)
-    for system in ("bref", "sportsipy"):  # a defunct franchise (no ESPN team by that name) drops
+    for system in ("bref", "sportsipy"):  # MLB codes reach their franchise through the MLB Stats API history
         got = aliases.filter(pl.col("id_system") == system).select("value", "team_id", "valid_from", "valid_to")
-        assert got.rows() == [("KCR", "7", 1969, 2025)]
+        assert sorted(got.rows()) == [("KCA", "11", 1955, 1967), ("KCR", "7", 1969, 2025)]  # no franchise for MLA here
+
+
+def test_mlb_stats_codes_are_dated_and_a_team_code_never_shadows_an_abbreviation(tmp_path):
+    raw = _raw(tmp_path)
+    _royals_and_athletics(raw)
+    (raw / "sdvplotr_abbr_mapping.csv").write_text("sport,key,canon\nmlb,KCA,KC\nmlb,KCR,KC\n")
+    (raw / "sdvplotr_historical.csv").write_text("sport,key,canon\n")
+    _, aliases, _ = bi.build(raw)
+    got = aliases.filter((pl.col("league") == "mlb") & (pl.col("id_system") == "mlbstats"))
+    assert sorted(got.select("value", "team_id", "valid_from", "valid_to").rows(), key=str) == sorted(
+        [
+            ("118", "7", None, None),  # franchise ids and fileCodes: undated
+            ("133", "11", None, None),
+            ("kc", "7", None, None),
+            ("ath", "11", None, None),
+            ("KC", "7", 1968, None),  # a run that reaches the latest season stays open
+            ("ATH", "11", 2025, None),
+            ("ath", "11", 2025, None),
+            ("PHA", "11", 1901, 1954),
+            ("pha", "11", 1901, 1954),
+            ("KCA", "11", 1955, 1967),
+            ("kc1", "11", 1955, 1967),
+            ("kca", "7", 1968, None),  # the Royals' teamCode spells the Athletics' KCA, but only after it
+            ("OAK", "11", 1968, 2024),
+            ("oak", "11", 1968, 2024),
+        ],
+        key=str,
+    )
+    sdvr = aliases.filter(pl.col("id_system") == "sdvplotr").select("value", "team_id", "valid_from").rows()
+    assert sorted(sdvr) == [("KCA", "7", 1968), ("KCR", "7", None)]  # sdvplotR's KCA starts after the Athletics'
+
+
+def test_a_team_code_that_overlaps_another_franchises_abbreviation_is_dropped(tmp_path):
+    raw = _raw(tmp_path)
+    _royals_and_athletics(raw)
+    _add(raw, "mlbstats_history.csv", "118,KC,pha,Kansas City Royals,1950,1950")  # made up: in a PHA season
+    _, aliases, _ = bi.build(raw)
+    pha = aliases.filter((pl.col("id_system") == "mlbstats") & (pl.col("value") == "pha"))
+    assert pha.select("team_id", "valid_from", "valid_to").rows() == [("11", 1901, 1954)]  # the Royals' 1950 "pha": no
 
 
 def _add(raw, name, line):
@@ -357,3 +415,111 @@ def test_mark_nhl_rows_of_a_franchise_without_an_espn_team_follow_its_tri_code()
         ranges=True,
     )
     assert got == {"nhl:53": ("129764", None, None), "nhl:27": ("129764", None, None), "nhl:45": (None, None, None)}
+
+
+def test_a_current_espn_code_another_team_held_earlier_starts_after_it():
+    rows = [
+        ("mlb", "espn_abbr", "MIL", "8", None, None),  # today's Brewers
+        ("mlb", "mlbstats", "MIL", "15", 1953, 1965),  # the Milwaukee Braves
+        ("mlb", "mlbstats", "MIL", "8", 1970, None),
+        ("mlb", "espn_abbr", "KC", "7", None, None),  # nobody else's: untouched
+        ("wnba", "espn_abbr", "DET", "3", 1998, 2009),  # already dated: untouched
+        ("mlb", "sdvplotr", "KCA", "7", None, None),  # sdvplotR's keys follow the same rule
+        ("mlb", "mlbstats", "KCA", "11", 1955, 1967),
+    ]
+    a = pl.DataFrame(rows, schema=_index.ALIAS_SCHEMA, orient="row")
+    got = bi.date_reused_codes(a).filter(pl.col("id_system").is_in(["espn_abbr", "sdvplotr"]))
+    assert sorted(got.select("value", "valid_from", "valid_to").rows()) == [
+        ("DET", 1998, 2009),
+        ("KC", None, None),
+        ("KCA", 1968, None),
+        ("MIL", 1966, None),
+    ]
+
+
+def test_espn_team_endpoint_abbreviations_add_to_the_list_but_never_take_a_listed_one(tmp_path):
+    raw = _raw(tmp_path)
+    for tid, abbr, name in (("95", "NCST", "NC State Wolfpack"), ("497", "LSU", "LSU Tigers")):
+        _add(raw, "manifest_teams.csv", f"ncaa_baseball,{tid},{name},college")
+        _add(raw, "espn_teams.csv", f"ncaa_baseball,{tid},{abbr},{name},{name},{name},{name},,")
+    _add(raw, "manifest_teams.csv", "ncaa_baseball,890,LSU Alexandria,college")
+    _add(raw, "espn_teams.csv", "ncaa_baseball,890,LSUA,LSU Alexandria,LSU Alexandria,LSU Alexandria,Generals,,")
+    _add(raw, "manifest_teams.csv", "ncaa_baseball,302,Valparaiso Beacons,college")
+    _add(raw, "espn_teams.csv", "ncaa_baseball,302,VALP,Valparaiso Beacons,Valparaiso,Valparaiso,Beacons,,")
+    (raw / "espn_abbrs.csv").write_text(
+        "league,team_id,abbreviation,display_name,valid_from,valid_to\n"
+        "ncaa_baseball,95,NCSU,NC State Wolfpack,,\nncaa_baseball,890,LSU,LSU Alexandria,,\n"
+        "ncaa_baseball,497,LSU,LSU Tigers,,\nncaa_baseball,302,VAL,Valparaiso Beacons,,\n"
+        "ncaa_baseball,851,VAL,Valdosta State Blazers,,\n"  # 851 is not in the index; VAL still names two teams
+    )
+    _, aliases, _ = bi.build(raw)
+    got = aliases.filter((pl.col("league") == "ncaa_baseball") & (pl.col("id_system") == "espn_abbr"))
+    assert sorted(got.select("value", "team_id").rows()) == [
+        ("LSU", "497"),  # the list's LSU; LSU Alexandria's per-team "LSU" is left out
+        ("LSUA", "890"),
+        ("NCST", "95"),
+        ("NCSU", "95"),  # added beside the list's NCST
+        ("VALP", "302"),
+    ]
+
+
+def test_curated_mark_ranges_date_their_key_and_fail_on_an_unknown_one():
+    mark = pl.DataFrame(
+        {"league": ["nhl", "nhl"], "id_system": ["mark"] * 2, "value": ["nhl:59", "nhl:68"], "team_id": ["129764"] * 2,
+         "valid_from": [None, None], "valid_to": [None, None]},
+        schema_overrides={"valid_from": pl.Int32, "valid_to": pl.Int32},
+    )  # fmt: skip
+    curated = pl.DataFrame({"league": ["nhl"], "mark": ["nhl:68"], "valid_from": ["2026"], "valid_to": [None]})
+    got = bi.curated_mark_ranges(mark, curated)
+    assert got.columns == mark.columns
+    assert sorted(got.select("value", "valid_from", "valid_to").rows()) == [
+        ("nhl:59", None, None),
+        ("nhl:68", 2026, None),
+    ]
+    with pytest.raises(AssertionError, match="nhl:99"):
+        bi.curated_mark_ranges(mark, curated.with_columns(pl.lit("nhl:99").alias("mark")))
+
+
+def test_unlisted_espn_teams_are_a_second_id_or_a_new_team(tmp_path):
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "ncaa_whockey,2364,Minnesota State Mavericks,womens")
+    _add(
+        raw,
+        "espn_teams.csv",
+        "ncaa_whockey,2364,MNST,Minnesota State Mavericks,Minnesota State,Minnesota State,Mavericks,,",
+    )
+    (raw / "espn_unlisted_teams.csv").write_text(
+        "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
+        "ncaa_whockey,24059,MNST,Minnesota State Mavericks,Minnesota St,Minnesota State,Mavericks,,\n"
+        "ncaa_whockey,48,DEL,Delaware Blue Hens,Delaware,Delaware,Blue Hens,,\n"
+    )
+    teams, aliases, _ = bi.build(raw)
+    got = teams.filter(pl.col("league") == "ncaa_whockey").select("team_id", "abbr", "name", "program", "color_source")
+    assert sorted(got.rows()) == [
+        ("2364", "MNST", "Minnesota State Mavericks", "womens", "fallback"),
+        ("48", "DEL", "Delaware Blue Hens", "womens", "fallback"),  # identity only: no archive row, no mark
+    ]
+    espn = aliases.filter((pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "espn"))
+    assert sorted(espn.select("value", "team_id").rows()) == [("2364", "2364"), ("24059", "2364"), ("48", "48")]
+    assert aliases.filter((pl.col("id_system") == "mark") & (pl.col("team_id") == "48")).height == 0
+
+
+def test_a_scoreboard_team_espn_lists_but_the_archive_lacks_joins_the_index(tmp_path):
+    raw = _raw(tmp_path)
+    line = "ncaa_mhockey,126813,NYMS,SUNY Morrisville Mustangs,SUNY Morrisville,SUNY Morrisville,Mustangs,,"
+    _add(raw, "manifest_teams.csv", "ncaa_mhockey,2364,Minnesota State Mavericks,mens")
+    _add(
+        raw,
+        "espn_teams.csv",
+        "ncaa_mhockey,2364,MNST,Minnesota State Mavericks,Minnesota St,Minnesota State,Mavericks,,",
+    )
+    _add(raw, "espn_teams.csv", line)  # listed by ESPN, not in the archive manifest
+    (raw / "espn_unlisted_teams.csv").write_text(
+        "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
+        "ncaa_mhockey,126813,SUNYM,SUNY Morrisville SUNY Morrisville,SUNY Morrisville,SUNY Morrisville,SUNY Morrisville,,\n"
+    )
+    teams, aliases, _ = bi.build(raw)
+    got = teams.filter(pl.col("team_id") == "126813").select("abbr", "name", "program").rows()
+    assert got == [("NYMS", "SUNY Morrisville Mustangs", "mens")]  # a listed team keeps its list row
+    espn = aliases.filter((pl.col("id_system") == "espn") & (pl.col("value") == "126813"))
+    assert espn["team_id"].to_list() == ["126813"]

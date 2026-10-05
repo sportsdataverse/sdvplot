@@ -28,7 +28,7 @@ from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
-from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id
+from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id, important
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -880,7 +880,7 @@ def gt_tiers(
     for level, fill in zip(names, fills, strict=True):
         rows = [i for i, t in enumerate(tiers) if t == level]
         if rows:
-            look = [gst.fill(color=fill), gst.text(weight="bold", color=on_color(fill))]
+            look = [important(gst.fill(color=fill)), gst.text(weight="bold", color=on_color(fill))]
             gt = gt.tab_style(look, loc.body(columns=tier_column, rows=rows))
     return _record(gt, "_sdvplot_key", dict(zip(names, fills, strict=True)))
 
@@ -967,7 +967,7 @@ def gt_spotlight(
         if rest:
             gt = gt.tab_style(gst.text(color=dim_color), loc.body(columns=rest, rows=focus))
 
-    looks: list[Any] = [] if fill is None else [gst.fill(color=fill)]
+    looks: list[Any] = [] if fill is None else [important(gst.fill(color=fill))]
     if text_color is not None or bold:
         looks.append(gst.text(color=text_color, weight="bold" if bold else None))
     if looks:
@@ -978,7 +978,7 @@ def gt_spotlight(
         if not edge:
             warnings.warn("accent_column matched no rendered column; no accent drawn", SdvplotWarning, stacklevel=2)
         else:
-            bar = gst.borders(sides="left", color=accent_color, weight=f"{accent_width:g}px")
+            bar = important(gst.borders(sides="left", color=accent_color, weight=f"{accent_width:g}px"))
             gt = gt.tab_style(bar, loc.body(columns=edge, rows=focus))
     return gt
 
@@ -1061,7 +1061,7 @@ def gt_row_accent(
         if color == "transparent" or not at:
             continue
         where = loc.stub(rows=at) if has_stub else loc.body(columns=rendered[0], rows=at)
-        gt = gt.tab_style(gst.borders(sides=edge_side, color=color, weight=f"{width:g}px"), where)
+        gt = gt.tab_style(important(gst.borders(sides=edge_side, color=color, weight=f"{width:g}px")), where)
     return gt
 
 
@@ -1173,7 +1173,7 @@ def gt_outliers(
         flagged = True
         looks: list[Any] = [gst.text(color=color, weight="bold" if bold else None)]
         if fill is not None:
-            looks.append(gst.fill(color=fill))
+            looks.append(important(gst.fill(color=fill)))
         gt = gt.tab_style(looks, loc.body(columns=col, rows=hit))
         if symbol is not None:
             gt = gt.text_transform(loc.body(columns=col, rows=hit), functools.partial(_append, suffix=symbol))
@@ -1337,7 +1337,9 @@ def gt_marginalia(
     if label is not None:
         out = out.cols_label(cases={c: label for c in cols})
     if rule:
-        out = out.tab_style(gst.borders(sides="left", color=rule_color, weight="1px"), loc.body(columns=cols))
+        out = out.tab_style(
+            important(gst.borders(sides="left", color=rule_color, weight="1px")), loc.body(columns=cols)
+        )
     return out
 
 
@@ -1668,7 +1670,7 @@ def gt_snake(
                 f"{cell}({k + 1}) {{border-left: 1px solid transparent !important;}}",
             ]
         res = res.opt_css("\n".join(css)).tab_style(
-            gst.borders(sides="all", color="transparent", weight="1px"), loc.column_labels(columns=spacers)
+            important(gst.borders(sides="all", color="transparent", weight="1px")), loc.column_labels(columns=spacers)
         )
     return res
 

@@ -41,6 +41,18 @@ SURFACES: dict[str, tuple[str, str]] = {
 }
 SURFACE_BASE = {"basketball": "#d2ab6f", "football": "#196f0c", "hockey": "#ffffff"}  # sportyR's default colors
 _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
+_NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font (data/surface_dimensions.json)
+
+
+def _has_font(family: str) -> bool:
+    """Whether matplotlib can find ``family`` itself; asking with no fallback logs nothing."""
+    from matplotlib import font_manager
+
+    try:
+        font_manager.findfont(font_manager.FontProperties(family=family), fallback_to_default=False)
+    except ValueError:
+        return False
+    return True
 
 
 def color_updates(sport: str, primary: str, secondary: str | None) -> dict[str, str]:
@@ -122,6 +134,11 @@ def surface(
             "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
         ) from e
     draw_kwargs = {k: sportypy_kwargs.pop(k) for k in _DRAW_KWARGS if k in sportypy_kwargs}
+    if sport == "football" and not _has_font(_NUMBER_FONT):
+        # sportypy numbers football fields in Clarendon-Regular, which it does not ship: matplotlib then logs "findfont:
+        # Font family 'Clarendon-Regular' not found" for every number it measures and draws its default font anyway.
+        # Naming that default draws the same numbers (bar sportypy's Clarendon-only nudge of one "1") and logs nothing.
+        sportypy_kwargs["field_updates"] = {"number_font": "DejaVu Sans", **sportypy_kwargs.get("field_updates", {})}
     if team is not None:
         primary, secondary = (team_colors([team], league, which=w, season=season)[0] for w in ("primary", "secondary"))
         if primary is not None:

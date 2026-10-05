@@ -29,6 +29,7 @@ from sdvplot.great_tables._marks import (
     _secondary_on,
     _table_font,
     _table_id,
+    important,
 )
 
 # sdvplotR's .theme_scale_output(): which density role each styled location and size option scales with
@@ -107,7 +108,11 @@ def _row_rules(gt: GT, color: str) -> GT:
     A one-row table gets none; R's ``1:0`` drew one under its only row.
     """
     n = _shape(gt)[1]
-    return gt.tab_style(style.borders(sides="bottom", color=color), loc.body(rows=list(range(n - 1)))) if n > 1 else gt
+    return (
+        gt.tab_style(important(style.borders(sides="bottom", color=color)), loc.body(rows=list(range(n - 1))))
+        if n > 1
+        else gt
+    )
 
 
 def _hide_spanner_row(gt: GT, table_id: str) -> GT:
@@ -854,7 +859,10 @@ def gt_theme_drench(gt: GT, color: str = "#123F5E", density: str = "comfortable"
         .tab_style(label, loc.column_labels())
         .pipe(_on_spanners, label)
         .tab_style(
-            [_text(weight=700, size=px(d["group"]), color=ink, transform="uppercase"), style.fill(color=surface)],
+            [
+                _text(weight=700, size=px(d["group"]), color=ink, transform="uppercase"),
+                important(style.fill(color=surface)),
+            ],
             loc.row_groups(),
         )
         .tab_style(_text(size=px(d["source"]), color=secondary), [loc.source_notes(), loc.footnotes()])
@@ -1049,7 +1057,7 @@ def gt_theme_scoreboard(gt: GT, accent: str = "#0E1621", density: str = "compact
         .tab_style(
             [
                 _text(font=condensed, weight=700, size=px(d["group"] + 1), color=accent, transform="uppercase"),
-                style.fill(color="#F2F4F6"),
+                important(style.fill(color="#F2F4F6")),
             ],
             loc.row_groups(),
         )
@@ -1226,10 +1234,12 @@ def gt_theme_athletic(gt: GT, density: str = "comfortable", **options: Any) -> G
         .tab_style(_text(font=work, weight=650, size=px(12), transform="uppercase"), loc.column_labels())
         .tab_style(_text(font=work, weight=650, size=px(22)), loc.title())
         .tab_style(_text(font=work, weight=500, size=px(14)), loc.subtitle())
-        .tab_style([_text(weight=650, size=px(12), color="white"), style.fill(color="black")], loc.row_groups())
+        .tab_style(
+            [_text(weight=650, size=px(12), color="white"), important(style.fill(color="black"))], loc.row_groups()
+        )
         # column rules: a left border on every column but the first, so the stub reads without a leading rule
-        .tab_style(style.borders(sides="left", weight=px(0.5), color="black"), loc.body(columns=columns[1:]))
-        .tab_style(style.borders(sides="top", color="black", weight=px(1.5), style="dotted"), loc.body())
+        .tab_style(important(style.borders(sides="left", weight=px(0.5), color="black")), loc.body(columns=columns[1:]))
+        .tab_style(important(style.borders(sides="top", color="black", weight=px(1.5), style="dotted")), loc.body())
         .cols_align("center")
         .tab_options(
             table_font_size=px(12),
@@ -1300,7 +1310,7 @@ def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT
         .tab_style(_text(font=signika, weight=650, size=px(14)), loc.column_labels())
         .pipe(_on_spanners, _text(font=signika, weight=650, size=px(13)))
         .tab_style(
-            [_text(font=signika, weight=650, size=px(14), color="#FFFDF5"), style.fill(color="#8A817C")],
+            [_text(font=signika, weight=650, size=px(14), color="#FFFDF5"), important(style.fill(color="#8A817C"))],
             loc.row_groups(),
         )
         .tab_style(_text(font=almarai, size=px(12)), [loc.source_notes(), loc.footnotes()])
@@ -1375,12 +1385,12 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     gt, tid = _table_id(_check_gt(gt))
     n = _shape(gt)[1]
     helvetica = _font("Helvetica Neue")
-    band = [_text(font=helvetica, weight=650, size=px(14), color="#02b"), style.fill(color="#c3d9ff")]
+    band = [_text(font=helvetica, weight=650, size=px(14), color="#02b"), important(style.fill(color="#c3d9ff"))]
     table = (
         _table_font(gt, _font("Helvetica Neue"), weight=500)
         # R's odd and even rows (1-based), banded
-        .tab_style(style.fill(color="#F2FAFD"), loc.body(rows=list(range(0, n, 2))))
-        .tab_style(style.fill(color="#e5ecf9"), loc.body(rows=list(range(1, n, 2))))
+        .tab_style(important(style.fill(color="#F2FAFD")), loc.body(rows=list(range(0, n, 2))))
+        .tab_style(important(style.fill(color="#e5ecf9")), loc.body(rows=list(range(1, n, 2))))
         .tab_style(band, loc.column_labels())
         .tab_style(_text(font=helvetica, weight=650, size=px(18), align="left"), loc.title())
         .tab_style(_text(font=helvetica, weight=500, size=px(14), align="left"), loc.subtitle())
@@ -1458,7 +1468,7 @@ def gt_theme_ncaa(gt: GT, density: str = "comfortable", **options: Any) -> GT:
         .tab_style(
             [
                 _text(font=sans, size=px(14), transform="uppercase", color="white", align="left"),
-                style.fill(color="#000000"),
+                important(style.fill(color="#000000")),
             ],
             loc.column_labels(),
         )
@@ -1470,7 +1480,8 @@ def gt_theme_ncaa(gt: GT, density: str = "comfortable", **options: Any) -> GT:
         .cols_align("left")
         .pipe(_on_spanners, _text(font=sans, weight=650, size=px(13)))
         .tab_style(
-            [_text(font=sans, weight=650, size=px(14), color="#ffffff"), style.fill(color="#3C3A40")], loc.row_groups()
+            [_text(font=sans, weight=650, size=px(14), color="#ffffff"), important(style.fill(color="#3C3A40"))],
+            loc.row_groups(),
         )
         .tab_style(_text(font=almarai, size=px(12)), [loc.source_notes(), loc.footnotes()])
         .pipe(_hide_spanner_row, tid)
@@ -1547,13 +1558,14 @@ def gt_theme_pl(gt: GT, density: str = "comfortable", **options: Any) -> GT:
         .tab_style(_text(font=dm, weight=500), loc.subtitle())
         .pipe(_on_spanners, _text(font=dm, weight=650, size=px(12), color=purple))
         .tab_style(
-            [_text(font=dm, weight=650, size=px(12), color="#ffffff"), style.fill(color="#C0BACA")], loc.row_groups()
+            [_text(font=dm, weight=650, size=px(12), color="#ffffff"), important(style.fill(color="#C0BACA"))],
+            loc.row_groups(),
         )
         .tab_style(_text(font=dm, size=px(12)), [loc.footnotes(), loc.source_notes()])
         .pipe(_row_rules, purple)
     )
     if n:
-        table = table.tab_style(style.borders(sides="top", color=purple), loc.body(rows=[0]))
+        table = table.tab_style(important(style.borders(sides="top", color=purple)), loc.body(rows=[0]))
     table = table.tab_options(
         heading_align="left",
         column_labels_border_top_style="none",
@@ -1620,7 +1632,7 @@ def gt_theme_savant(gt: GT, density: str = "comfortable", **options: Any) -> GT:
         gt.tab_style(_text(font=roboto, size=px(14)), loc.body())
         .tab_style(_text(weight="bold", font=roboto, size=px(14)), loc.column_labels())
         .tab_style(
-            [_text(font=roboto, weight=650, size=px(14), color="#FFFDF5"), style.fill(color="#000000")],
+            [_text(font=roboto, weight=650, size=px(14), color="#FFFDF5"), important(style.fill(color="#000000"))],
             loc.row_groups(),
         )
         .tab_style(_text(font=roboto, size=px(12)), [loc.footnotes(), loc.source_notes()])

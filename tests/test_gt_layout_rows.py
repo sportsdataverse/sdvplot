@@ -34,8 +34,11 @@ def test_spotlight_lights_the_rows_and_dims_the_rest(kind):
     gt = gt_spotlight(GT(frame(kind, TEAMS)), [1], columns=["team", "wins"], fill="#fff3c4", accent_color="#E31837")
     lv, kc, buf = rows_of(gt)
     assert lv.count('style="color: #BBBBBB;"') == 3 and buf.count('style="color: #BBBBBB;"') == 3
-    assert '<td style="background-color: #fff3c4; font-weight: bold; border-left: 4px solid #E31837;"' in kc
-    assert '<td style="background-color: #fff3c4; font-weight: bold;" class="gt_row gt_right">12</td>' in kc
+    assert (
+        '<td style="background-color: #fff3c4 !important; font-weight: bold; border-left: 4px solid #E31837 !important;"'
+        in kc
+    )
+    assert '<td style="background-color: #fff3c4 !important; font-weight: bold;" class="gt_row gt_right">12</td>' in kc
     assert '<td style="color: #BBBBBB;" class="gt_row gt_left">#E31837</td>' in kc  # outside `columns`: dimmed
 
 
@@ -53,8 +56,8 @@ def test_spotlight_takes_a_polars_expression_and_an_accent_column():
                       accent_column="wins")  # fmt: skip
     lv, kc, buf = rows_of(gt)
     assert "#BBBBBB" not in lv and "font-weight: bold" not in lv
-    assert 'font-weight: bold; border-left: 4px solid #000000;" class="gt_row gt_right">12' in kc
-    assert 'font-weight: bold; border-left: 4px solid #000000;" class="gt_row gt_right">11' in buf
+    assert 'font-weight: bold; border-left: 4px solid #000000 !important;" class="gt_row gt_right">12' in kc
+    assert 'font-weight: bold; border-left: 4px solid #000000 !important;" class="gt_row gt_right">11' in buf
 
 
 def test_spotlight_with_no_matching_rows():
@@ -72,8 +75,8 @@ def test_spotlight_with_no_matching_rows():
 def test_row_accent_reads_colors_from_a_column_and_hides_it(kind):
     gt = gt_row_accent(GT(frame(kind, TEAMS)), "color")
     lv, kc, buf = rows_of(gt)
-    assert lv.startswith('<td style="border-left: 4px solid #A5ACAF;" class="gt_row gt_left">LV</td>')
-    assert "border-left: 4px solid #00338D;" in buf
+    assert lv.startswith('<td style="border-left: 4px solid #A5ACAF !important;" class="gt_row gt_left">LV</td>')
+    assert "border-left: 4px solid #00338D !important;" in buf
     assert 'id="color"' not in gt.as_raw_html()
 
 
@@ -81,11 +84,13 @@ def test_row_accent_maps_a_palette_onto_the_stub():
     df = pl.DataFrame({"team": ["Clemson", "Georgia", "Duke", "Army"], "conf": ["ACC", "SEC", "ACC", None]})
     gt = GT(df, rowname_col="team")
     mapped = rows_of(gt_row_accent(gt, "conf", palette={"ACC": "#003366", "SEC": "#B8232F"}, side="right"))
-    assert mapped[0].startswith('<th style="border-right: 4px solid #003366;" class="gt_row gt_left gt_stub">')
+    assert mapped[0].startswith(
+        '<th style="border-right: 4px solid #003366 !important;" class="gt_row gt_left gt_stub">'
+    )
     assert "border" not in mapped[3]  # a missing key draws no bar (na_color "transparent")
     recycled = rows_of(gt_row_accent(gt, "conf", palette=["#111111"], rows=[1, 2], width=6, hide=False))
     assert "border" not in recycled[0]
-    assert 'style="border-left: 6px solid #111111;"' in recycled[1] and "#111111" in recycled[2]
+    assert 'style="border-left: 6px solid #111111 !important;"' in recycled[1] and "#111111" in recycled[2]
     with pytest.warns(SdvplotWarning, match="rows matched no rows"):
         gt_row_accent(gt, "conf", rows=pl.col("conf") == "B1G")
     with pytest.raises(ValueError, match="exactly one column"):
@@ -109,7 +114,7 @@ def test_outliers_sd_bounds_sides_and_fill():
     assert "#B3261E" not in rows_of(low_only)[4]
     assert source_notes(low_only) == ["Marked values fall outside 0–NA (low side only)."]
     sd = gt_outliers(GT(df), "v", method="sd", threshold=1, fill="#B3261E", note="custom")
-    assert 'style="color: #ffffff;font-weight: bold; background-color: #B3261E;"' in rows_of(sd)[4]
+    assert 'style="color: #ffffff;font-weight: bold; background-color: #B3261E !important;"' in rows_of(sd)[4]
     assert source_notes(sd) == ["custom"]
     assert gt_outliers(GT(df), "v", method="sd").as_raw_html().count("#B3261E") == 0  # nothing beyond 3 sd
 

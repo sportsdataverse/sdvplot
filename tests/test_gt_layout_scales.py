@@ -189,8 +189,12 @@ def test_tiers_fill_each_tier_and_record_the_key(kind):
     out = gt_tiers(GT(df), {"S": "#C84630", "A": "#5DA271", "B": "#F2E86D"})
     h = out.as_raw_html()
     # the theme (wave B) adds its own cell styles and a table id, so match the tier fills inside the style attribute
-    assert re.search(r'style="[^"]*background-color: #c84630; color: #ffffff;font-weight: bold;"[^>]*>S</td>', h)
-    assert re.search(r'style="[^"]*background-color: #f2e86d; color: #000000;font-weight: bold;"[^>]*>B</td>', h)
+    assert re.search(
+        r'style="[^"]*background-color: #c84630 !important; color: #ffffff;font-weight: bold;"[^>]*>S</td>', h
+    )
+    assert re.search(
+        r'style="[^"]*background-color: #f2e86d !important; color: #000000;font-weight: bold;"[^>]*>B</td>', h
+    )
     assert '<img src="https://cdn/1.png" style="height: 55px;vertical-align: middle;">' in h
     assert re.findall(r'scope="col" id="(?:\w+-)?(\w+)">([^<]*)</th>', h) == [("tier", ""), ("t1", "")]
     assert out.__dict__["_sdvplot_key"] == {"S": "#c84630", "A": "#5da271", "B": "#f2e86d"}

@@ -24,7 +24,7 @@ Every archived mark for one team, best first.
 
 Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a unique
 mapping are dropped, never matched on the raw id. ``valid_from``/``valid_to`` are each row's effective range: the
-manifest's, else the mark alias's.
+manifest's, narrowed by the mark alias's (an open side takes the alias's).
 
 ## Arguments
 
