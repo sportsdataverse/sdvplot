@@ -458,7 +458,11 @@ def _target_channel(chart: Any, channel: str) -> Any:
     """The channel object (alt.X / alt.Y) the chart's spec reads the axis from: the first with a field, as ``_unit``."""
     enc: Any = getattr(chart, "encoding", alt.Undefined)
     ch: Any = alt.Undefined if enc is alt.Undefined else getattr(enc, channel, alt.Undefined)
-    if ch is not alt.Undefined and "field" in ch.to_dict():
+    # ``field`` or the ``alt.X("team")`` shorthand: reading either does not serialize the channel, which Altair refuses
+    # for an untyped channel when the chart's data is not at hand
+    if ch is not alt.Undefined and any(
+        getattr(ch, a, alt.Undefined) is not alt.Undefined for a in ("field", "shorthand")
+    ):
         return ch
     for sub in getattr(chart, "layer", None) or []:
         found = _target_channel(sub, channel)
@@ -487,8 +491,7 @@ def axis_logos(
     scale domain or sort list, or the chart's inline data.
 
     Args:
-        chart: An ``altair.Chart`` or ``LayerChart`` with a nominal or ordinal ``axis``; state the type
-            (``alt.X("team:N")``), since a bare ``"team"`` shorthand cannot be read back from the chart.
+        chart: An ``altair.Chart`` or ``LayerChart`` with a nominal or ordinal ``axis``.
         axis: "x" or "y".
         league: The SDV league key, e.g. "nfl".
         season: One season for every label.
@@ -515,7 +518,7 @@ def axis_logos(
             import sdvplot
 
             df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
-            bars = alt.Chart(df).mark_bar().encode(x=alt.X("team:N", sort=None), y="wins")
+            bars = alt.Chart(df).mark_bar().encode(x=alt.X("team", sort=None), y="wins")
             sdvplot.axis_logos(bars, "x", league="nfl", height=0.1)
 
     See Also:

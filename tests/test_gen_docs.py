@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 pytest.importorskip("docstring_parser")  # the docs group; the OS and lowest-direct jobs do not install it
+pytest.importorskip("ruff")  # the static example check runs `python -m ruff`
 
 ROOT = Path(__file__).parents[1]
 spec = importlib.util.spec_from_file_location("gen_docs", ROOT / "tools" / "gen_docs.py")
@@ -299,17 +300,17 @@ def _drifted(x: int) -> int:
 
 def test_a_complete_submodule_docstring_passes_the_submodule_check(monkeypatch):
     _scratch(monkeypatch, complete=_complete)
-    errors, skips = gd.check_submodules()
-    assert errors == [] and skips == []
+    assert gd.check_submodules() == []
 
 
 def test_a_drifted_submodule_docstring_is_flagged_for_each_missing_part(monkeypatch):
     _scratch(monkeypatch, drifted=_drifted)
-    errors, _ = gd.check_submodules()
+    errors = gd.check_submodules()
     assert errors == [
         "sdvplot.scratch.drifted: missing Raises:",
         "sdvplot.scratch.drifted: missing See Also:",
-        "sdvplot.scratch.drifted: Example fails: NameError: name '_complete' is not defined",
+        "sdvplot.scratch.drifted: Example: Undefined name `_complete` (line 1)",
+        "sdvplot.scratch.drifted: Example: Undefined name `undefined_name` (line 1)",
     ]
 
 
@@ -345,35 +346,5 @@ def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
         return x
 
     _scratch(monkeypatch, embeds=embeds)
-    errors, _ = gd.check_submodules()
+    errors = gd.check_submodules()
     assert errors == ["sdvplot.scratch.embeds: takes embed= but Raises: does not list OfflineError"]
-
-
-def test_an_example_that_needs_the_network_is_skipped_not_failed(monkeypatch):
-    def fetches(x: int) -> int:
-        """Fetch it.
-
-        Args:
-            x: A number.
-
-        Returns:
-            int: ``x``.
-
-        Raises:
-            OfflineError: If the network is down.
-
-        Example:
-            ::
-
-                import socket
-
-                socket.create_connection(("example.com", 80))
-
-        See Also:
-            Python: https://www.python.org/
-        """
-        return x
-
-    _scratch(monkeypatch, fetches=fetches)
-    errors, skips = gd.check_submodules()
-    assert errors == [] and len(skips) == 1 and "needs network" in skips[0]
