@@ -13,7 +13,7 @@ palette(
     league: str,
     teams: Any = None,
     *,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
 ) -> dict[Any, str]
 ```
@@ -32,7 +32,7 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 |---|---|---|
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `teams` | `Any` | Team values to key the dict by; None returns the whole league. |
-| `which` | `str` | "primary" or "secondary". |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 
 ## Returns

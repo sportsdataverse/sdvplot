@@ -50,6 +50,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/_layout.py` | wave C2: legends (`gt_legend_*`), `gt_percentile_bar`, `gt_tiers`, row emphasis, notes, `gt_snake`; reads the `_sdvplot_scale` / `_sdvplot_key` records |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
+| `_types.py` | the `Literal` aliases of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`, `MarkType`); `tests/test_types.py` keeps them equal to the runtime sets and is in mypy's `files` |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
 `home_figures.py`, `export_sdvplotr.R`). `docs/` is the Docusaurus site; `docs/COMPATIBILITY.md` (outside the site's pages) is the
