@@ -40,6 +40,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
 
+### Fixed
+
+- `surface()` draws a rink or court in well under a second instead of 16-19 s: matplotlib's `add_patch` walked every
+  segment of sportypy's 10,000-point circle polygons as a Bezier curve to find the data limits (~1.3 M segments per
+  rink); for a polygon those limits are its vertices, so they now come from the vertices in one call. The drawn PNG
+  and the Axes' data limits are byte-for-byte the same.
+
 ## [0.1.0] - Unreleased
 
 First release. The date is set when v0.1.0 is tagged.

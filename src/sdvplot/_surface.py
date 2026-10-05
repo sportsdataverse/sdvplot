@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
 import importlib
+from collections.abc import Iterator
 from typing import Any
 
 from sdvplot._colors import team_colors
@@ -53,6 +55,48 @@ def _has_font(family: str) -> bool:
     except ValueError:
         return False
     return True
+
+
+@contextlib.contextmanager
+def _polygon_limits(ax: Any) -> Iterator[None]:
+    """Within the block, ``ax.add_patch`` takes a polygon's data limits from its vertices in one call.
+
+    matplotlib walks every segment of an added patch as a Bezier curve to find its extrema, and sportypy draws its
+    circles and arcs as 10,000-point polygons: a rink or court walked ~1.3 M segments, 16-19 s. A straight segment's
+    extrema are its two ends, so a polygon's vertices are exactly the points matplotlib's walk measures (the CLOSEPOLY
+    slot is not a point; one vertex alone is no segment). Anything else (a curve, a NaN, a transform not in data on
+    both axes, a non-rectilinear Axes) goes through matplotlib's own walk.
+    """
+    import numpy as np
+    from matplotlib.patches import Polygon
+    from matplotlib.path import Path
+
+    walk = ax._update_patch_limits
+
+    def update(patch: Any) -> None:
+        path, transform = patch.get_path(), patch.get_transform()
+        codes, vertices = path.codes, path.vertices
+        straight = codes is None or (
+            codes[0] == Path.MOVETO and np.isin(codes[1:], (Path.LINETO, Path.CLOSEPOLY)).all()
+        )
+        if not (
+            isinstance(patch, Polygon)
+            and straight
+            and len(vertices) > 1
+            and np.isfinite(vertices).all()
+            and ax.name == "rectilinear"
+            and transform.contains_branch(ax.transData)
+        ):
+            walk(patch)
+            return
+        points = vertices if codes is None else vertices[codes != Path.CLOSEPOLY]
+        ax.update_datalim((transform - ax.transData).transform(points))
+
+    ax._update_patch_limits = update
+    try:
+        yield
+    finally:
+        del ax._update_patch_limits
 
 
 def color_updates(sport: str, primary: str, secondary: str | None) -> dict[str, str]:
@@ -146,7 +190,14 @@ def surface(
                 **color_updates(sport, primary, secondary),
                 **sportypy_kwargs.get("color_updates", {}),
             }
-    drawn = getattr(module, cls_name)(**sportypy_kwargs).draw(ax=ax, **draw_kwargs)
+    drawing = getattr(module, cls_name)(**sportypy_kwargs)
+    if ax is None:  # as sportypy's draw() does, so the limits shortcut has an Axes to go on
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        fig.patch.set_facecolor(drawing.feature_colors["plot_background"])
+    with _polygon_limits(ax):
+        drawn = drawing.draw(ax=ax, **draw_kwargs)
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 
