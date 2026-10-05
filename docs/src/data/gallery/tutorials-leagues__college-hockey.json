@@ -1,0 +1,21 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "college-hockey",
+  "label": "College hockey",
+  "position": 43,
+  "page": "tutorials/leagues/college-hockey.md",
+  "items": [
+    {
+      "title": "College hockey adjusted ratings",
+      "alt": "Every Division I men's team's logo by opponent-adjusted goals for and against, 2025-26",
+      "image": "/img/gallery/tutorials/leagues/college-hockey_7.png",
+      "anchor": "3-opponent-adjusted-ratings"
+    },
+    {
+      "title": "Women's college hockey ratings",
+      "alt": "The top fifteen Division I women's teams by net rating, 2025-26, logos on the axis",
+      "image": "/img/gallery/tutorials/leagues/college-hockey_21.png",
+      "anchor": "8-womens-ratings-when-an-id-does-not-resolve-try-the-name"
+    }
+  ]
+}

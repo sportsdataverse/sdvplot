@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "cfb",
+  "label": "College football",
+  "position": 11,
+  "page": "tutorials/leagues/cfb.md",
+  "items": [
+    {
+      "title": "136 FBS teams, offense vs defense",
+      "alt": "Scatter of all 136 FBS teams' 2025 offensive and defensive EPA per play, each point a small team logo",
+      "image": "/img/gallery/tutorials/leagues/cfb_3.png",
+      "anchor": "1-all-136-fbs-teams-on-one-chart"
+    },
+    {
+      "title": "Indiana's 16-0 season",
+      "alt": "Bar chart of Indiana's 16 game margins in 2025, each bar topped with the opponent's logo, Indiana logo beside the title",
+      "image": "/img/gallery/tutorials/leagues/cfb_9.png",
+      "anchor": "4-the-national-champions-season-with-a-logo-in-the-title"
+    },
+    {
+      "title": "College football tiers",
+      "alt": "Tier list of the top 32 college football teams of 2025 by a composite ranking, five rows of logos",
+      "image": "/img/gallery/tutorials/leagues/cfb_21.png",
+      "anchor": "9-tiers-of-a-ranking-you-compute"
+    }
+  ]
+}

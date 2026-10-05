@@ -1,0 +1,9 @@
+{
+  "label": "Leaderboards",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/leaderboards",
+    "description": "Current-season leaderboards, re-rendered every week from the latest data."
+  }
+}

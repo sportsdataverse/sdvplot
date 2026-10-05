@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "nhl",
+  "label": "NHL",
+  "position": 40,
+  "page": "tutorials/leagues/nhl.md",
+  "items": [
+    {
+      "title": "NHL shot map on a rink",
+      "alt": "Carolina's 2025-26 unblocked shots and goals on a half rink in team colors",
+      "image": "/img/gallery/tutorials/leagues/nhl_12.png",
+      "anchor": "4-a-shot-map-on-the-rink"
+    },
+    {
+      "title": "NHL points leaders with headshots",
+      "alt": "Top ten NHL scorers of 2025-26 as stacked goal and assist bars with ESPN headshots and team logos",
+      "image": "/img/gallery/tutorials/leagues/nhl_17.png",
+      "anchor": "6-scoring-leaders-with-headshots"
+    },
+    {
+      "title": "NHL playoff tier list",
+      "alt": "Every NHL team's logo in a tier by how far it went in the 2026 playoffs",
+      "image": "/img/gallery/tutorials/leagues/nhl_27.png",
+      "anchor": "10-playoff-tiers"
+    }
+  ]
+}

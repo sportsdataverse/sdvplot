@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "college-baseball-softball",
+  "label": "College baseball & softball",
+  "position": 31,
+  "page": "tutorials/leagues/college-baseball-softball.md",
+  "items": [
+    {
+      "title": "College World Series run differential",
+      "alt": "Bar chart of each 2026 Men's College World Series team's run differential in Omaha, with logos and records.",
+      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_7.png",
+      "anchor": "2-run-differential-in-omaha"
+    },
+    {
+      "title": "College World Series final, inning by inning",
+      "alt": "Step chart of cumulative runs by inning in the 2026 Men's College World Series clinching game, with team logos at the line ends.",
+      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_9.png",
+      "anchor": "3-the-clincher-inning-by-inning"
+    },
+    {
+      "title": "SEC schools in baseball and softball",
+      "alt": "Scatter of SEC schools' 2026 baseball winning percentage against softball winning percentage, drawn as logos.",
+      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_18.png",
+      "anchor": "7-one-school-two-sports"
+    }
+  ]
+}

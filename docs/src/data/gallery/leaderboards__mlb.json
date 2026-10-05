@@ -1,0 +1,27 @@
+{
+  "section": "leaderboards",
+  "stem": "mlb",
+  "label": "MLB",
+  "position": 5,
+  "page": "leaderboards/mlb.md",
+  "items": [
+    {
+      "title": "MLB division standings",
+      "alt": "MLB standings table grouped by division with team logos, records, games back and run differential pills.",
+      "image": "/img/gallery/leaderboards/mlb_8.png",
+      "anchor": "1-division-standings"
+    },
+    {
+      "title": "MLB run differential",
+      "alt": "Horizontal bars of every MLB club's run differential in team colors, with logos at the bar ends.",
+      "image": "/img/gallery/leaderboards/mlb_10.png",
+      "anchor": "2-run-differential"
+    },
+    {
+      "title": "MLB leaders with headshots",
+      "alt": "Table of the top three MLB players in six batting and pitching categories, with headshots and team logos.",
+      "image": "/img/gallery/leaderboards/mlb_13.png",
+      "anchor": "3-league-leaders-with-headshots"
+    }
+  ]
+}
