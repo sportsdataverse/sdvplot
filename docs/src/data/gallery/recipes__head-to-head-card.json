@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "head-to-head-card",
+  "label": "Head-to-head card",
+  "position": 10,
+  "page": "recipes/head-to-head-card.md",
+  "items": [
+    {
+      "title": "Super Bowl LX tale of the tape",
+      "alt": "Dark matchup card comparing Seattle and New England's 2025 regular seasons: mirrored bars of league rank in each team's secondary color, logos and records at the top",
+      "image": "/img/gallery/recipes/head-to-head-card_13.png",
+      "anchor": "6-export-for-x-and-instagram"
+    }
+  ]
+}

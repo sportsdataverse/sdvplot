@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div id="sdv_5_0_0" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#sdv_5_0_0 table {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#sdv_5_0_0 thead, tbody, tfoot, tr, td, th { border-style: none !important; }
+ tr { background-color: transparent !important; }
+#sdv_5_0_0 p { margin: 0 !important; padding: 0 !important; }
+ #sdv_5_0_0 .gt_table { display: table !important; border-collapse: collapse !important; line-height: normal !important; margin-left: auto !important; margin-right: auto !important; color: #333333 !important; font-size: 16px !important; font-weight: normal !important; font-style: normal !important; background-color: #FFFFFF !important; width: auto !important; border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #A8A8A8 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #A8A8A8 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_caption { padding-top: 4px !important; padding-bottom: 4px !important; }
+ #sdv_5_0_0 .gt_title { color: #333333 !important; font-size: 125% !important; font-weight: initial !important; padding-top: 4px !important; padding-bottom: 4px !important; padding-left: 5px !important; padding-right: 5px !important; border-bottom-color: #FFFFFF !important; border-bottom-width: 0 !important; }
+ #sdv_5_0_0 .gt_subtitle { color: #333333 !important; font-size: 85% !important; font-weight: initial !important; padding-top: 3px !important; padding-bottom: 5px !important; padding-left: 5px !important; padding-right: 5px !important; border-top-color: #FFFFFF !important; border-top-width: 0 !important; }
+ #sdv_5_0_0 .gt_heading { background-color: #FFFFFF !important; text-align: center !important; border-bottom-color: #FFFFFF !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_bottom_border { border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_col_headings { border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_col_heading { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: normal !important; text-transform: inherit !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: bottom !important; padding-top: 5px !important; padding-bottom: 5px !important; padding-left: 5px !important; padding-right: 5px !important; overflow-x: hidden !important; }
+ #sdv_5_0_0 .gt_column_spanner_outer { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: normal !important; text-transform: inherit !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 4px !important; padding-right: 4px !important; }
+ #sdv_5_0_0 .gt_column_spanner_outer:first-child { padding-left: 0 !important; }
+ #sdv_5_0_0 .gt_column_spanner_outer:last-child { padding-right: 0 !important; }
+ #sdv_5_0_0 .gt_column_spanner { border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; vertical-align: bottom !important; padding-top: 5px !important; padding-bottom: 5px !important; overflow-x: hidden !important; display: inline-block !important; width: 100% !important; }
+ #sdv_5_0_0 .gt_spanner_row { border-bottom-style: hidden !important; }
+ #sdv_5_0_0 .gt_group_heading { padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: middle !important; text-align: left !important; }
+ #sdv_5_0_0 .gt_empty_group_heading { padding: 0.5px !important; color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; vertical-align: middle !important; }
+ #sdv_5_0_0 .gt_from_md> :first-child { margin-top: 0 !important; }
+ #sdv_5_0_0 .gt_from_md> :last-child { margin-bottom: 0 !important; }
+ #sdv_5_0_0 .gt_row { padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; margin: 10px !important; border-top-style: solid !important; border-top-width: 1px !important; border-top-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: middle !important; overflow-x: hidden !important; }
+ #sdv_5_0_0 .gt_stub { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-right-style: solid !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_5_0_0 .gt_indent_1 { text-indent: 5px !important; }
+ #sdv_5_0_0 .gt_indent_2 { text-indent: calc(5px * 2) !important; }
+ #sdv_5_0_0 .gt_indent_3 { text-indent: calc(5px * 3) !important; }
+ #sdv_5_0_0 .gt_indent_4 { text-indent: calc(5px * 4) !important; }
+ #sdv_5_0_0 .gt_indent_5 { text-indent: calc(5px * 5) !important; }
+ #sdv_5_0_0 .gt_stub_row_group { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-right-style: solid !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; padding-left: 5px !important; padding-right: 5px !important; vertical-align: top !important; }
+ #sdv_5_0_0 .gt_row_group_first td { border-top-width: 2px !important; }
+ #sdv_5_0_0 .gt_row_group_first th { border-top-width: 2px !important; }
+ #sdv_5_0_0 .gt_striped { color: #333333 !important; background-color: #F4F4F4 !important; }
+ #sdv_5_0_0 .gt_table_body { border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_summary_row { color: #333333 !important; background-color: #FFFFFF !important; text-transform: inherit !important; padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_5_0_0 .gt_first_summary_row { border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_last_summary_row_top { border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_grand_summary_row { color: #333333 !important; background-color: #FFFFFF !important; text-transform: inherit !important; padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_5_0_0 .gt_first_grand_summary_row_bottom { border-top-style: double !important; border-top-width: 6px !important; border-top-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_last_grand_summary_row_top { border-bottom-style: double !important; border-bottom-width: 6px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_sourcenotes { color: #333333 !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_sourcenote { font-size: 90% !important; padding-top: 4px !important; padding-bottom: 4px !important; padding-left: 5px !important; padding-right: 5px !important; text-align: left !important; }
+ #sdv_5_0_0 .gt_left { text-align: left !important; }
+ #sdv_5_0_0 .gt_center { text-align: center !important; }
+ #sdv_5_0_0 .gt_right { text-align: right !important; font-variant-numeric: tabular-nums !important; }
+ #sdv_5_0_0 .gt_font_normal { font-weight: normal !important; }
+ #sdv_5_0_0 .gt_font_bold { font-weight: bold !important; }
+ #sdv_5_0_0 .gt_font_italic { font-style: italic !important; }
+ #sdv_5_0_0 .gt_super { font-size: 65% !important; }
+ #sdv_5_0_0 .gt_footnotes { color: font-color(#FFFFFF) !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_footnote { margin: 0px !important; font-size: 90% !important; padding-top: 4px !important; padding-bottom: 4px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_5_0_0 .gt_sourcenotes { color: #333333 !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_5_0_0 .gt_sourcenote { font-size: 90% !important; padding-top: 4px !important; padding-bottom: 4px !important; padding-left: 5px !important; padding-right: 5px !important; text-align: left !important; }
+ #sdv_5_0_0 .gt_footnote_marks { font-size: 75% !important; vertical-align: 0.4em !important; position: initial !important; }
+ #sdv_5_0_0 .gt_asterisk { font-size: 100% !important; vertical-align: 0 !important; }
+
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+
+<tr class="gt_col_headings">
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="group">group</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="team">team</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="team_id">team_id</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="team_abbreviation">team_abbreviation</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="note">note</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="games_played">games_played</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="losses">losses</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="point_differential">point_differential</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="points">points</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="points_against">points_against</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="points_for">points_for</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="ties">ties</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="wins">wins</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="advanced">advanced</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="deductions">deductions</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="ppg">ppg</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="rank">rank</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="rank_change">rank_change</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="overall">overall</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="form">form</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="points_right">points_right</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Arsenal</td>
+    <td class="gt_row gt_left">359</td>
+    <td class="gt_row gt_left">ARS</td>
+    <td class="gt_row gt_left">Champions League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">5.0</td>
+    <td class="gt_row gt_right">44.0</td>
+    <td class="gt_row gt_right">85.0</td>
+    <td class="gt_row gt_right">27.0</td>
+    <td class="gt_row gt_right">71.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">26.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">1.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">26-7-5</td>
+    <td class="gt_row gt_left">WWWWW</td>
+    <td class="gt_row gt_right">85</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Manchester City</td>
+    <td class="gt_row gt_left">382</td>
+    <td class="gt_row gt_left">MNC</td>
+    <td class="gt_row gt_left">Champions League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">6.0</td>
+    <td class="gt_row gt_right">42.0</td>
+    <td class="gt_row gt_right">78.0</td>
+    <td class="gt_row gt_right">35.0</td>
+    <td class="gt_row gt_right">77.0</td>
+    <td class="gt_row gt_right">9.0</td>
+    <td class="gt_row gt_right">23.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">2.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">23-9-6</td>
+    <td class="gt_row gt_left">DWWDL</td>
+    <td class="gt_row gt_right">78</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Manchester United</td>
+    <td class="gt_row gt_left">360</td>
+    <td class="gt_row gt_left">MAN</td>
+    <td class="gt_row gt_left">Champions League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">19.0</td>
+    <td class="gt_row gt_right">71.0</td>
+    <td class="gt_row gt_right">50.0</td>
+    <td class="gt_row gt_right">69.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">20.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">3.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">20-11-7</td>
+    <td class="gt_row gt_left">WWDWW</td>
+    <td class="gt_row gt_right">71</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Aston Villa</td>
+    <td class="gt_row gt_left">362</td>
+    <td class="gt_row gt_left">AVL</td>
+    <td class="gt_row gt_left">Champions League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">65.0</td>
+    <td class="gt_row gt_right">49.0</td>
+    <td class="gt_row gt_right">56.0</td>
+    <td class="gt_row gt_right">8.0</td>
+    <td class="gt_row gt_right">19.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">4.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">19-8-11</td>
+    <td class="gt_row gt_left">LLDWW</td>
+    <td class="gt_row gt_right">65</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Liverpool</td>
+    <td class="gt_row gt_left">364</td>
+    <td class="gt_row gt_left">LIV</td>
+    <td class="gt_row gt_left">Champions League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">12.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">60.0</td>
+    <td class="gt_row gt_right">53.0</td>
+    <td class="gt_row gt_right">63.0</td>
+    <td class="gt_row gt_right">9.0</td>
+    <td class="gt_row gt_right">17.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">5.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">17-9-12</td>
+    <td class="gt_row gt_left">WLDLD</td>
+    <td class="gt_row gt_right">60</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">AFC Bournemouth</td>
+    <td class="gt_row gt_left">349</td>
+    <td class="gt_row gt_left">BOU</td>
+    <td class="gt_row gt_left">Europa League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">4.0</td>
+    <td class="gt_row gt_right">57.0</td>
+    <td class="gt_row gt_right">54.0</td>
+    <td class="gt_row gt_right">58.0</td>
+    <td class="gt_row gt_right">18.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">6.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">13-18-7</td>
+    <td class="gt_row gt_left">DWWDD</td>
+    <td class="gt_row gt_right">57</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Sunderland</td>
+    <td class="gt_row gt_left">366</td>
+    <td class="gt_row gt_left">SUN</td>
+    <td class="gt_row gt_left">Europa League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">12.0</td>
+    <td class="gt_row gt_right">-6.0</td>
+    <td class="gt_row gt_right">54.0</td>
+    <td class="gt_row gt_right">48.0</td>
+    <td class="gt_row gt_right">42.0</td>
+    <td class="gt_row gt_right">12.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">14-12-12</td>
+    <td class="gt_row gt_left">LDDWW</td>
+    <td class="gt_row gt_right">54</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Brighton &amp; Hove Albion</td>
+    <td class="gt_row gt_left">331</td>
+    <td class="gt_row gt_left">BHA</td>
+    <td class="gt_row gt_left">Conference League Playoff Round</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">6.0</td>
+    <td class="gt_row gt_right">53.0</td>
+    <td class="gt_row gt_right">46.0</td>
+    <td class="gt_row gt_right">52.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">8.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">14-11-13</td>
+    <td class="gt_row gt_left">WLWLL</td>
+    <td class="gt_row gt_right">53</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Brentford</td>
+    <td class="gt_row gt_left">337</td>
+    <td class="gt_row gt_left">BRE</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">3.0</td>
+    <td class="gt_row gt_right">53.0</td>
+    <td class="gt_row gt_right">52.0</td>
+    <td class="gt_row gt_right">55.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">9.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">14-11-13</td>
+    <td class="gt_row gt_left">LWLDD</td>
+    <td class="gt_row gt_right">53</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Chelsea</td>
+    <td class="gt_row gt_left">363</td>
+    <td class="gt_row gt_left">CHE</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">6.0</td>
+    <td class="gt_row gt_right">52.0</td>
+    <td class="gt_row gt_right">52.0</td>
+    <td class="gt_row gt_right">58.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">14-10-14</td>
+    <td class="gt_row gt_left">LLDWL</td>
+    <td class="gt_row gt_right">52</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Fulham</td>
+    <td class="gt_row gt_left">370</td>
+    <td class="gt_row gt_left">FUL</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">16.0</td>
+    <td class="gt_row gt_right">-4.0</td>
+    <td class="gt_row gt_right">52.0</td>
+    <td class="gt_row gt_right">51.0</td>
+    <td class="gt_row gt_right">47.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">15.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">15-7-16</td>
+    <td class="gt_row gt_left">WLLDW</td>
+    <td class="gt_row gt_right">52</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Newcastle United</td>
+    <td class="gt_row gt_left">361</td>
+    <td class="gt_row gt_left">NEW</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">17.0</td>
+    <td class="gt_row gt_right">-2.0</td>
+    <td class="gt_row gt_right">49.0</td>
+    <td class="gt_row gt_right">55.0</td>
+    <td class="gt_row gt_right">53.0</td>
+    <td class="gt_row gt_right">7.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">12.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">14-7-17</td>
+    <td class="gt_row gt_left">LWDWL</td>
+    <td class="gt_row gt_right">49</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Everton</td>
+    <td class="gt_row gt_left">368</td>
+    <td class="gt_row gt_left">EVE</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">15.0</td>
+    <td class="gt_row gt_right">-3.0</td>
+    <td class="gt_row gt_right">49.0</td>
+    <td class="gt_row gt_right">50.0</td>
+    <td class="gt_row gt_right">47.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">13-10-15</td>
+    <td class="gt_row gt_left">LDDLL</td>
+    <td class="gt_row gt_right">49</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Leeds United</td>
+    <td class="gt_row gt_left">357</td>
+    <td class="gt_row gt_left">LEE</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">13.0</td>
+    <td class="gt_row gt_right">-7.0</td>
+    <td class="gt_row gt_right">47.0</td>
+    <td class="gt_row gt_right">56.0</td>
+    <td class="gt_row gt_right">49.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">14.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">11-14-13</td>
+    <td class="gt_row gt_left">DWDWL</td>
+    <td class="gt_row gt_right">47</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Crystal Palace</td>
+    <td class="gt_row gt_left">384</td>
+    <td class="gt_row gt_left">CRY</td>
+    <td class="gt_row gt_left">Europa League</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">15.0</td>
+    <td class="gt_row gt_right">-10.0</td>
+    <td class="gt_row gt_right">45.0</td>
+    <td class="gt_row gt_right">51.0</td>
+    <td class="gt_row gt_right">41.0</td>
+    <td class="gt_row gt_right">12.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">15.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">11-12-15</td>
+    <td class="gt_row gt_left">LDLDL</td>
+    <td class="gt_row gt_right">45</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Nottingham Forest</td>
+    <td class="gt_row gt_left">393</td>
+    <td class="gt_row gt_left">NFO</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">16.0</td>
+    <td class="gt_row gt_right">-3.0</td>
+    <td class="gt_row gt_right">44.0</td>
+    <td class="gt_row gt_right">51.0</td>
+    <td class="gt_row gt_right">48.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">16.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">11-11-16</td>
+    <td class="gt_row gt_left">WWDLD</td>
+    <td class="gt_row gt_right">44</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Tottenham Hotspur</td>
+    <td class="gt_row gt_left">367</td>
+    <td class="gt_row gt_left">TOT</td>
+    <td class="gt_row gt_left">None</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">17.0</td>
+    <td class="gt_row gt_right">-9.0</td>
+    <td class="gt_row gt_right">41.0</td>
+    <td class="gt_row gt_right">57.0</td>
+    <td class="gt_row gt_right">48.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">17.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">10-11-17</td>
+    <td class="gt_row gt_left">WWDLW</td>
+    <td class="gt_row gt_right">41</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">West Ham United</td>
+    <td class="gt_row gt_left">371</td>
+    <td class="gt_row gt_left">WHU</td>
+    <td class="gt_row gt_left">Relegation</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">19.0</td>
+    <td class="gt_row gt_right">-19.0</td>
+    <td class="gt_row gt_right">39.0</td>
+    <td class="gt_row gt_right">65.0</td>
+    <td class="gt_row gt_right">46.0</td>
+    <td class="gt_row gt_right">9.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">18.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">10-9-19</td>
+    <td class="gt_row gt_left">WLLLW</td>
+    <td class="gt_row gt_right">39</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Burnley</td>
+    <td class="gt_row gt_left">379</td>
+    <td class="gt_row gt_left">BUR</td>
+    <td class="gt_row gt_left">Relegation</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">24.0</td>
+    <td class="gt_row gt_right">-37.0</td>
+    <td class="gt_row gt_right">22.0</td>
+    <td class="gt_row gt_right">75.0</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">10.0</td>
+    <td class="gt_row gt_right">4.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">19.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">4-10-24</td>
+    <td class="gt_row gt_left">LLDLD</td>
+    <td class="gt_row gt_right">22</td>
+  </tr>
+  <tr>
+    <td class="gt_row gt_left">English Premier League 2025-2026</td>
+    <td class="gt_row gt_left">Wolverhampton Wanderers</td>
+    <td class="gt_row gt_left">380</td>
+    <td class="gt_row gt_left">WOL</td>
+    <td class="gt_row gt_left">Relegation</td>
+    <td class="gt_row gt_right">38.0</td>
+    <td class="gt_row gt_right">24.0</td>
+    <td class="gt_row gt_right">-41.0</td>
+    <td class="gt_row gt_right">20.0</td>
+    <td class="gt_row gt_right">68.0</td>
+    <td class="gt_row gt_right">27.0</td>
+    <td class="gt_row gt_right">11.0</td>
+    <td class="gt_row gt_right">3.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_right">20.0</td>
+    <td class="gt_row gt_right">0.0</td>
+    <td class="gt_row gt_left">3-11-24</td>
+    <td class="gt_row gt_left">LDLDD</td>
+    <td class="gt_row gt_right">20</td>
+  </tr>
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

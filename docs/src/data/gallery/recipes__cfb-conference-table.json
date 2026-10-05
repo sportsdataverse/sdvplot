@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "cfb-conference-table",
+  "label": "CFB conference table",
+  "position": 2,
+  "page": "recipes/cfb-conference-table.md",
+  "items": [
+    {
+      "title": "Big Ten final standings table",
+      "alt": "great_tables standings of the 2025 Big Ten with team logos, records and a bar per game, Indiana highlighted as 16-0 national champion",
+      "image": "/img/gallery/recipes/cfb-conference-table_13.png",
+      "anchor": "6-export-for-the-newsletter-and-for-social"
+    }
+  ]
+}

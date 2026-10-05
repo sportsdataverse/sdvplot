@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "wnba-scoring-leaders-card",
+  "label": "WNBA scoring leaders card",
+  "position": 4,
+  "page": "recipes/wnba-scoring-leaders-card.md",
+  "items": [
+    {
+      "title": "WNBA scoring leaders card",
+      "alt": "Social card of the 2026 WNBA points-per-game leaders: rank, headshot, name, team logo and a bar in team colors for each of the top ten",
+      "image": "/img/gallery/recipes/wnba-scoring-leaders-card_13.png",
+      "anchor": "6-export-for-instagram-and-x"
+    }
+  ]
+}

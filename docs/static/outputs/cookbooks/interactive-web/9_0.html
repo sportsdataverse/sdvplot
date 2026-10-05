@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+<style>
+  #sdv_9_0_0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #sdv_9_0_0.vega-embed details,
+  #sdv_9_0_0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="sdv_9_0_0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "sdv_9_0_0") {
+      outputDiv = document.getElementById("sdv_9_0_0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.4.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.4.1"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-sdv_9_0_1"}, "mark": {"type": "circle", "opacity": 0.01, "size": 900}, "encoding": {"tooltip": [{"field": "team_abbreviation", "title": "Team", "type": "nominal"}, {"field": "scored", "format": ".1f", "type": "quantitative"}, {"field": "allowed", "format": ".1f", "type": "quantitative"}], "x": {"field": "scored", "scale": {"padding": 30, "zero": false}, "title": "Points scored per game", "type": "quantitative"}, "y": {"field": "allowed", "scale": {"padding": 30, "reverse": true, "zero": false}, "title": "Points allowed per game", "type": "quantitative"}}}, {"data": {"values": [{"scored": 91.3409090909091, "allowed": 84.47727272727273, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e1/e102207a9739a4c4f036a7448ec130a10329adc71730d954ec23c9f7f68a83f0.png", "sdvplot_team": "20"}, {"scored": 86.77272727272727, "allowed": 90.6590909090909, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ca/ca0e10ea4d2071669cdbee6d409bbd699047b5ffe18eff3d0388a00fbfd33945.png", "sdvplot_team": "19"}, {"scored": 78.86363636363636, "allowed": 88.06818181818181, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aabb0e6063c6beede9cfe20e17596e4181ba087f864adf762ae3e3c8ca60e572.png", "sdvplot_team": "18"}, {"scored": 89.38636363636364, "allowed": 85.25, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a5/a5137a5545b847a96f798bb8ec059f4a908acf898d4cda371fb17b00e2333b65.png", "sdvplot_team": "3"}, {"scored": 82.1590909090909, "allowed": 75.11363636363636, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/18/183ed0768b02cba0e09a3a63f9f708f0b0e42c1195d5ca450bb2495e046f9da8.png", "sdvplot_team": "129689"}, {"scored": 95.95454545454545, "allowed": 90.43181818181819, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/54/54229f470dabb4795f3e09f979805041d0bc60e859ba94f8bc3d3c2939e8a1bd.png", "sdvplot_team": "5"}, {"scored": 87.04545454545455, "allowed": 91.31818181818181, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d67f7b64178dad348e387eda0fbce1e8049a3c9d18cf2e109398d2a560606db.png", "sdvplot_team": "6"}, {"scored": 91.33333333333333, "allowed": 85.97777777777777, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d3/d3057fc57ddcd581b22821cab1d5fcc21a6e7b9e9bc7a0dcc57c3ef4e8284523.png", "sdvplot_team": "17"}, {"scored": 90.8409090909091, "allowed": 83.6590909090909, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/74/7400d6af343a3f6c725c70d1967050a0c63686f51abb40cd4161f7b84f629c76.png", "sdvplot_team": "8"}, {"scored": 89.64444444444445, "allowed": 86.37777777777778, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/88aaa89584094c04a6b37ce67693565feae3fb04728da508830daba1b61d343c.png", "sdvplot_team": "9"}, {"scored": 84.36363636363636, "allowed": 87.5909090909091, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ca/cabf18c9af751e07c8df012fde18e326da8047d789bc10298be48bfe6f0f3ab7.png", "sdvplot_team": "11"}, {"scored": 86.22727272727273, "allowed": 91.02272727272727, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/85/850ecf7746cad220e4f47479426ca28427f9b4e60c7a01cbed548ad3e1dba51f.png", "sdvplot_team": "132052"}, {"scored": 82.18181818181819, "allowed": 88.93181818181819, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/63/634fdedf3b5159700d7af3bc22275a6098c1675ee8150de8534a9a8ac86ad7e3.png", "sdvplot_team": "14"}, {"scored": 85.6590909090909, "allowed": 94.36363636363636, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/22/2268104ab5df4d3276b4469b89559f488d61464091755f2df8ce84d42ccca5e8.png", "sdvplot_team": "131935"}, {"scored": 84.0, "allowed": 82.72727272727273, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/22/22ab495b2a94a36382998d38c65ca0bde263ef8f7dd2a8cb89feef892f066b4c.png", "sdvplot_team": "16"}]}, "mark": {"type": "image", "aspect": true, "height": 42.0, "opacity": 1.0, "width": 42.0}, "encoding": {"url": {"field": "sdvplot_url", "type": "nominal"}, "x": {"field": "scored", "type": "quantitative"}, "y": {"field": "allowed", "type": "quantitative"}}, "name": "sdvplot_logo"}], "height": 420, "title": {"text": "WNBA scoring, 2026", "subtitle": "Data: wehoop (ESPN) via sportsdataverse-py"}, "width": 620, "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-sdv_9_0_1": [{"team_abbreviation": "ATL", "games": 44, "scored": 91.3409090909091, "allowed": 84.47727272727273}, {"team_abbreviation": "CHI", "games": 44, "scored": 86.77272727272727, "allowed": 90.6590909090909}, {"team_abbreviation": "CON", "games": 44, "scored": 78.86363636363636, "allowed": 88.06818181818181}, {"team_abbreviation": "DAL", "games": 44, "scored": 89.38636363636364, "allowed": 85.25}, {"team_abbreviation": "GS", "games": 44, "scored": 82.1590909090909, "allowed": 75.11363636363636}, {"team_abbreviation": "IND", "games": 44, "scored": 95.95454545454545, "allowed": 90.43181818181819}, {"team_abbreviation": "LA", "games": 44, "scored": 87.04545454545455, "allowed": 91.31818181818181}, {"team_abbreviation": "LV", "games": 45, "scored": 91.33333333333333, "allowed": 85.97777777777777}, {"team_abbreviation": "MIN", "games": 44, "scored": 90.8409090909091, "allowed": 83.6590909090909}, {"team_abbreviation": "NY", "games": 45, "scored": 89.64444444444445, "allowed": 86.37777777777778}, {"team_abbreviation": "PHX", "games": 44, "scored": 84.36363636363636, "allowed": 87.5909090909091}, {"team_abbreviation": "POR", "games": 44, "scored": 86.22727272727273, "allowed": 91.02272727272727}, {"team_abbreviation": "SEA", "games": 44, "scored": 82.18181818181819, "allowed": 88.93181818181819}, {"team_abbreviation": "TOR", "games": 44, "scored": 85.6590909090909, "allowed": 94.36363636363636}, {"team_abbreviation": "WSH", "games": 44, "scored": 84.0, "allowed": 82.72727272727273}]}}, {"renderer": "svg", "actions": false, "mode": "vega-lite"});
+</script>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

@@ -110,6 +110,66 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 </div>
 
+## Cookbooks
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/cookbooks/matplotlib-logos_5.png" alt="Scatter of NFL offensive and defensive EPA per play with each team&#x27;s logo as its marker" loading="lazy"/><br/>NFL offense vs defense with logos as points<br/><small>Logos in matplotlib</small>](cookbooks/matplotlib-logos.md#1-use-logos-as-scatter-points)
+
+[<img src="/img/gallery/cookbooks/matplotlib-logos_11.png" alt="Cumulative goal differential lines for the eight Pacific Division teams, each ending in the team&#x27;s logo" loading="lazy"/><br/>NHL Pacific Division goal differential with logos at the line ends<br/><small>Logos in matplotlib</small>](cookbooks/matplotlib-logos.md#4-label-each-lines-last-point-with-a-logo)
+
+[<img src="/img/gallery/cookbooks/plotnine_5.png" alt="plotnine scatter of WNBA points scored and allowed per game with team logos as points" loading="lazy"/><br/>WNBA points scored vs allowed in plotnine<br/><small>plotnine</small>](cookbooks/plotnine.md#1-logos-as-points)
+
+[<img src="/img/gallery/cookbooks/plotnine_15.png" alt="Eight plotnine panels, one per NFL division, of offensive vs defensive EPA with team logos" loading="lazy"/><br/>NFL divisions faceted with logos in plotnine<br/><small>plotnine</small>](cookbooks/plotnine.md#6-facet-a-logo-plot)
+
+[<img src="/img/gallery/cookbooks/interactive-web_23.png" alt="Plotly scatter of MLB runs scored and allowed per game with team logos, exported at 1200 by 675 pixels" loading="lazy"/><br/>MLB runs scored vs allowed, a Plotly chart exported to PNG<br/><small>Interactive charts</small>](cookbooks/interactive-web.md#10-export-a-plotly-chart-as-a-png-for-social)
+
+[<img src="/img/gallery/cookbooks/interactive-web_25.png" alt="Altair scatter of NHL goals for and against per game with team logos, exported with vl-convert" loading="lazy"/><br/>NHL goals for vs against, an Altair chart exported to PNG<br/><small>Interactive charts</small>](cookbooks/interactive-web.md#11-export-an-altair-chart-as-a-png)
+
+[<img src="/img/gallery/cookbooks/tables_7.png" alt="The same MLB standings table in four sdvplot great_tables themes, saved as one image with gt_grid" loading="lazy"/><br/>Four great_tables themes side by side<br/><small>Tables</small>](cookbooks/tables.md#2-compare-themes-and-save-them-as-one-image)
+
+[<img src="/img/gallery/cookbooks/tables_9.png" alt="A great_tables leaderboard of the NBA&#x27;s top ten scorers with headshots, team logos and stacked names" loading="lazy"/><br/>NBA scoring leaders table with headshots<br/><small>Tables</small>](cookbooks/tables.md#3-headshots-and-a-two-line-name-cell)
+
+[<img src="/img/gallery/cookbooks/tables_19.png" alt="A great_tables tier list of NFL teams by net EPA per play, five colored tiers of team logos" loading="lazy"/><br/>NFL tier list built with gt_tiers<br/><small>Tables</small>](cookbooks/tables.md#8-a-tier-list-as-a-table)
+
+[<img src="/img/gallery/cookbooks/tables_23.png" alt="A great_tables percentile card for the WNBA&#x27;s best team, centered on a 1080 by 1080 canvas" loading="lazy"/><br/>A WNBA team percentile card as a square social image<br/><small>Tables</small>](cookbooks/tables.md#10-save-for-social-a-trimmed-image-and-a-square-post)
+
+[<img src="/img/gallery/cookbooks/colors-and-themes_3.png" alt="Swatches of each NFL team&#x27;s primary and secondary colors beside its logo, in eight division columns" loading="lazy"/><br/>Every NFL team's primary and secondary color by division<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#1-see-a-leagues-palette)
+
+[<img src="/img/gallery/cookbooks/colors-and-themes_15.png" alt="Hexbin density of Shai Gilgeous-Alexander&#x27;s shots on a half court, shaded pale blue to Thunder blue to orange" loading="lazy"/><br/>A shot-density map shaded in the Thunder's colors with PyPalettes<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#7-a-colormap-from-a-teams-colors-with-pypalettes)
+
+[<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_9.png" alt="Made and missed field goals of Nikola Jokic on a half court in Denver Nuggets colors" loading="lazy"/><br/>Nikola Jokic shot chart on a Nuggets-colored court<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#4-an-nba-shot-chart-from-the-stats-api-frame)
+
+[<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_19.png" alt="Every shot of Manchester City vs Aston Villa on a dark mplsoccer pitch, goals drawn as the scorer&#x27;s logo" loading="lazy"/><br/>Premier League shot map with goal logos on an mplsoccer pitch<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#9-a-soccer-shot-map-on-an-mplsoccer-pitch)
+
+</div>
+
+## Recipes
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/recipes/nfl-epa-scatter_13.png" alt="Scatter of 2025 NFL offense and defense EPA per play with team logos; Seattle and New England highlighted, the other teams faded" loading="lazy"/><br/>NFL offense vs defense EPA, Super Bowl LX<br/><small>NFL EPA scatter</small>](recipes/nfl-epa-scatter.md#6-export-at-social-sizes)
+
+[<img src="/img/gallery/recipes/cfb-conference-table_13.png" alt="great_tables standings of the 2025 Big Ten with team logos, records and a bar per game, Indiana highlighted as 16-0 national champion" loading="lazy"/><br/>Big Ten final standings table<br/><small>CFB conference table</small>](recipes/cfb-conference-table.md#6-export-for-the-newsletter-and-for-social)
+
+[<img src="/img/gallery/recipes/nba-net-rating-quadrant_15.png" alt="plotnine scatter of 2025-26 NBA offensive and defensive ratings with team logos, faceted East and West, with conference average lines and net-rating diagonals" loading="lazy"/><br/>NBA offensive vs defensive rating by conference<br/><small>NBA net rating quadrant</small>](recipes/nba-net-rating-quadrant.md#6-export-for-the-blog-and-for-instagram)
+
+[<img src="/img/gallery/recipes/wnba-scoring-leaders-card_13.png" alt="Social card of the 2026 WNBA points-per-game leaders: rank, headshot, name, team logo and a bar in team colors for each of the top ten" loading="lazy"/><br/>WNBA scoring leaders card<br/><small>WNBA scoring leaders card</small>](recipes/wnba-scoring-leaders-card.md#6-export-for-instagram-and-x)
+
+[<img src="/img/gallery/recipes/mlb-run-differential_13.png" alt="Two-panel 2026 MLB graphic: ranked run-differential bars in team colors with logos at the bar ends, and running run differential lines highlighting the top two and bottom two teams" loading="lazy"/><br/>MLB run differential, ranked and game by game<br/><small>MLB run differential</small>](recipes/mlb-run-differential.md#6-one-graphic-for-the-blog)
+
+[<img src="/img/gallery/recipes/nhl-shot-map_13.png" alt="Shot map of the 2026 Stanley Cup Final Game 6 on a rink: Carolina&#x27;s shots in red at the left end, Vegas&#x27;s at the right, goals as stars with scorers, logos and the score at each side" loading="lazy"/><br/>NHL shot map, Stanley Cup clincher<br/><small>NHL shot map</small>](recipes/nhl-shot-map.md#6-export-for-x-and-the-blog)
+
+[<img src="/img/gallery/recipes/soccer-league-table_13.png" alt="great_tables Premier League 2025-26 final table with club crests, results, colored form pills for the last five matches and colored bars marking European and relegation places" loading="lazy"/><br/>Premier League final table with form pills<br/><small>Soccer league table</small>](recipes/soccer-league-table.md#6-export-for-the-newsletter-and-instagram)
+
+[<img src="/img/gallery/recipes/college-hoops-tiers_13.png" alt="Tier list of the 2025-26 Big Ten men&#x27;s basketball teams by adjusted efficiency margin, Michigan alone in the top tier, each tier labeled with its rating range" loading="lazy"/><br/>Big Ten men's basketball tier list<br/><small>College hoops tiers</small>](recipes/college-hoops-tiers.md#6-export-at-social-sizes)
+
+[<img src="/img/gallery/recipes/rank-bump-chart_13.png" alt="Bump chart of every Premier League club&#x27;s position after each match of 2025-26, the champion and the two biggest climbers in team colors, crests at the line ends" loading="lazy"/><br/>Premier League bump chart<br/><small>Rank bump chart</small>](recipes/rank-bump-chart.md#6-export-for-the-blog-and-x)
+
+[<img src="/img/gallery/recipes/head-to-head-card_13.png" alt="Dark matchup card comparing Seattle and New England&#x27;s 2025 regular seasons: mirrored bars of league rank in each team&#x27;s secondary color, logos and records at the top" loading="lazy"/><br/>Super Bowl LX tale of the tape<br/><small>Head-to-head card</small>](recipes/head-to-head-card.md#6-export-for-x-and-instagram)
+
+</div>
+
 ## Leaderboards
 
 <div class="sdv-gallery">

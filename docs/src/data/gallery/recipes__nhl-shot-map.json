@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "nhl-shot-map",
+  "label": "NHL shot map",
+  "position": 6,
+  "page": "recipes/nhl-shot-map.md",
+  "items": [
+    {
+      "title": "NHL shot map, Stanley Cup clincher",
+      "alt": "Shot map of the 2026 Stanley Cup Final Game 6 on a rink: Carolina's shots in red at the left end, Vegas's at the right, goals as stars with scorers, logos and the score at each side",
+      "image": "/img/gallery/recipes/nhl-shot-map_13.png",
+      "anchor": "6-export-for-x-and-the-blog"
+    }
+  ]
+}

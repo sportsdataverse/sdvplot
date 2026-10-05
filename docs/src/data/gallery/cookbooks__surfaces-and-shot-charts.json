@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "surfaces-and-shot-charts",
+  "label": "Surfaces and shot charts",
+  "position": 6,
+  "page": "cookbooks/surfaces-and-shot-charts.md",
+  "items": [
+    {
+      "title": "Nikola Jokic shot chart on a Nuggets-colored court",
+      "alt": "Made and missed field goals of Nikola Jokic on a half court in Denver Nuggets colors",
+      "image": "/img/gallery/cookbooks/surfaces-and-shot-charts_9.png",
+      "anchor": "4-an-nba-shot-chart-from-the-stats-api-frame"
+    },
+    {
+      "title": "Premier League shot map with goal logos on an mplsoccer pitch",
+      "alt": "Every shot of Manchester City vs Aston Villa on a dark mplsoccer pitch, goals drawn as the scorer's logo",
+      "image": "/img/gallery/cookbooks/surfaces-and-shot-charts_19.png",
+      "anchor": "9-a-soccer-shot-map-on-an-mplsoccer-pitch"
+    }
+  ]
+}
