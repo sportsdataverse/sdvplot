@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "hockeytech",
+  "label": "AHL, ECHL and junior hockey",
+  "position": 42,
+  "page": "tutorials/leagues/hockeytech.md",
+  "items": [
+    {
+      "title": "Six HockeyTech leagues, one chart",
+      "alt": "Goals for and against per game for every AHL, ECHL, OHL, WHL, QMJHL and USHL team, as logos in six small multiples",
+      "image": "/img/gallery/tutorials/leagues/hockeytech_7.png",
+      "anchor": "3-the-same-chart-in-six-leagues"
+    },
+    {
+      "title": "CHL teams on one scale",
+      "alt": "Every OHL, WHL and QMJHL team's logo on a shared points-percentage axis, one row per league",
+      "image": "/img/gallery/tutorials/leagues/hockeytech_12.png",
+      "anchor": "5-the-chls-three-leagues-on-one-scale"
+    },
+    {
+      "title": "QMJHL tier list",
+      "alt": "QMJHL teams' logos in five points-percentage tiers for 2025-26",
+      "image": "/img/gallery/tutorials/leagues/hockeytech_19.png",
+      "anchor": "8-qmjhl-tiers"
+    }
+  ]
+}
