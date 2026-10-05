@@ -43,12 +43,12 @@ jobs:
       render_failed: ${{ steps.render.outputs.failed || steps.figures.outputs.failed }}
       has_changes: ${{ steps.tutorial-changes.outputs.has_changes }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # No token on disk while project and third-party code runs.
           persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
+        uses: astral-sh/setup-uv@v10.2.0
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
@@ -160,7 +160,7 @@ jobs:
       pull-requests: write # open the tutorials-refresh PR
       actions: write # dispatch the checks on the refresh PR (GITHUB_TOKEN pushes trigger no workflows)
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Clear the generated paths
         # the artifact holds these paths whole, as the live job left them; extracting over the checkout alone would
         # keep a figure, framed output, thumbnail or home PNG the generators deleted (a moved cell, a removed figure)
