@@ -16,6 +16,7 @@
     - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
     - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
     - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
+    - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -202,3 +203,16 @@
   matching its values on real data.
 - `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
   exports the sdvplotR and ggpath oracles the parity tests read.
+
+### Added — parity extras (title images, team tiers)
+
+- `title_image()` in `sdvplot.matplotlib` (Axes title or Figure suptitle) and `sdvplot.plotnine` (added with `+`):
+  sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
+  unknown team warns once and keeps the title) or any image by URL or local path (one that cannot be read warns once
+  and keeps the title); `height` is in points, `side` is `"left"` or `"right"`, and the image and title are aligned
+  together as the title is, through later `set_title` calls. A second call on the same title replaces the image.
+- `team_tiers()` in `sdvplot.matplotlib` (a Figure) and `sdvplot.plotnine` (a ggplot): sdvplotR's `sdv_team_tiers()`
+  tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
+  `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
+  (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
+  panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
