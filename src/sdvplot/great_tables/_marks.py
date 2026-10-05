@@ -4,17 +4,17 @@ from __future__ import annotations
 
 import copy
 import html
-import warnings
 from collections.abc import Callable
 from typing import Any
 
 import narwhals as nw
 from great_tables import GT, google_font, loc, px, random_id, style
 from great_tables import html as gt_html
+from great_tables._tbl_data import get_column_names
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import contrast, mix, on_color, solid
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import warn
 from sdvplot._placement import KINDS, _missing
 from sdvplot._resolve import one_team, resolve
 from sdvplot._tables import check_px, mark_html
@@ -29,6 +29,16 @@ def _check_gt(gt: Any, arg: str = "gt") -> GT:
     else:
         hint = "Build a table with great_tables.GT() and pass that in."
     raise TypeError(f"{arg} must be a great_tables GT, not {type(gt).__name__}. {hint}")
+
+
+def _check_columns(gt: GT, columns: Any) -> None:
+    """Column names the table lacks are a ValueError on every backend (great_tables raised polars' own error and
+    matched nothing on pandas). Selectors and other expressions pass through to great_tables."""
+    names = [columns] if isinstance(columns, str) else columns
+    if isinstance(names, (list, tuple)) and all(isinstance(n, str) for n in names):
+        have = [str(c) for c in get_column_names(gt._tbl_data)]  # pandas, polars or pyarrow
+        if missing := [n for n in names if n not in have]:
+            raise ValueError(f"column(s) {missing} not in the table; its columns are {have}")
 
 
 def _cell_texts(gt: GT, locations: Any) -> list[str]:
@@ -62,6 +72,8 @@ def _image_cells(
     """
     _check_gt(gt)
     h = check_px(height)
+    if locations is None:
+        _check_columns(gt, columns)
     locs = loc.body(columns) if locations is None else locations
     for where in locs if isinstance(locs, list) else [locs]:
         # the locations great_tables' text_transform reaches; it escapes column labels and ignores every other one
@@ -116,8 +128,8 @@ def gt_sdv_logos(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``locations``
-            holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns``
+            names a column the table lacks, or ``locations`` holds another location.
 
     Example:
         ::
@@ -155,8 +167,8 @@ def gt_sdv_wordmarks(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``locations``
-            holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns``
+            names a column the table lacks, or ``locations`` holds another location.
 
     Example:
         ::
@@ -192,7 +204,8 @@ def gt_sdv_headshots(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, or ``locations`` holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``columns`` names a column the table
+            lacks, or ``locations`` holds another location.
 
     Example:
         ::
@@ -636,11 +649,7 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
         if p:
             primary, secondary = p, s or p
         else:
-            warnings.warn(
-                f"no colors on file for {league} team {team!r}; using the SportsDataverse colors",
-                SdvplotWarning,
-                stacklevel=2,
-            )
+            warn(f"no colors on file for {league} team {team!r}; using the SportsDataverse colors")
     title = on_color(primary)
     pal = _light_palette(secondary if contrast(secondary, "#ffffff") >= 1.5 else primary)
     pal.update(

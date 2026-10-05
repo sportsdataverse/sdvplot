@@ -4,6 +4,7 @@
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
     - [Changed](#changed)
+    - [Fixed](#fixed)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
@@ -22,7 +23,7 @@
     - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
-    - [Fixed](#fixed)
+    - [Fixed](#fixed-1)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
       - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
@@ -39,6 +40,20 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+
+### Fixed
+
+- A season outside the seasons sdvplot knows (the bundled index's earliest, 1871, to next year) is an `InputError` (a
+  `ValueError`) naming the bounds, wherever a season is taken: `resolve(..., season=20)`, `0`, `1850` and `3000` used to
+  resolve silently. A split season such as `"2020-21"` gets a hint (pass the ending year), and a season of the wrong
+  type (a `pd.Timestamp`) is a `TypeError` that names `season` rather than the team values.
+- A `variant` that no mark in the archive has (a typo) is an `InputError` listing the league's variants; it used to fall
+  back to the default mark without a word. A variant the team lacks still falls back, as before.
+- Warnings point at the caller's line: they walk out of sdvplot's frames instead of using fixed `stacklevel`s, which
+  named `_colors.py`, `_placement.py` and other sdvplot files whenever the call went through more than one function.
+- A misspelled column in `gt_sdv_logos`, `gt_sdv_wordmarks` or `gt_sdv_headshots` (and the front door on a `GT`) is the
+  same `ValueError` on pandas and polars; pandas used to draw nothing silently and polars raised its own
+  `ColumnNotFoundError`.
 
 ## [0.1.0] - Unreleased
 

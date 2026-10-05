@@ -6,7 +6,6 @@ is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot
 
 from __future__ import annotations
 
-import warnings
 from typing import Any, Literal
 
 import numpy as np
@@ -33,7 +32,7 @@ from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
+from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
@@ -583,11 +582,7 @@ class _TitleImage:
             return
         text = next((t for t in figure.texts if t.get_text() == self.title), None)
         if text is None:
-            warnings.warn(
-                f"title_image: the plot's title is no longer {self.title!r}; add title_image() after labs(title=...)",
-                SdvplotWarning,
-                stacklevel=2,
-            )
+            warn(f"title_image: the plot's title is no longer {self.title!r}; add title_image() after labs(title=...)")
             return
 
         def align() -> float:  # plotnine left-aligns the text and places it by the theme's plot_title ha

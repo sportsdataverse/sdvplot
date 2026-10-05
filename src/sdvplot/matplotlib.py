@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import numbers
 import sys
-import warnings
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -23,7 +22,7 @@ from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsupportedTargetError
+from sdvplot._errors import OfflineError, UnsupportedTargetError, warn
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
@@ -629,7 +628,7 @@ def _title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarr
     try:
         return _rgba_array(load_path_image(source)), source
     except (OSError, ValueError, OfflineError) as e:  # missing file, not an image, failed download (as _read_images)
-        warnings.warn(f"title_image: could not read {source!r} ({e}); drawn without it", SdvplotWarning, stacklevel=3)
+        warn(f"title_image: could not read {source!r} ({e}); drawn without it")
         return None
 
 

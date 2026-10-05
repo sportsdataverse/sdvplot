@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import functools
 from collections.abc import Callable
 from importlib import resources
@@ -83,6 +84,23 @@ def check_league(league: str) -> None:
         raise InputError(f"unknown league {league!r}; known leagues: {sorted(known)}")
 
 
+@functools.cache
+def _season_bounds(directory: str) -> tuple[int, int] | None:
+    a = _read("aliases", directory)
+    lo = a.select(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min())).item()
+    hi = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+    return None if lo is None or hi is None else (int(lo), int(hi))
+
+
+def season_bounds() -> tuple[int, int] | None:
+    """The seasons a season argument may name: from the earliest season the index's aliases hold to the later of the
+    latest one and next year (an older index still takes this season and the next); None if no alias is dated."""
+    bounds = _season_bounds(str(data_dir()))
+    if bounds is None:
+        return None
+    return bounds[0], max(bounds[1], datetime.date.today().year + 1)
+
+
 def on_reload(fn: Callable[[], None]) -> None:
     """Register a cache that must be dropped when the index is reloaded (the resolver's lookup tables)."""
     _RELOAD_HOOKS.append(fn)
@@ -92,6 +110,7 @@ def reload_index() -> None:
     """Forget the loaded index and everything derived from it."""
     _read.cache_clear()
     _leagues.cache_clear()
+    _season_bounds.cache_clear()
     for fn in _RELOAD_HOOKS:
         fn()
 

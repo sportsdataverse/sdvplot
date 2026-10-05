@@ -12,7 +12,6 @@ import copy
 import inspect
 import math
 import re
-import warnings
 from collections.abc import Callable, Sequence
 from decimal import Decimal
 from html import escape
@@ -27,7 +26,7 @@ from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
 
 from sdvplot._contrast import hex6, mix, on_color, solid
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import warn
 from sdvplot._tables import row_positions
 from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id, important
 
@@ -36,7 +35,7 @@ from sdvplot.great_tables._marks import _background, _check_gt, _constant, _tabl
 
 
 def _warn(message: str) -> None:
-    warnings.warn(message, SdvplotWarning, stacklevel=3)
+    warn(message)
 
 
 def _one_of(name: str, value: Any, allowed: tuple[str, ...]) -> None:
