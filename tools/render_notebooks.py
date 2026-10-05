@@ -96,8 +96,9 @@ BOKEH_EXEC = "application/vnd.bokehjs_exec.v0+json"
 HOLOVIEWS_EXEC = "application/vnd.holoviews_exec.v0+json"
 # output_notebook() / hv.extension(): the JavaScript a notebook front end loads once; a standalone page loads its own.
 LOADERS = ("application/vnd.bokehjs_load.v0+json", "application/vnd.holoviews_load.v0+json")
-# ... and what else they print: Bokeh's banner, HoloViews' module shim and logo (Panel's comm setup comes between).
-EXTENSION_HTML = re.compile(r'bk-notebook-logo|class="logo-block"|type="esms-options"')
+# ... and what else they print: Bokeh's banner, HoloViews' module shim and logo, and Panel's comm document (a
+# BrowserInfo + CommManager document with no plot, the extension's last output when logo=False).
+EXTENSION_HTML = re.compile(r'bk-notebook-logo|class="logo-block"|type="esms-options"|panel\.models\.comm_manager\.')
 
 # Each framed page reports its height to the docs page around it, on load, on resize and when asked
 # (docs/src/clientModules/sdvFrames.ts); the html and body boxes cover margins and overflow.

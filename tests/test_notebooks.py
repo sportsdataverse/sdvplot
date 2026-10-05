@@ -364,6 +364,19 @@ def test_an_extension_and_a_figure_in_one_cell_keep_the_figure():
     assert shown == ["hi\n", "loaded\n", "<div id='f'></div>"]
 
 
+@pytest.mark.parametrize("logo", [True, False])
+def test_a_real_holoviews_extension_leaves_no_frame_and_its_figure_stays(logo):
+    # without the logo, Panel's comm document (BrowserInfo + CommManager roots, no plot) is the extension's last output
+    nb = new_notebook(
+        cells=[new_code_cell(f"import holoviews as hv\nhv.extension('bokeh', logo={logo})\nhv.Curve([1, 3, 2])")]
+    )
+    rn._execute(nb, 120)
+    rn._clean_outputs(nb)
+    (figure,) = [o for o in nb.cells[0].outputs if o.get("data")]  # an empty display_data renders nothing
+    assert figure.output_type == "execute_result" and rn.HOLOVIEWS_EXEC in figure.data
+    assert "CommManager" not in figure.data["text/html"]
+
+
 def test_holoviews_loads_bokehjs_and_panel(site):
     data = {"text/html": "<div id='a'></div><script>embed()</script>", rn.HOLOVIEWS_EXEC: {}, "text/plain": ":Curve"}
     body, pages = _framed(site, new_output("execute_result", data=data))
