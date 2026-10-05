@@ -140,6 +140,8 @@
   point keeps its season); the mark geoms take a per-row season as the `season` aesthetic.
 - plotnine: the mark geoms leave missing and out-of-limits x/y to plotnine (`na_rm`, scale limits), so a row
   plotnine drops itself no longer also warns `skipped ... missing x or y`.
+- plotnine: a point that plotnine copies into every panel (a layer without the facet column) counts once in the
+  warning, not once per panel.
 - plotnine: drawing no longer swaps the interpreter's warning filters (`warnings.catch_warnings`, not thread-safe)
   to keep the per-panel placement quiet; it uses a private quiet path instead.
 - The adapters' test hooks report the height an image was drawn at, not the height they were asked for: matplotlib

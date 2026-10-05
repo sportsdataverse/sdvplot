@@ -63,10 +63,12 @@ class _geom_sdv_marks(geom):
 
     def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """Once per layer and render: place every panel's rows together, so an unknown team or a missing mark warns
-        once. At zero positions: x and y are plotnine's to check, after this (``na_rm``, scale limits, its own
-        "Removed rows" warning), so they never warn here."""
-        zeros = [0.0] * len(data)
-        self._place(data, zeros, zeros, warn=True)
+        once, and a point plotnine copies into every panel counts once. At zero positions: x and y are plotnine's to
+        check, after this (``na_rm``, scale limits, its own "Removed rows" warning), so they never warn here."""
+        # ponytail: two identical points (same x, y and team) in one panel also count once
+        rows = data.drop(columns="PANEL", errors="ignore").drop_duplicates()  # a row plotnine copies to every panel
+        zeros = [0.0] * len(rows)
+        self._place(rows, zeros, zeros, warn=True)
         return data
 
     def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:

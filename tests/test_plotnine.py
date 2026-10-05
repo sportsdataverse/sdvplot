@@ -108,6 +108,15 @@ def test_rows_plotnine_drops_itself_do_not_warn(mark_images, dropped_by):
     assert [m[0] for m in marks] == ["13"] and _sdv_warnings(rec) == []
 
 
+def test_a_point_copied_into_every_panel_counts_once_in_the_warning(mark_images):
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_wordmarks(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "LAR"], league="nfl")  # no LAR wordmark
+    with pytest.warns(SdvplotWarning) as rec:
+        sp9.drawn_marks(p)
+    assert _sdv_warnings(rec) == ["skipped 1 point(s) with no wordmark archived: 'LAR'"]
+
+
 def test_a_season_per_team_follows_its_row_into_every_panel(mark_images):
     # plotnine copies add_logos' rows into each panel; each copy keeps its own season (the Oakland mark for 2010)
     p = _plot() + facet_wrap("g")
