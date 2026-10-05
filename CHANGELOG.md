@@ -68,6 +68,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- `clear_cache()` unlinks a cache subdirectory that is a symlink in the default cache directory (what it points to is
+  untouched) and leaves one alone with a warning in a directory you chose. It used to raise `OSError` from
+  `shutil.rmtree` after deleting `manifest/`, leaving the later subdirectories and the in-memory caches as they were;
+  the in-memory caches are now emptied even when a removal fails.
 
 ### Security
 

@@ -396,7 +396,8 @@ def clear_cache() -> None:
     The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set. In the
     default cache directory every subdirectory above is removed. In a directory you chose with ``SDVPLOT_CACHE_DIR``
     only subdirectories sdvplot created (they hold a ``.sdvplot-cache`` marker) are removed; a folder of your own with
-    the same name is left alone with a warning that names it.
+    the same name is left alone with a warning that names it. A subdirectory that is a symlink is unlinked in the
+    default directory (what it points to is untouched) and left alone with a warning in one you chose.
 
     Returns:
         None: Nothing; the cache subdirectories are removed.
@@ -414,15 +415,20 @@ def clear_cache() -> None:
     """
     root = cache_dir()
     owned = not os.environ.get(CACHE_ENV)  # the default directory is sdvplot's own; a custom one may hold other things
-    for subdir in CACHE_SUBDIRS:
-        path = root / subdir
-        if not path.exists():
-            continue
-        if owned or (path / MARKER).exists():
-            shutil.rmtree(path)
-        else:
-            warn(f"{path} was not created by sdvplot, so it was left in place; delete it by hand if it is a cache")
-    _warned.clear()
-    _intact.clear()
-    for clear in MEMORY_CACHES:
-        clear()
+    try:
+        for subdir in CACHE_SUBDIRS:
+            path = root / subdir
+            if path.is_symlink():  # sdvplot never makes one, and cache_path() refuses one that leads out of the cache
+                if owned:
+                    path.unlink()  # the link only, never what it points to
+                else:
+                    warn(f"{path} is a symlink sdvplot did not create, so it was left in place; delete it by hand")
+            elif path.exists() and (owned or (path / MARKER).exists()):
+                shutil.rmtree(path)
+            elif path.exists():
+                warn(f"{path} was not created by sdvplot, so it was left in place; delete it by hand if it is a cache")
+    finally:  # a failed removal still empties the in-memory caches
+        _warned.clear()
+        _intact.clear()
+        for clear in MEMORY_CACHES:
+            clear()

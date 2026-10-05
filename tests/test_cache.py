@@ -590,6 +590,46 @@ def test_the_default_cache_directory_is_cleared_without_markers(tmp_path, monkey
     assert not any((root / sub).exists() for sub in _cache.CACHE_SUBDIRS)
 
 
+def _symlink(link, target):
+    target.mkdir(parents=True, exist_ok=True)
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError as e:  # Windows without the symlink privilege
+        pytest.skip(f"cannot create a symlink here: {e}")
+
+
+def test_a_symlinked_subdirectory_of_the_default_directory_is_unlinked_and_the_rest_cleared(tmp_path, monkeypatch):
+    """shutil.rmtree refuses a symlink: clear_cache raised after manifest/ and left the later subdirectories and the
+    in-memory caches as they were."""
+    import platformdirs
+
+    root, elsewhere = tmp_path / "default", tmp_path / "elsewhere"
+    monkeypatch.delenv("SDVPLOT_CACHE_DIR", raising=False)
+    monkeypatch.setattr(platformdirs, "user_cache_dir", lambda *a, **k: str(root))
+    for sub in _cache.CACHE_SUBDIRS:
+        if sub != "images":
+            (root / sub).mkdir(parents=True)
+            (root / sub / "f").write_text("x")
+    _symlink(root / "images", elsewhere)
+    (elsewhere / "mine.png").write_text("not the cache's")
+    cleared = []
+    monkeypatch.setattr(_cache, "MEMORY_CACHES", [*_cache.MEMORY_CACHES, lambda: cleared.append(True)])
+    _cache.clear_cache()
+    assert not [sub for sub in _cache.CACHE_SUBDIRS if os.path.lexists(root / sub)]
+    assert (elsewhere / "mine.png").exists()  # the link is gone, not what it pointed to
+    assert cleared == [True]
+
+
+def test_a_symlinked_subdirectory_of_a_chosen_directory_is_left_with_a_warning(cache, tmp_path):
+    elsewhere = tmp_path / "elsewhere"
+    cache.mkdir(parents=True)
+    _symlink(cache / "images", elsewhere)
+    (elsewhere / _cache.MARKER).write_bytes(b"")  # even a folder sdvplot marked is not followed through a link
+    with pytest.warns(SdvplotWarning, match="symlink"):
+        _cache.clear_cache()
+    assert (cache / "images").is_symlink() and (elsewhere / _cache.MARKER).exists()
+
+
 def test_the_skip_warning_names_the_path_and_says_to_delete_by_hand(cache):
     (cache / "images").mkdir(parents=True)
     with pytest.warns(SdvplotWarning, match=r"images.*by hand"):
