@@ -252,7 +252,12 @@ def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.
     try:
         for _ in range(MAX_REDIRECTS + 1):
             _check_https(url)
-            r = dog.response = _session().get(url, headers=headers, timeout=(5, 60), stream=True, allow_redirects=False)
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise UnsafeDownloadError(f"{url}: download exceeded {DEADLINE_SECONDS:.0f} s")
+            # no read waits past the deadline either: on Windows a shut socket does not wake a read already waiting
+            timeout = (min(5, left), min(60, left))
+            r = dog.response = _session().get(url, headers=headers, timeout=timeout, stream=True, allow_redirects=False)
             try:
                 if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("Location"):
                     url = urljoin(url, r.headers["Location"])
@@ -277,7 +282,8 @@ def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.
                 r.close()
         raise UnsafeDownloadError(f"{url}: more than {MAX_REDIRECTS} redirects")
     except Exception as e:
-        if not dog.expired or isinstance(e, UnsafeDownloadError):
+        # a read that timed out at the deadline can raise before the watchdog fires: both are the deadline
+        if isinstance(e, UnsafeDownloadError) or not (dog.expired or time.monotonic() >= deadline):
             raise
         raise UnsafeDownloadError(f"{url}: download exceeded {DEADLINE_SECONDS:.0f} s") from e
     finally:

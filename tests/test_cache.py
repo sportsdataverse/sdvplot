@@ -323,7 +323,7 @@ def test_a_declared_content_length_over_the_cap_is_refused_before_reading(cache,
 
 
 def test_a_drip_fed_download_stops_at_the_total_deadline(cache, monkeypatch):
-    clock = iter([0.0] + [10_000.0] * 50)
+    clock = iter([0.0, 0.0] + [10_000.0] * 50)  # the deadline, the first hop's time left, then the body
     monkeypatch.setattr(_cache.time, "monotonic", lambda: next(clock))
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x" * 200000)))
     with pytest.raises(UnsafeDownloadError, match="exceeded"):
@@ -487,6 +487,16 @@ def test_a_drip_fed_body_hits_the_deadline_on_time(server, monkeypatch):
     with pytest.raises(UnsafeDownloadError, match="exceeded"):
         _cache._download(base + "/", None, 10_000_000)
     assert time.monotonic() - start < 1.5 + 1
+
+
+def test_no_read_waits_past_the_time_left(cache, monkeypatch):
+    """On Windows a shut socket does not wake a read already waiting, so each read's timeout is capped at the time the
+    download has left (a stalled TLS handshake there ran to the 5 s connect timeout)."""
+    s = FakeSession(FakeResponse(200, b"x"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 2.0)
+    _cache._download("https://x/a", None, 100)
+    assert 0 < max(s.timeouts[0]) <= 2.0
 
 
 def test_drip_fed_headers_hit_the_deadline_on_time(server, monkeypatch):
