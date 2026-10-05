@@ -1,0 +1,41 @@
+game_id,game_event_id,player_name,shot_zone_basic,shot_zone_area,shot_distance,loc_x,loc_y,shot_made_flag
+0022200016,201,LeBron James,Above the Break 3,Center(C),26,-69,260,0
+0022200246,138,Luka Dončić,Above the Break 3,Left Side Center(LC),25,-167,196,1
+0022200372,323,Klay Thompson,Above the Break 3,Right Side Center(RC),25,206,143,1
+0022200635,55,Stephen Curry,Above the Break 3,Right Side Center(RC),26,179,197,1
+0022200950,149,Devin Booker,Above the Break 3,Right Side Center(RC),39,216,331,0
+0022201175,327,Kentavious Caldwell-Pope,Above the Break 3,Right Side Center(RC),26,175,197,0
+0022200202,590,Mikal Bridges,Backcourt,Back Court(BC),48,67,483,0
+0022201087,162,Tyrese Maxey,Backcourt,Back Court(BC),65,-112,647,0
+0022200018,406,Tyrese Haliburton,In The Paint (Non-RA),Center(C),6,-11,61,1
+0022200271,127,Stephen Curry,In The Paint (Non-RA),Center(C),5,44,24,0
+0022200392,615,Klay Thompson,In The Paint (Non-RA),Center(C),4,-34,30,1
+0022201172,271,Devin Booker,In The Paint (Non-RA),Center(C),14,70,130,1
+0022200022,299,Jimmy Butler III,Left Corner 3,Left Side(L),23,-233,13,0
+0022200066,322,Luka Dončić,Left Corner 3,Left Side(L),23,-221,75,0
+0022200225,339,Donovan Mitchell,Left Corner 3,Left Side(L),24,-249,-8,0
+0022200259,205,Mikal Bridges,Left Corner 3,Left Side(L),23,-229,-23,0
+0022200388,276,Buddy Hield,Left Corner 3,Left Side(L),23,-232,50,0
+0022200655,165,Tyrese Maxey,Left Corner 3,Left Side(L),22,-224,12,0
+0022200972,412,Tyrese Maxey,Left Corner 3,Left Side(L),22,-225,11,1
+0022201181,339,Tyrese Maxey,Left Corner 3,Left Side(L),22,-225,26,1
+0022200015,270,Tyrese Maxey,Mid-Range,Center(C),14,17,147,1
+0022200251,479,Giannis Antetokounmpo,Mid-Range,Left Side Center(LC),19,-96,169,1
+0022200373,278,Jaylen Brown,Mid-Range,Center(C),14,-15,147,1
+0022201172,351,Kevin Durant,Mid-Range,Center(C),20,26,200,1
+0022200002,399,LeBron James,Restricted Area,Center(C),0,0,0,0
+0022200014,291,Damian Lillard,Restricted Area,Center(C),3,32,6,0
+0022200244,246,Bam Adebayo,Restricted Area,Center(C),0,0,0,1
+0022200300,567,Rudy Gobert,Restricted Area,Center(C),3,-21,34,1
+0022200364,50,Kyrie Irving,Restricted Area,Center(C),0,0,2,1
+0022200622,52,Jalen Brunson,Restricted Area,Center(C),2,-26,4,1
+0022200935,546,Jarrett Allen,Restricted Area,Center(C),2,-21,7,1
+0022201167,484,Kyrie Irving,Restricted Area,Center(C),0,1,1,1
+0022200012,403,Nikola Jokić,Right Corner 3,Right Side(R),23,221,76,0
+0022200021,224,Kevin Durant,Right Corner 3,Right Side(R),22,229,13,0
+0022200100,31,Grayson Allen,Right Corner 3,Right Side(R),25,248,63,0
+0022200232,305,Malik Beasley,Right Corner 3,Right Side(R),23,230,47,0
+0022200344,18,Kentavious Caldwell-Pope,Right Corner 3,Right Side(R),22,227,-7,0
+0022200599,106,Jimmy Butler III,Right Corner 3,Right Side(R),24,245,10,0
+0022200952,273,Ja Morant,Right Corner 3,Right Side(R),23,237,23,0
+0022201172,386,Kevin Durant,Right Corner 3,Right Side(R),23,235,-15,0

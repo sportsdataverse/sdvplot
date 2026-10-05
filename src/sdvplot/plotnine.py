@@ -1,4 +1,4 @@
-"""The plotnine adapter: logo, wordmark and headshot geoms, axis logos, and team color scales.
+"""The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines.
 
 The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
@@ -8,17 +8,20 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from plotnine import aes, element_text, ggplot, scale_color_manual, scale_fill_manual, theme
+from plotnine._utils import remove_missing
+from plotnine.geoms import geom_hline, geom_vline
 from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
 from sdvplot._marks import _check_mark_type
-from sdvplot._placement import Placement, check_alpha, check_height, place
+from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
 from sdvplot.matplotlib import _axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import _in_view, draw_placements
+from sdvplot.matplotlib import _in_view, draw_images, draw_placements, read_images
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
 from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
 from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
@@ -38,16 +41,17 @@ _MARK_PARAMS = {
 
 
 class _geom_sdv_marks(geom):
-    """Shared drawing for the three mark geoms; subclasses set the kind and the id aesthetic."""
+    """Shared drawing for the image geoms; subclasses set the kind and the id aesthetic."""
 
     _kind = "logo"
     _id_aes = "team"
+    _needs_league = True
     DEFAULT_AES: dict[str, Any] = {"season": None}  # optional: one season per row, which plotnine copies with the row
     REQUIRED_AES = {"x", "y", "team"}
     DEFAULT_PARAMS = _MARK_PARAMS
 
     def __init__(self, mapping: Any = None, data: Any = None, **kwargs: Any) -> None:
-        if kwargs.get("league") is None:
+        if self._needs_league and kwargs.get("league") is None:
             raise TypeError(f"{type(self).__name__}() needs league=, e.g. league='nfl'")
         check_height(kwargs.get("height", 0.1))
         check_alpha(kwargs.get("alpha", 1))
@@ -121,6 +125,179 @@ class geom_sdv_headshots(_geom_sdv_marks):
     _id_aes = "player_id"
     REQUIRED_AES = {"x", "y", "player_id"}
     DEFAULT_PARAMS = {**_MARK_PARAMS, "id_system": "espn"}
+
+
+class geom_from_path(_geom_sdv_marks):
+    """Any image, by local path or URL, at (x, y): ``aes(x=..., y=..., path=...)``, plus ``height`` (fraction of the
+    panel height, default 0.1) and ``alpha``. The port of ggpath's ``geom_from_path()``, sized like the logo geoms.
+
+    Args:
+        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or http(s) URL per
+            row.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``height`` in (0, 1], ``alpha`` in [0, 1], and plotnine's layer arguments (``inherit_aes``, ...).
+
+    Returns:
+        geom: A plotnine layer to add with ``+``. Images that cannot be read (a missing file, a file that is not an
+        image, a failed download) are skipped with one SdvplotWarning when the plot is drawn; SVG is not read.
+
+    Raises:
+        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+
+    Example:
+        ::
+
+            import pandas as pd
+            from plotnine import aes, ggplot
+            from sdvplot.plotnine import geom_from_path
+
+            df = pd.DataFrame({"x": [1, 2], "y": [1, 2], "img": ["a.png", "https://www.python.org/static/favicon.ico"]})
+            p = ggplot(df, aes("x", "y", path="img")) + geom_from_path(height=0.15)
+
+    See Also:
+        ggpath geom_from_path(): https://mrcaseb.github.io/ggpath/ ;
+        sdvplot.matplotlib.add_images: the matplotlib counterpart
+    """
+
+    _id_aes = "path"
+    _needs_league = False
+    DEFAULT_AES: dict[str, Any] = {}
+    REQUIRED_AES = {"x", "y", "path"}
+    DEFAULT_PARAMS = {"stat": "identity", "position": "identity", "na_rm": False, "height": 0.1, "alpha": 1}
+    _sdv_images: dict[str, Any]  # path -> image (None when unreadable), read once per render by setup_data
+
+    def _place(self, data: pd.DataFrame, x: list[Any], y: list[Any], *, warn: bool) -> list[Placement]:
+        return place_images(x, y, data["path"].tolist(), _warn=warn)
+
+    def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Once per layer and render, as for the team geoms: read every distinct image once, so an image that cannot
+        be read (or downloaded) is tried once and warns once, whatever the facets; the panels draw from these."""
+        rows = data.drop(columns="PANEL", errors="ignore").drop_duplicates()  # a row plotnine copies to every panel
+        zeros = [0.0] * len(rows)
+        self._sdv_images = {}
+        _warn_skipped("whose image could not be read", read_images(self._place(rows, zeros, zeros, warn=True),
+                                                                   self._sdv_images))  # fmt: skip
+        return data
+
+    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
+        # setup_data already read the images and warned, so each panel draws its rows quietly
+        data = coord.transform(data, panel_params)
+        placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
+        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
+                    cache=self._sdv_images, warn=False)  # fmt: skip
+
+
+class _geom_ref_lines(geom):
+    """A vertical line at ``_ref(x0)`` and a horizontal line at ``_ref(y0)`` per panel, drawn by plotnine's own
+    geom_vline / geom_hline (ggpath draws through GeomVline / GeomHline the same way)."""
+
+    _ref: Any = staticmethod(np.mean)
+    # ggpath's GeomRefLines, except alpha: ggplot2's NA (the color's own alpha) is 1 in plotnine, which also keeps
+    # an 8-digit hex color's alpha
+    DEFAULT_AES = {"color": "red", "size": 0.5, "linetype": "dashed", "alpha": 1}
+    REQUIRED_AES: set[str] = set()
+    DEFAULT_PARAMS = {"stat": "identity", "position": "identity", "na_rm": False}
+
+    def __init__(self, mapping: Any = None, data: Any = None, **kwargs: Any) -> None:
+        kwargs.setdefault("show_legend", False)
+        super().__init__(mapping, data, **kwargs)
+
+    def draw_layer(self, data: pd.DataFrame, layout: Any, coord: Any) -> None:
+        # x0/y0 are position aesthetics in ggplot2: each panel's position scale transforms them (a log scale averages
+        # the logs) and censors those outside its limits to NA before the mean. plotnine does not know them, so do
+        # both here, panel by panel (free scales differ).
+        data = data.copy()
+        for ae, which in (("x0", "x"), ("y0", "y")):
+            if ae not in data:
+                continue
+            data[ae] = data[ae].astype(float)
+            for panel, rows in data.groupby("PANEL", observed=True).groups.items():
+                sc = getattr(layout.get_scales(panel), which)
+                data.loc[rows, ae] = sc.map(sc.transform(data.loc[rows, ae].to_numpy()))
+        super().draw_layer(data, layout, coord)
+
+    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
+        name = type(self).__name__
+        if "x0" not in data and "y0" not in data:
+            raise ValueError(f"{name}() needs an x0 and/or a y0 aesthetic, e.g. aes(x0='epa', y0='success_rate')")
+        # ggplot2's GeomHline/GeomVline draw one segment per distinct row of these (ggpath passes them on): one line per
+        # panel, or one per group when a colour (or another line aesthetic) is mapped, all at the panel's value
+        styles = data[[c for c in ("PANEL", "group", "color", "size", "linetype", "alpha") if c in data]]
+        lines: tuple[tuple[str, Any, str], ...] = (("y0", geom_hline, "yintercept"), ("x0", geom_vline, "xintercept"))
+        for ae, line, column in lines:
+            if ae not in data:
+                continue
+            values = data[ae].to_numpy(dtype=float)
+            if self.params["na_rm"]:
+                values = values[~np.isnan(values)]
+            ref = float(self._ref(values)) if len(values) else np.nan  # NaN when a value is missing, as R's mean()
+            # ggplot2 drops (and warns about) a line at NA whatever na.rm says; so does plotnine's remove_missing
+            frame = styles.assign(**{column: ref}).drop_duplicates().reset_index(drop=True)
+            frame = remove_missing(frame, False, [column], name)
+            if len(frame):
+                line.draw_panel(self, frame, panel_params, coord, ax)
+
+
+class geom_mean_lines(_geom_ref_lines):
+    """Reference lines at the mean of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's
+    ``geom_mean_lines()``.
+
+    Args:
+        mapping: ``aes(x0=..., y0=...)``, at least one of them (``x0`` alone draws only the vertical line).
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``color`` (default "red"), ``size`` (line width, default 0.5), ``linetype`` (default "dashed"),
+            ``alpha``, ``na_rm`` and plotnine's layer arguments. With ``na_rm=False`` (the default) a panel whose
+            values include a missing one draws no line on that axis, with a PlotnineWarning, as ggpath does;
+            ``na_rm=True`` ignores the missing values.
+
+    Returns:
+        geom: A plotnine layer to add with ``+``; each facet panel gets its own reference value.
+
+    Raises:
+        ValueError: When the plot is drawn, if neither ``x0`` nor ``y0`` is mapped.
+
+    Example:
+        ::
+
+            from plotnine import aes, geom_point, ggplot
+            from sdvplot.plotnine import geom_mean_lines
+
+            p = (ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate"))
+                 + geom_point() + geom_mean_lines(color="grey"))
+
+    See Also:
+        ggpath geom_mean_lines(): https://mrcaseb.github.io/ggpath/ ;
+        geom_median_lines: the same at the median
+    """
+
+
+class geom_median_lines(_geom_ref_lines):
+    """Reference lines at the median of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's
+    ``geom_median_lines()``.
+
+    Args:
+        mapping: ``aes(x0=..., y0=...)``, at least one of them.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``color`` (default "red"), ``size`` (default 0.5), ``linetype`` (default "dashed"), ``alpha``,
+            ``na_rm`` (as ``geom_mean_lines``) and plotnine's layer arguments.
+
+    Returns:
+        geom: A plotnine layer to add with ``+``; each facet panel gets its own reference value.
+
+    Raises:
+        ValueError: When the plot is drawn, if neither ``x0`` nor ``y0`` is mapped.
+
+    Example:
+        ::
+
+            p = ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate")) + geom_point() + geom_median_lines()
+
+    See Also:
+        ggpath geom_median_lines(): https://mrcaseb.github.io/ggpath/ ;
+        geom_mean_lines: the same at the mean
+    """
+
+    _ref = staticmethod(np.median)
 
 
 def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:

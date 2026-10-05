@@ -31,6 +31,7 @@ sidebar_position: 0
 - [`add_headshots`](add_headshots.md): Add player headshots to a plot or table of any supported library.
 - [`axis_logos`](axis_logos.md): Replace an axis' team labels with team logos on a plot of any supported library.
 - [`surface`](surface.md): Draw the league's playing surface with sportypy, in a team's colors.
+- [`court_coords`](court_coords.md): Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws.
 
 ## Housekeeping
 

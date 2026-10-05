@@ -15,6 +15,7 @@
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
     - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
     - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
+    - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -189,3 +190,15 @@
   `na_color`'s alpha with its own `alpha`, as sdvplotR does; CSS-only color arguments take any CSS color.
 - A translucent table background (`tab_options(table_background_color="#111111CC")`) is read as the color it shows
   over the page when `gt_legend_discrete` and `gt_marginalia` pick their ink, so a near-black one gets light text.
+
+### Added — parity extras (court coordinates, images by path, reference lines)
+
+- `sdvplot.court_coords()`: stats.nba.com / stats.wnba.com legacy shot locations (`LOC_X`/`LOC_Y`, `x_legacy`/`y_legacy`)
+  to the court frame sportypy and `surface("nba")` draw, on pandas or polars, the port of sdvplotR's
+  `sdv_court_coords()`; bit-identical to it on real `shotchartdetail` rows.
+- `sdvplot.matplotlib.add_images()` and `sdvplot.plotnine.geom_from_path()`: any image by local path or URL at (x, y),
+  sized like the logo verbs, the port of ggpath's `geom_from_path()`; unreadable images are skipped with one warning.
+- `sdvplot.plotnine.geom_mean_lines()` and `geom_median_lines()`: per-panel reference lines, the ports of ggpath's,
+  matching its values on real data.
+- `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
+  exports the sdvplotR and ggpath oracles the parity tests read.

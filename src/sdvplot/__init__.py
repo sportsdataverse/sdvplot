@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from sdvplot._cache import clear_cache
 from sdvplot._colors import palette, team_colors
+from sdvplot._court import court_coords
 from sdvplot._dispatch import add_headshots, add_logos, add_wordmarks, axis_logos
 from sdvplot._errors import (
     OfflineError,
@@ -42,6 +43,7 @@ __all__ = [
     "add_headshots",
     "axis_logos",
     "surface",
+    "court_coords",
     "SdvplotWarning",
     "UnresolvedTeamError",
     "OfflineError",
