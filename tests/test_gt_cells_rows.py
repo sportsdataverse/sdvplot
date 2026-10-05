@@ -59,7 +59,7 @@ def test_bold_rows_that_match_nothing_warn_and_return_the_table(lib):
 
 
 def test_a_data_frame_instead_of_a_gt_is_a_type_error():
-    with pytest.raises(TypeError, match=r"wrap it in GT"):
+    with pytest.raises(TypeError, match=r"It looks like raw data: wrap it in great_tables\.GT\(\) first"):
         gt_bold_rows(frame("polars", CARS))
 
 

@@ -33,12 +33,12 @@ def test_title_header_styles_load_google_fonts_and_reject_unknown_keys():
     assert "<div style=\"font-family:'Oswald', sans-serif;font-size:30px;font-style:italic;\">Week 5</div>" in h
     assert "fonts.googleapis.com/css2?family=Oswald" in h
     assert "July" not in h  # no date line unless asked
-    with pytest.raises(ValueError, match="unknown style key"):
+    with pytest.raises(ValueError, match=r"title_style has unknown key\(s\) \['colour'\]"):
         gt_title_header(gt, "Week 5", title_style={"colour": "red"})
 
 
 def test_every_function_refuses_raw_data():
-    with pytest.raises(TypeError, match=r"wrap a data frame with GT\(df\)"):
+    with pytest.raises(TypeError, match=r"It looks like raw data: wrap it in great_tables\.GT\(\) first"):
         gt_title_header(pl.DataFrame(DATA), "Week 5")
 
 

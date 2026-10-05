@@ -14,6 +14,7 @@
     - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
     - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
+    - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
     - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -155,6 +156,40 @@
   An out-of-range `height` must raise when the verb is called, not only when the marks are rendered.
   `drawn_axis_marks` now returns `(team_id, tick position, height)`. `check_table_adapter_contract` likewise requires
   no warning for known values and exactly one for all-unknown input.
+
+### Fixed — tables follow-ups
+
+- Muted text (`gt_theme_sdv_team`'s subtitle, the `gt_legend_discrete` subtitle) blends at sdvplotR's exact weights,
+  as the table themes already did; a few colors were one step off in a channel.
+- A table whose id is the empty string gets a random id before a theme or cell, border or watermark helper scopes CSS
+  to it; only `gt_theme_sdv` did this before, and elsewhere the CSS (`# td`) reached no cell.
+- Every `sdvplot.great_tables` function refuses raw data with one message ("gt must be a great_tables GT, not
+  DataFrame. It looks like raw data: wrap it in great_tables.GT() first."), as sdvplotR's `.check_gt` words it; an
+  unknown `density` and an unknown `*_style` key are worded alike across the table modules too, and the style error
+  names the argument.
+- `gt_sdv_logos`, `gt_sdv_wordmarks` and `gt_sdv_headshots` document exactly which `locations` they take
+  (`loc.body()`, `loc.stub()`, `loc.row_groups()`) and raise `ValueError` for any other: column labels used to come out
+  as escaped `<img>` text, and a title or source note was silently left alone. `gt_sdv_cols_label` puts marks in the
+  column labels.
+- A headshot whose ESPN player id was read through a float (pandas stores `[3139477, None]` as floats, so the cell reads
+  `3139477.0`) carries `3139477` in its alt text and team attribute, in every adapter; the URL was already right.
+- `gt_theme_preview(n=...)` takes only a positive whole number of rows (numpy integers included); 0, negative numbers,
+  booleans, floats and strings raise `ValueError` instead of showing no rows, all but the last, one row or a polars
+  error.
+- A table theme swaps out the fonts an earlier sdvplot theme put in front of the table's fonts instead of stacking on
+  them: a table themed twice no longer lists every font twice, and a second theme no longer keeps the first one's font
+  as its fallback (with `gt_theme_sdv`, directly behind Lato). Fonts you set with `opt_table_font()` stay, behind the
+  theme's, as in sdvplotR. `gt_theme_sdv` and `gt_theme_sdv_team` fall back to gt's `default_fonts()`, as sdvplotR's
+  do.
+- A translucent `#rgba`/`#rrggbbaa` color is refused (`ValueError`) where sdvplot draws the color it computes (palette
+  stops and ramps, legend and tier swatches, theme accents), instead of being drawn solid with its alpha silently
+  dropped; an opaque alpha (`f`/`ff`) is accepted and `#rgba` is now read. A color sdvplot passes to CSS as given and
+  only measures for its ink (`gt_color_pills(na_color=)`, `gt_indicator_boxes(color_yes=, color_no=, color_na=)`,
+  `gt_outliers(fill=)`) is still drawn translucent, and its ink is now read on the color it shows over the table
+  background rather than on the color with its alpha dropped. `reactable_sdv_team_color_bg` still replaces
+  `na_color`'s alpha with its own `alpha`, as sdvplotR does; CSS-only color arguments take any CSS color.
+- A translucent table background (`tab_options(table_background_color="#111111CC")`) is read as the color it shows
+  over the page when `gt_legend_discrete` and `gt_marginalia` pick their ink, so a near-black one gets light text.
 
 ### Added — parity extras (court coordinates, images by path, reference lines)
 

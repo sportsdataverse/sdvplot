@@ -13,35 +13,23 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import math
+import numbers
 import re
 from typing import Any
 
 import narwhals as nw
-from great_tables import GT, html, loc, px, random_id, style
+from great_tables import GT, html, loc, px, style
 from great_tables._helpers import GoogleFont
 
-from sdvplot._contrast import contrast, hex6, mix, on_color
-
-# gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
-R_FONTS = (
-    "system-ui",
-    "Segoe UI",
-    "Roboto",
-    "Helvetica",
-    "Arial",
-    "sans-serif",
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    "Noto Color Emoji",
+from sdvplot._contrast import hex6, on_color
+from sdvplot.great_tables._marks import (
+    DENSITY,
+    _check_gt,
+    _density,
+    _secondary_on,
+    _table_font,
+    _table_id,
 )
-
-# sdvplotR's .theme_density(): type size and row padding in one scale
-DENSITY: dict[str, dict[str, int]] = {
-    "comfortable": {"body": 14, "pad": 6, "title": 26, "subtitle": 15, "label": 10, "group": 11, "source": 11},
-    "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
-    "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},
-}
 
 # sdvplotR's .theme_scale_output(): which density role each styled location and size option scales with
 _STYLE_ROLE: dict[type, str] = {
@@ -94,44 +82,17 @@ def _text(**kwargs: Any) -> Any:
     return style.text(**kwargs)
 
 
-def _check_gt(gt: Any) -> GT:
-    if isinstance(gt, GT):
-        return gt
-    hint = "It looks like raw data: wrap it in great_tables.GT() first." if hasattr(gt, "columns") else ""
-    raise TypeError(f"gt must be a great_tables GT, not {type(gt).__name__}. {hint}".strip())
-
-
-def _density(density: str) -> dict[str, int]:
-    if density not in DENSITY:
-        raise ValueError(f"density must be 'comfortable', 'compact' or 'social', not {density!r}")
-    return DENSITY[density]
-
-
 def _color(value: str, arg: str) -> str:
     try:
         return hex6(value)
     except ValueError:
-        raise ValueError(f"{arg} must be a hex color such as '#8C2F1E', not {value!r}") from None
-
-
-def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id, assigning a random one when it has none, so the theme's CSS reaches this table alone."""
-    table_id = gt._options.table_id.value
-    if table_id is None:
-        table_id = random_id()
-        gt = gt.with_id(table_id)
-    return gt, table_id
+        raise ValueError(f"{arg} must be a hex color with no transparency, such as '#8C2F1E', not {value!r}") from None
 
 
 def _shape(gt: GT) -> tuple[list[str], int]:
     """The data's column names and row count."""
     data = nw.from_native(gt._tbl_data, eager_only=True)
     return list(data.columns), len(data)
-
-
-def _table_font(gt: GT, name: str, weight: int | None = None) -> GT:
-    """R's ``opt_table_font(font = list(google_font(name), default_fonts()))``: the font over gt's fallback stack."""
-    return gt.opt_table_font(font=list(R_FONTS)).opt_table_font(font=_font(name), weight=weight)
 
 
 def _on_spanners(gt: GT, *styles: Any) -> GT:
@@ -272,15 +233,6 @@ def _adjust_luminance(color: str, steps: float) -> str:
     return "#" + "".join(f"{min(255, max(0, int(255 * t + 0.5))):02x}" for t in out)
 
 
-def _secondary_on(background: str, ink: str, target: float = 4.5) -> str:
-    """sdvplotR's ``.theme_secondary_on()``: blend the ink into the ground until it clears ``target`` contrast."""
-    for i in range(12):
-        candidate = mix(background, ink, 0.45 + i * 0.05)
-        if contrast(candidate, background) >= target:
-            return candidate
-    return ink
-
-
 def gt_theme_almanac(
     gt: GT, accent: str = "#8C2F1E", density: str = "compact", stripe: str | None = "#F1F1EF", **options: Any
 ) -> GT:
@@ -321,7 +273,7 @@ def gt_theme_almanac(
     narrow = _font("Archivo Narrow")
     label = _text(font=narrow, weight=700, size=px(d["label"] + 1), color=ink, transform="uppercase")
     gt = (
-        _table_font(gt, "Zilla Slab")
+        _table_font(gt, _font("Zilla Slab"))
         .opt_row_striping(row_striping=stripe is not None)
         .tab_style(_text(color=ink, size=px(d["body"])), loc.body())
         .tab_style(_text(weight=700, size=px(d["title"]), color=ink), loc.title())
@@ -413,7 +365,7 @@ def gt_theme_booktabs(gt: GT, accent: str = "#111111", density: str = "comfortab
     serif = _font("Tinos")
     label = _text(font=serif, weight=700, size=px(d["label"] + 1), color=ink)
     gt = (
-        _table_font(gt, "Tinos")
+        _table_font(gt, _font("Tinos"))
         .tab_style(_text(color=ink, size=px(d["body"])), loc.body())
         .tab_style(_text(font=serif, weight=700, size=px(d["title"]), color=ink), loc.title())
         .tab_style(
@@ -510,7 +462,7 @@ def gt_theme_broadsheet(
     headline, sans = _font("Newsreader"), _font("Public Sans")
     label = _text(font=sans, weight=600, size=px(d["label"]), color=secondary, transform="uppercase")
     gt = (
-        _table_font(gt, "Source Serif 4")
+        _table_font(gt, _font("Source Serif 4"))
         .tab_style(_text(color=ink, size=px(d["body"])), loc.body())
         .tab_style(_text(font=headline, weight=600, size=px(d["title"]), color=ink), loc.title())
         .tab_style(
@@ -611,7 +563,7 @@ def gt_theme_swiss(gt: GT, accent: str = "#111111", density: str = "comfortable"
     gt, tid = _table_id(_check_gt(gt))
     label = _text(weight=500, size=px(d["label"]), color=ink, transform="uppercase")
     gt = (
-        _table_font(gt, "Archivo")
+        _table_font(gt, _font("Archivo"))
         .tab_style(_text(color=ink, size=px(d["body"]), weight=400), loc.body())
         .tab_style(_text(weight=700, size=px(d["title"] + 4), color=ink), loc.title())
         .tab_style(_text(weight=400, size=px(d["subtitle"]), color=secondary), loc.subtitle())
@@ -699,7 +651,7 @@ def gt_theme_tufte(gt: GT, accent: str = "#111111", density: str = "comfortable"
     serif = _font("EB Garamond")
     label = _text(font=serif, weight=400, style="italic", size=px(d["label"] + 2), color=secondary)
     gt = (
-        _table_font(gt, "EB Garamond")
+        _table_font(gt, _font("EB Garamond"))
         .tab_style(_text(color=ink, size=px(d["body"] + 1)), loc.body())
         .tab_style(_text(font=serif, weight=500, size=px(d["title"]), color=ink), loc.title())
         .tab_style(
@@ -783,7 +735,7 @@ def gt_theme_brutalist(gt: GT, accent: str = "#FF3B00", density: str = "comforta
     ink = "#000000"
     gt, tid = _table_id(_check_gt(gt))
     gt = (
-        _table_font(gt, "Archivo", weight=500)
+        _table_font(gt, _font("Archivo"), weight=500)
         .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
         .tab_style(
             _text(font=_font("Archivo Black"), size=px(d["title"] + 6), color=ink, transform="uppercase"), loc.title()
@@ -895,7 +847,7 @@ def gt_theme_drench(gt: GT, color: str = "#123F5E", density: str = "comfortable"
     gt, tid = _table_id(_check_gt(gt))
     label = _text(weight=700, size=px(d["label"]), color=secondary, transform="uppercase")
     gt = (
-        _table_font(gt, "Gabarito")
+        _table_font(gt, _font("Gabarito"))
         .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
         .tab_style(_text(weight=700, size=px(d["title"] + 2), color=ink), loc.title())
         .tab_style(_text(weight=400, size=px(d["subtitle"]), color=secondary), loc.subtitle())
@@ -986,7 +938,7 @@ def gt_theme_midnight(gt: GT, accent: str = "#5B8DEF", density: str = "comfortab
     # sentence case; uppercase tracking is too loud on this ground
     label = _text(weight=600, size=px(d["label"] + 1), color=secondary)
     gt = (
-        _table_font(gt, "Chivo")
+        _table_font(gt, _font("Chivo"))
         .tab_style(_text(color=primary, size=px(d["body"])), loc.body())
         .tab_style(_text(weight=700, size=px(d["title"]), color=primary), loc.title())
         .tab_style(_text(weight=400, size=px(d["subtitle"]), color=secondary), loc.subtitle())
@@ -1086,7 +1038,7 @@ def gt_theme_scoreboard(gt: GT, accent: str = "#0E1621", density: str = "compact
     condensed = _font("Barlow Condensed")
     label = _text(font=condensed, weight=700, size=px(d["label"] + 2), color=on_accent, transform="uppercase")
     gt = (
-        _table_font(gt, "Barlow")
+        _table_font(gt, _font("Barlow"))
         .tab_style(_text(color=ink, size=px(d["body"]), weight=500), loc.body())
         .tab_style(
             _text(font=condensed, weight=700, size=px(d["title"] + 4), color=ink, transform="uppercase"), loc.title()
@@ -1176,7 +1128,7 @@ def gt_theme_terminal(gt: GT, accent: str = "#FFB86C", density: str = "compact",
     gt, tid = _table_id(_check_gt(gt))
     label = _text(weight=700, size=px(d["label"]), color=accent, transform="uppercase")
     gt = (
-        _table_font(gt, "JetBrains Mono")
+        _table_font(gt, _font("JetBrains Mono"))
         .tab_style(_text(color=primary, size=px(d["body"])), loc.body())
         .tab_style(_text(weight=700, size=px(d["title"] - 2), color=primary, transform="uppercase"), loc.title())
         .tab_style(_text(weight=400, size=px(d["subtitle"] - 1), color=secondary), loc.subtitle())
@@ -1270,7 +1222,7 @@ def gt_theme_athletic(gt: GT, density: str = "comfortable", **options: Any) -> G
     columns = _shape(gt)[0]
     work = _font("Work Sans")
     table = (
-        _table_font(gt, "Spline Sans Mono", weight=500)
+        _table_font(gt, _font("Spline Sans Mono"), weight=500)
         .tab_style(_text(font=work, weight=650, size=px(12), transform="uppercase"), loc.column_labels())
         .tab_style(_text(font=work, weight=650, size=px(22)), loc.title())
         .tab_style(_text(font=work, weight=500, size=px(14)), loc.subtitle())
@@ -1342,7 +1294,7 @@ def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT
     gt, tid = _table_id(_check_gt(gt))
     signika, almarai = _font("Signika Negative"), _font("Almarai")
     table = (
-        _table_font(gt, "Almarai", weight=500)
+        _table_font(gt, _font("Almarai"), weight=500)
         .tab_style(_text(font=signika, weight=650), loc.title())
         .tab_style(_text(font=signika, weight=500), loc.subtitle())
         .tab_style(_text(font=signika, weight=650, size=px(14)), loc.column_labels())
@@ -1425,7 +1377,7 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     helvetica = _font("Helvetica Neue")
     band = [_text(font=helvetica, weight=650, size=px(14), color="#02b"), style.fill(color="#c3d9ff")]
     table = (
-        _table_font(gt, "Helvetica Neue", weight=500)
+        _table_font(gt, _font("Helvetica Neue"), weight=500)
         # R's odd and even rows (1-based), banded
         .tab_style(style.fill(color="#F2FAFD"), loc.body(rows=list(range(0, n, 2))))
         .tab_style(style.fill(color="#e5ecf9"), loc.body(rows=list(range(1, n, 2))))
@@ -1822,7 +1774,7 @@ def gt_theme_tier(gt: GT, style: str = "dark", density: str = "comfortable", **o
     gt, tid = _table_id(_check_gt(gt))
     oswald = _font("Oswald")
     table = (
-        _table_font(gt, "Oswald", weight=500)
+        _table_font(gt, _font("Oswald"), weight=500)
         .tab_style(_text(font=oswald, weight=650), loc.title())
         .tab_style(_text(font=oswald, weight=500), loc.subtitle())
         .pipe(_row_rules, "black")
@@ -1877,7 +1829,7 @@ def gt_theme_preview(
         data: A pandas or polars DataFrame, or a ``GT`` (its data is used).
         themes: Theme function names (e.g. "gt_theme_kenpom"); None shows every ``gt_theme_*`` in
             ``sdvplot.great_tables``, sorted.
-        n: How many rows of ``data`` each table shows.
+        n: How many rows of ``data`` each table shows: a positive whole number (numpy integers count).
         density: The density passed to every theme that takes one, so the tables compare; None leaves each theme at
             its own default.
 
@@ -1886,7 +1838,8 @@ def gt_theme_preview(
 
     Raises:
         TypeError: ``data`` is not a DataFrame or a ``GT``.
-        ValueError: ``data`` has no rows, a name in ``themes`` is not a theme, or ``density`` is not a scale.
+        ValueError: ``data`` has no rows, a name in ``themes`` is not a theme, ``n`` is not a positive whole number,
+            or ``density`` is not a scale.
 
     Example:
         ::
@@ -1910,6 +1863,8 @@ def gt_theme_preview(
         raise TypeError(f"data must be a pandas or polars DataFrame or a GT, not {type(data).__name__}") from None
     if len(frame) == 0:
         raise ValueError("data has no rows")
+    if isinstance(n, bool) or not isinstance(n, numbers.Integral) or n < 1:
+        raise ValueError(f"n must be a positive whole number of rows, got {n!r}")
     if density is not None:
         _density(density)
     available = sorted(name for name in sgt.__all__ if name.startswith("gt_theme_") and name != "gt_theme_preview")
@@ -1917,7 +1872,7 @@ def gt_theme_preview(
     missing = [name for name in names if name not in available]
     if missing:
         raise ValueError(f"No such theme: {', '.join(missing)}. Themes: {', '.join(available)}")
-    rows = frame.head(n).to_native()
+    rows = frame.head(int(n)).to_native()
     out = {}
     for name in names:
         fn = getattr(sgt, name)

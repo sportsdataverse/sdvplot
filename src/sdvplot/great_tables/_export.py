@@ -28,6 +28,7 @@ from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
 
 from sdvplot._errors import SdvplotWarning
+from sdvplot.great_tables._marks import _check_gt
 
 _GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
 _JPEG_QUALITY = 92  # magick's default; Pillow's own (75) blurs table text
@@ -129,11 +130,6 @@ def _ratio(aspect_ratio: str | float) -> float:
 # Argument checks: all run before anything renders, so a typo never costs a browser start
 
 
-def _check_gt(value: Any, what: str = "data") -> None:
-    if not isinstance(value, GT):
-        raise TypeError(f"{what} must be a great_tables GT, not {type(value).__name__}")
-
-
 def _finite(value: Any) -> bool:
     return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
 
@@ -231,7 +227,7 @@ def gt_save_crop(
         gt_social_crop: the same, padded onto a fixed-ratio canvas.
         Ported from sdvplotR ``gt_save_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_save_crop.html
     """
-    _check_gt(data)
+    _check_gt(data, "data")
     _check_zoom(zoom)
     pad, final = _check_common(bg, whitespace, width, file)
     return _finish(_pad(_trim(_render_gt(data, zoom, expand)), bg, pad), file, final)
@@ -285,7 +281,7 @@ def gt_social_crop(
         gt_save_crop: a plain trimmed save.
         Ported from sdvplotR ``gt_social_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_social_crop.html
     """
-    _check_gt(data)
+    _check_gt(data, "data")
     ratio = _ratio(aspect_ratio)
     place = _check_gravity(gravity)
     _check_zoom(zoom)
@@ -457,22 +453,32 @@ _STYLE_DEFAULTS: dict[str, dict[str, Any]] = {
 }
 
 
-def _style(kind: str, user: Mapping[str, Any] | None) -> dict[str, Any]:
+def _style(arg: str, user: Mapping[str, Any] | None, default: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """A style dict (sdvplotR's ``*_style`` lists): ``default`` with the caller's keys (argument ``arg``) on top."""
     user = dict(user or {})
     unknown = sorted(set(user) - set(_STYLE_KEYS))
     if unknown:
-        raise ValueError(f"{kind}_style has unknown key(s) {unknown}; recognized: {', '.join(_STYLE_KEYS)}")
-    return {**_STYLE_DEFAULTS[kind], **user}
+        raise ValueError(f"{arg} has unknown key(s) {unknown}; recognized: {', '.join(_STYLE_KEYS)}")
+    return {**(default or {}), **user}
 
 
 def _css_len(value: Any) -> str:
+    """A number (numpy numbers included) reads as pixels; anything else is a CSS length already."""
     return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
 
 
-def _css(style: Mapping[str, Any]) -> str:
-    """A style dict -> inline CSS, in sdvplotR's .style_css() order; composed HTML always sets a font stack."""
+def _style_css(style: Mapping[str, Any], font_fallback: str | None = None) -> str:
+    """A style dict -> inline CSS, in sdvplotR's .style_css() order.
+
+    With ``font_fallback`` the font family is always set (composed HTML, which has no table font to inherit); without
+    it a style with no font sets none, so the text inherits the theme's (the wave C2 headers and legends).
+    """
     font = style.get("font")
-    out = [f"font-family:'{font}', {_FONT_FALLBACK};" if font is not None else f"font-family:{_FONT_FALLBACK};"]
+    out = []
+    if font is not None:
+        out.append(f"font-family:'{font}', {font_fallback or 'sans-serif'};")
+    elif font_fallback is not None:
+        out.append(f"font-family:{font_fallback};")
     for key, prop in _CSS_PROPS:
         value = style.get(key)
         if value is not None:
@@ -488,9 +494,14 @@ def _text(value: Any) -> htmltools.HTML:
     return htmltools.HTML(value.to_html() if hasattr(value, "to_html") else html.escape(str(value)))
 
 
+def _fonts(*styles: Mapping[str, Any]) -> list[str]:
+    """The distinct Google font names across style dicts, in order."""
+    return list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
+
+
 def _font_link(styles: Sequence[Mapping[str, Any]]) -> htmltools.Tag | None:
     """composed HTML never runs through great_tables' google_font(), so a named font is fetched here."""
-    fonts = list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
+    fonts = _fonts(*styles)
     if not fonts:
         return None
     families = "&".join(f"family={f.replace(' ', '+')}:wght@100..900" for f in fonts)
@@ -528,8 +539,10 @@ def _compose(
     more_styles: Sequence[Mapping[str, Any]] = (),
 ) -> htmltools.Tag:
     """The shared heading and footer around a grid or stack, in a shrink-to-fit wrapper (sdvplotR's layout)."""
-    s_title, s_subtitle = _style("title", title_style), _style("subtitle", subtitle_style)
-    s_caption, s_source = _style("caption", caption_style), _style("source_note", source_note_style)
+    s_title = _style("title_style", title_style, _STYLE_DEFAULTS["title"])
+    s_subtitle = _style("subtitle_style", subtitle_style, _STYLE_DEFAULTS["subtitle"])
+    s_caption = _style("caption_style", caption_style, _STYLE_DEFAULTS["caption"])
+    s_source = _style("source_note_style", source_note_style, _STYLE_DEFAULTS["source_note"])
     # with no subtitle the title carries the gap the subtitle would have held
     if subtitle is None and "margin_bottom" not in (title_style or {}):
         s_title["margin_bottom"] = _STYLE_DEFAULTS["subtitle"]["margin_bottom"]
@@ -545,13 +558,19 @@ def _compose(
     header = footer = None
     if has_header:
         header = htmltools.div(
-            htmltools.div(_text(title), style=_css(s_title)) if title is not None else None,
-            htmltools.div(_text(subtitle), style=_css(s_subtitle)) if subtitle is not None else None,
+            htmltools.div(_text(title), style=_style_css(s_title, _FONT_FALLBACK)) if title is not None else None,
+            htmltools.div(_text(subtitle), style=_style_css(s_subtitle, _FONT_FALLBACK))
+            if subtitle is not None
+            else None,
         )
     if has_footer:
         footer = htmltools.div(
-            htmltools.div(_text(caption), style=_css(s_caption) + rule) if caption is not None else None,
-            htmltools.div(_text(source_note), style=_css(s_source)) if source_note is not None else None,
+            htmltools.div(_text(caption), style=_style_css(s_caption, _FONT_FALLBACK) + rule)
+            if caption is not None
+            else None,
+            htmltools.div(_text(source_note), style=_style_css(s_source, _FONT_FALLBACK))
+            if source_note is not None
+            else None,
         )
     # inner wrapper shrinks to the tables, outer one recenters it; "safe" centering plus overflow-x keeps a sheet
     # wider than a phone scrollable
@@ -657,7 +676,7 @@ def gt_grid(
         raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
     _pixels("gap", gap)
     _check_zoom(zoom)
-    s_label = _style("label", label_style)
+    s_label = _style("label_style", label_style, _STYLE_DEFAULTS["label"])
     pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
     if labels is not None:
         if isinstance(labels, str) or hasattr(labels, "to_html"):
@@ -675,7 +694,9 @@ def gt_grid(
         cells = [_table_html(t) for t in items]
     else:
         cells = [
-            htmltools.div(htmltools.div(_text(labs[i % len(labs)]), style=_css(s_label)), _table_html(t))
+            htmltools.div(
+                htmltools.div(_text(labs[i % len(labs)]), style=_style_css(s_label, _FONT_FALLBACK)), _table_html(t)
+            )
             for i, t in enumerate(items)
         ]
     grid = htmltools.div(
