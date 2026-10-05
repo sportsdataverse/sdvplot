@@ -1,5 +1,8 @@
 import hashlib
 import os
+import shutil
+import time
+import types
 
 import pytest
 import requests
@@ -22,6 +25,42 @@ def test_within_the_ttl_nothing_is_requested(cache, monkeypatch):
     _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
     monkeypatch.setattr(_cache, "SESSION", FakeSession())  # any request would IndexError
     assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv").read_bytes() == b"x"
+
+
+def test_a_fresh_file_is_served_from_memory(cache, monkeypatch):  # re-audit finding 1: no bookkeeping when warm
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x")))
+    path = _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
+
+    def fail(*args, **kwargs):
+        raise AssertionError("the path was resolved or the sidecar read again")
+
+    monkeypatch.setattr(_cache, "cache_path", fail)
+    monkeypatch.setattr(_cache, "read_meta", fail)
+    assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv") == path
+
+
+def test_the_memory_of_a_fresh_file_ends_with_its_ttl(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x", {"ETag": '"v1"'})))
+    _cache.fetch_cached("https://x/m.csv", "m.csv")
+    later = time.time() + (_cache.DEFAULT_TTL_DAYS + 1) * 86400
+    monkeypatch.setattr(_cache, "time", types.SimpleNamespace(time=lambda: later, monotonic=time.monotonic))
+    s = FakeSession(FakeResponse(304))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"x"
+    assert s.calls[0][1] == {"If-None-Match": '"v1"'}  # revalidated, not served from memory
+
+
+@pytest.mark.parametrize(
+    "clear",
+    [_cache.clear_cache, lambda: shutil.rmtree(_cache.cache_dir() / "manifest")],
+    ids=["clear_cache", "another-process-cleared-it"],
+)
+def test_a_cleared_cache_is_downloaded_again_although_memory_had_it_fresh(cache, monkeypatch, clear):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"old")))
+    _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")
+    clear()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"new")))
+    assert _cache.fetch_cached("https://x/m.csv", "manifest/m.csv").read_bytes() == b"new"
 
 
 def test_after_the_ttl_a_304_keeps_the_file_and_sends_if_none_match(cache, monkeypatch):
@@ -113,6 +152,7 @@ def test_bad_sidecar_json_forces_refetch(cache, monkeypatch):
 
     meta_path = _cache._meta_path(path)
     meta_path.write_text("not json")
+    _cache._intact.clear()  # a new process: this one remembers the file is fresh and never reads the sidecar again
 
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"new")))
     result = _cache.fetch_cached("https://x/m.csv", "m.csv")

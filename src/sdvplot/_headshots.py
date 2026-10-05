@@ -6,7 +6,7 @@ import functools
 import io
 from typing import TYPE_CHECKING, Any
 
-from sdvplot._cache import fetch_cached, safe_url
+from sdvplot._cache import MEMORY_CACHES, fetch_cached, safe_url
 from sdvplot._errors import InputError, warn
 from sdvplot._normalize import norm_value
 from sdvplot._types import HeadshotIdSystem
@@ -30,7 +30,7 @@ NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/downl
 PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
 
 
-@functools.cache
+@functools.lru_cache(maxsize=1)  # keyed by mtime so a refreshed table is read again; only the current file matters
 def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]]:
     p = pl.read_parquet(path, columns=PLAYER_COLUMNS).drop_nulls("gsis_id")
     players, bad = {}, []
@@ -45,6 +45,9 @@ def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]
             "those players get their ESPN headshot when nflverse has their ESPN id"
         )
     return players
+
+
+MEMORY_CACHES.append(_players.cache_clear)  # clear_cache() also frees the player table
 
 
 def _is_valid_espn_id(normalized_id: str) -> bool:

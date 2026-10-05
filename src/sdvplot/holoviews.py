@@ -17,7 +17,7 @@ from sdvplot._web import image_sources
 
 _SUPPORTS_AXIS_LOGOS = False
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

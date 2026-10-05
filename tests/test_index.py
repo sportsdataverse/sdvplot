@@ -1,4 +1,5 @@
 import polars as pl
+import pytest
 
 import sdvplot._index as idx
 
@@ -30,3 +31,14 @@ def test_reload_hooks_run_on_reload():
     idx.on_reload(lambda: seen.append(1))
     idx.reload_index()
     assert seen == [1]
+
+
+@pytest.mark.real_index
+def test_the_index_directory_is_looked_up_once(monkeypatch):  # re-audit finding 1: check_league runs per call
+    idx.check_league("nfl")
+
+    def fail(*args):
+        raise AssertionError("importlib.resources was asked again")
+
+    monkeypatch.setattr(idx.resources, "files", fail)
+    idx.check_league("nfl")

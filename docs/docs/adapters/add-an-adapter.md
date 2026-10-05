@@ -317,19 +317,19 @@ Then list the library wherever the others are listed: the extras table and libra
 
 ## 7. Reference docs
 
-The API reference under `docs/docs/reference/` is generated from the public docstrings of the front door
-(`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the rest of `SECTIONS` in `tools/gen_docs.py`). Adapter
-modules have no pages of their own, so a new adapter changes nothing there unless you edit one of those docstrings or
-`__all__`. Never edit a generated page by hand. Run the generator, then the check, before you push:
+The API reference under `docs/docs/reference/` is generated from the public docstrings: a page for each top-level
+function (`add_logos`, `axis_logos` and the rest of `SECTIONS` in `tools/gen_docs.py`) and one page for each public
+submodule, with a section for each name in its `__all__`. The generator finds the submodules itself, so it checks your
+adapter's docstrings at once, and fails until you place the module in a `MODULE_SECTIONS` group (adapters go under
+"Plots and tables"). Never edit a generated page by hand. Run the generator, then the check, before you push:
 
 ```bash
 uv run python tools/gen_docs.py
 uv run python tools/gen_docs.py --check
 ```
 
-Only names in `sdvplot.__all__` get a reference page, and the check fails for one that is not placed in a `SECTIONS`
-group. Helpers that live in an adapter module, like `team_style` in the pygal adapter, are documented by their
-docstrings alone.
+`tests/test_submodule_examples.py` runs each docstring Example offline, on a cache seeded with every NFL team's logo
+and wordmark: an example that draws NFL teams runs to its end without a download.
 
 ## 8. Changelog
 
@@ -354,7 +354,7 @@ uv run pytest -q
 uv run python tools/gen_docs.py --check
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy   # mypy needs every extra installed
 uv run pre-commit run --all-files
 ```
 
