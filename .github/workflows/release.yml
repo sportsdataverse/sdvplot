@@ -10,14 +10,19 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
-    name: Build sdist + wheel
+  # The gates run in one job and the dist is built in another, from a fresh checkout: nothing the test run installs
+  # (851 locked packages) can touch the tree that is packaged.
+  test:
+    name: Test the tagged tree
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
       - name: Install uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+        # no cache: a cache written by another workflow on main must not feed a release run (zizmor cache-poisoning);
+        # a pinned uv, so the release does not change with uv's latest
+        with: { version: "0.12.21", enable-cache: false, python-version: "3.13" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
       - name: Tag matches the project version
@@ -29,9 +34,22 @@ jobs:
             exit 1
           fi
       - name: Run tests
+        env:
+          # a release run also checks the README (the PyPI page) and the CHANGELOG are ready for this tag
+          SDVPLOT_RELEASE_VERSION: ${{ github.event_name == 'release' && github.ref_name || '' }}
         run: uv run --frozen pytest -q
       - name: Bundled index drift
         run: uv run --frozen python tools/build_index.py --check
+  build:
+    name: Build sdist + wheel
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with: { version: "0.12.21", enable-cache: false, python-version: "3.13" }
       - name: Build sdist + wheel
         run: uv build
       - name: Upload build artifacts for the publish job
