@@ -62,10 +62,10 @@ def palette(
 
     Raises:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        InputError: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary",
-            ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``), ``id_system`` is unknown, or
-            ``season`` is not a year, is outside the seasons sdvplot knows for the league, or is a list whose length
-            does not match the teams.
+        InputError: (a ValueError) If ``league`` is not a known league key or ``which`` is not "primary"/"secondary";
+            and, when ``teams`` is given, if it holds "primary" or "secondary" (the slot goes in ``which=``),
+            ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons sdvplot knows for the league,
+            or is a list whose length does not match the teams. Without ``teams`` they are not checked.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
     Example:

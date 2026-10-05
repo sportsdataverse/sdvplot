@@ -62,10 +62,11 @@ runs out, so a repeated lookup is a dictionary lookup and one file check instead
   ```
 
   When the server answered with an error status (a 4xx or 5xx response), the error is a `DownloadError`, an
-  `OfflineError` that is also an `OSError`. `except sdvplot.OfflineError` catches every failed download. A download
-  sdvplot refuses (larger than its byte cap, past its two-minute deadline, or redirected away from https) raises
-  `UnsafeDownloadError`, an `OSError` but not an `OfflineError`, unless a cached copy exists. `except
-  sdvplot.SdvplotError` catches every error sdvplot raises.
+  `OfflineError` that is also an `OSError`. `except sdvplot.OfflineError` catches a download that failed (no
+  connection, an error status, a bad file). A download sdvplot refuses (larger than its byte cap, past its two-minute
+  deadline, or redirected away from https) raises `UnsafeDownloadError` instead, an `OSError` but not an
+  `OfflineError`, unless a cached copy exists. `except OSError` catches both, and `except sdvplot.SdvplotError`
+  catches every error sdvplot raises.
 
 To work offline, call the functions you need once while connected, or copy a filled cache directory to the machine and
 point `SDVPLOT_CACHE_DIR` at it.

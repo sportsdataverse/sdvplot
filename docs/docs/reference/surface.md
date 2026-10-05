@@ -41,11 +41,11 @@ Draw the league's playing surface with sportypy, in a team's colors.
 
 ## Raises
 
-- `InputError`: (a ValueError) If sportypy has no surface for ``league``, ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``center_logo`` is a height outside (0, 1].
-- `OptionalDependencyError`: If the surfaces extra (sportypy) is not installed, or ``center_logo`` is set and the team's logo is an SVG without the ``svg`` extra.
-- `OfflineError`: If ``center_logo`` is set and the logo manifest or the team's logo is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
-- `UnsafeDownloadError`: (an OSError) If ``center_logo`` is set and a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
-- `UnsafeCachePathError`: (a ValueError) If ``center_logo`` is set and the manifest's sha256 or extension for the logo would put the file outside the cache directory.
+- `InputError`: (a ValueError) If sportypy has no surface for ``league``; and, when ``team`` is given, if ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``center_logo`` is a height outside (0, 1]. Without ``team``, ``season`` and ``center_logo`` are not used.
+- `OptionalDependencyError`: If the surfaces extra (sportypy) is not installed, or ``team`` and ``center_logo`` are set and the team's logo is an SVG without the ``svg`` extra.
+- `OfflineError`: If ``team`` and ``center_logo`` are set and the logo manifest or the team's logo is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+- `UnsafeDownloadError`: (an OSError) If ``team`` and ``center_logo`` are set and a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``team`` and ``center_logo`` are set and the manifest's sha256 or extension for the logo would put the file outside the cache directory.
 
 ## Example
 
