@@ -221,7 +221,14 @@ def _svg_row(monkeypatch, body):
 
 
 @pytest.mark.parametrize(
-    ("shape", "size", "expected"), [((1, 4), 512, (128, 512)), ((4, 1), 64, (64, 16)), ((1, 64), 640, (10, 640))]
+    ("shape", "size", "expected"),
+    [
+        ((1, 4), 512, (128, 512)),
+        ((4, 1), 64, (64, 16)),
+        ((1, 64), 640, (10, 640)),
+        # a wordmark wider than any in the archive (13:1), at the largest size an adapter asks for (matplotlib's _image)
+        ((16, 1), 4096, (4096, 256)),
+    ],
 )
 def test_an_svg_is_rendered_with_its_longest_side_at_size(cache, monkeypatch, shape, size, expected):
     pytest.importorskip("resvg_py")
