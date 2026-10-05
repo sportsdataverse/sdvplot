@@ -32,6 +32,7 @@ MAX_REDIRECTS = 5
 MEMORY_CACHES: list[Callable[[], object]] = []  # in-memory caches (decoded images) that clear_cache() empties
 _warned: set[str] = set()
 _intact: set[str] = set()  # cached files already checked this process
+_fresh: dict[tuple[str, str], tuple[Path, float]] = {}  # (cache dir, relpath) -> (path, fetched_at): fetch_cached
 
 
 def _session() -> Any:
@@ -200,6 +201,23 @@ def _heal(path: Path, validate: Callable[[bytes], object] | None, sha256: str | 
 
 
 def fetch_cached(
+    url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None, max_bytes: int = MAX_BYTES
+) -> Path:
+    """``_fetch_cached``, with a file this process found fresh remembered until its TTL runs out: a warm call is a dict
+    lookup and one stat, not two path resolutions and a JSON read. It is trusted only while ``_intact`` vouches for the
+    file (``clear_cache()`` empties it) and the file still exists (another process may have cleared the cache)."""
+    key = (str(cache_dir()), relpath)
+    hit = _fresh.get(key)
+    if hit is not None and str(hit[0]) in _intact and hit[0].exists() and time.time() - hit[1] < ttl_seconds():
+        return hit[0]
+    path = _fetch_cached(url, relpath, validate=validate, max_bytes=max_bytes)
+    fetched_at = (read_meta(relpath) or {}).get("fetched_at", 0)
+    if str(path) in _intact and time.time() - fetched_at < ttl_seconds():  # not a stale copy kept after a failure
+        _fresh[key] = (path, fetched_at)
+    return path
+
+
+def _fetch_cached(
     url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None, max_bytes: int = MAX_BYTES
 ) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,

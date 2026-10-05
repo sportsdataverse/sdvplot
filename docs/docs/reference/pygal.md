@@ -10,11 +10,76 @@ The pygal adapter: logos, wordmarks and headshots on pygal XY charts, plus team 
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
-| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [axis_logos](#axis_logos) | Not supported: pygal draws axis labels as text nodes, so sdvplot.pygal cannot put logos in their place. |
 | [team_style](#team_style) | A pygal Style whose series colors are the teams' colors, in the order the series are added. |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    chart: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> Any
+```
+
+</div>
+
+Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart.
+
+Copy the chart with ``copy.deepcopy`` (the copy keeps the headshots); a shallow copy shares pygal's own series and
+filters.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `chart` | `Any` | A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...). |
+| `x` | `Any` | The points' x positions in the chart's units (read by position). |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the plot height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `embed` | `bool` | True puts the image bytes in the SVG as data URIs (no network when rendering). |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`object` — ``chart`` itself, with a filter that draws the headshots whenever it renders.
+
+### Raises
+
+- `TypeError`: If ``chart`` is not an XY-family chart.
+- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+import pygal
+import sdvplot
+
+chart = pygal.XY(stroke=False)
+chart.add("passing", [(4.2, 0.31)])
+sdvplot.add_headshots(chart, [4.2], [0.31], ["3139477"], league="nfl", height=0.15)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -155,71 +220,6 @@ sdvplot.add_wordmarks(chart, [10], [-3], ["KC"], league="nfl", height=0.08)
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    chart: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> Any
-```
-
-</div>
-
-Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart.
-
-Copy the chart with ``copy.deepcopy`` (the copy keeps the headshots); a shallow copy shares pygal's own series and
-filters.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `chart` | `Any` | A pygal ``XY`` chart or one of its time variants (``DateTimeLine``, ``DateLine``, ...). |
-| `x` | `Any` | The points' x positions in the chart's units (read by position). |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the plot height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `embed` | `bool` | True puts the image bytes in the SVG as data URIs (no network when rendering). |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`object` — ``chart`` itself, with a filter that draws the headshots whenever it renders.
-
-### Raises
-
-- `TypeError`: If ``chart`` is not an XY-family chart.
-- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-import pygal
-import sdvplot
-
-chart = pygal.XY(stroke=False)
-chart.add("passing", [(4.2, 0.31)])
-sdvplot.add_headshots(chart, [4.2], [0.31], ["3139477"], league="nfl", height=0.15)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 

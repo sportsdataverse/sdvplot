@@ -10,10 +10,77 @@ The Plotly adapter: logos, wordmarks, headshots and axis logos as layout images 
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Plotly figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Plotly figure, as layout images. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Plotly figure. |
-| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Plotly figure. |
 | [axis_logos](#axis_logos) | Replace a category axis' team labels with the teams' logos (or wordmarks). |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    target: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    xref: str = 'x',
+    yref: str = 'y',
+    layer: str = 'above',
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> Any
+```
+
+</div>
+
+Draw each player's headshot centred on its (x, y) point of a Plotly figure.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``plotly.graph_objects.Figure``. |
+| `x` | `Any` | The points' x positions in the axis' own values. |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the plot area's height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `xref` | `str` | The x axis to place on. |
+| `yref` | `str` | The y axis to place on. |
+| `layer` | `str` | "above" or "below" the traces. |
+| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`object` — ``target`` itself, with the images added.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or an axis is not supported (see ``add_logos``).
+- `TypeError`: If the target is not a Plotly ``Figure``.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+import plotly.graph_objects as go
+import sdvplot
+
+fig = go.Figure(go.Scatter(x=[0.3, 0.7], y=[0.5, 0.5], mode="markers"))
+sdvplot.add_headshots(fig, [0.3], [0.5], ["3139477"], league="nfl", height=0.2)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -162,73 +229,6 @@ sdvplot.add_wordmarks(fig, ["KC", "BUF"], [12, 10], ["KC", "BUF"], league="nfl",
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    target: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    xref: str = 'x',
-    yref: str = 'y',
-    layer: str = 'above',
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> Any
-```
-
-</div>
-
-Draw each player's headshot centred on its (x, y) point of a Plotly figure.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A ``plotly.graph_objects.Figure``. |
-| `x` | `Any` | The points' x positions in the axis' own values. |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the plot area's height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `xref` | `str` | The x axis to place on. |
-| `yref` | `str` | The y axis to place on. |
-| `layer` | `str` | "above" or "below" the traces. |
-| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`object` — ``target`` itself, with the images added.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or an axis is not supported (see ``add_logos``).
-- `TypeError`: If the target is not a Plotly ``Figure``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-import plotly.graph_objects as go
-import sdvplot
-
-fig = go.Figure(go.Scatter(x=[0.3, 0.7], y=[0.5, 0.5], mode="markers"))
-sdvplot.add_headshots(fig, [0.3], [0.5], ["3139477"], league="nfl", height=0.2)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 

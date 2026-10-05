@@ -10,10 +10,71 @@ The HoloViews adapter: a Bokeh plot hook that draws the marks through the Bokeh 
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a HoloViews element (Bokeh backend). |
-| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [axis_logos](#axis_logos) | Not supported on HoloViews (it draws through Bokeh, which has no axis logos yet). |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    element: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> Any
+```
+
+</div>
+
+Draw each player's headshot centred on its (x, y) point of a HoloViews element (Bokeh backend).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `element` | `Any` | A HoloViews element or overlay. |
+| `x` | `Any` | The points' x positions, in the element's x values. |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the plot's reference height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`object` — A copy of ``element`` with the drawing hook added.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+- `TypeError`: If ``element`` is not a HoloViews object, or the current backend is not Bokeh.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+import holoviews as hv
+import sdvplot
+
+hv.extension("bokeh")
+sdvplot.add_headshots(hv.Scatter([(0.5, 0.5)]), [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -152,67 +213,6 @@ bars = sdvplot.add_wordmarks(bars, ["KC", "BUF"], [12, 10], ["KC", "BUF"], leagu
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    element: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> Any
-```
-
-</div>
-
-Draw each player's headshot centred on its (x, y) point of a HoloViews element (Bokeh backend).
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `element` | `Any` | A HoloViews element or overlay. |
-| `x` | `Any` | The points' x positions, in the element's x values. |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the plot's reference height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`object` — A copy of ``element`` with the drawing hook added.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
-- `TypeError`: If ``element`` is not a HoloViews object, or the current backend is not Bokeh.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-import holoviews as hv
-import sdvplot
-
-hv.extension("bokeh")
-sdvplot.add_headshots(hv.Scatter([(0.5, 0.5)]), [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 

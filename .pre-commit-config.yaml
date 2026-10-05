@@ -99,7 +99,8 @@ repos:
         stages: [commit-msg]
       - id: mypy-prepush
         name: mypy (pre-push)
-        entry: uv run --frozen mypy
+        # every extra, as CI: without the plot libraries the adapters' types collapse to Any and mypy fails
+        entry: uv run --frozen --all-extras mypy
         language: system
         files: ^(src/sdvplot/.*|tests/test_types)\.py$
         pass_filenames: false

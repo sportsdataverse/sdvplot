@@ -10,8 +10,67 @@ plottable columns of team logos, wordmarks and player headshots.
 
 | Name | What it is |
 |---|---|
-| [logo_column](#logo_column) | A plottable column that shows each row's team as its logo (or wordmark). |
 | [headshot_column](#headshot_column) | A plottable column that shows each row's player as a headshot. |
+| [logo_column](#logo_column) | A plottable column that shows each row's team as its logo (or wordmark). |
+
+## headshot_column
+
+<div class="sdv-signature">
+
+```python
+headshot_column(
+    name: str,
+    *,
+    league: str,
+    id_system: str = 'espn',
+    **column_definition_kwargs: Any,
+) -> plottable.column_def.ColumnDefinition
+```
+
+</div>
+
+A plottable column that shows each row's player as a headshot.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `name` | `str` | The data column holding the player ids. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `id_system` | `str` | "espn" or "gsis" (NFL), as in ``headshot_url``. |
+| `**column_definition_kwargs` | `Any` | Passed to ``plottable.ColumnDefinition``. |
+
+### Returns
+
+`plottable.ColumnDefinition` — The column definition; an unknown id leaves its cell blank, with an SdvplotWarning.
+
+### Raises
+
+- `InputError`: When the table is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+- `OfflineError`: When the table is drawn, if ``id_system`` is "gsis" and the nflverse player table is neither cached nor downloadable.
+
+### Example
+
+```python
+import pandas as pd
+from plottable import Table
+from sdvplot.plottable import headshot_column
+
+df = pd.DataFrame(
+    {
+        "team": ["KC", "BUF", "BAL"],
+        "espn_id": ["3139477", "3918298", "3916387"],
+        "wins": [12, 10, 9],
+    }
+)
+
+Table(df, column_definitions=[headshot_column("espn_id", league="nfl", title="")])
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
+- sdvplot.plottable.logo_column: the same with team logos
 
 ## logo_column
 
@@ -75,62 +134,3 @@ Table(df, column_definitions=[logo_column("team", league="nfl", title="")])
 ### See also
 
 - [plottable](https://plottable.readthedocs.io/)
-
-## headshot_column
-
-<div class="sdv-signature">
-
-```python
-headshot_column(
-    name: str,
-    *,
-    league: str,
-    id_system: str = 'espn',
-    **column_definition_kwargs: Any,
-) -> plottable.column_def.ColumnDefinition
-```
-
-</div>
-
-A plottable column that shows each row's player as a headshot.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `name` | `str` | The data column holding the player ids. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `id_system` | `str` | "espn" or "gsis" (NFL), as in ``headshot_url``. |
-| `**column_definition_kwargs` | `Any` | Passed to ``plottable.ColumnDefinition``. |
-
-### Returns
-
-`plottable.ColumnDefinition` — The column definition; an unknown id leaves its cell blank, with an SdvplotWarning.
-
-### Raises
-
-- `InputError`: When the table is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
-- `OfflineError`: When the table is drawn, if ``id_system`` is "gsis" and the nflverse player table is neither cached nor downloadable.
-
-### Example
-
-```python
-import pandas as pd
-from plottable import Table
-from sdvplot.plottable import headshot_column
-
-df = pd.DataFrame(
-    {
-        "team": ["KC", "BUF", "BAL"],
-        "espn_id": ["3139477", "3918298", "3916387"],
-        "wins": [12, 10, 9],
-    }
-)
-
-Table(df, column_definitions=[headshot_column("espn_id", league="nfl", title="")])
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
-- sdvplot.plottable.logo_column: the same with team logos

@@ -79,6 +79,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
   submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
   and `--strict-config`. Python 3.14 is a declared classifier.
+- Repeated lookups are faster: with everything cached, `logo_url` takes about 0.1 ms per call instead of 2.5 ms, and
+  `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
+  its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's
+  directory is looked up once, and each team's marks are taken from the manifest once per manifest load.
+- The matplotlib-family adapters (matplotlib, seaborn, plotnine, plottable, `title_image`) keep a mark in memory no
+  bigger than they draw it, 512 px tall. Half of the logo archive is 4096 px: each such mark held 64 MiB, a quarter of
+  the decoded-image cache, so a few of them pushed out everything else and every plot decoded them again (about 0.5 s
+  each). Now a repeated `add_logos` with a 4096 px mark takes about 0.02 s instead of 0.5 s; the first one still pays
+  the decode.
 
 ### Fixed
 
@@ -97,6 +106,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- A long-running session no longer keeps every logo manifest (about 17 MiB parsed) or nflverse player table it has read:
+  when the cached file is refreshed, the previous one is freed. `clear_cache()` now also frees the parsed manifest, the
+  player table and the per-league tables built from the manifest, as it already freed the decoded images.
 
 ## [0.1.0] - Unreleased
 

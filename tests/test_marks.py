@@ -147,3 +147,21 @@ def test_a_mark_alias_range_clamps_a_dated_row(monkeypatch):
     tie = _marks.marks("KC", "mlb").filter(pl.col("variant") == "tie")
     assert tie["valid_from"].to_list() == [2010, 2005]  # 2000 -> 2005; 2010 stays
     _marks._RANKED.clear()
+
+
+def test_a_warm_mark_lookup_runs_no_polars_filter(monkeypatch):  # re-audit finding 1: a dict hit, not a filter
+    assert _marks.logo_url("LV", "nfl") == "https://cdn/1111.png"
+    assert _marks.logo_url("OAK", "nfl", season=2010) == "https://cdn/3333.png"  # the season bounds are built once
+
+    def no_filter(*args, **kwargs):
+        raise AssertionError("the manifest was filtered again")
+
+    monkeypatch.setattr(pl.DataFrame, "filter", no_filter)
+    assert _marks.logo_url("LV", "nfl") == "https://cdn/1111.png"
+    assert _marks.logo_url("OAK", "nfl", season=2010) == "https://cdn/3333.png"  # the same team's rows, another season
+
+
+def test_select_mark_hands_out_a_copy_of_the_cached_row():
+    row = _marks.select_mark("LV", "nfl")
+    row["archive_url"] = "edited by the caller"
+    assert _marks.logo_url("LV", "nfl") == "https://cdn/1111.png"
