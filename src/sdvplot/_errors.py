@@ -23,3 +23,7 @@ class UnsupportedTargetError(TypeError):
 
 class UnsafeCachePathError(ValueError):
     """A manifest value (sha256, ext) or cache path would reach outside the sdvplot cache directory."""
+
+
+class UnsafeDownloadError(OSError):
+    """A download was refused: too large, too slow, or redirected away from https."""

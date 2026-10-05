@@ -21,6 +21,7 @@ from sdvplot._resolve import one_team, resolve
 
 DEFAULT_SVG_SIZE = 512
 _SHA256 = re.compile(r"[0-9a-f]{64}")
+URL_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 
 
@@ -156,7 +157,7 @@ def url_file(url: str) -> Path:
     """The cached file of an image that is not content-addressed (a headshot): keyed by sha256(url), refreshed after
     SDVPLOT_CACHE_TTL, non-images rejected."""
     key = hashlib.sha256(url.encode()).hexdigest()
-    return fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image)
+    return fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image, max_bytes=URL_IMAGE_MAX_BYTES)
 
 
 def load_url_image(url: str) -> Image.Image:

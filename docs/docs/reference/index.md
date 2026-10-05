@@ -48,7 +48,7 @@ Every public function, grouped by what it works with. Each page gives the signat
 | Function | What it does |
 |---|---|
 | [versions](versions.md) | What a bug report needs: the package version, the bundled-index version, and the cached manifest's date. |
-| [clear_cache](clear_cache.md) | Delete everything sdvplot has cached (manifest, images, rasters, nflverse). |
+| [clear_cache](clear_cache.md) | Delete everything sdvplot has cached (manifest, images, rasters, nflverse, URL images such as headshots). |
 
 ## Errors and warnings
 

@@ -225,6 +225,13 @@ class FakeResponse:
     def __init__(self, status=200, body=b"", headers=None):
         self.status_code, self.content, self.headers = status, body, headers or {}
 
+    def iter_content(self, chunk_size=1):
+        for i in range(0, len(self.content), chunk_size):
+            yield self.content[i : i + chunk_size]
+
+    def close(self):
+        pass
+
     def raise_for_status(self):
         if self.status_code >= 400:
             err = requests.HTTPError(f"HTTP {self.status_code}")
@@ -239,7 +246,8 @@ class FakeSession:
         self.responses, self.calls, self.timeouts = list(responses), [], []
         self.headers = {}
 
-    def get(self, url, headers=None, timeout=None):
+    def get(self, url, headers=None, timeout=None, stream=False, allow_redirects=True):
+        assert allow_redirects is False, "sdvplot must follow redirects itself (https-only)"
         self.calls.append((url, headers or {}))
         self.timeouts.append(timeout)
         nxt = self.responses.pop(0)
@@ -281,7 +289,8 @@ def mark_images(manifest, cache):
     rows = pl.read_csv(FIXTURE, schema_overrides={"entity_id": pl.Utf8})
     for sha, ext, w, h in rows.select("sha256", "ext", "width", "height").iter_rows():
         tint = hashlib.md5(sha.encode()).digest()[:3]  # a color per mark, so a swapped logo shows in baselines
-        seed_image(cache / "images" / sha[:2] / f"{sha}.{ext}", size=(w // 10, h // 10), color=(*tint, 255))
+        path = seed_image(cache / "images" / sha[:2] / f"{sha}.{ext}", size=(w // 10, h // 10), color=(*tint, 255))
+        _cache._intact.add(str(path.resolve()))  # the fixture shas are made up: count the seeded files as verified
     return cache
 
 
