@@ -15,8 +15,6 @@ basketball (hoopR, wehoop and the stats-API shot files the SportsDataverse publi
 (fastRhockey) and the Premier League (ESPN), all through sportsdataverse-py; nothing calls stats.nba.com.
 
 ```python
-import logging
-
 import matplotlib.pyplot as plt
 import polars as pl
 import sportsdataverse.mbb as mbb
@@ -29,9 +27,6 @@ import sportsdataverse.wnba as wnba
 
 import sdvplot
 
-# sportypy's football fields ask for the Clarendon font; where it is not installed, matplotlib logs one line per
-# yard number and draws them in its default font. Quiet that log.
-logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 NFL_SEASON = 2025  # nflverse names a season by the year it starts
 SEASON = 2026  # the 2026 WNBA season and the 2025-26 NBA, NHL and college basketball season
 ```
@@ -103,7 +98,7 @@ pros, the highest adjusted efficiency margin in college.
 ```python
 def most_wins(box: pl.DataFrame) -> str:
     regular = box.filter(pl.col("season_type") == 2)
-    wins = regular.group_by("team_abbreviation").agg(pl.col("team_winner").sum())
+    wins = regular.group_by("team_abbreviation", maintain_order=True).agg(pl.col("team_winner").sum())
     return wins.sort(["team_winner", "team_abbreviation"], descending=[True, False])["team_abbreviation"][0]
 
 

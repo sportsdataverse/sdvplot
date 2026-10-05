@@ -55,10 +55,10 @@ week, n_games = pbp["week"].max(), pbp["game_id"].n_unique()
 unplayed = schedule.filter((pl.col("game_type") == "REG") & pl.col("result").is_null()).height
 super_bowl = schedule.filter((pl.col("game_type") == "SB") & pl.col("result").is_not_null()).height
 if unplayed:
-    status = f"**Updated {today}:** the {season} season through week {week} ({n_games} games)."
+    status = f"**Season to date:** the {season} season through week {week} ({n_games} games)."
     through = f"through week {week}"
 elif not super_bowl:
-    status = f"**Updated {today}:** the final {season} regular season; the playoffs are under way."
+    status = f"**Playoffs:** the final {season} regular season; the playoffs are under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {season} regular season. The {season + 1} season starts in September."
@@ -68,7 +68,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Updated 2026-10-05:** the 2026 season through week 4 (62 games).
+**Season to date:** the 2026 season through week 4 (63 games).
 
 </div>
 
@@ -82,10 +82,11 @@ nickname in team colors and `gt_sdv_logos` turns the nflverse abbreviations into
 ```python
 plays = pbp.filter(((pl.col("pass") == 1) | (pl.col("rush") == 1)) & pl.col("epa").is_not_null())
 per_game = (
-    plays.group_by("game_id", "week", team="posteam")
+    plays.group_by("game_id", "week", team="posteam", maintain_order=True)
     .agg(off=pl.col("epa").sum(), off_n=pl.len())
     .join(
-        plays.group_by("game_id", team="defteam").agg(dfn=pl.col("epa").sum(), dfn_n=pl.len()), on=["game_id", "team"]
+        plays.group_by("game_id", team="defteam", maintain_order=True).agg(dfn=pl.col("epa").sum(), dfn_n=pl.len()),
+        on=["game_id", "team"],
     )
     .sort("team", "week")  # a fixed row order makes every sum below come out bit-for-bit the same each week
 )
@@ -93,7 +94,7 @@ per_game = (
 
 def per_play(games):
     return (
-        games.group_by("team")
+        games.group_by("team", maintain_order=True)
         .agg(
             off_epa=pl.col("off").sum() / pl.col("off_n").sum(),
             def_epa=pl.col("dfn").sum() / pl.col("dfn_n").sum(),
@@ -111,7 +112,7 @@ sides = pl.concat(
         games.select(team="away_team", pf="away_score", pa="home_score"),
     ]
 )
-record = sides.group_by("team").agg(
+record = sides.group_by("team", maintain_order=True).agg(
     w=(pl.col("pf") > pl.col("pa")).sum(),
     l=(pl.col("pf") < pl.col("pa")).sum(),
     t=(pl.col("pf") == pl.col("pa")).sum(),
@@ -237,7 +238,7 @@ player table.
 ```python
 dropbacks = pbp.filter((pl.col("qb_dropback") == 1) & pl.col("qb_epa").is_not_null() & pl.col("id").is_not_null())
 qbs = (
-    dropbacks.group_by("id")
+    dropbacks.group_by("id", maintain_order=True)
     .agg(name=pl.col("name").first(), team=pl.col("posteam").last(), n=pl.len(), epa=pl.col("qb_epa").mean())
     .filter(pl.col("n") >= 15 * week)
     .sort(["epa", "id"], descending=[True, False])

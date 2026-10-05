@@ -59,7 +59,7 @@ team_ids = sdvplot.resolve(shots["nhl_id"].to_list(), "nhl", id_system="nhl_id")
 abbr = dict(sdvplot.teams("nhl").select("team_id", "abbr").iter_rows())
 shots = shots.with_columns(team=pl.Series([abbr[t] for t in team_ids]))
 print(f"{away['abbrev']} {away['score']} at {home['abbrev']} {home['score']}")
-shots.group_by("team", "kind").len().sort("team", "kind")
+shots.group_by("team", "kind", maintain_order=True).len().sort("team", "kind")
 ```
 
 <div class="sdv-output">
@@ -273,13 +273,10 @@ Image(OUT / "nhl_shot_map_1200x675.png")
 
 ```text
 nhl_shot_map_1200x675.png (1200, 675)
-```
-
-```text
 nhl_shot_map_1600x900.png (1600, 900)
 ```
 
-![png](nhl-shot-map_files/nhl-shot-map_13_2.png)
+![png](nhl-shot-map_files/nhl-shot-map_13_1.png)
 
 </div>
 

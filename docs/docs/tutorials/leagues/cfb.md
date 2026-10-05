@@ -130,7 +130,7 @@ sides = pl.concat(
 
 big_ten = (
     sides.filter(pl.col("conf") == "Big Ten")
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(
         conf_w=(pl.col("win") & pl.col("conference_game")).sum(),
         conf_l=(~pl.col("win") & pl.col("conference_game")).sum(),
@@ -283,7 +283,7 @@ print(str(caught[0].message)[:160], "...")
 
 (
     opponents.with_columns(found=resolved.is_not_null())
-    .group_by("division")
+    .group_by("division", maintain_order=True)
     .agg(teams=pl.len(), in_sdvplot=pl.col("found").sum())
     .sort("teams", descending=True)
 )
@@ -416,7 +416,8 @@ plt.show()
 ## 9. Tiers of a ranking you compute
 
 A composite ranking: the average of each team's rank in two systems, cfbfastR's adjusted net EPA and FEI. The top
-32 go into five tiers with `team_tiers`.
+32 go into five tiers with `team_tiers`, on its light theme: Ohio State's, Texas A&M's and Penn State's dark logos
+vanish on the default dark one.
 
 ```python
 from sdvplot.matplotlib import team_tiers
@@ -424,7 +425,7 @@ from sdvplot.matplotlib import team_tiers
 composite = (
     cfb.load_cfb_ratings([SEASON])
     .with_columns(pl.col("team_id").cast(pl.Utf8), score=(pl.col("net_rank") + pl.col("fei_net_rank")) / 2)
-    .sort("score")
+    .sort("score", "net_rank", "team_id")
     .head(32)
 )
 sizes = [4, 6, 7, 7, 8]  # teams per tier, top to bottom
@@ -437,6 +438,7 @@ fig = team_tiers(
     subtitle="average rank in adjusted net EPA and FEI",
     caption=CAPTION,
     alpha=1,
+    theme="light",
     tier_desc={1: "Elite", 2: "Contenders", 3: "Very good", 4: "Good", 5: "Solid"},
 )
 plt.show()

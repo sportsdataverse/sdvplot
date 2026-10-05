@@ -39,8 +39,8 @@ plays = pbp.filter(
     pl.col("play_type").is_in(["pass", "run"]),
     pl.col("epa").is_not_null(),
 )
-offense = plays.group_by("posteam").agg(off_epa=pl.col("epa").mean(), plays=pl.len())
-defense = plays.group_by("defteam").agg(def_epa=pl.col("epa").mean())
+offense = plays.group_by("posteam", maintain_order=True).agg(off_epa=pl.col("epa").mean(), plays=pl.len())
+defense = plays.group_by("defteam", maintain_order=True).agg(def_epa=pl.col("epa").mean())
 assert offense.schema["posteam"] == defense.schema["defteam"]  # one dtype on both sides of the join key
 teams = (
     offense.join(defense, left_on="posteam", right_on="defteam")
@@ -295,13 +295,10 @@ Image(OUT / "nfl_epa_1200x675.png")
 
 ```text
 nfl_epa_1200x675.png (1200, 675)
-```
-
-```text
 nfl_epa_1080x1080.png (1080, 1080)
 ```
 
-![png](nfl-epa-scatter_files/nfl-epa-scatter_13_2.png)
+![png](nfl-epa-scatter_files/nfl-epa-scatter_13_1.png)
 
 </div>
 

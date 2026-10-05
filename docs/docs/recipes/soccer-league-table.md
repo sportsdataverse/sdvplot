@@ -19,7 +19,7 @@ from pathlib import Path
 import polars as pl
 import sportsdataverse.soccer as soccer
 from great_tables import GT, html, loc, style
-from IPython.display import HTML, Image
+from IPython.display import Image
 from PIL import Image as PILImage
 
 from sdvplot.great_tables import gt_row_accent, gt_save_crop, gt_sdv_logos, gt_social_crop, gt_theme_pl
@@ -56,7 +56,7 @@ results = pl.DataFrame(rows).with_columns(
 )
 form = (
     results.sort("date")
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(
         form=pl.col("result").tail(5).str.join(""),
         points=pl.col("result").replace_strict({"W": 3, "D": 1, "L": 0}, return_dtype=pl.Int64).sum(),
@@ -211,9 +211,7 @@ final = (
     .tab_style(style.fill("#f3eefa"), loc.body(rows=[0]))
     .pipe(gt_theme_pl)
 )
-# A notebook view marks great_tables' CSS !important, which outranks the inline borders gt_row_accent draws;
-# the raw HTML (like every saved image) keeps the bars.
-HTML(final.as_raw_html())
+final
 ```
 
 <div class="sdv-output">

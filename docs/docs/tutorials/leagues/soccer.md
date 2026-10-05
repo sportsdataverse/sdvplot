@@ -73,7 +73,11 @@ games = (
         match=pl.int_range(1, pl.len() + 1).over("team_id"),
     )
 )
-check = games.group_by("team_id").agg(pl.col("pts").sum()).join(table.select("team_id", "points"), on="team_id")
+check = (
+    games.group_by("team_id", maintain_order=True)
+    .agg(pl.col("pts").sum())
+    .join(table.select("team_id", "points"), on="team_id")
+)
 assert (check["pts"] == check["points"]).all()
 table.height, games.height
 ```
@@ -345,7 +349,7 @@ the y axis for crests.
 ```python
 import seaborn as sns
 
-print(sdvplot.teams("soccer")["color_source"].unique().to_list())
+print(sdvplot.teams("soccer")["color_source"].unique(maintain_order=True).to_list())
 scored = table.sort("points_for", descending=True).select("team_id", "points_for").to_pandas()
 fig, axes = plt.subplots(1, 2, figsize=(10, 6), sharex=True)
 palettes = {

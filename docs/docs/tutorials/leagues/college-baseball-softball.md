@@ -116,9 +116,9 @@ sides = pl.concat(
     ]
 )
 omaha = (
-    sides.group_by("team")
+    sides.group_by("team", maintain_order=True)
     .agg(games=pl.len(), wins=(pl.col("rf") > pl.col("ra")).sum(), diff=(pl.col("rf") - pl.col("ra")).sum())
-    .sort("diff", descending=True)
+    .sort(["diff", "wins", "team"], descending=[True, True, False])
 )
 
 fig, ax = plt.subplots(figsize=(8, 5))
@@ -167,7 +167,7 @@ line = pl.concat([line.select("team").unique().with_columns(inning=0, runs=0), l
 line = line.sort("team", "inning").with_columns(total=pl.col("runs").cum_sum().over("team"))
 
 fig, ax = plt.subplots(figsize=(8, 5))
-ends = line.group_by("team").agg(pl.col("inning").max(), pl.col("total").last())
+ends = line.group_by("team", maintain_order=True).agg(pl.col("inning").max(), pl.col("total").last())
 for team in ends["team"]:
     t = line.filter(pl.col("team") == team)
     ax.step(t["inning"], t["total"], where="post", linewidth=3, color=sdvplot.team_colors(team, "ncaa_baseball"))
@@ -200,8 +200,7 @@ plt.show()
 
 The WCWS in Oklahoma City ran from May 28 to June 4. The champion is the winner of the series' last game; its games go into a
 table where `gt_color_results` fills each row by the result. As with any fill, the theme goes on first and the
-result colors after it; the theme's row stripes are switched off, since in notebook output great_tables marks its CSS
-`!important` and stripes would cover the fills on every other row. `logo_url` puts the champion's logo in the title.
+result colors after it. `logo_url` puts the champion's logo in the title.
 
 ```python
 from great_tables import html
@@ -212,7 +211,7 @@ wcws = (
     scoreboard("softball", dt.date(SEASON, 5, 28), 8)
     .filter(pl.col("note").str.contains("College World Series"))
     .with_columns(pl.col("home_score").cast(pl.Int64), pl.col("away_score").cast(pl.Int64))
-    .sort("date")
+    .sort("date", maintain_order=True)
 )
 last = wcws.row(-1, named=True)
 won_home = last["home_score"] > last["away_score"]
@@ -241,8 +240,7 @@ gt = gt_theme_ncaa(
         title=html(f'<img src="{logo}" style="height:40px;vertical-align:middle"> {champ_name}'),
         subtitle=f"{SEASON} Women's College World Series",
     )
-    .tab_source_note(ESPN),
-    row_striping_include_table_body=False,
+    .tab_source_note(ESPN)
 )
 gt = gt_sdv_logos(gt, "opponent_logo", league="ncaa_softball", height=26)
 gt_color_results(gt, "result")
@@ -302,7 +300,7 @@ import altair as alt
 top = (
     sdv.espn_college_baseball_standings(season=SEASON)
     .filter(pl.col("games_played") >= 40)
-    .sort("win_percent", descending=True)
+    .sort("win_percent", descending=True, maintain_order=True)
     .head(15)
     .with_columns(record=pl.format("{}-{}", pl.col("wins").cast(pl.Int64), pl.col("losses").cast(pl.Int64)))
 )
@@ -332,26 +330,34 @@ sdvplot.axis_logos(bars, "y", league="ncaa_baseball", height=0.055)
 The same school has a different ESPN id in each sport (Texas is 126 in college baseball and 538 in softball), so
 `ncaa_baseball` and `ncaa_softball` are separate leagues in sdvplot. To compare a school across sports, join the two
 standings on ESPN's abbreviation, which both sports share; 32 is the SEC's group in college softball. Vanderbilt has no
-softball team, so 15 schools match.
+softball team, so 15 schools match. The abbreviation also resolves in each sdvplot league, to that sport's id: ESPN's
+baseball teams list calls Missouri `MIZZ` while its standings and scoreboards say `MIZ`, and the index carries both.
 
 ```python
 sec_sb = sdv.espn_college_softball_standings(season=SEASON, group=32)
 assert sec.schema["team_abbreviation"] == sec_sb.schema["team_abbreviation"]
 both = sec.select("team_abbreviation", "team_id", baseball="win_percent").join(
-    sec_sb.select("team_abbreviation", softball_id="team_id", softball="win_percent"), on="team_abbreviation"
+    sec_sb.select("team_abbreviation", softball_id="team_id", softball="win_percent"),
+    on="team_abbreviation",
+    maintain_order="left",
 )
-both.filter(pl.col("team_abbreviation").is_in(["TEX", "OU", "ALA"])).select(
-    "team_abbreviation", "team_id", "softball_id"
+both = both.with_columns(
+    baseball_key=sdvplot.resolve(both["team_abbreviation"], "ncaa_baseball", season=SEASON),
+    softball_key=sdvplot.resolve(both["team_abbreviation"], "ncaa_softball", season=SEASON),
+)
+assert (both["baseball_key"] == both["team_id"]).all() and (both["softball_key"] == both["softball_id"]).all()
+both.filter(pl.col("team_abbreviation").is_in(["TEX", "OU", "MIZ"])).select(
+    "team_abbreviation", "team_id", "baseball_key", "softball_id", "softball_key"
 )
 ```
 
 <div class="sdv-output">
 
-| team_abbreviation | team_id | softball_id |
-|-------------------|---------|-------------|
-| TEX               | 126     | 538         |
-| ALA               | 148     | 560         |
-| OU                | 112     | 524         |
+| team_abbreviation | team_id | baseball_key | softball_id | softball_key |
+|-------------------|---------|--------------|-------------|--------------|
+| TEX               | 126     | 126          | 538         | 538          |
+| OU                | 112     | 112          | 524         | 524          |
+| MIZ               | 91      | 91           | 503         | 503          |
 
 </div>
 
@@ -384,7 +390,7 @@ secondary is `None`, so a second color has to come from elsewhere.
 ```python
 import seaborn as sns
 
-sb = sec_sb.sort("win_percent", descending=True)
+sb = sec_sb.sort("win_percent", descending=True, maintain_order=True)
 fig, ax = plt.subplots(figsize=(9, 5))
 sns.barplot(
     sb.to_pandas(),

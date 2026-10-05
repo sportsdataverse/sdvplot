@@ -57,10 +57,10 @@ if season < current:
     through = "final regular season"
 elif today <= regular_end:
     games = int(standings["games_played"].median())
-    status = f"**Updated {today}:** the {season} season to date, about {games} games per team."
+    status = f"**Season to date:** the {season} season to date, about {games} games per team."
     through = f"through {games} games"
 elif today <= post_end:
-    status = f"**Updated {today}:** the final {season} regular season; the postseason is under way."
+    status = f"**Postseason:** the final {season} regular season; the postseason is under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {season} regular season."
@@ -88,7 +88,7 @@ standings.sort("division", "rank").head()
 
 <div class="sdv-output">
 
-**Updated 2026-10-05:** the final 2026 regular season; the postseason is under way.
+**Postseason:** the final 2026 regular season; the postseason is under way.
 
 | abbreviation | team_name | division                | rank | w  | l  | pct  | gb   | rs  | ra  | diff | strk |
 |--------------|-----------|-------------------------|------|----|----|------|------|-----|-----|------|------|

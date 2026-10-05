@@ -64,7 +64,7 @@ games = (
 )
 in_conf = pl.col("conference_game")
 standings = (
-    games.group_by("team_id", "team")
+    games.group_by("team_id", "team", maintain_order=True)
     .agg(
         conf_w=(pl.col("won") & in_conf).sum(),
         conf_l=(~pl.col("won") & in_conf).sum(),

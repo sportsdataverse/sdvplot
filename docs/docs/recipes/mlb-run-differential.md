@@ -39,7 +39,7 @@ schedule = mlb.parse_mlb_api_schedule(mlb.mlb_schedule(season=SEASON, sport_id=1
 finals = (
     schedule.filter(pl.col("status_coded_game_state") == "F")  # final, including games completed early
     .sort("schedule_date")
-    .unique("game_pk", keep="last")
+    .unique("game_pk", keep="last", maintain_order=True)
 )
 games = (
     pl.concat(
@@ -58,7 +58,7 @@ games = (
             ),
         ]
     )
-    .sort("official_date", "game_pk")
+    .sort("official_date", "game_pk", "team_id")  # a game's two rows, in one order every run
     .with_columns(
         game=pl.int_range(1, pl.len() + 1).over("team_id"),
         run_diff=pl.col("margin").cum_sum().over("team_id"),
@@ -66,7 +66,7 @@ games = (
 )
 clubs = mlb.parse_mlb_api_teams(mlb.mlb_teams(season=SEASON)).select(team_id="id", team="abbreviation")
 totals = (
-    games.group_by("team_id")
+    games.group_by("team_id", maintain_order=True)
     .agg(diff=pl.col("margin").sum().cast(pl.Int64), games=pl.len())
     .join(clubs, on="team_id")
     .sort("diff", "team")  # ties (two teams at -58) need a second key to keep one order every run

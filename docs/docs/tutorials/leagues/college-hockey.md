@@ -56,7 +56,7 @@ def records(events, league):
     games = college_hockey_game_results(events, league=league)
     names = {c["team"]["id"]: c["team"]["displayName"] for e in events for c in e["competitions"][0]["competitors"]}
     return (
-        games.group_by("team_id")
+        games.group_by("team_id", maintain_order=True)
         .agg(
             pl.len().alias("gp"),
             (pl.col("goals_for") > pl.col("goals_against")).sum().alias("w"),
@@ -70,7 +70,7 @@ def records(events, league):
             pct=(pl.col("w") + pl.col("t") / 2) / pl.col("gp"),
             record=pl.format("{}-{}-{}", "w", "l", "t"),
         )
-        .sort("pct", descending=True)
+        .sort(["pct", "w", "team"], descending=[True, True, False])
     )
 
 
@@ -110,7 +110,7 @@ for item in sdv.espn_mch_season_groups(season=SEASON, season_type=2, return_pars
     ]
 conferences = pl.DataFrame(rows)
 assert conferences.schema["team_id"] == men_records.schema["team_id"] == pl.String
-men_records = men_records.join(conferences, on="team_id", how="left")
+men_records = men_records.join(conferences, on="team_id", how="left", maintain_order="left")
 
 top = men_records.head(16).with_row_index("rank", offset=1)
 gt = (
@@ -190,8 +190,13 @@ from plotnine import (
 
 from sdvplot.plotnine import geom_sdv_logos
 
-net = men_ratings.join(conferences, on="team_id")
-order = net.group_by("conference").agg(pl.col("adj_net").mean()).sort("adj_net")["conference"].to_list()
+net = men_ratings.join(conferences, on="team_id").sort("team_id")
+order = (
+    net.group_by("conference", maintain_order=True)
+    .agg(pl.col("adj_net").mean())
+    .sort("adj_net")["conference"]
+    .to_list()
+)
 best = net.sort("adj_net", descending=True).group_by("conference", maintain_order=True).first()
 frame, best_frame = net.to_pandas(), best.to_pandas()
 for f in (frame, best_frame):
@@ -258,18 +263,18 @@ weekly = (
         ]
     )
     .with_columns(week=pl.col("date").str.to_date().dt.truncate("1w"))
-    .group_by("team_id", "week")
+    .group_by("team_id", "week", maintain_order=True)
     .agg(pl.col("rank").min())
 )
-full = weekly.filter(pl.col("rank") <= 10).group_by("week").len().filter(pl.col("len") == 10)
+full = weekly.filter(pl.col("rank") <= 10).group_by("week", maintain_order=True).len().filter(pl.col("len") == 10)
 last_week = full["week"].max()  # the last week in which all ten ranked teams played
 polls = weekly.filter((pl.col("rank") <= 20) & (pl.col("week") <= last_week))
-final10 = polls.filter((pl.col("week") == last_week) & (pl.col("rank") <= 10))["team_id"].to_list()
+final10 = polls.filter((pl.col("week") == last_week) & (pl.col("rank") <= 10)).sort("rank", "team_id")["team_id"]
 fig, ax = plt.subplots(figsize=(10, 6))
 for team_id in final10:
     t = polls.filter(pl.col("team_id") == team_id).sort("week")
     ax.plot(t["week"], t["rank"], marker="o", ms=3, lw=1.6, alpha=0.75)
-ends = polls.filter((pl.col("week") == last_week) & pl.col("team_id").is_in(final10))
+ends = polls.filter((pl.col("week") == last_week) & pl.col("team_id").is_in(final10)).sort("rank", "team_id")
 sdvplot.add_logos(ax, ends["week"], ends["rank"], ends["team_id"], league="ncaa_mhockey", season=SEASON, height=0.07)
 ax.invert_yaxis()
 ax.set_yticks([1, 5, 10, 15, 20])
@@ -319,7 +324,7 @@ for e in men:
             "loser_name": lose["team"]["shortDisplayName"],
         }
     )
-bracket = pl.DataFrame(games).sort("date")
+bracket = pl.DataFrame(games).sort("date", maintain_order=True)
 gt = (
     GT(bracket)
     .tab_header("2026 NCAA men's hockey tournament", "Every game, regionals to the national championship")
@@ -378,45 +383,43 @@ plt.show()
 
 </div>
 
-## 8. Women's ratings: when an id does not resolve, try the name
+## 8. Women's ratings: a team with no logo yet
 
-The same pipeline for the women. Two of ESPN's women's team ids are not in the index, and `resolve` warns rather than
-guessing. Minnesota State's women's team has its own ESPN id; its name resolves to the school. Delaware has no entry
-yet, so it drops out of the logo charts with one warning.
+The same pipeline for the women. Every team id on ESPN's women's scoreboard resolves, the two its teams list lacks
+included: Minnesota State's women's id (24059), which the index keeps as the school's second ESPN id, and Delaware
+(48). The logo archive has no Delaware mark yet, so `logo_url` gives `None` with one warning and the logo charts
+leave Delaware out instead of drawing a stand-in.
 
 ```python
 names = {c["team"]["id"]: c["team"]["displayName"] for e in women for c in e["competitions"][0]["competitors"]}
-ids = list(names)
+keys = pl.DataFrame({"team_id": list(names), "key": sdvplot.resolve(list(names), "ncaa_whockey")})
+assert keys["key"].null_count() == 0  # every scoreboard id resolves
 with warnings.catch_warnings(record=True) as caught:
     warnings.simplefilter("always")
-    by_id = sdvplot.resolve(ids, "ncaa_whockey")
-    missing = [i for i, key in zip(ids, by_id, strict=True) if key is None]
-    by_name = dict(zip(missing, sdvplot.resolve([names[i] for i in missing], "ncaa_whockey"), strict=True))
-for w in caught:
-    print(w.message)
-keys = pl.DataFrame({"team_id": ids, "key": [key or by_name[i] for i, key in zip(ids, by_id, strict=True)]})
+    print(sdvplot.logo_url("48", "ncaa_whockey", season=SEASON))
+print(caught[0].message)
 women_ratings = college_hockey_ratings(women, league="wch").filter(pl.col("games") >= 10).join(keys, on="team_id")
-women_ratings.filter(pl.col("team_id").is_in(missing)).select("team_id", "key", "adj_net", "games")
+women_ratings.filter(pl.col("team_id").is_in(["24059", "48"])).select("team_id", "key", "adj_net", "games")
 ```
 
 <div class="sdv-output">
 
 ```text
-2 value(s) did not resolve to a ncaa_whockey team: '24059' (unknown), '48' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
-1 value(s) did not resolve to a ncaa_whockey team: 'Delaware Blue Hens' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
+None
+no logo archived for '48' (ncaa_whockey)
 ```
 
 | team_id | key  | adj_net  | games |
 |---------|------|----------|-------|
 | 24059   | 2364 | 1.859313 | 38    |
-| 48      | null | -3.04131 | 33    |
+| 48      | 48   | -3.04131 | 33    |
 
 </div>
 
 ```python
 from plotnine import coord_flip, geom_col
 
-top15 = women_ratings.filter(pl.col("key").is_not_null()).sort("adj_net", descending=True).head(15)
+top15 = women_ratings.sort("adj_net", descending=True).head(15)
 frame = top15.to_pandas()
 frame["key"] = frame["key"].astype("category").cat.set_categories(top15["key"].reverse().to_list())
 p = (
@@ -448,7 +451,7 @@ Goals for and against per game for every women's team in Plotly, logos as the po
 ```python
 import plotly.graph_objects as go
 
-w = records(women, "wch").join(keys.rename({"key": "logo"}), on="team_id").filter(pl.col("logo").is_not_null())
+w = records(women, "wch").join(keys.rename({"key": "logo"}), on="team_id", maintain_order="left")
 w = w.with_columns(gf_pg=pl.col("gf") / pl.col("gp"), ga_pg=pl.col("ga") / pl.col("gp"))
 fig = go.Figure(
     go.Scatter(

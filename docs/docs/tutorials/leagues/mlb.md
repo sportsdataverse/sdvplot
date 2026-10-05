@@ -367,8 +367,23 @@ system after ESPN's.
 ## 8. Franchise eras: renames and relocations
 
 The Stats API's team history records each franchise's name changes by season. The abbreviations change with the eras
-(PHA, KCA, OAK, ATH for the Athletics), but the Stats API team id never does, so resolve each franchise by its id and
-label the row with its current abbreviation. Era boundaries are the seasons the Stats API gives.
+(PHA, KCA, OAK, ATH for the Athletics), and `resolve` reads each one in its seasons: KCA is the Athletics through 1967
+and the Royals from 1968.
+
+```python
+sdvplot.resolve(["PHA", "KCA", "KCA", "OAK", "ATH"], "mlb", season=[1950, 1960, 1990, 2000, 2025])
+```
+
+<div class="sdv-output">
+
+```text
+['11', '11', '7', '11', '11']
+```
+
+</div>
+
+The Stats API team id never changes, so the chart resolves each franchise by its id and labels the row with its
+current abbreviation. Era boundaries are the seasons the Stats API gives.
 
 ```python
 history = (
@@ -380,9 +395,13 @@ history = (
 eras = history.filter(pl.col("name").ne_missing(pl.col("name").shift().over("id"))).with_columns(
     end=(pl.col("season").shift(-1).over("id") - 1).fill_null(SEASON)
 )
-ids = eras.group_by("id").agg(pl.col("season").min()).sort("season", descending=True)["id"]
+ids = (
+    eras.group_by("id", maintain_order=True)
+    .agg(pl.col("season").min())
+    .sort(["season", "id"], descending=[True, False])["id"]
+)
 rows = pl.DataFrame({"id": ids, "team_id": sdvplot.resolve(ids.to_list(), "mlb")}).join(
-    sdvplot.teams("mlb").select("team_id", "abbr"), on="team_id", how="left"
+    sdvplot.teams("mlb").select("team_id", "abbr"), on="team_id", how="left", maintain_order="left"
 )
 
 START = 1950
@@ -413,7 +432,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](mlb_files/mlb_20_0.png)
+![png](mlb_files/mlb_22_0.png)
 
 </div>
 
@@ -476,7 +495,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](mlb_files/mlb_24_0.png)
+![png](mlb_files/mlb_26_0.png)
 
 </div>
 
@@ -493,7 +512,7 @@ ranked = (
     .with_row_index("i")
     .with_columns(tier_no=pl.col("i") // 6 + 1, tier_rank=pl.col("i") % 6 + 1)
 )
-ranges = ranked.group_by("tier_no").agg(lo=pl.col("w").min(), hi=pl.col("w").max()).sort("tier_no")
+ranges = ranked.group_by("tier_no", maintain_order=True).agg(lo=pl.col("w").min(), hi=pl.col("w").max()).sort("tier_no")
 team_tiers(
     ranked.select("tier_no", "tier_rank", team="abbreviation"),
     "mlb",
@@ -507,7 +526,7 @@ team_tiers(
 
 <div class="sdv-output">
 
-![png](mlb_files/mlb_26_0.png)
+![png](mlb_files/mlb_28_0.png)
 
 </div>
 
