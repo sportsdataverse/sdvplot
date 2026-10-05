@@ -18,7 +18,9 @@ write <- function(d, name) {  # doubles at 17 significant digits, so they read b
   path <- file.path(fixtures, name)
   num <- vapply(d, is.double, TRUE)
   d[num] <- lapply(d[num], sprintf, fmt = "%.17g")
-  write.csv(d, path, row.names = FALSE, fileEncoding = "UTF-8", na = "", quote = which(!num))
+  con <- file(path, "wb")  # binary: LF line endings on Windows too (the repo's text files are LF)
+  on.exit(close(con))
+  write.csv(d, con, row.names = FALSE, na = "", quote = which(!num))
   message(path, ": ", nrow(d), " rows")
 }
 
