@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div id="sdv_6_0_0" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+#sdv_6_0_0 table {
+          font-family: Archivo, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans';
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#sdv_6_0_0 thead, tbody, tfoot, tr, td, th { border-style: none !important; }
+ tr { background-color: transparent !important; }
+#sdv_6_0_0 p { margin: 0 !important; padding: 0 !important; }
+ #sdv_6_0_0 .gt_table { display: table !important; border-collapse: collapse !important; line-height: normal !important; margin-left: auto !important; margin-right: auto !important; color: #333333 !important; font-size: 14px !important; font-weight: normal !important; font-style: normal !important; background-color: #FFFFFF !important; width: auto !important; border-top-style: none !important; border-top-width: 2px !important; border-top-color: #A8A8A8 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #A8A8A8 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_caption { padding-top: 4px !important; padding-bottom: 4px !important; }
+ #sdv_6_0_0 .gt_title { color: #333333 !important; font-size: 125% !important; font-weight: initial !important; padding-top: 10px !important; padding-bottom: 10px !important; padding-left: 5px !important; padding-right: 5px !important; border-bottom-color: #FFFFFF !important; border-bottom-width: 0 !important; }
+ #sdv_6_0_0 .gt_subtitle { color: #333333 !important; font-size: 85% !important; font-weight: initial !important; padding-top: 9px !important; padding-bottom: 11px !important; padding-left: 5px !important; padding-right: 5px !important; border-top-color: #FFFFFF !important; border-top-width: 0 !important; }
+ #sdv_6_0_0 .gt_heading { background-color: #FFFFFF !important; text-align: left !important; border-bottom-color: #FFFFFF !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_bottom_border { border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_col_headings { border-top-style: none !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-bottom-color: #111111 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_col_heading { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: normal !important; text-transform: inherit !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: bottom !important; padding-top: 8px !important; padding-bottom: 11px !important; padding-left: 5px !important; padding-right: 5px !important; overflow-x: hidden !important; }
+ #sdv_6_0_0 .gt_column_spanner_outer { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: normal !important; text-transform: inherit !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 4px !important; padding-right: 4px !important; }
+ #sdv_6_0_0 .gt_column_spanner_outer:first-child { padding-left: 0 !important; }
+ #sdv_6_0_0 .gt_column_spanner_outer:last-child { padding-right: 0 !important; }
+ #sdv_6_0_0 .gt_column_spanner { border-bottom-style: solid !important; border-bottom-width: 1px !important; border-bottom-color: #111111 !important; vertical-align: bottom !important; padding-top: 8px !important; padding-bottom: 8px !important; overflow-x: hidden !important; display: inline-block !important; width: 100% !important; }
+ #sdv_6_0_0 .gt_spanner_row { border-bottom-style: hidden !important; }
+ #sdv_6_0_0 .gt_group_heading { padding-top: 12px !important; padding-bottom: 12px !important; padding-left: 5px !important; padding-right: 5px !important; color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-top-style: none !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: middle !important; text-align: left !important; }
+ #sdv_6_0_0 .gt_empty_group_heading { padding: 0.5px !important; color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; border-top-style: none !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; vertical-align: middle !important; }
+ #sdv_6_0_0 .gt_from_md> :first-child { margin-top: 0 !important; }
+ #sdv_6_0_0 .gt_from_md> :last-child { margin-bottom: 0 !important; }
+ #sdv_6_0_0 .gt_row { padding-top: 11px !important; padding-bottom: 11px !important; padding-left: 5px !important; padding-right: 5px !important; margin: 10px !important; border-top-style: none !important; border-top-width: 1px !important; border-top-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 1px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 1px !important; border-right-color: #D3D3D3 !important; vertical-align: middle !important; overflow-x: hidden !important; }
+ #sdv_6_0_0 .gt_stub { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-right-style: solid !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_6_0_0 .gt_indent_1 { text-indent: 5px !important; }
+ #sdv_6_0_0 .gt_indent_2 { text-indent: calc(5px * 2) !important; }
+ #sdv_6_0_0 .gt_indent_3 { text-indent: calc(5px * 3) !important; }
+ #sdv_6_0_0 .gt_indent_4 { text-indent: calc(5px * 4) !important; }
+ #sdv_6_0_0 .gt_indent_5 { text-indent: calc(5px * 5) !important; }
+ #sdv_6_0_0 .gt_stub_row_group { color: #333333 !important; background-color: #FFFFFF !important; font-size: 100% !important; font-weight: initial !important; text-transform: inherit !important; border-right-style: solid !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; padding-left: 5px !important; padding-right: 5px !important; vertical-align: top !important; }
+ #sdv_6_0_0 .gt_row_group_first td { border-top-width: 2px !important; }
+ #sdv_6_0_0 .gt_row_group_first th { border-top-width: 2px !important; }
+ #sdv_6_0_0 .gt_striped { color: #333333 !important; background-color: #F4F4F4 !important; }
+ #sdv_6_0_0 .gt_table_body { border-top-style: none !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-bottom-color: #111111 !important; }
+ #sdv_6_0_0 .gt_summary_row { color: #333333 !important; background-color: #FFFFFF !important; text-transform: inherit !important; padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_6_0_0 .gt_first_summary_row { border-top-style: solid !important; border-top-width: 2px !important; border-top-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_last_summary_row_top { border-bottom-style: solid !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_grand_summary_row { color: #333333 !important; background-color: #FFFFFF !important; text-transform: inherit !important; padding-top: 8px !important; padding-bottom: 8px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_6_0_0 .gt_first_grand_summary_row_bottom { border-top-style: double !important; border-top-width: 6px !important; border-top-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_last_grand_summary_row_top { border-bottom-style: double !important; border-bottom-width: 6px !important; border-bottom-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_sourcenotes { color: #333333 !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_sourcenote { font-size: 90% !important; padding-top: 10px !important; padding-bottom: 10px !important; padding-left: 5px !important; padding-right: 5px !important; text-align: left !important; }
+ #sdv_6_0_0 .gt_left { text-align: left !important; }
+ #sdv_6_0_0 .gt_center { text-align: center !important; }
+ #sdv_6_0_0 .gt_right { text-align: right !important; font-variant-numeric: tabular-nums !important; }
+ #sdv_6_0_0 .gt_font_normal { font-weight: normal !important; }
+ #sdv_6_0_0 .gt_font_bold { font-weight: bold !important; }
+ #sdv_6_0_0 .gt_font_italic { font-style: italic !important; }
+ #sdv_6_0_0 .gt_super { font-size: 65% !important; }
+ #sdv_6_0_0 .gt_footnotes { color: font-color(#FFFFFF) !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_footnote { margin: 0px !important; font-size: 90% !important; padding-top: 4px !important; padding-bottom: 4px !important; padding-left: 5px !important; padding-right: 5px !important; }
+ #sdv_6_0_0 .gt_sourcenotes { color: #333333 !important; background-color: #FFFFFF !important; border-bottom-style: none !important; border-bottom-width: 2px !important; border-bottom-color: #D3D3D3 !important; border-left-style: none !important; border-left-width: 2px !important; border-left-color: #D3D3D3 !important; border-right-style: none !important; border-right-width: 2px !important; border-right-color: #D3D3D3 !important; }
+ #sdv_6_0_0 .gt_sourcenote { font-size: 90% !important; padding-top: 10px !important; padding-bottom: 10px !important; padding-left: 5px !important; padding-right: 5px !important; text-align: left !important; }
+ #sdv_6_0_0 .gt_footnote_marks { font-size: 75% !important; vertical-align: 0.4em !important; position: initial !important; }
+ #sdv_6_0_0 .gt_asterisk { font-size: 100% !important; vertical-align: 0 !important; }
+
+#sdv_6_0_0 td { font-variant-numeric: tabular-nums; }
+#sdv_6_0_0 tbody tr:last-child { border-bottom: 2px solid #FFFFFF; }
+#sdv_6_0_0 .gt_col_heading, #sdv_6_0_0 .gt_column_spanner { letter-spacing: 0.12em; }
+#sdv_6_0_0 .gt_group_heading { letter-spacing: 0.12em; }
+#sdv_6_0_0 .gt_title { letter-spacing: -0.02em; padding-bottom: 3px !important; }
+#sdv_6_0_0 .gt_subtitle { padding-bottom: 20px !important; }
+
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+
+  <tr class="gt_heading">
+    <td colspan="13" class="gt_heading gt_title gt_font_normal" style="color: #111111;font-size: 30px;font-weight: 700;">NHL standings, 2026-27</td>
+  </tr>
+  <tr class="gt_heading">
+    <td colspan="13" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #6B6B6B;font-size: 15px;font-weight: 400;">Through Oct 5 (1-4 games in)</td>
+  </tr>
+<tr class="gt_col_headings">
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-logo"></th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-team">Team</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-gp">GP</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-w">W</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-l">L</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-otl">OTL</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-pts">PTS</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-pts_pct">PTS%</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-gf">GF</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-ga">GA</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-diff">DIFF</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-l10">Last 10</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #111111;font-size: 10px;font-weight: 500;text-transform: uppercase;" scope="col" id="xevhlkntvn-strk">Streak</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="13" style="color: #6B6B6B;font-size: 11px;font-weight: 500;text-transform: uppercase;">Atlantic</th>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/70/70f79a2352abcf9ea24bcab9e4863ddfcf1a4d329c9edecb3b64bfbda24409ed.png" style="height:24px;vertical-align:middle" alt="Boston Bruins" data-sdvplot-team="1"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Bruins</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.667</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png" style="height:24px;vertical-align:middle" alt="Florida Panthers" data-sdvplot-team="26"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Panthers</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.667</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-0-2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">OT2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2a/2ab02cb9e6c668e8b981f2b23174be1eb94554b8c3a86dfc5df4f6fb377a8560.png" style="height:24px;vertical-align:middle" alt="Montreal Canadiens" data-sdvplot-team="10"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Canadiens</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.750</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-0-1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">OT1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/05/05bddfd77b0f30e13cd4a81708e41cc72cfad5b9d136a11f35eb01016b27c849.png" style="height:24px;vertical-align:middle" alt="Ottawa Senators" data-sdvplot-team="14"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Senators</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c5/c5ff4ae23f112f73eca9569801e9f5b82366fafaa9f1f3dae535f9cafd673148.png" style="height:24px;vertical-align:middle" alt="Buffalo Sabres" data-sdvplot-team="2"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Sabres</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">9</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f46ba7991bb86ecd35112b65136b507325d023fc43d42e3d8015354363a62b3.png" style="height:24px;vertical-align:middle" alt="Tampa Bay Lightning" data-sdvplot-team="20"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Lightning</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2c/2c7646270d2e07f5ea16b277d9ebf916ee8ee0718f3049d123402e38f930e9ba.png" style="height:24px;vertical-align:middle" alt="Toronto Maple Leafs" data-sdvplot-team="21"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Maple Leafs</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.333</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-2-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a6/a634a4fcd294b2a439ccb16ab4e554227ec57aac2dfc198014f9f112a612c12d.png" style="height:24px;vertical-align:middle" alt="Detroit Red Wings" data-sdvplot-team="5"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Red Wings</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-2-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L2</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="13" style="color: #6B6B6B;font-size: 11px;font-weight: 500;text-transform: uppercase;">Central</th>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/01/01dcc259d7d40935c487a1db0b464d933ebc120db6808bf3d845a2e902d55059.png" style="height:24px;vertical-align:middle" alt="Colorado Avalanche" data-sdvplot-team="17"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Avalanche</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">14</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+9</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b1d7a8e3e887381d590649665080184cacfc50050f767c0723fcc6524ef95188.png" style="height:24px;vertical-align:middle" alt="Minnesota Wild" data-sdvplot-team="30"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Wild</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/26/260a50b0164256131df4675b558f03a748525f8c0b138c23f54f37f63c0958d8.png" style="height:24px;vertical-align:middle" alt="Utah Mammoth" data-sdvplot-team="129764"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Mammoth</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.667</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">12</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/45/45d1d6176f1753f419671c1a45bf832042e339a8e47163abfff06337933ded8f.png" style="height:24px;vertical-align:middle" alt="Winnipeg Jets" data-sdvplot-team="28"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Jets</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.750</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-0-1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af4f35bdd196d566c9caa33e42dc0cd5284053631cb4a8ef190fb107f9e071b8.png" style="height:24px;vertical-align:middle" alt="St. Louis Blues" data-sdvplot-team="19"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Blues</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/4d/4d2e7def5af8332185bcfeb59fc9633f4fb30417262aa05e68095d93e4e12c2d.png" style="height:24px;vertical-align:middle" alt="Nashville Predators" data-sdvplot-team="27"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Predators</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/58/58fcc157a3b553bd10c7231118623b1e8ef5303e6b93e490e357ab7f5ca6690d.png" style="height:24px;vertical-align:middle" alt="Dallas Stars" data-sdvplot-team="9"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Stars</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-2-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/4e/4e3260f13d674c1ec71e6ac7c08f9c6d4680fe4052a087814b66466ddaca15d9.png" style="height:24px;vertical-align:middle" alt="Chicago Blackhawks" data-sdvplot-team="4"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Blackhawks</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">15</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−10</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-3-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L3</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="13" style="color: #6B6B6B;font-size: 11px;font-weight: 500;text-transform: uppercase;">Metropolitan</th>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/7a/7a43515a4551cc0708140f89d2f54d57259dde1498001c29ec28cc5b1d96fa7f.png" style="height:24px;vertical-align:middle" alt="New York Rangers" data-sdvplot-team="13"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Rangers</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.750</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">11</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">3-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W3</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1b/1b4dc90de4cb2eef301c0d2f9ffefd5cef2e0de1a8ad7d863e96ef686986e00f.png" style="height:24px;vertical-align:middle" alt="Pittsburgh Penguins" data-sdvplot-team="16"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Penguins</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">13</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8b28b34fbd7b4953c550fc9fde1656f68f1f402088f3d86922e3c6ba514330a0.png" style="height:24px;vertical-align:middle" alt="Carolina Hurricanes" data-sdvplot-team="7"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Hurricanes</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e6/e6bfc0d1b6d437d6fa09028ac465691ac64154cf396584f1d174bbe32be17921.png" style="height:24px;vertical-align:middle" alt="New York Islanders" data-sdvplot-team="12"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Islanders</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/59/5987a4f5511e6bd443042757522b040d1b7a258a4bc488693a250b658cf43a6d.png" style="height:24px;vertical-align:middle" alt="Washington Capitals" data-sdvplot-team="23"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Capitals</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">6</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a1/a140e93fa031bae0464306c52fa24aef3821fa9d17e92cf66939efb6b0d2a957.png" style="height:24px;vertical-align:middle" alt="Columbus Blue Jackets" data-sdvplot-team="29"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Blue Jackets</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/9a/9a10cdba30197130eb999bd19e9f40fb34be153599f09e98e6c7f472e41ef242.png" style="height:24px;vertical-align:middle" alt="New Jersey Devils" data-sdvplot-team="11"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Devils</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">1-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/04/0411764d10618e764c58e5c9b7e88d9b0dc7c77ebe9813095c338cd485e2dd04.png" style="height:24px;vertical-align:middle" alt="Philadelphia Flyers" data-sdvplot-team="15"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Flyers</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.333</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">13</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−9</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-1-2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">OT2</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="13" style="color: #6B6B6B;font-size: 11px;font-weight: 500;text-transform: uppercase;">Pacific</th>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png" style="height:24px;vertical-align:middle" alt="Edmonton Oilers" data-sdvplot-team="6"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Oilers</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.833</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">17</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">14</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3b/3b94f09309431a7fbaee2947bf07b99df9c0aac8d61eaba3634e2078a13c5cdc.png" style="height:24px;vertical-align:middle" alt="Anaheim Ducks" data-sdvplot-team="25"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Ducks</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/23/23c8bb973fc6e9e57c9f63b74fbf7b1a4e325515371e952579d0e0df13d33a5b.png" style="height:24px;vertical-align:middle" alt="San Jose Sharks" data-sdvplot-team="18"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Sharks</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">9</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">7</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-0-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/35/35208c3044f129338b22b3b4de0ca0bf384a2919468fe4077183ef5bcca87fcf.png" style="height:24px;vertical-align:middle" alt="Seattle Kraken" data-sdvplot-team="124292"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Kraken</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.667</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">13</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/91/913da521af36370b9b9a3df6ca6b869c915b54732cc166d369865fbc24197e44.png" style="height:24px;vertical-align:middle" alt="Vegas Golden Knights" data-sdvplot-team="37"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Golden Knights</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.667</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">11</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-1-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/30/306e860f33a92794782c0a365006627d12a73b750e1350afb24592a60b36506c.png" style="height:24px;vertical-align:middle" alt="Vancouver Canucks" data-sdvplot-team="22"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Canucks</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">4</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.500</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">19</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">18</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">+1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">2-2-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/92c3b54fa5e296730885fb0ed63a5a8c062d50c827ae3ab1733c9529974733ff.png" style="height:24px;vertical-align:middle" alt="Los Angeles Kings" data-sdvplot-team="8"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Kings</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">2</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.250</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">8</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">13</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−5</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-1-1</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">OT1</td>
+  </tr>
+  <tr>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8e/8e1638154eaae178588702673410e00938831f0a9b05512a0c8727c6e45e76a6.png" style="height:24px;vertical-align:middle" alt="Calgary Flames" data-sdvplot-team="3"></td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">Flames</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">0.000</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">3</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">16</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_right">−13</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">0-3-0</td>
+    <td style="color: #111111;font-size: 14px;font-weight: 400;" class="gt_row gt_left">L3</td>
+  </tr>
+</tbody>
+<tfoot><tr class="gt_sourcenotes"><td class="gt_sourcenote" colspan="13" style="color: #6B6B6B;font-size: 11px;"><span class="gt_from_md">Data: api-web.nhle.com via sportsdataverse-py</span></td></tr></tfoot>
+</table>
+
+</div>
+
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
