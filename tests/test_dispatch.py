@@ -460,9 +460,16 @@ def test_rule_4_measures_the_pygal_height_drawn_not_the_height_recorded(mark_ima
     pygal = pytest.importorskip("pygal")
     import sdvplot.pygal as spg
 
-    real = spg._filter
-    # the render draws half the height add_logos was asked for (and records)
-    monkeypatch.setattr(spg, "_filter", lambda chart, marks, height, alpha: real(chart, marks, height / 2, alpha))
+    real = spg._MarksFilter.__call__
+
+    def half(self, root):  # the render draws half the height add_logos was asked for (and recorded)
+        root = real(self, root)
+        for el in root.iter():
+            if el.get(spg._MARK) is not None:
+                el.set("height", f"{float(el.get('height')) / 2:.3f}")
+        return root
+
+    monkeypatch.setattr(spg._MarksFilter, "__call__", half)
 
     def chart():
         c = pygal.XY(stroke=False, show_legend=False)

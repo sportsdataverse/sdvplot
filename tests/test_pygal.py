@@ -3,6 +3,7 @@ import copy
 import datetime as dt
 import hashlib
 import io
+import pickle
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -100,14 +101,47 @@ def test_a_numpy_datetime64_array_places_logos_on_pygals_dots(mark_images):
     assert [_center(img) for img in _images(root)] == [pytest.approx(w, abs=1e-3) for w in want]
 
 
-def test_a_copied_chart_draws_its_marks_only_after_its_own_add_call(mark_images):
+LV, LAR, LV_DARK = "https://cdn/1111.png", "https://cdn/6666.png", "https://cdn/2222.png"
+
+
+def _drawn(chart):
+    """(href, center) of each rendered mark, and the test hook's urls."""
+    images = _images(chart.render_tree())
+    return [(img.get(HREF), _center(img)) for img in images], [m[4] for m in spg.drawn_marks(chart)]
+
+
+def test_a_deep_copy_renders_the_marks_its_original_had(mark_images):
     chart = _chart()
     spg.add_logos(chart, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
     copied = copy.deepcopy(chart)
-    assert _images(copied.render_tree()) == []  # the copied filter still reads the original chart's render
-    spg.add_logos(copied, [10], [-3], ["LV"], league="nfl")
-    assert [img.get(HREF) for img in _images(copied.render_tree())] == ["https://cdn/1111.png"]
-    assert len(_images(chart.render_tree())) == 2  # the original keeps its own marks
+    assert _drawn(copied) == _drawn(chart)
+    assert [href for href, _ in _drawn(copied)[0]] == [LV, LAR]
+
+
+def test_marks_added_after_a_deep_copy_stay_on_their_own_chart(mark_images):
+    chart = _chart()
+    spg.add_logos(chart, [10], [-3], ["LV"], league="nfl")
+    copied = copy.deepcopy(chart)
+    spg.add_logos(copied, [20], [-7], ["LAR"], league="nfl")
+    spg.add_logos(chart, [20], [-7], ["LV"], league="nfl", variant="dark")
+    for c, want in ((copied, [LV, LAR]), (chart, [LV, LV_DARK])):
+        rendered, hook = _drawn(c)
+        assert [href for href, _ in rendered] == want  # each once: no filter is shared or doubled
+        assert hook == want
+
+
+def test_a_pickled_chart_still_renders_its_marks(mark_images):
+    chart = _chart()
+    spg.add_logos(chart, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
+    assert _drawn(pickle.loads(pickle.dumps(chart))) == _drawn(chart)
+
+
+def test_marks_draw_through_a_user_filter_that_wraps_the_filters(mark_images):
+    chart = _chart()
+    spg.add_logos(chart, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
+    want = _drawn(chart)
+    chart.xml_filters[:] = [lambda r, f=f: f(r) for f in chart.xml_filters]  # e.g. instrumenting every filter
+    assert _drawn(chart) == want
 
 
 def _svg(chart, how, tmp_path):
