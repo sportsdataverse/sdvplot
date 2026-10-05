@@ -1,3 +1,4 @@
+import sys
 import warnings
 
 import pandas as pd
@@ -68,6 +69,27 @@ def test_add_logos_on_a_faceted_plot_warns_once_per_render(mark_images):
     with pytest.warns(SdvplotWarning) as rec:
         assert [m[0] for m in sp9.drawn_marks(p)] == ["13", "13"]
     assert len(_sdv_warnings(rec)) == 1
+
+
+def test_drawing_leaves_the_process_wide_warning_filters_alone(mark_images, monkeypatch):
+    # warnings.catch_warnings swaps the interpreter's one filter list: another thread's warnings change with it
+    real, callers = warnings.catch_warnings, []
+
+    def spy(*a, **k):
+        callers.append(sys._getframe(1).f_globals.get("__name__", ""))
+        return real(*a, **k)
+
+    monkeypatch.setattr(warnings, "catch_warnings", spy)
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    bars = pd.DataFrame({"team": ["LV", "XXX", "LAR"] * 2, "v": [1, 2, 3] * 2, "g": list("aaabbb")})
+    for plot in (
+        sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "XXX"], league="nfl"),
+        sdvplot.axis_logos(ggplot(bars, aes("team", "v")) + geom_col() + facet_wrap("g"), "x", league="nfl"),
+    ):
+        with pytest.warns(SdvplotWarning):
+            plt.close(plot.draw())
+    assert [c for c in callers if c.startswith("sdvplot")] == []
 
 
 @pytest.mark.parametrize("dropped_by", ["na_rm", "xlim"])

@@ -6,7 +6,6 @@ is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot
 
 from __future__ import annotations
 
-import warnings
 from typing import Any
 
 import pandas as pd
@@ -15,12 +14,11 @@ from plotnine import aes, element_text, ggplot, scale_color_manual, scale_fill_m
 from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import SdvplotWarning
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._resolve import _seasons, _unpack
+from sdvplot.matplotlib import _axis_logos as _mpl_axis_logos
 from sdvplot.matplotlib import _in_view, draw_placements
-from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
 from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
 from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
@@ -56,28 +54,25 @@ class _geom_sdv_marks(geom):
         kwargs.setdefault("show_legend", False)
         super().__init__(mapping, data, **kwargs)
 
-    def _place(self, data: pd.DataFrame, x: list[Any], y: list[Any]) -> list[Placement]:
+    def _place(self, data: pd.DataFrame, x: list[Any], y: list[Any], *, warn: bool) -> list[Placement]:
         p = self.params
         # the season= parameter, else the season aesthetic (a column, so each panel's copy of a row keeps its season)
         season = p["season"] if p["season"] is not None or "season" not in data else data["season"].tolist()
         return place(x, y, data[self._id_aes].tolist(), league=p["league"], season=season, kind=self._kind,
-                     variant=p["variant"], id_system=p["id_system"])  # fmt: skip
+                     variant=p["variant"], id_system=p["id_system"], _warn=warn)  # fmt: skip
 
     def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """Once per layer and render: place every panel's rows together, so an unknown team or a missing mark warns
         once. At zero positions: x and y are plotnine's to check, after this (``na_rm``, scale limits, its own
         "Removed rows" warning), so they never warn here."""
         zeros = [0.0] * len(data)
-        self._place(data, zeros, zeros)
+        self._place(data, zeros, zeros, warn=True)
         return data
 
     def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
-        # ponytail: setup_data already warned for this layer's rows in every panel; a point that only a coord_trans
-        # makes missing is skipped quietly here (warn from draw_panel too if that case ever matters)
+        # setup_data already warned for this layer's rows in every panel, so each panel places its rows quietly
         data = coord.transform(data, panel_params)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", SdvplotWarning)
-            placements = self._place(data, data["x"].tolist(), data["y"].tolist())
+        placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
         draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 
@@ -292,10 +287,8 @@ class _AxisLogos:
         zeros = [0.0] * len(labels)
         place(zeros, zeros, labels, league=kw["league"], season=kw["season"], kind=kw["mark_type"],
               variant=kw["variant"], id_system=kw["id_system"])  # fmt: skip
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", SdvplotWarning)
-            for ax in figure.axes:
-                _mpl_axis_logos(ax, self.axis, **kw)
+        for ax in figure.axes:
+            _mpl_axis_logos(ax, self.axis, **kw, warn=False)
 
 
 def axis_logos(

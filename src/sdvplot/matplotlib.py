@@ -387,6 +387,24 @@ def axis_logos(
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
+    return _axis_logos(target, axis, league=league, season=season, height=height, variant=variant,
+                       mark_type=mark_type, id_system=id_system)  # fmt: skip
+
+
+def _axis_logos(
+    target: Any,
+    axis: str,
+    *,
+    league: str,
+    season: Any = None,
+    height: float = 0.1,
+    variant: str = "default",
+    mark_type: str = "logo",
+    id_system: str = "auto",
+    warn: bool = True,
+) -> Any:
+    """axis_logos; ``warn=False`` skips the labels that are not teams without warning (plotnine warns once for every
+    panel's labels, then draws each panel quietly)."""
     h = check_height(height)
     ax = target_axes(target)
     which = _axis(ax, axis)
@@ -397,7 +415,7 @@ def axis_logos(
     else:
         positions = ([0.0] * len(view_locs), view_locs)
     placements = place(*positions, view_labels, league=league, season=season, kind=mark_type, variant=variant,
-                       id_system=id_system)  # fmt: skip
+                       id_system=id_system, _warn=warn)  # fmt: skip
     drawn = {(p.x if axis == "x" else p.y) for p in placements}
     which.set_major_locator(FixedLocator(locs))
     which.set_major_formatter(
