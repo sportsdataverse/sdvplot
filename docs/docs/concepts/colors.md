@@ -33,7 +33,7 @@ its `team_id`, as in the OHL:
 
 ```python
 nfl = sdvplot.palette("nfl")  # 32 entries: {'ATL': '#a71930', ...}
-ohl = sdvplot.palette("ohl")  # 27 entries keyed by team_id: {'1': '#76b7b2', ...}
+ohl = sdvplot.palette("ohl")  # 27 entries keyed by team_id: {'1': '#ba8748', ...}
 ```
 
 Teams that do not resolve, or have no color of that kind, are left out of the dict. The usual `SdvplotWarning` names
@@ -62,18 +62,31 @@ sdvplot.team_colors("nfl", "KC", which="secondary")  # '#ffb612'
 | `color_source` | Where the colors come from | Leagues (bundled index) |
 |---|---|---|
 | `nflverse` | nflverse's team table | the NFL |
-| `espn` | ESPN's team endpoints | MLB, NBA, NHL, WNBA, and the ESPN-covered teams of CFB, MBB, WBB, NBA G League, NCAA baseball and softball and the UFL |
-| `fallback` | a placeholder | every team no source gives colors for: all of the HockeyTech leagues, MiLB, college hockey, soccer, cricket, the PHF, the AAF, the USFL and the XFL, and the teams ESPN has no colors for in the mixed leagues above |
+| `espn` | ESPN: its teams lists, else its per-team endpoint by the team's ESPN id. A college team with no color in its own sport takes its school's ESPN colors from another sport: the same school id at the same location, or, for college baseball and softball (which number their teams apart from the school), an exact display name and location that no other ESPN team has | MLB, NBA, NHL, WNBA and the UFL; most teams of soccer, CFB, MBB, WBB, the NBA G League, college baseball and softball, and the XFL; about half of college hockey |
+| `logo` | the two dominant colors of the team's current archived logo, for a team no source publishes colors for | the HockeyTech leagues (PWHL, AHL, ECHL, OHL, WHL, QMJHL, USHL), MiLB, cricket, the PHF, the AAF and the USFL, and the remaining teams of the leagues above |
+| `fallback` | a placeholder | two men's college hockey teams known only from ESPN scoreboards, SUNY Morrisville and Maryville (Mo): no archived logo, and no ESPN color in any sport |
+
+**ESPN's stand-in colors are not a team's.** ESPN gives hundreds of newer or smaller college programs black and
+nothing else, and hundreds of soccer clubs black with its stock red (`#c60000`) or black on black. sdvplot counts those
+pairs as no color, so such a team takes its school's colors from another ESPN sport, or its logo's. Black beside a
+color of its own is kept.
+
+**Logo colors are derived, not published.** The opaque pixels of the team's current default logo are grouped into a
+dozen colors. The largest colored group is the primary and the next clearly different one the secondary; black, grays
+and then white count only when the logo has too few colors. Where a team also has published colors, the logo's primary
+is close to one of them (RGB distance under 60) for 68% of 4,214 teams, and for 94% of the 139 NFL, NBA, MLB, NHL and
+WNBA teams. A logo can lead with a color the team does not: the Steelers' logo is red, blue and yellow.
 
 **Fallback colors are placeholders, not team colors.** They come from a fixed colorblind-safe palette of ten colors.
 The pick is a hash of `(league, team_id)`, so a team always gets the same color, but two teams can share one.
-Check `color_source` before you show fallback colors as team identity:
+Check `color_source` before you show colors as team identity: `logo` colors approximate the team's, `fallback` ones
+are not the team's at all.
 
 ```python
-sdvplot.teams("ohl").select("name", "color_primary", "color_source").head(3)
-# Brantford Bulldogs  #76b7b2  fallback
-# ...
+sdvplot.teams("ohl").select("name", "color_primary", "color_source").head(1)
+# Brantford Bulldogs  #ba8748  logo
 ```
 
-A team whose source gives a primary color but no secondary has a null `color_secondary`. A fallback secondary is only
-filled in beside a fallback primary.
+A team whose source gives a primary color but no secondary has a null `color_secondary`. One source's secondary is
+never paired with another source's primary, a secondary equal to its primary is dropped, and a fallback secondary is
+only filled in beside a fallback primary.
