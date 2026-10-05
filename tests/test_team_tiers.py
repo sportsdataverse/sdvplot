@@ -244,3 +244,37 @@ def test_plotnine_tiers_accept_polars_and_warn_once_for_unknown_teams(mark_image
 def test_plotnine_default_height_fits_32_logos_in_5_tiers(mark_images):
     sp9 = _sp9()
     assert _fits(sp9.team_tiers(_thirty_two(), "nfl").draw().axes[0])
+
+
+# ---- review round -------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("lib", [pd, pl])
+def test_prep_r_style_keys_survive_a_null_tier(lib):
+    # pandas turns a column with a NaN into floats: str(1.0) is "1.0", not R's "1"
+    with pytest.warns(SdvplotWarning):
+        t = prepare(
+            _frame(lib, tier_no=[1, 2, None], team=["LV", "LAR", "LV"]), "nfl", tier_desc={"1": "Top", "2": "Next"}
+        )
+    assert t.break_labels == ["Top", "Next"] and t.breaks == [1, 2]
+    assert all(type(b) is int for b in t.breaks)
+
+
+@pytest.mark.parametrize("lib", [pd, pl])
+def test_prep_presort_puts_a_null_team_last(lib):
+    # "lv" sorts after "None" as text: a missing team must not take a slot mid-tier (R's arrange puts NA last)
+    t = prepare(_frame(lib, tier_no=[1, 1, 1], team=["lv", None, "LAR"]), "nfl", presort=True)
+    assert list(zip(t.labels, t.x, strict=True)) == [("LAR", 1), ("LV", 2)]
+    assert t.xlim == pytest.approx((0.9, 3.1))
+
+
+def test_prep_devel_labels_are_the_resolved_abbreviations():
+    t = prepare(_frame(tier_no=[1, 1, 1], team=["Las Vegas Raiders", "lar", "14"]), "nfl")
+    assert t.labels == ["LV", "LAR", "LAR"]
+
+
+def test_matplotlib_tier_title_is_1_2_times_the_subtitle(mark_images):
+    fig = smpl.team_tiers(_frame(tier_no=[1], team=["LV"]), "nfl")
+    ax = fig.axes[0]
+    (title,) = [t for t in ax.texts if isinstance(t, Annotation) and t.get_text() == "NFL Team Tiers"]
+    assert title.get_fontsize() == pytest.approx(1.2 * ax._left_title.get_fontsize())  # sdvplotR: rel(1.2)

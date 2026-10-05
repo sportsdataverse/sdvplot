@@ -181,3 +181,94 @@ def test_plotnine_title_replaced_afterwards_warns(mark_images):
     with pytest.warns(SdvplotWarning, match="title_image"):
         fig = p.draw()
     assert [a for a in fig.artists if hasattr(a, "_sdvplot_title_image")] == []
+
+
+# ---- review round: later titles, repeated calls, unreadable images ------------------------------------------------
+
+
+def _pair_centre(img, text):
+    return (img.x0 + text.x1) / 2
+
+
+def test_a_later_set_title_on_another_loc_keeps_the_pair_aligned(mark_images):
+    # Axes.set_title resets all three title transforms, so the shift must come back at draw time
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    smpl.title_image(ax, "LV", "Raiders", league="nfl")
+    ax.set_title("n=32", loc="right")
+    img, text = _extents(fig, _box(ax), ax.title)
+    assert img.x1 < text.x0 and _pair_centre(img, text) == pytest.approx((ax.bbox.x0 + ax.bbox.x1) / 2, abs=1)
+
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    smpl.title_image(ax, "LV", "Raiders", league="nfl", loc="left")
+    ax.set_title("n=32", loc="right")
+    img, text = _extents(fig, _box(ax), ax._left_title)
+    assert img.x0 == pytest.approx(ax.bbox.x0, abs=1) and img.x1 < text.x0
+
+
+def test_a_second_call_replaces_the_image(mark_images):
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    smpl.title_image(ax, "LV", "Raiders", league="nfl")
+    smpl.title_image(ax, "LAR", "Rams", league="nfl")
+    assert smpl.drawn_title_images(ax) == [("left", "LAR")] and ax.get_title() == "Rams"
+    img, text = _extents(fig, _box(ax), ax.title)
+    assert _pair_centre(img, text) == pytest.approx((ax.bbox.x0 + ax.bbox.x1) / 2, abs=1)
+
+
+def test_a_second_call_on_a_figure_shifts_the_suptitle_once(mark_images):
+    fig, _ = plt.subplots(1, 2, figsize=(6, 4), dpi=100)
+    smpl.title_image(fig, "LV", "Two panels", league="nfl")
+    smpl.title_image(fig, "LAR", "Two panels", league="nfl")
+    assert smpl.drawn_title_images(fig) == [("left", "LAR")]
+    img, text = _extents(fig, _box(fig), fig._suptitle)
+    assert _pair_centre(img, text) == pytest.approx(fig.bbox.width / 2, abs=1)
+
+
+@pytest.mark.parametrize("bad", ["missing.png", "not_an_image.txt"])
+def test_an_unreadable_file_warns_once_and_keeps_the_title(tmp_path, bad):
+    (tmp_path / "not_an_image.txt").write_text("hello")
+    _, ax = plt.subplots()
+    with pytest.warns(SdvplotWarning, match="title_image") as rec:
+        assert smpl.title_image(ax, str(tmp_path / bad), "Still titled") is ax
+    assert len(rec) == 1 and ax.get_title() == "Still titled" and smpl.drawn_title_images(ax) == []
+
+
+def test_an_unreachable_url_warns_once_and_keeps_the_title(cache, monkeypatch):
+    from tests.conftest import FakeResponse, FakeSession
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    _, ax = plt.subplots()
+    with pytest.warns(SdvplotWarning, match="title_image") as rec:
+        smpl.title_image(ax, URL, "Still titled")
+    assert len(rec) == 1 and smpl.drawn_title_images(ax) == []
+
+
+def test_a_team_logo_that_cannot_download_still_raises(manifest, monkeypatch):
+    import requests
+
+    from sdvplot._errors import OfflineError
+    from tests.conftest import FakeSession
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(requests.ConnectionError("down")))
+    _, ax = plt.subplots()
+    with pytest.raises(OfflineError):
+        smpl.title_image(ax, "LV", "Raiders", league="nfl")  # like add_logos: a team mark is not optional
+
+
+def test_the_docstring_gives_figure_users_y_not_pad():
+    assert "``y=``" in smpl.title_image.__doc__
+
+
+def test_plotnine_a_second_title_image_replaces_the_first(mark_images):
+    p9, sp9 = _sp9()
+    p = _p9_plot(p9) + sp9.title_image("LV", "A", league="nfl") + sp9.title_image("LAR", "B", league="nfl")
+    fig = p.draw()  # no warning about a replaced title: the second one is the only title image
+    assert smpl.drawn_title_images(fig) == [("left", "LAR")]
+
+
+def test_plotnine_an_unreadable_file_warns_once_when_built(tmp_path):
+    p9, sp9 = _sp9()
+    with pytest.warns(SdvplotWarning, match="title_image") as rec:
+        layer = sp9.title_image(str(tmp_path / "missing.png"), "Still titled")
+    assert len(rec) == 1
+    fig = (_p9_plot(p9) + layer).draw()
+    assert smpl.drawn_title_images(fig) == [] and any(t.get_text() == "Still titled" for t in fig.texts)

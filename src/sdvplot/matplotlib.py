@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numbers
 import sys
+import warnings
 from collections.abc import Callable
 from typing import Any
 
@@ -18,10 +19,11 @@ from matplotlib.figure import Figure
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.text import Text
 from matplotlib.ticker import FixedFormatter, FixedLocator
-from matplotlib.transforms import Affine2D, Bbox
+from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
+from sdvplot._errors import OfflineError, SdvplotWarning
 from sdvplot._images import load_mark_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, check_alpha, check_height, place
 
@@ -454,14 +456,31 @@ class _TitleImage(AnnotationBbox):
             annotation_clip=False,
             zorder=text.get_zorder() - 0.01,  # drawn just before the text, so the text draws with this draw's shift
         )
-        self._sdv_left, self._sdv_align, self._sdv_shift = left, align, Affine2D()
-        text.set_transform(text.get_transform() + self._sdv_shift)
+        self._sdv_text, self._sdv_left, self._sdv_align, self._sdv_shift = text, left, align, Affine2D()
+        self._sdv_base: Transform | None = None
+        self._sdv_shifted: Transform | None = None
+        self._shift_text()
+
+    def _shift_text(self) -> None:
+        """Compose the shift onto the text's transform, and again whenever something replaced that transform
+        (``Axes.set_title`` resets all three Axes titles' transforms on every call)."""
+        if self._sdv_text.get_transform() is not self._sdv_shifted:
+            self._sdv_base = self._sdv_text.get_transform()
+            self._sdv_shifted = self._sdv_base + self._sdv_shift
+            self._sdv_text.set_transform(self._sdv_shifted)
 
     def update_positions(self, renderer: Any) -> None:
+        self._shift_text()
         room = self.offsetbox.get_bbox(renderer).width + renderer.points_to_pixels(TITLE_GAP)
         rel = self._sdv_align()
         self._sdv_shift.clear().translate((1 - rel) * room if self._sdv_left else -rel * room, 0)
         super().update_positions(renderer)
+
+    def remove(self) -> None:
+        """Remove the image and give the title text back its unshifted transform."""
+        if self._sdv_base is not None and self._sdv_text.get_transform() is self._sdv_shifted:
+            self._sdv_text.set_transform(self._sdv_base)
+        super().remove()
 
 
 def check_title_image(side: Any, height: Any) -> float:
@@ -475,21 +494,36 @@ def check_title_image(side: Any, height: Any) -> float:
 
 def title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarray, str] | None:
     """The image to put beside a title, plus what it was: a team's logo when ``league`` is given (None, with one
-    SdvplotWarning, when the team does not resolve or has no logo), else the image at a URL or local path."""
+    SdvplotWarning, when the team does not resolve or has no logo; a failed download raises, as in add_logos), else
+    the image at a URL or local path (None, with one SdvplotWarning, when it cannot be read)."""
     if league is not None:
         img = logo_image(image, league, season=season)
         return None if img is None else (rgba_array(img), str(image))
     source = str(image)
-    if source.startswith(("http://", "https://")):
-        return rgba_array(load_url_image(source)), source
-    with Image.open(source) as img:
-        return rgba_array(img), source
+    try:  # ponytail: a second URL-or-path image loader; PR #23 adds _images.load_path_image, use it once main has it
+        if source.startswith(("http://", "https://")):
+            return rgba_array(load_url_image(source)), source
+        with Image.open(source) as opened:
+            return rgba_array(opened), source
+    except (OSError, ValueError, OfflineError) as e:  # PIL's UnidentifiedImageError is an OSError
+        warnings.warn(f"title_image: could not read {source!r} ({e}); drawn without it", SdvplotWarning, stacklevel=3)
+        return None
 
 
 def add_title_image(
-    container: Any, text: Text, source: tuple[np.ndarray, str], side: str, height: float, align: Callable[[], float]
-) -> AnnotationBbox:
-    """Draw ``source`` (from title_source) beside ``text``, an Axes title or a Figure's suptitle/text."""
+    container: Any,
+    text: Text,
+    source: tuple[np.ndarray, str] | None,
+    side: str,
+    height: float,
+    align: Callable[[], float],
+) -> AnnotationBbox | None:
+    """Draw ``source`` (from title_source) beside ``text``, an Axes title or a Figure's suptitle/text, replacing any
+    image already beside that text; None draws nothing new."""
+    for old in [a for a in container.artists if isinstance(a, _TitleImage) and a._sdv_text is text]:
+        old.remove()
+    if source is None:
+        return None
     box = _TitleImage(source[0], text, side, height, align)
     box._sdvplot_title_image = (side, source[1])  # type: ignore[attr-defined]
     container.add_artist(box)
@@ -521,17 +555,17 @@ def title_image(
         season: One season, to pick the team's logo for that era.
         side: "left" or "right" of the title text.
         height: The image height in points (1/72 inch), at any dpi. The title keeps its own line height, so an image
-            much taller than the text needs room: raise ``pad``.
+            much taller than the text needs room: ``pad=`` on an Axes title, ``y=`` on a Figure's suptitle.
         **text_kw: Passed to ``Axes.set_title`` (``loc``, ``fontsize``, ``pad``, ...) or ``Figure.suptitle``.
 
     Returns:
-        object: ``target`` itself, titled.
+        object: ``target`` itself, titled. Calling it again on the same title replaces the image. An image by URL or
+        path that cannot be read gives one SdvplotWarning and the title without it.
 
     Raises:
         ValueError: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several
             Axes.
-        OfflineError: If a URL or logo cannot be downloaded and is not cached.
-        FileNotFoundError: If a local path does not exist.
+        OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:
         ::
@@ -559,8 +593,7 @@ def title_image(
     else:
         container = target_axes(target)
         text = container.set_title(title or " ", **text_kw)
-    if source is not None:
-        add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
+    add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
     return target
 
 
@@ -647,9 +680,10 @@ def team_tiers(
         placements = place(t.x, t.y, t.team_ids, league=league, id_system="team_id")
         draw_placements(ax, placements, height=t.height, alpha=t.alpha)
     anchor: Text | None = None  # the subtitle sits on the panel, the title on the subtitle, both left-aligned
+    size = ax.title.get_fontproperties().get_size_in_points()
     styles: list[tuple[str | None, dict[str, Any]]] = [
-        (t.subtitle, {"color": _tiers.MUTED}),
-        (t.title, {"color": "white", "fontweight": "bold"}),
+        (t.subtitle, {"color": _tiers.MUTED, "fontsize": size}),
+        (t.title, {"color": "white", "fontweight": "bold", "fontsize": 1.2 * size}),  # sdvplotR: rel(1.2)
     ]
     for text, style in styles:
         if not text:
@@ -658,7 +692,7 @@ def team_tiers(
             anchor = ax.set_title(text, loc="left", **style)
         else:
             anchor = ax.annotate(text, (0, 1), xycoords=anchor, xytext=(0, 4), textcoords="offset points",
-                                 va="bottom", fontsize="large", **style)  # fmt: skip
+                                 va="bottom", **style)  # fmt: skip
     if t.caption:
         ax.annotate(t.caption, (1, 0), xycoords="axes fraction", xytext=(0, -6), textcoords="offset points",
                     ha="right", va="top", color=_tiers.MUTED, fontsize="small")  # fmt: skip

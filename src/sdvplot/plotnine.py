@@ -341,7 +341,7 @@ class _TitleImage:
 
     def __radd__(self, gg: ggplot) -> ggplot:
         gg += labs(title=self.title)
-        gg.watermarks.append(self)
+        gg.watermarks = [w for w in gg.watermarks if not isinstance(w, _TitleImage)] + [self]  # one title image
         return gg
 
     def draw(self, figure: Figure) -> None:
@@ -388,12 +388,13 @@ def title_image(
             than the text needs room: a ``plot_title`` margin in ``theme()``.
 
     Returns:
-        object: An object to add to a ggplot; the image is loaded (and an unknown team warned about) now.
+        object: An object to add to a ggplot; the image is loaded now, and an unknown team, or an image by URL or path
+        that cannot be read, gives one SdvplotWarning now (the title is drawn without the image). A second
+        ``title_image`` added to the same plot replaces the first.
 
     Raises:
         ValueError: If ``side`` is not "left"/"right" or ``height`` is not a positive number.
-        OfflineError: If a URL or logo cannot be downloaded and is not cached.
-        FileNotFoundError: If a local path does not exist.
+        OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:
         ::

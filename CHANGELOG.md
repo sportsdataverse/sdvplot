@@ -132,8 +132,9 @@
 
 - `title_image()` in `sdvplot.matplotlib` (Axes title or Figure suptitle) and `sdvplot.plotnine` (added with `+`):
   sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
-  unknown team warns once and keeps the title) or any image by URL or local path; `height` is in points, `side` is
-  `"left"` or `"right"`, and the image and title are aligned together as the title is.
+  unknown team warns once and keeps the title) or any image by URL or local path (one that cannot be read warns once
+  and keeps the title); `height` is in points, `side` is `"left"` or `"right"`, and the image and title are aligned
+  together as the title is, through later `set_title` calls. A second call on the same title replaces the image.
 - `team_tiers()` in `sdvplot.matplotlib` (a Figure) and `sdvplot.plotnine` (a ggplot): sdvplotR's `sdv_team_tiers()`
   tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
   `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation

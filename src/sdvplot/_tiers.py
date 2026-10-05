@@ -10,6 +10,7 @@ from typing import Any
 
 import narwhals as nw
 
+from sdvplot._index import teams as teams_index
 from sdvplot._placement import _missing, _real, _warn_skipped, check_alpha, check_height
 from sdvplot._resolve import _unpack, resolve
 
@@ -29,7 +30,7 @@ class Tiers:
     x: list[Any]  # tier_rank
     y: list[Any]  # tier_no
     team_ids: list[str]
-    labels: list[str]  # the team as given, which devel=True draws
+    labels: list[str]  # the team's abbreviation (else the value given), which devel=True draws
     lines: list[float]  # the tier separators, at tier +- 0.5
     breaks: list[Any]  # the tiers, top (smallest tier_no) first
     break_labels: list[str]
@@ -68,6 +69,8 @@ def prepare(
     h = DEFAULT_HEIGHT if height is None else check_height(height)
     a = check_alpha(alpha)
     tiers, teams = frame["tier_no"].to_list(), frame["team"].to_list()
+    # a pandas column with a NaN is float: 1.0 back to 1, so tier_desc's R-style "1" keys (and the ticks) match
+    tiers = [int(t) if isinstance(t, float) and t.is_integer() else t for t in tiers]
     given = frame["tier_rank"].to_list() if "tier_rank" in frame.columns and not presort else None
 
     absent = {i for i, t in enumerate(tiers) if _missing(t) or (given is not None and _missing(given[i]))}
@@ -78,7 +81,7 @@ def prepare(
     if not all(_real(tiers[i]) and (given is None or _real(given[i])) for i in rows):
         raise TypeError("tier_no and tier_rank must hold numbers (tier 1 is the top tier)")
     if presort:  # sdvplotR: arrange(tier_no, team), then rank within the tier
-        rows.sort(key=lambda i: (tiers[i], str(teams[i])))
+        rows.sort(key=lambda i: (tiers[i], _missing(teams[i]), str(teams[i])))  # a missing team last, as R's NA
     if given is None:
         seen: Counter[Any] = Counter()
         ranks = {}
@@ -91,6 +94,7 @@ def prepare(
     # Rank first, then resolve, as sdvplotR does: an unknown team keeps its slot (and the x range) but draws nothing.
     ids = resolve([teams[i] for i in rows], league)
     kept = [(i, team_id) for i, team_id in zip(rows, ids, strict=True) if team_id is not None]
+    abbr = dict(teams_index(league).select("team_id", "abbr").iter_rows())  # devel draws it, as sdvplotR does
     levels = sorted({tiers[i] for i in rows})
     skip = set(_unpack(no_line_below_tier)[0]) if no_line_below_tier is not None else set()
     desc: dict[Any, str] = TIER_DESC if tier_desc is None else tier_desc
@@ -100,7 +104,7 @@ def prepare(
         x=[ranks[i] for i, _ in kept],
         y=[tiers[i] for i, _ in kept],
         team_ids=[team_id for _, team_id in kept],
-        labels=[str(teams[i]) for i, _ in kept],
+        labels=[abbr.get(team_id) or str(teams[i]) for i, team_id in kept],
         lines=[levels[0] - 0.5] + [t + 0.5 for t in levels if t not in skip],
         breaks=levels,
         break_labels=[_wrap(desc.get(t, desc.get(str(t), ""))) for t in levels],
