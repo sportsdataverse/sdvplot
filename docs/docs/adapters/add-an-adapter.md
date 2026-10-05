@@ -49,7 +49,7 @@ object when it builds one. Give every public function a Google-style docstring w
   a headshot) and `mark` (the manifest row, `None` for a headshot).
 
 Call `check_height` and `check_alpha` first, in the verb, so a bad value raises when the verb is called and not later
-at render time. The web adapters also share two helpers from `sdvplot._web`: `aspect(placement)` (the image's width over
+at render time. The web adapters also share three helpers from `sdvplot._web`: `axis_letter(axis)` (the "x"/"y" check an `axis_logos` verb starts with), `aspect(placement)` (the image's width over
 height, with the headshot ratio filled in) and `image_src(placement, embed=False)` (the URL, or a data URI with
 `embed=True`).
 

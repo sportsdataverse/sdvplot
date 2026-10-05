@@ -15,7 +15,7 @@ logo_image(
     *,
     season: Any = None,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark'] = 'logo',
     size: int | None = None,
 ) -> PIL.Image.Image | None
 ```
@@ -32,7 +32,7 @@ The team's mark as a PIL image (downloaded once, then cached).
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
 | `size` | `int \| None` | The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
 
 ## Returns

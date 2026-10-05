@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from sdvplot import _index
 from sdvplot._errors import InputError, warn
 from sdvplot._resolve import _seasons, _unpack, resolve
+from sdvplot._types import Which
 
 if TYPE_CHECKING:
+    import numpy as np
+    import pandas as pd
     import polars as pl
 else:
     from sdvplot._lazy import pl
@@ -28,7 +31,7 @@ def _colors(league: str, column: str) -> dict[str, str]:
     return {tid: c for tid, c in t.select("team_id", column).iter_rows() if c}
 
 
-def palette(league: str, teams: Any = None, *, which: str = "primary", season: Any = None) -> dict[Any, str]:
+def palette(league: str, teams: Any = None, *, which: Which = "primary", season: Any = None) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
     Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
@@ -87,6 +90,28 @@ def palette(league: str, teams: Any = None, *, which: str = "primary", season: A
     return out
 
 
+# resolve()'s container rule, and so its overloads (the last one's ignore included). which stays str here while the
+# adapters that forward it (pygal, plotnine, reactable) still take a str.
+@overload
+def team_colors(
+    league: str, teams: str | bytes | int | float | None, *, which: str = "primary", season: Any = None
+) -> str | None: ...
+@overload
+def team_colors(league: str, teams: pl.Series, *, which: str = "primary", season: Any = None) -> pl.Series: ...
+@overload
+def team_colors(
+    league: str,
+    teams: list[Any] | tuple[Any, ...] | np.ndarray[Any, Any],
+    *,
+    which: str = "primary",
+    season: Any = None,
+) -> list[str | None]: ...
+@overload
+def team_colors(league: str, teams: pd.Series, *, which: str = "primary", season: Any = None) -> pd.Series: ...
+@overload
+def team_colors(  # type: ignore[overload-cannot-match]
+    league: str, teams: Any, *, which: str = "primary", season: Any = None
+) -> Any: ...
 def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any = None) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in.
 

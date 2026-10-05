@@ -17,6 +17,7 @@ from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached
 from sdvplot._errors import OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
+from sdvplot._types import MarkType
 
 if TYPE_CHECKING:
     from PIL import Image
@@ -81,7 +82,7 @@ def logo_image(
     *,
     season: Any = None,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: MarkType = "logo",
     size: int | None = None,
 ) -> Image.Image | None:
     """The team's mark as a PIL image (downloaded once, then cached).

@@ -5,13 +5,16 @@ from __future__ import annotations
 import functools
 import numbers
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from sdvplot import _index
 from sdvplot._errors import InputError, UnresolvedTeamError, warn
 from sdvplot._normalize import _is_na, check_season, norm_season, norm_value
+from sdvplot._types import IdSystem
 
 if TYPE_CHECKING:
+    import numpy as np
+    import pandas as pd
     import polars as pl
 else:
     from sdvplot._lazy import pl
@@ -184,7 +187,40 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     warn(msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.")
 
 
-def resolve(values: Any, league: str, *, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
+# The result comes back in the container the values came in (_unpack). The last overload takes what the others do not
+# name: numpy scalars, pandas NA, other narwhals backends. pandas ships no types, so without pandas-stubs (as here)
+# pd.Series is Any and the last overload is never reached: hence its ignore.
+@overload
+def resolve(
+    values: str | bytes | int | float | None,
+    league: str,
+    *,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> str | None: ...
+@overload
+def resolve(
+    values: pl.Series, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> pl.Series: ...
+@overload
+def resolve(
+    values: list[Any] | tuple[Any, ...] | np.ndarray[Any, Any],
+    league: str,
+    *,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> list[str | None]: ...
+@overload
+def resolve(
+    values: pd.Series, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> pd.Series: ...
+@overload
+def resolve(  # type: ignore[overload-cannot-match]
+    values: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> Any: ...
+def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False) -> Any:
     """Canonical team_id(s) for team values in one league.
 
     Accepts ids and names from any supported source (ESPN, nflverse, MLB Stats, nba_api, HockeyTech, CFBD, sdvplotR) and

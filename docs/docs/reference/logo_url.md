@@ -15,7 +15,7 @@ logo_url(
     *,
     season: Any = None,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark'] = 'logo',
 ) -> str | None
 ```
 
@@ -35,7 +35,7 @@ authoritative source. Unknown teams return None with one SdvplotWarning.
 | `league` | `str` | The SDV league key, e.g. "nfl", "cfb", "nhl". |
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
 
 ## Returns
 
