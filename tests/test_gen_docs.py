@@ -254,7 +254,7 @@ def _scratch(monkeypatch, **fns):
     for name, fn in fns.items():
         setattr(mod, name, fn)
     monkeypatch.setitem(sys.modules, "sdvplot.scratch", mod)
-    monkeypatch.setattr(gd, "SUBMODULES", ["scratch"])
+    monkeypatch.setattr(gd, "public_submodules", lambda: ["scratch"])
 
 
 def _complete(x: int) -> int:
@@ -320,6 +320,46 @@ def test_check_mode_fails_on_a_broken_submodule_docstring(monkeypatch, tmp_path,
     assert "sdvplot.scratch.drifted: missing See Also:" in capsys.readouterr().err
 
 
+@pytest.mark.real_index
+def test_a_new_public_submodule_is_checked_without_being_listed(monkeypatch, tmp_path, capsys):
+    """The gate finds the submodules with pkgutil: an undocumented function in a new one fails --check."""
+    import sys
+
+    path = tmp_path / "pkg" / "newmod.py"
+    path.parent.mkdir()
+    path.write_text('__all__ = ["add_logos"]\n\n\ndef add_logos(target):\n    """Draw logos."""\n')
+    spec = importlib.util.spec_from_file_location("sdvplot.newmod", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    monkeypatch.setitem(sys.modules, "sdvplot.newmod", mod)  # removed again at teardown
+    monkeypatch.setattr(gd.sdvplot, "__path__", [*gd.sdvplot.__path__, str(path.parent)])
+    assert "newmod" in gd.public_submodules()
+    assert gd.main(_args(tmp_path, "--check")) == 1
+    err = capsys.readouterr().err
+    for section in ("Args", "Returns", "Raises", "See Also", "Example"):
+        assert f"sdvplot.newmod.add_logos: missing {section}:" in err, section
+    assert "sdvplot.newmod: public submodule not placed in a MODULE_SECTIONS group" in err
+
+
+@pytest.mark.real_index
+def test_every_public_submodule_has_one_page_with_a_section_per_name(tmp_path):
+    gd.render(tmp_path / "reference", tmp_path / "data")
+    for sub in gd.public_submodules():
+        page = (tmp_path / "reference" / f"{sub}.md").read_text()
+        assert page.startswith(f"---\ntitle: sdvplot.{sub}\n"), sub
+        assert f"\n# sdvplot.{sub}\n" in page, sub
+        for n in importlib.import_module(f"sdvplot.{sub}").__all__:
+            assert f"\n## {n}\n" in page and f"| [{n}](#{n.lower()}) |" in page, (sub, n)
+    # a function's section follows the top-level pages' conventions, one heading level down
+    gt = (tmp_path / "reference" / "great_tables.md").read_text()
+    section = gt.split("\n## gt_theme_athletic\n")[1].split("\n## ")[0]
+    assert '<div class="sdv-signature">\n\n```python\ngt_theme_athletic(' in section
+    for heading in ("Arguments", "Returns", "Raises", "Example", "See also"):
+        assert f"\n### {heading}\n" in section, heading
+    # sdvplot.typing's aliases show the values they accept
+    assert "Which = Literal['primary', 'secondary']" in (tmp_path / "reference" / "typing.md").read_text()
+
+
 def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
     def embeds(x: int, embed: bool = False) -> int:
         """Echo it.
@@ -347,3 +387,25 @@ def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
     _scratch(monkeypatch, embeds=embeds)
     errors = gd.check_submodules()
     assert errors == ["sdvplot.scratch.embeds: takes embed= but Raises: does not list OfflineError"]
+
+
+def test_a_type_renders_under_its_public_module_on_every_python():
+    """Python 3.13 moved pathlib.Path into pathlib._local; a page must not change with the Python that renders it."""
+    import pathlib
+
+    assert gd._annotation(pathlib.Path) == "pathlib.Path"
+    assert gd._annotation(str | pathlib.Path | None) == "str | pathlib.Path | None"
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Union[collections.abc.Callable[[Any], Any], Any]", "collections.abc.Callable[[Any], Any] | Any"),
+        ("Optional[dict[str, int]]", "dict[str, int] | None"),
+        ("list[Union[int, str]] | None", "list[int | str] | None"),
+        ("MyUnion[int, str]", "MyUnion[int, str]"),
+    ],
+)
+def test_unions_render_in_the_pipe_form_on_every_python(text, expected):
+    """3.10 prints a union with Any as Union[...]; the pages use the | form 3.11+ prints."""
+    assert gd._public(text) == expected

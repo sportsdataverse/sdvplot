@@ -6,6 +6,7 @@
     - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
+    - [Security](#security)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added-1)
@@ -42,22 +43,104 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - A deprecation helper, `sdvplot._deprecate` (`deprecate()` and `@deprecated_alias`), and its warning,
   `sdvplot.SdvplotDeprecationWarning` (a `FutureWarning` and a `SdvplotWarning`), with a deprecation policy in
   CONTRIBUTING.md: one minor release of warnings before a removal. Nothing is deprecated yet.
+- `id_system` and `strict` wherever a team is resolved, passed to the resolver as `resolve()` takes them:
+  `team_colors`, `palette`, `logo_url`, `logo_image`, the great_tables helpers `gt_sdv_logos`, `gt_sdv_wordmarks`,
+  `gt_sdv_cols_label` and `gt_merge_stack_team_color` (`gt_theme_sdv_team` takes `id_system`; it is always strict),
+  and the reactable helpers `reactable_sdv_logos`, `reactable_sdv_wordmarks`, `reactable_sdv_cols_label`,
+  `reactable_sdv_team_color_bar` and `reactable_sdv_team_color_bg`. NHL stats ids need it:
+  `team_colors("nhl", [1, 6, 10])` reads them as ESPN ids and returns the Bruins, Oilers and Canadiens without a
+  warning, while `team_colors("nhl", [1, 6, 10], id_system="nhl_id")` gives the Devils, Bruins and Leafs.
+  `gt_sdv_cols_label`'s `id_system` now defaults to None: "auto" for logos and wordmarks, "espn" for headshots.
+  `team_colors`'s `which` is typed `Which`, so `which="secondry"` is a type error, as it is for `palette`.
 - `sdvplot.typing`: the `Literal` types of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`,
   `MarkType`), for annotating code that keeps an argument in a variable (`which: Which = "primary"`).
 
 ### Changed
 
+- Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
+  leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
+  ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in
+  another ESPN sport, through the same school id at the same location or, for college baseball and softball (which
+  number their teams apart from the school), a unique exact name and location. The other 1,364 carry the two dominant
+  colors of their archived logo, flagged `color_source="logo"` because no source publishes them (`teamcolors` was
+  surveyed and not used: GPL data from 2020 that adds 5 teams). Two scoreboard-only men's college hockey teams, with no
+  logo and no ESPN color, keep a fallback. ESPN's stand-in colors (black alone, or black with its stock red) no longer
+  count as a team's: 417 college teams that showed them now show their school's ESPN colors (119) or their logo's
+  (298). A secondary equal to its primary is dropped (5 teams). `tools/fetch_sources.py --colors-only` refreshes the
+  two new snapshots, `data-raw/espn_colors.csv` and `data-raw/logo_colors.csv`.
+
+- The `sdvplot.great_tables` helpers take their options by keyword only: past the table and the columns (or the
+  other leading "what" arguments: `gt_delta(gt, from_, to)`, `gt_highlight_cells(gt, columns, condition)`,
+  `gt_significance(gt, columns, p_columns)`, `gt_tiers(gt, levels, colors)`, `gt_save_batch(data, group, fn, file)`,
+  `gt_save_crop(data, file)`, `gt_title_header(gt, title)` and so on) every argument is keyword-only, so a later
+  release can add an option without rebinding a positional value. No public function of sdvplot or its submodules
+  takes more than four arguments by position (a test keeps it so). Migrate by naming the option:
+  `gt_color_pills(gt, "pts", palette=...)`, `gt_save_batch(df, "conf", build, "{group}.png", dir="out")`.
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- API reference: one page per public submodule (`sdvplot.matplotlib`, `sdvplot.plotnine`, `sdvplot.plotly`,
+  `sdvplot.altair`, `sdvplot.bokeh`, `sdvplot.holoviews`, `sdvplot.folium`, `sdvplot.pygal`, `sdvplot.great_tables`,
+  `sdvplot.reactable`, `sdvplot.plottable`, `sdvplot.testing`, `sdvplot.typing`), with a section per public name in the
+  top-level pages' format (signature, arguments, returns, raises, example, see also). Only the 17 top-level functions
+  had pages, so `gt_theme_athletic` or any adapter-only function was on none.
+- The docstring gate (`tools/gen_docs.py --check`) finds the public submodules itself, as `tests/test_api.py` does,
+  instead of reading a list a new submodule could be left off; a new one also fails until it has a reference page.
+- The submodule examples run on a seeded cache (a logo and wordmark for every NFL team, the examples' headshots and
+  images) instead of an empty one, so the 32 that stopped at their first download now run to the end: an error after
+  the first mark lookup no longer passes. Only the four that render through a headless browser stay tolerated.
+- Release: a release run refuses a README without a PyPI install line (it becomes the version's PyPI page), a
+  CHANGELOG without a dated heading for the tag, or entries left under `[Unreleased]`
+  (`tests/test_repo_files.py::test_the_tagged_release_is_ready`). The dist is built in its own job from a fresh
+  checkout after the tests pass, with no uv cache from other workflows, a pinned uv and no persisted credentials; the
+  docs deploy (which holds `contents: write`) pins its actions by commit SHA.
+- CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
+  submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
+  and `--strict-config`. Python 3.14 is a declared classifier. A run on `main` is never cancelled by a later push (only
+  a PR's is), and the live network tests run on manual dispatch and weekly in `live-tests-cron`, not on every push.
+- Repeated lookups are faster: with everything cached, `logo_url` takes about 0.1 ms per call instead of 2.5 ms, and
+  `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
+  its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's
+  directory is looked up once, and each team's marks are taken from the manifest once per manifest load.
+- The matplotlib-family adapters (matplotlib, seaborn, plotnine, plottable, `title_image`) keep a mark in memory no
+  bigger than they draw it, 512 px tall. Half of the logo archive is 4096 px: each such mark held 64 MiB, a quarter of
+  the decoded-image cache, so a few of them pushed out everything else and every plot decoded them again (about 0.5 s
+  each). Now a repeated `add_logos` with a 4096 px mark takes about 0.02 s instead of 0.5 s; the first one still pays
+  the decode.
+- Documentation: `sdvplot.matplotlib.add_images` and `title_image`, and `sdvplot.plotnine.geom_from_path` and
+  `title_image`, say an image URL must be https. They said "http or https", but an http URL is refused with
+  `UnsafeDownloadError`.
 
 ### Fixed
 
+- A failed logo download raises sdvplot's own errors, never a `requests` exception or a bare `OSError`: an HTTP error
+  status (4xx or 5xx) with no cached copy is the new `sdvplot.DownloadError` (an `OfflineError` and an `OSError`), and
+  a download whose sha256 does not match the manifest, or an archived file that is not an image, is the new
+  `sdvplot.IntegrityError` (a `DownloadError`). A 404 used to escape as `requests.HTTPError`, which
+  `except sdvplot.SdvplotError` did not catch. `except OSError` still catches both.
+- Every shared input check raises `InputError`, so `except sdvplot.SdvplotError` catches bad input:
+  `logo_image(size=...)` takes an int from 1 to 4096 (`size=0` was a `ZeroDivisionError`, `size=-5` a Pillow
+  `ValueError`, and `size=2.5` or `size=True` drew a 2x2 or 1x1 image; a size far past 4096 could abort the process in
+  the SVG renderer), `suggest(n=...)` an int of at least 1 (`n=-1` was difflib's `ValueError` naming `-3`), a season
+  that is not a year (`"2020-21"`, a `pd.Timestamp`) or a season list of the wrong length is an `InputError`, and so
+  is an unknown `mark_type` in `reactable_sdv_cols_label` and `gt_sdv_cols_label`.
+- `matplotlib.title_image` and `plotnine.title_image` take `height` in points of at least 1: `height=0.1` (a plot
+  fraction, as `add_logos` takes) drew a 0.1 pt image without a word, and now raises an `InputError` naming points.
+- Importing an adapter submodule without its library (`import sdvplot.plotly` without plotly) raises
+  `OptionalDependencyError` naming the extra (`pip install "sdvplot[plotly]"`) rather than a bare
+  `ModuleNotFoundError`; the front door had the hint, a direct import did not. `OptionalDependencyError` is now a
+  `ModuleNotFoundError` (and still an `ImportError`), so `except ModuleNotFoundError` around the import keeps working.
+- The warning (or, with `strict=True`, the error) for an ambiguous team value lists the teams it could mean and what
+  picks one: `'Charlotte' (ambiguous: 2429 Charlotte 49ers or 3253 Charlotte Saints); pass season= for a code reused
+  across eras, or id_system= for the id system of the values`. It used to say only "ambiguous".
+- Docstrings: `matplotlib.add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` list the
+  `UnsupportedTargetError` and `OfflineError` they raise (`add_images` the former), and plotnine's `add_logos` and
+  `add_wordmarks` say `season` takes one season or one per point, as they always did.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the
   last is next year. `logo_url("OAK", "nfl", season=1900)` and `resolve(..., season=20)` used to resolve silently. A
   split season such as `"2020-21"` gets a hint (pass the ending year), and a season of the wrong type (a `pd.Timestamp`)
-  is a `TypeError` that names `season` rather than the team values.
+  is an `InputError` that names `season` rather than the team values.
 - A `variant` that no mark in the archive has (a typo, or not a string) is an `InputError` listing the league's
   variants; it used to fall back to the default mark without a word. A variant the team lacks still falls back, as
   before.
@@ -67,6 +150,42 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- Threads that ask for the same uncached mark at once (`logo_image()` from a thread pool) download and decode it once:
+  the cache runs one fetch per file and the others wait for it, and the decoded-image cache decodes each key once. On
+  Windows every thread used to download its own copy, and replacing the file while another thread had it open raised
+  `PermissionError: [WinError 5] Access is denied`; the logo manifest's first load warned `could not refresh ...`
+  the same way. A replace that another process refuses, over the same content-addressed file it already wrote, is
+  no longer an error.
+- A long-running session no longer keeps every logo manifest (about 17 MiB parsed) or nflverse player table it has read:
+  when the cached file is refreshed, the previous one is freed. `clear_cache()` now also frees the parsed manifest, the
+  player table and the per-league tables built from the manifest, as it already freed the decoded images.
+- `clear_cache()` unlinks a cache subdirectory that is a symlink in the default cache directory (what it points to is
+  untouched) and leaves one alone with a warning in a directory you chose. It used to raise `OSError` from
+  `shutil.rmtree` after deleting `manifest/`, leaving the later subdirectories and the in-memory caches as they were;
+  the in-memory caches are now emptied even when a removal fails.
+- The in-memory cache of decoded images counts bytes per sample: a 16-bit image (mode `I;16`) is two bytes a pixel and
+  a 32-bit one (`I`, `F`) four. They were counted at one byte a sample, so they could hold two to four times the
+  256 MB budget.
+
+### Security
+
+- Image URLs from the logo manifest (`archive_url`) and from nflverse's player table (`headshot`) must be plain https
+  URLs: a host, then only RFC 3986 characters, with no quote, `<`, `>`, whitespace, backslash or control character. A
+  manifest row that fails is dropped and a headshot that fails is treated as missing (the player gets their ESPN
+  headshot when nflverse has their ESPN id), each with one `SdvplotWarning`. Such a URL used to reach the web adapters
+  unchanged, and Altair's HTML export wrote it into a `<script>` block unescaped, so a poisoned manifest or player table
+  could run script in an exported page. The web adapters also percent-encode any such character left in an image URL.
+- SVG rendering is bounded. An SVG mark is rendered inside a `size` x `size` box (its longest side `size` pixels, at
+  most `sdvplot._images.MAX_SIZE`, 4096) after a small probe render measures its aspect ratio. An SVG more than 64 times
+  longer than it is wide, or a `size` over 4096, is an `InputError` before anything is rendered. resvg used to render
+  at `width=size` first, so a tall SVG or a large `size` asked for gigabytes and could abort the Python process.
+- `urllib3>=2.6` is a dependency. `requests>=2.33` still allowed urllib3 1.26 and 2.0 to 2.5, which decompress a
+  whole received chunk at once: a 275-byte gzip body cost 4 GB of memory before the download byte cap saw it
+  (CVE-2025-66471). The download loop's fallback for urllib3 below 2 is removed.
+- A download's 120 s deadline covers the TLS handshake and the response headers, not only the body: a watchdog shuts
+  the connection's socket down at the deadline, across every redirect hop, and no single read waits past it. Each read
+  had a 60 s timeout of its own, so a server sending a header byte every 59 s held the call open almost indefinitely.
+  Through a proxy, the watchdog covers the body only.
 
 ## [0.1.0] - Unreleased
 

@@ -16,9 +16,11 @@ import re
 from html.parser import HTMLParser
 from typing import Any
 
-from great_tables import GT
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("tables"):
+    from great_tables import GT
+
 from sdvplot.great_tables._cells import (
     gt_538_caption,
     gt_bold_rows,

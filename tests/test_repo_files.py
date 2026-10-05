@@ -1,5 +1,7 @@
 """Repository-level invariants (line endings, mirrors) that no module test owns."""
 
+import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -70,3 +72,67 @@ def test_contributor_files_exist():
 def test_unreleased_is_the_first_changelog_section():
     headings = [ln for ln in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8").splitlines() if ln.startswith("## ")]
     assert headings[0] == "## [Unreleased]"
+
+
+# release readiness: release.yml sets SDVPLOT_RELEASE_VERSION to the tag, and the release's test run then refuses a
+# README without a PyPI install line (it becomes the PyPI page, immutable for that version) or an undated CHANGELOG
+
+# `pip install sdvplot` or `pip install "sdvplot[mpl]"`, not `pip install "sdvplot[mpl] @ git+https://..."`
+_PYPI_INSTALL = re.compile(r'pip install "?sdvplot(?:\[[\w,]*\])?"?(?![\w\[]|\s*@)')
+
+
+def release_blockers(version: str, readme: str, changelog: str) -> list[str]:
+    """What stops ``version`` from being released with this README and CHANGELOG (empty when it is ready)."""
+    problems = []
+    if "not on PyPI yet" in readme or not _PYPI_INSTALL.search(readme):
+        problems.append("README.md does not install from PyPI: merge the install-line PR before tagging")
+    if not re.search(rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$", changelog, re.M):
+        problems.append(f"CHANGELOG.md has no dated '## [{version}] - YYYY-MM-DD' heading")
+    unreleased = re.search(r"^## \[Unreleased\]\n(.*?)(?=^## )", changelog, re.M | re.S)
+    if unreleased and unreleased.group(1).strip():
+        problems.append(f"CHANGELOG.md's [Unreleased] section still has entries: move them under [{version}]")
+    return problems
+
+
+_READY_README = "pip install sdvplot\n"
+_READY_CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n## [0.1.0] - 2026-10-06\n\n### Added\n- x\n"
+
+
+@pytest.mark.parametrize(
+    "readme",
+    [
+        _READY_README,
+        'pip install "sdvplot[mpl,svg]"\n',
+        # a development-version line beside the PyPI one is fine
+        "pip install sdvplot\n\nThe development version: pip install git+https://github.com/sportsdataverse/sdvplot\n",
+    ],
+)
+def test_release_blockers_pass_a_ready_release(readme):
+    assert release_blockers("0.1.0", readme, _READY_CHANGELOG) == []
+
+
+@pytest.mark.parametrize(
+    ("readme", "changelog", "problem"),
+    [
+        ("sdvplot is not on PyPI yet. pip install sdvplot", _READY_CHANGELOG, "does not install from PyPI"),
+        ('pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"', _READY_CHANGELOG, "PyPI"),
+        ("pip install git+https://github.com/sportsdataverse/sdvplot", _READY_CHANGELOG, "PyPI"),
+        (_READY_README, _READY_CHANGELOG.replace("2026-10-06", "Unreleased"), "no dated"),
+        (_READY_README, _READY_CHANGELOG.replace("0.1.0", "0.0.9"), "no dated"),
+        (
+            _READY_README,
+            _READY_CHANGELOG.replace("## [Unreleased]\n", "## [Unreleased]\n\n### Fixed\n- y\n"),
+            "still has",
+        ),
+    ],
+)
+def test_release_blockers_catch_each_problem(readme, changelog, problem):
+    assert any(problem in p for p in release_blockers("0.1.0", readme, changelog))
+
+
+def test_the_tagged_release_is_ready():
+    version = os.environ.get("SDVPLOT_RELEASE_VERSION", "").removeprefix("v")
+    if not version:
+        pytest.skip("not a release run (release.yml sets SDVPLOT_RELEASE_VERSION)")
+    readme, changelog = ((ROOT / f).read_text(encoding="utf-8") for f in ("README.md", "CHANGELOG.md"))
+    assert release_blockers(version, readme, changelog) == []

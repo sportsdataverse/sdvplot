@@ -57,8 +57,9 @@ def __getattr__(name: str) -> dict[str, pl.DataType]:
 _RELOAD_HOOKS: list[Callable[[], None]] = []
 
 
+@functools.cache
 def data_dir() -> Path:
-    """Where the generated index lives inside the installed package."""
+    """Where the generated index lives inside the installed package (looked up once: every check_league reads it)."""
     return Path(str(resources.files("sdvplot") / "data"))
 
 
@@ -152,7 +153,9 @@ def teams(league: str | None = None) -> pl.DataFrame:
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,
-        ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``.
+        ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``:
+        "nflverse" or "espn" (published colors), "logo" (derived from the team's archived logo, where no source
+        publishes any) or "fallback" (a placeholder).
 
     Raises:
         ValueError: If ``league`` is given and unknown.

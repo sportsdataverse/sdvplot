@@ -1,5 +1,9 @@
 import importlib.util
+import json
 from pathlib import Path
+
+import pytest
+import requests
 
 spec = importlib.util.spec_from_file_location("fetch_sources", Path(__file__).parents[1] / "tools" / "fetch_sources.py")
 fs = importlib.util.module_from_spec(spec)
@@ -296,3 +300,139 @@ def test_unlisted_team_ids_are_the_scoreboard_ids_the_list_lacks():
 
     boards = [board("2364", "24059"), board("48", "-2"), {"events": []}]
     assert fs.unlisted_team_ids(boards, {"2364"}) == ["24059", "48"]  # "-2" is ESPN's TBD placeholder
+
+
+def test_espn_color_targets_are_espn_keyed_teams_the_list_gives_no_color():
+    manifest = [
+        _row("espn", "103", "Boston College Eagles", "2026-10-01", league="ncaa_mhockey"),  # listed, no color
+        _row("espn", "13", "Las Vegas Raiders", "2026-10-01"),  # listed with a color
+        _row("espn", "10", "Huracan", "2026-10-01", league="soccer"),  # not listed (soccer has no teams list)
+        _row("ncaa.com", "77", "Some College", "2026-10-01", league="soccer"),  # an NCAA id, not ESPN's
+        _row("espn", "88", "Twin", "2026-10-01", league="cfb"),
+        _row("ncaa.com", "88", "Twin", "2026-10-01", league="cfb"),  # an id two sources key may be two teams
+        _row("espn", "1", "England", "2026-10-01", league="cricket"),  # no ESPN cricket team endpoint
+        _row("hockeytech", "7", "Kitchener Rangers", "2026-10-01", league="ohl"),
+    ]
+    listed = [
+        {"league": "ncaa_mhockey", "team_id": "103", "color": "", "alternate_color": ""},
+        {"league": "nfl", "team_id": "13", "color": "000000", "alternate_color": "a5acaf"},
+    ]
+    unlisted = [{"league": "ncaa_whockey", "team_id": "48", "color": "NULL", "alternate_color": "NULL"}]  # ESPN id
+    assert fs.espn_color_targets(manifest, unlisted, listed) == [
+        ("ncaa_mhockey", "103"),
+        ("ncaa_whockey", "48"),
+        ("soccer", "10"),
+    ]
+
+
+def _response(status, body):
+    r = requests.Response()
+    r.status_code, r._content, r.url = status, json.dumps(body).encode(), "https://x"
+    return r
+
+
+class _Session:
+    """Answers each ".../sports/<sport>/<league>/teams/<id>" from a dict of (status, body) lists, last one repeating."""
+
+    def __init__(self, answers):
+        self.answers, self.asked = answers, []
+
+    def get(self, url, timeout=None):
+        key = url.split("/sports/", 1)[1]
+        self.asked.append(key)
+        queue = self.answers.get(key, [(400, {"code": 400})])
+        return _response(*(queue.pop(0) if len(queue) > 1 else queue[0]))
+
+
+def _team(team_id, color=None, alt=None, location="Boston College"):
+    return {"team": {"id": team_id, "displayName": f"{location} Eagles", "location": location, "color": color,
+                     "alternateColor": alt}}  # fmt: skip
+
+
+def test_espn_colors_ask_other_college_sports_only_for_a_school_its_own_sport_knows():
+    s = _Session(
+        {
+            "hockey/mens-college-hockey/teams/103": [(200, _team("103"))],  # no color in its own sport
+            "football/college-football/teams/103": [(200, _team("103"))],
+            "basketball/mens-college-basketball/teams/103": [(200, _team("103", "8c2232", "dbcca6"))],
+            "basketball/womens-college-basketball/teams/103": [(200, _team("103", "ffffff"))],  # never asked
+            "basketball/mens-college-basketball/teams/5": [(200, _team("5", "123456"))],  # 5 is unknown in hockey
+        }
+    )
+    rows = fs.fetch_espn_colors(s, "h", [("ncaa_mhockey", "103"), ("ncaa_mhockey", "5")])
+    assert [(r["espn_league"], r["color"]) for r in rows] == [("ncaa_mhockey", None), ("cfb", None), ("mbb", "8c2232")]
+    assert not any(k.endswith("/5") and "hockey" not in k for k in s.asked)  # no own row: no other sport asked
+    assert "basketball/womens-college-basketball/teams/103" not in s.asked
+
+
+def test_espn_colors_never_take_another_teams_payload_and_skip_an_empty_answer():
+    s = _Session(
+        {
+            "soccer/all/teams/10": [(200, _team("11", "c60000"))],  # ESPN answering with another id
+            "soccer/all/teams/12": [(200, {})],  # site.web: 200 without a team for an unknown id
+            "football/xfl/teams/112646": [(200, _team("112646", "c8102e", "a2aaad", "D.C."))],
+        }
+    )
+    rows = fs.fetch_espn_colors(s, "h", [("soccer", "10"), ("soccer", "12"), ("xfl", "112646")])
+    assert [(r["league"], r["team_id"], r["color"], r["alternate_color"]) for r in rows] == [
+        ("xfl", "112646", "c8102e", "a2aaad")
+    ]
+
+
+def test_espn_colors_retry_a_passing_403_and_raise_a_lasting_one(monkeypatch):
+    monkeypatch.setattr(fs.time, "sleep", lambda _: None)
+    s = _Session({"soccer/all/teams/10": [(403, {}), (429, {}), (200, _team("10", "c60000", "000000"))]})
+    assert fs.fetch_espn_colors(s, "h", [("soccer", "10")])[0]["color"] == "c60000"
+    s = _Session({"soccer/all/teams/10": [(403, {})]})
+    with pytest.raises(requests.HTTPError):  # a failed fetch is never recorded as a team without colors
+        fs.fetch_espn_colors(s, "h", [("soccer", "10")])
+    assert len(s.asked) == 5
+
+
+def _logo(*bands, size=(100, 100)):
+    """An RGBA image of vertical bands, each (share of the width, (r, g, b, a))."""
+    from PIL import Image
+
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    x = 0
+    for share, color in bands:
+        w = round(share * size[0])
+        img.paste(color, (x, 0, x + w, size[1]))
+        x += w
+    return img
+
+
+def test_logo_colors_rank_colors_before_neutrals_and_skip_edges_and_shades():
+    red, navy, gold, black, white = (200, 16, 46, 255), (12, 35, 64, 255), (255, 182, 18, 255), (0, 0, 0, 255), (
+        255, 255, 255, 255)  # fmt: skip
+    # mostly white fill and a black outline, with red and navy: the colors win, the larger first
+    assert fs.logo_colors(_logo((0.4, white), (0.2, black), (0.25, red), (0.15, navy))) == ("#c8102e", "#0c2340")
+    # one color: the dark neutral before white
+    assert fs.logo_colors(_logo((0.5, white), (0.2, black), (0.3, gold))) == ("#ffb612", "#000000")
+    # a shade of the primary is the same color; a 1% sliver is an edge blend; transparent pixels are no color
+    shade = (210, 26, 56, 255)
+    assert fs.logo_colors(_logo((0.6, red), (0.3, shade), (0.01, navy), (0.09, (0, 255, 0, 10)))) == ("#c8102e", None)
+    # black and white only
+    assert fs.logo_colors(_logo((0.7, white), (0.3, black))) == ("#000000", "#ffffff")
+    assert fs.logo_colors(_logo((1.0, (0, 0, 0, 0)))) is None
+
+
+def test_espn_stand_in_colors_are_not_a_teams():
+    assert not fs.espn_has_color("000000", None) and not fs.espn_has_color("#000000", "NULL")
+    assert not fs.espn_has_color("000000", "C60000") and not fs.espn_has_color("000000", "000000")
+    assert not fs.espn_has_color("", "ffffff") and not fs.espn_has_color("zzzzzz", None)
+    assert fs.espn_has_color("000000", "ffffff") and fs.espn_has_color("c60000", None)
+    listed = [{"league": "cfb", "team_id": "2", "color": "000000", "alternate_color": ""}]  # a stand-in: a target
+    manifest = [_row("espn", "2", "Campbell Fighting Camels", "2026-10-01", league="cfb")]
+    assert fs.espn_color_targets(manifest, [], listed) == [("cfb", "2")]
+
+
+def test_espn_colors_never_ask_college_baseball_ids_in_another_sport():  # its ids are not the school's
+    s = _Session(
+        {
+            "baseball/college-baseball/teams/102": [(200, _team("102"))],  # known, no color of its own
+            "basketball/mens-college-basketball/teams/102": [(200, _team("102", "ce0e2d"))],
+        }
+    )
+    assert [r["espn_league"] for r in fs.fetch_espn_colors(s, "h", [("ncaa_baseball", "102")])] == ["ncaa_baseball"]
+    assert s.asked == ["baseball/college-baseball/teams/102"]

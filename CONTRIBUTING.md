@@ -38,6 +38,9 @@ uv sync                       # runtime + the dev groups (test, lint, docs, pre-
 uv sync --all-extras          # also install every plotting extra
 ```
 
+mypy needs every extra: without the plotting libraries the adapters' types collapse to `Any` and it reports errors
+that CI (which syncs `--all-extras`) never sees. Run it as `uv run --all-extras mypy`; the pre-push hook does the same.
+
 Commit a regenerated `uv.lock` together with the `pyproject.toml` change that caused it.
 
 ### pre-commit
@@ -57,7 +60,7 @@ instead.
 uv run pytest -q                           # offline, the default
 SDVPLOT_LIVE_TESTS=1 uv run pytest -q      # adds the network tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy                   # type-checks against every extra, as CI does
 ```
 
 Tests run against a small hand-written index fixture. A test that needs the shipped index carries the `real_index`
@@ -101,7 +104,8 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
 
 - Python 3.10+, full type hints (`mypy` runs with `disallow_untyped_defs`), ruff with a 120-column limit.
 - Team ids are strings. Never cast a float id to a string; fix the dtype at the boundary.
-- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs.
+- A new public function lands in `__all__`, in `src/sdvplot/__init__.py` and in the reference docs. A new public
+  submodule gets a reference page by being placed in a `MODULE_SECTIONS` group in `tools/gen_docs.py`.
 - Give every public function a Google-style docstring with `Args`, `Returns`, `Raises`, `Example` and `See Also`
   sections, and link its reference page. The `uv run python tools/gen_docs.py --check` gate enforces the standard
   and fails when the committed reference differs from the docstrings.
@@ -172,4 +176,11 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
 3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
    an emptied `## [Unreleased]`, which always stays at the top (a test asserts it).
 4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
-5. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates.
+5. First release only: merge the install-line PR (#50: README, intro and quickstart switch to `pip install sdvplot`)
+   just before tagging. The README is the PyPI page and cannot be changed for a version once it is uploaded. For 0.1.0,
+   step 3 means folding the `[Unreleased]` entries into the existing `## [0.1.0]` section and replacing its
+   `Unreleased` with the date.
+6. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates. Its test run sets
+   `SDVPLOT_RELEASE_VERSION` from the tag, and `tests/test_repo_files.py::test_the_tagged_release_is_ready` then refuses
+   a README that still installs from GitHub, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, or
+   entries left under `[Unreleased]`.

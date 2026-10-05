@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from plottable import ColumnDefinition
+from sdvplot._errors import requires_extra
+
+with requires_extra("plottable"):
+    from plottable import ColumnDefinition
 
 from sdvplot._placement import place
 from sdvplot.matplotlib import _image
 
-__all__ = ["logo_column", "headshot_column"]
+__all__ = ["headshot_column", "logo_column"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

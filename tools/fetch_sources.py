@@ -5,6 +5,7 @@ Usage:
     CFBD_API_KEY=... uv run python tools/fetch_sources.py \
         --sr-manifest /mnt/sdv_repos/sdv-assets-private/manifest/sr_team_seasons.csv \
         --ncaa-xwalk /mnt/sdv_repos/ncaa-mfb-football-raw/mfb/xwalk/espn_team_id.json
+    uv run python tools/fetch_sources.py --colors-only   # espn_colors.csv and logo_colors.csv alone
 """
 
 from __future__ import annotations
@@ -15,10 +16,17 @@ import datetime as dt
 import io
 import json
 import os
+import re
 import shutil
+import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import requests
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 OUT = Path(__file__).resolve().parents[1] / "data-raw"
 UA = {"User-Agent": "sdvplot-build (+https://github.com/sportsdataverse/sdvplot)"}
@@ -88,6 +96,22 @@ ESPN_TEAM_COLUMNS = [
     "color",
     "alternate_color",
 ]
+# The per-team endpoint of the archive's ESPN-keyed teams the teams list gives no color (espn_colors.csv): the list
+# leagues, plus soccer (one id space; any league slug answers for any club) and the defunct XFL. ESPN's cricket team
+# endpoints answer 400 for every league, so cricket has none.
+ESPN_COLOR_SLUGS = {league: (sport, el) for league, sport, el in ESPN_LEAGUES} | {
+    "soccer": ("soccer", "all"),
+    "xfl": ("football", "xfl"),
+}
+# ESPN's college sports, in the order the build asks them for a school's colors (by exact name: tools/build_index.py)
+ESPN_COLLEGE = ["cfb", "mbb", "wbb", "ncaa_baseball", "ncaa_softball", "ncaa_mhockey", "ncaa_whockey"]
+# The ones that key a team by its school, one id across them (Boston College is 103 in each): of the ids two of these
+# lists share, 95-100% name the same location (October 2026). College baseball and softball number their own teams: of
+# the 182, 107 and 108 ids they share with football and the basketball lists, none names the same location. A school
+# with no color in its own sport is asked in the others, and the build keeps a color only from the same location.
+ESPN_SCHOOL_IDS = ["cfb", "mbb", "wbb", "ncaa_mhockey", "ncaa_whockey"]
+ESPN_COLOR_COLUMNS = ["league", "team_id", "espn_league", "display_name", "location", "color", "alternate_color"]
+LOGO_COLOR_COLUMNS = ["league", "team_id", "primary", "secondary", "sha256"]
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -199,6 +223,158 @@ def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> l
             payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{t['team_id']}").json()
             rows.append(espn_team_abbr_row(t["league"], payload))
     return [r for r in rows if r is not None]
+
+
+# ESPN's stand-in colors, not a team's: black alone (317 college football teams, 61 college baseball, 60 softball, 25
+# women's and 15 men's basketball, all newer or smaller programs) or black with its stock red (282 soccer clubs from the
+# per-team endpoint; 157 more black on black), measured October 2026. tools/build_index.py drops them the same way.
+ESPN_PLACEHOLDER = ("000000", {"", "000000", "c60000"})  # (primary, the secondaries it comes with; "" = none)
+
+
+def _hex6(color: str | None) -> str:
+    """A color as six lowercase hex digits, or "" when it is not one."""
+    c = str(color or "").strip().lstrip("#").lower()
+    return c if re.fullmatch(r"[0-9a-f]{6}", c) else ""
+
+
+def espn_has_color(color: str | None, alternate: str | None) -> bool:
+    """Whether ESPN gives a team a color of its own: a valid primary that is not ESPN_PLACEHOLDER."""
+    primary, alts = ESPN_PLACEHOLDER
+    return bool(_hex6(color)) and not (_hex6(color) == primary and _hex6(alternate) in alts)
+
+
+def espn_color_targets(manifest: list[dict], unlisted: list[dict], listed: list[dict]) -> list[tuple[str, str]]:
+    """(league, team_id) of the archive's and the scoreboards' (``unlisted``) ESPN-keyed teams in an ESPN_COLOR_SLUGS
+    league that ESPN's teams list (``listed``) or the scoreboard snapshot gives no color. ESPN-keyed: an ESPN mark with
+    a numeric id, or a scoreboard team. An id another identity source also keys in the league (an ncaa.com id) may be
+    a different team, so it is left out."""
+    teams = {(r["league"], r["team_id"]) for r in [*manifest_team_rows(manifest), *unlisted]}
+    marks = [r for r in manifest if _is_team_row(r)]
+    keyed = {(r["league"], r["entity_id"]) for r in marks if r["source"] == "espn" and r["entity_id"].isdigit()}
+    keyed |= {(r["league"], r["team_id"]) for r in unlisted}
+    other = {(r["league"], r["entity_id"]) for r in marks if r["source"] in IDENTITY_SOURCES - {"espn"}}
+    colored = {
+        (r["league"], r["team_id"]) for r in [*listed, *unlisted] if espn_has_color(r["color"], r["alternate_color"])
+    }
+    return sorted(k for k in teams & keyed - other - colored if k[0] in ESPN_COLOR_SLUGS)
+
+
+def espn_color_row(league: str, team_id: str, espn_league: str, t: dict) -> dict:
+    """One per-team endpoint payload's team as an espn_colors.csv row."""
+    return {
+        "league": league,
+        "team_id": team_id,
+        "espn_league": espn_league,
+        "display_name": t.get("displayName"),
+        "location": t.get("location"),
+        "color": t.get("color"),
+        "alternate_color": t.get("alternateColor"),
+    }
+
+
+def fetch_espn_colors(s: requests.Session, host: str, targets: list[tuple[str, str]]) -> list[dict]:
+    """The per-team endpoint's row for each target in its own league, and for a team of an ESPN_SCHOOL_IDS league it
+    gives no color, the same id's row in the others until one has a color. A team its own league does not know stops
+    there (no school to compare with); a 400/404 elsewhere is a sport the school does not play."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(target: tuple[str, str]) -> list[dict]:
+        league, team_id = target
+        rows = []
+        for lg in [league, *(c for c in ESPN_SCHOOL_IDS if c != league and league in ESPN_SCHOOL_IDS)]:
+            sport, el = ESPN_COLOR_SLUGS[lg]
+            url = f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{team_id}"
+            for wait in (2, 4, 8, 16, 0):  # ESPN's edge answers a burst with a passing 403 or 429
+                r = s.get(url, timeout=60)
+                if r.status_code not in (403, 429) and r.status_code < 500 or not wait:
+                    break
+                time.sleep(wait)
+            if r.status_code not in (400, 404):
+                r.raise_for_status()
+            t = r.json().get("team") if r.ok else None  # site.web answers some unknown ids 200 with no team
+            if not t or str(t.get("id")) != team_id:  # no such team here; never another team's colors
+                if lg == league:
+                    break
+                continue
+            rows.append(espn_color_row(league, team_id, lg, t))
+            if espn_has_color(t.get("color"), t.get("alternateColor")):
+                break
+        return rows
+
+    with ThreadPoolExecutor(2) as pool:  # Site v2 tolerates a couple at once; Core v2 would not
+        return [row for rows in pool.map(one, targets) for row in rows]
+
+
+LOGO_SIZE = 128  # px, longest side: enough pixels to count colors, small enough to decode thousands
+LOGO_ALPHA = 200  # opaque enough to be the mark, not an anti-aliased edge
+LOGO_MIN_SHARE = 0.03  # a cluster smaller than this share of the opaque pixels is an edge blend, not a team color
+LOGO_MIN_DISTANCE = 64  # RGB distance below which two clusters are shades of one color
+
+
+def logo_colors(img: Image.Image) -> tuple[str, str | None] | None:
+    """A logo's two dominant colors as "#rrggbb". The opaque pixels are median-cut to 12 colors and the clusters of at
+    least LOGO_MIN_SHARE ranked: colors first, then dark and mid neutrals (black, grays), then near-white, each by pixel
+    count. The primary is the first; the secondary the next one LOGO_MIN_DISTANCE or more from it (None if none is).
+    None for an image with no opaque pixel."""
+    from PIL import Image
+
+    px = [p[:3] for p in img.convert("RGBA").get_flattened_data() if p[3] >= LOGO_ALPHA]
+    if not px:
+        return None
+    strip = Image.new("RGB", (len(px), 1))
+    strip.putdata(px)
+    q = strip.quantize(colors=12, method=Image.Quantize.MEDIANCUT)
+    pal = q.getpalette() or []
+    clusters = [(n, tuple(pal[3 * i : 3 * i + 3])) for n, i in q.getcolors() or [] if n >= LOGO_MIN_SHARE * len(px)]
+
+    def rank(c: tuple[int, tuple]) -> tuple:
+        n, rgb = c
+        hi, lo = max(rgb), min(rgb)
+        neutral = hi < 40 or (hi - lo) < 0.2 * hi  # HSV value under 0.15, or saturation under 0.2
+        return (neutral and lo > 230, neutral, -n, rgb)
+
+    ranked = [rgb for _, rgb in sorted(clusters, key=rank)]
+    if not ranked:
+        return None
+    primary = ranked[0]
+    far = (c for c in ranked[1:] if sum((a - b) ** 2 for a, b in zip(c, primary, strict=True)) >= LOGO_MIN_DISTANCE**2)
+    secondary = next(far, None)
+    return "#{:02x}{:02x}{:02x}".format(*primary), ("#{:02x}{:02x}{:02x}".format(*secondary) if secondary else None)
+
+
+def fetch_logo_colors(teams: list[tuple[str, str]]) -> list[dict]:
+    """logo_colors of each team's current default logo, the mark logo_image() draws (through the bundled index, so a
+    team newer than it waits for the next run). Every archived team with a logo gets a row, published colors or not: the
+    build only reaches for one when no source publishes colors, and the others measure the method (tests)."""
+    import warnings
+    from concurrent.futures import ThreadPoolExecutor
+
+    from sdvplot._images import load_mark_image
+    from sdvplot._marks import select_mark
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # a team with no logo: a warning and None
+        chosen = {key: select_mark(key[1], key[0]) for key in teams}
+    marks = {row["sha256"]: row for row in chosen.values() if row}
+
+    # one decode per mark, never two threads on one file (teams share marks; Windows refuses replacing an open file)
+    with ThreadPoolExecutor(8) as pool:  # the archive CDN: content-addressed, cached
+        found = dict(
+            zip(marks, pool.map(lambda r: logo_colors(load_mark_image(r, LOGO_SIZE)), marks.values()), strict=True)
+        )
+    return [
+        {"league": league, "team_id": team_id, "primary": got[0], "secondary": got[1] or "", "sha256": row["sha256"]}
+        for (league, team_id), row in chosen.items()
+        if row and (got := found[row["sha256"]])
+    ]
+
+
+def fetch_colors(s: requests.Session, host: str, manifest: list[dict], listed: list[dict], unlisted: list[dict],
+                 write: Callable[[str, list[dict], list[str]], None]) -> None:  # fmt: skip
+    """espn_colors.csv and logo_colors.csv (``--colors-only`` refreshes just these two)."""
+    write("espn_colors", fetch_espn_colors(s, host, espn_color_targets(manifest, unlisted, listed)), ESPN_COLOR_COLUMNS)
+    teams = sorted({(r["league"], r["team_id"]) for r in manifest_team_rows(manifest)})
+    write("logo_colors", fetch_logo_colors(teams), LOGO_COLOR_COLUMNS)
 
 
 def publish_staged(stage: Path, out: Path) -> None:
@@ -329,6 +505,11 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--sr-manifest", type=Path, help="sdv-assets-private manifest/sr_team_seasons.csv")
     p.add_argument("--ncaa-xwalk", type=Path, help="ncaa-mfb-football-raw mfb/xwalk/espn_team_id.json")
+    p.add_argument(
+        "--colors-only",
+        action="store_true",
+        help="refresh only espn_colors.csv and logo_colors.csv, from the committed ESPN team snapshots (no CFBD key)",
+    )
     args = p.parse_args()
     stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
     try:
@@ -347,6 +528,13 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
 
     text = _get(s, MANIFEST_URL, timeout=120).text
     manifest = list(csv.DictReader(io.StringIO(text)))
+    if args.colors_only:
+        listed, unlisted = (
+            list(csv.DictReader(io.StringIO((OUT / f"{n}.csv").read_text(encoding="utf-8"))))
+            for n in ("espn_teams", "espn_unlisted_teams")
+        )
+        fetch_colors(s, ESPN_HOSTS[0], manifest, listed, unlisted, write)
+        return
     archived = manifest_team_rows(manifest)
     write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
@@ -368,9 +556,11 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         espn += got
     print(f"ESPN host used: {hosts[0]}")
     write("espn_teams", espn, ESPN_TEAM_COLUMNS)
-    write("espn_unlisted_teams", fetch_espn_unlisted_teams(s, hosts[0], espn, archived), ESPN_TEAM_COLUMNS)
+    unlisted = fetch_espn_unlisted_teams(s, hosts[0], espn, archived)
+    write("espn_unlisted_teams", unlisted, ESPN_TEAM_COLUMNS)
     abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0])
     write("espn_abbrs", abbrs, ESPN_ABBR_COLUMNS)
+    fetch_colors(s, hosts[0], manifest, espn, unlisted, write)
 
     nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
     write("nflverse_teams", nfl, ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])

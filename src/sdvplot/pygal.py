@@ -14,13 +14,16 @@ from __future__ import annotations
 
 from typing import Any
 
-import pygal
-from pygal.style import Style
+from sdvplot._errors import UnsupportedTargetError, requires_extra
+
+with requires_extra("pygal"):
+    import pygal
+    from pygal.style import Style
 
 from sdvplot._colors import team_colors
-from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
+from sdvplot._types import Which
 from sdvplot._web import aspect, image_src
 
 _SUPPORTS_AXIS_LOGOS = False
@@ -28,7 +31,7 @@ _SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
 _MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "team_style"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos", "team_style"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -316,7 +319,7 @@ def axis_logos(chart: Any, axis: str, **kwargs: Any) -> Any:
     raise UnsupportedTargetError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
 
 
-def team_style(teams: Any, *, league: str, which: str = "primary", season: Any = None, **style_kwargs: Any) -> Style:
+def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any = None, **style_kwargs: Any) -> Style:
     """A pygal Style whose series colors are the teams' colors, in the order the series are added.
 
     A team that does not resolve keeps pygal's default color for its position (with one SdvplotWarning), so the

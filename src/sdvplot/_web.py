@@ -7,6 +7,7 @@ or with ``embed=True`` a ``data:`` URI of the cached bytes, for HTML that render
 from __future__ import annotations
 
 import base64
+from urllib.parse import quote
 
 from PIL import Image
 
@@ -16,6 +17,7 @@ from sdvplot._placement import Placement
 # ESPN's combiner serves full headshots at 600x436 (measured 2026-10-04 for NFL, NBA and MLB ids); checked by
 # tests/test_web_live.py.
 HEADSHOT_ASPECT = 600 / 436
+_URL_PUNCTUATION = "-._~:/?#[]@!$&()*+,;=%"  # SAFE_URL's characters besides letters and digits (quote keeps those)
 
 
 def aspect(p: Placement) -> float:
@@ -34,9 +36,11 @@ def image_src(p: Placement, *, embed: bool = False) -> str:
     """The image source for a browser: ``p.url``, or with ``embed=True`` a data URI of the cached image bytes.
 
     Embedding reads through the cache (downloading on a miss), so offline with no cached copy it raises OfflineError.
+    The URL is percent-encoded past ``SAFE_URL``'s characters, a no-op on the URLs the manifest and player table let
+    through, so an unvalidated one still cannot close the <script> block or attribute an adapter writes it into.
     """
     if not embed:
-        return p.url
+        return quote(p.url, safe=_URL_PUNCTUATION)
     path = mark_file(p.mark) if p.mark is not None else url_file(p.url)
     if p.mark is not None and str(p.mark["ext"]).lower() == "svg":
         mime = "image/svg+xml"

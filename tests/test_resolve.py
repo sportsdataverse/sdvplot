@@ -27,8 +27,12 @@ def test_a_reused_code_takes_the_season_and_without_one_its_current_holder():
     assert resolve("LA", "nfl", season=1990) == "13"  # the Los Angeles Raiders
     assert resolve("LA", "nfl", season=2020) == "14"  # the Rams
     assert resolve("LA", "nfl") == "14"  # no season: the team holding LA in the latest season
-    with pytest.warns(SdvplotWarning, match="ambiguous"):
-        assert resolve("KSU", "ncaa_baseball") is None  # two teams hold KSU now: never guess
+    # two teams hold KSU now: never guess, but name both and what would pick one (M6)
+    with pytest.warns(
+        SdvplotWarning,
+        match=r"'KSU' \(ambiguous: 264 Kansas State Wildcats or 307 Kennesaw State Owls\); pass season=.*id_system=",
+    ):
+        assert resolve("KSU", "ncaa_baseball") is None
 
 
 def test_season_outside_every_range_still_resolves_a_unique_code():
@@ -40,8 +44,10 @@ def test_auto_takes_the_first_system_with_a_match_in_priority_order():
 
 
 def test_explicit_id_system_is_honoured_and_can_be_ambiguous():
-    with pytest.warns(SdvplotWarning, match="ambiguous"):
+    with pytest.warns(SdvplotWarning, match=r"ambiguous: 193 Miami \(OH\) RedHawks or 2390 Miami Hurricanes"):
         assert resolve("Miami", "cfb", id_system="name") is None
+    with pytest.raises(UnresolvedTeamError, match="ambiguous: 193 .* or 2390 .*; pass season="):
+        resolve("Miami", "cfb", id_system="name", strict=True)
 
 
 def test_unknown_values_warn_once_listing_all_of_them():
@@ -95,3 +101,23 @@ def test_no_season_means_the_current_holder_then_any():
     assert _match("kca", 1960, ("mlbstats",), table, latest=2026) == "11"
     assert _match("kca", 1930, ("mlbstats",), table, latest=2026) == "7"  # a season nobody used it: the holder now
     assert _match("pha", None, ("mlbstats",), table, latest=2026) == "11"  # no current holder: any season
+
+
+@pytest.mark.parametrize(
+    ("code", "season", "team_id"),
+    [("STL", 2015, "14"), ("LA", 2016, "14"), ("OAK", 2019, "13"), ("LV", 2020, "13"), ("LA", 1994, "13")],
+)
+def test_an_alias_range_includes_both_of_its_end_seasons(code, season, team_id):
+    """A dated alias covers its first and its last season: the relocation years themselves."""
+    assert resolve(code, "nfl", season=season, id_system="nflverse") == team_id
+
+
+@pytest.mark.parametrize(
+    ("lo", "hi", "season", "covered"),
+    [(2016, None, 2016, True), (2016, None, 2015, False), (None, 2015, 2015, True), (None, 2015, 2016, False),
+     (1982, 1994, 1982, True), (1982, 1994, 1995, False), (None, None, 1900, True)],
+)  # fmt: skip
+def test_covers_is_inclusive_at_both_ends(lo, hi, season, covered):
+    from sdvplot._resolve import _covers
+
+    assert _covers(lo, hi, season) is covered
