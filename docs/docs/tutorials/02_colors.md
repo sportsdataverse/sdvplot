@@ -61,7 +61,7 @@ plt.show()
 `team_colors` returns one color per team, in the order given. `which="secondary"` picks the secondary color.
 
 ```python
-sdvplot.team_colors(df["team"], "nfl", which="secondary")
+sdvplot.team_colors("nfl", df["team"], which="secondary")
 ```
 
 <div class="sdv-output">

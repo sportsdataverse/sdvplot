@@ -2,29 +2,35 @@
 
 from __future__ import annotations
 
+import collections
 import contextlib
 import hashlib
 import io
 import re
-import warnings
+import threading
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
-from PIL import Image
-
-from sdvplot._cache import atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsafeCachePathError
-from sdvplot._marks import _check_mark_type, select_mark
+from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
+from sdvplot._errors import OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
+from sdvplot._types import MarkType
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
 _SHA256 = re.compile(r"[0-9a-f]{64}")
+URL_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 
 
 def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
+    from PIL import Image
+
     try:
         import importlib.metadata
 
@@ -73,9 +79,10 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
 def logo_image(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: MarkType = "logo",
     size: int | None = None,
 ) -> Image.Image | None:
     """The team's mark as a PIL image (downloaded once, then cached).
@@ -95,10 +102,16 @@ def logo_image(
         TypeError: If ``team`` is not a single value.
         OptionalDependencyError: If the mark is an SVG and the ``svg`` extra is not installed.
         OfflineError: If the download fails and no cached copy exists.
+        UnsafeDownloadError: (an OSError) If the download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for the mark would put the file
+            outside the cache directory.
         requests.HTTPError: If the CDN refuses the file (a 4xx response).
         OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
             (``PIL.UnidentifiedImageError`` subclasses OSError).
-        ValueError: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", or an SVG cannot be parsed.
+        InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
+            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
+        ValueError: If an SVG cannot be parsed.
 
     Example:
         ::
@@ -113,12 +126,13 @@ def logo_image(
         sdv-py: https://py.sportsdataverse.org/
     """
     _check_mark_type(mark_type)
+    _check_variant(variant, league)
     team_id = resolve(one_team(team, "logo_image"), league, season=season)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
-        warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
+        warn(f"no {mark_type} archived for {team!r} ({league})")
         return None
     return load_mark_image(row, size)
 
@@ -131,13 +145,11 @@ def mark_file(row: dict[str, Any]) -> Path:
     return fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
 
 
-def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
-    """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
+def _decode_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
+    """The decoded image of one mark (SVGs rasterized, rasters scaled down to ``size``)."""
+    from PIL import Image
 
-    ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
-    """
-    sha, ext = str(row["sha256"]), str(row["ext"])
-    path = mark_file(row)
+    path = mark_file({"sha256": sha, "ext": ext, "archive_url": url})
     if ext == "svg":
         return _rasterize(path, sha, size or DEFAULT_SVG_SIZE, ext)
     img: Image.Image = Image.open(path)
@@ -148,7 +160,67 @@ def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image
     return img
 
 
+# Decoded images kept in memory, least recently used first, bounded by pixel bytes rather than entry count: the archive
+# holds thousands of 4096 x 4096 rasters (67 MB each decoded), so a count bound alone could pin gigabytes.
+DECODED_BUDGET = 256 * 1024 * 1024
+_decoded: collections.OrderedDict[tuple[str, str, str, int | None], Image.Image] = collections.OrderedDict()
+_decoded_bytes = 0
+_decoded_lock = threading.Lock()
+
+
+def _nbytes(img: Image.Image) -> int:
+    return img.width * img.height * len(img.getbands())
+
+
+def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
+    """The decoded image of one mark, kept per (sha256, ext, url, size) so repeated calls decode a team's logo once.
+    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Callers must go
+    through ``load_mark_image``, which hands out a copy."""
+    global _decoded_bytes
+    key = (sha, ext, url, size)
+    with _decoded_lock:
+        if (hit := _decoded.get(key)) is not None:
+            _decoded.move_to_end(key)
+            return hit
+    img = _decode_mark(*key)
+    nbytes = _nbytes(img)
+    if nbytes <= DECODED_BUDGET // 4:
+        with _decoded_lock:
+            if key not in _decoded:
+                _decoded[key] = img
+                _decoded_bytes += nbytes
+                while _decoded_bytes > DECODED_BUDGET:
+                    _, old = _decoded.popitem(last=False)
+                    _decoded_bytes -= _nbytes(old)
+    return img
+
+
+def _clear_decoded() -> None:
+    global _decoded_bytes
+    with _decoded_lock:
+        _decoded.clear()
+        _decoded_bytes = 0
+
+
+MEMORY_CACHES.append(_clear_decoded)  # clear_cache() also drops the decoded images held in memory
+
+
+def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
+    """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
+
+    ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
+    Decoded images are kept in memory (up to ``DECODED_BUDGET`` bytes of pixels, least recently used dropped first);
+    the caller gets its own copy, free to modify, with the source ``format`` kept.
+    """
+    img = _decoded_mark(str(row["sha256"]), str(row["ext"]), str(row["archive_url"]), size)
+    out = img.copy()
+    out.format = img.format  # Image.copy() drops it; callers may read img.format / Image.MIME
+    return out
+
+
 def _check_image(body: bytes) -> None:
+    from PIL import Image
+
     Image.open(io.BytesIO(body)).verify()
 
 
@@ -156,11 +228,13 @@ def url_file(url: str) -> Path:
     """The cached file of an image that is not content-addressed (a headshot): keyed by sha256(url), refreshed after
     SDVPLOT_CACHE_TTL, non-images rejected."""
     key = hashlib.sha256(url.encode()).hexdigest()
-    return fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image)
+    return fetch_cached(url, f"urlimages/{key[:2]}/{key}", validate=_check_image, max_bytes=URL_IMAGE_MAX_BYTES)
 
 
 def load_url_image(url: str) -> Image.Image:
     """An image that is not content-addressed (a headshot): cached by sha256(url), refreshed after SDVPLOT_CACHE_TTL."""
+    from PIL import Image
+
     path = url_file(url)
     img: Image.Image = Image.open(path)
     img.load()
@@ -175,6 +249,8 @@ def load_path_image(path: str) -> Image.Image:
         return load_url_image(path)
     if scheme == "file":  # what pathlib.Path.as_uri() writes
         path = url2pathname(urlsplit(path).path)
+    from PIL import Image
+
     img: Image.Image = Image.open(path)
     img.load()
     return img

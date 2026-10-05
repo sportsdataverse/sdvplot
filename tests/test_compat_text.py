@@ -36,7 +36,7 @@ def _colored_texts(ax):
 
 def test_highlight_text_and_logos_share_an_axes(mark_images):
     highlight_text = pytest.importorskip("highlight_text")
-    lv, lar = sdvplot.team_colors(["LV", "LAR"], "nfl")
+    lv, lar = sdvplot.team_colors("nfl", ["LV", "LAR"])
     ax = _axes()
     highlight_text.ax_text(
         2, -1, "<Raiders> beat the <Rams>", highlight_textprops=[{"color": lv}, {"color": lar}], ax=ax
@@ -44,25 +44,25 @@ def test_highlight_text_and_logos_share_an_axes(mark_images):
     sdvplot.add_logos(ax, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
     texts = _colored_texts(ax)
     assert texts["Raiders"] == lv and texts["Rams"] == lar
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "14"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "14"]
 
 
 def test_flexitext_and_logos_share_an_axes(mark_images):
     flexitext = pytest.importorskip("flexitext")
-    lv, lar = sdvplot.team_colors(["LV", "LAR"], "nfl")
+    lv, lar = sdvplot.team_colors("nfl", ["LV", "LAR"])
     ax = _axes()
     flexitext.flexitext(0.05, 0.95, f"<color:{lv}>Raiders</> vs <color:{lar}>Rams</>", ax=ax)
     sdvplot.add_logos(ax, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl")
     texts = _colored_texts(ax)
     assert texts["Raiders"] == lv and texts["Rams"] == lar
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "14"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "14"]
 
 
 def test_drawarrow_arrows_join_logos(mark_images):
     drawarrow = pytest.importorskip("drawarrow")
     ax = _axes()
-    arrow = drawarrow.ax_arrow((10, -3), (20, -7), ax=ax, color=sdvplot.team_colors("LAR", "nfl"))
+    arrow = drawarrow.ax_arrow((10, -3), (20, -7), ax=ax, color=sdvplot.team_colors("nfl", "LAR"))
     sdvplot.add_logos(ax, [10, 20], [-3, -7], ["LV", "LAR"], league="nfl", height=0.1)
     ax.figure.canvas.draw()
     assert arrow in ax.patches
-    assert [m[:3] for m in smpl.drawn_marks(ax)] == [("13", 10, -3), ("14", 20, -7)]
+    assert [m[:3] for m in smpl._drawn_marks(ax)] == [("13", 10, -3), ("14", 20, -7)]

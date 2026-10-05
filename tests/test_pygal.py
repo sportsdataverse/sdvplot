@@ -107,7 +107,7 @@ LV, LAR, LV_DARK = "https://cdn/1111.png", "https://cdn/6666.png", "https://cdn/
 def _drawn(chart):
     """(href, center) of each rendered mark, and the test hook's urls."""
     images = _images(chart.render_tree())
-    return [(img.get(HREF), _center(img)) for img in images], [m[4] for m in spg.drawn_marks(chart)]
+    return [(img.get(HREF), _center(img)) for img in images], [m[4] for m in spg._drawn_marks(chart)]
 
 
 def test_a_deep_copy_renders_the_marks_its_original_had(mark_images):
@@ -201,7 +201,7 @@ def test_embed_renders_with_no_network(mark_images, monkeypatch):
     assert head == "data:image/png;base64"
     cached = mark_images / "images" / "11" / f"{'1' * 64}.png"
     assert base64.b64decode(data) == cached.read_bytes()
-    assert spg.drawn_marks(chart)[0][4] == "https://cdn/1111.png"  # the hook still reports the mark, not the bytes
+    assert spg._drawn_marks(chart)[0][4] == "https://cdn/1111.png"  # the hook still reports the mark, not the bytes
 
 
 def test_render_to_png_draws_the_embedded_logo(mark_images, monkeypatch):

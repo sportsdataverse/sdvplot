@@ -38,7 +38,7 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/spring-football_3.png" alt="Grid of XFL and UFL team logos, one row per league season from 2020 to 2026 and one column per ESPN team id, showing which franchises carried over into the UFL" loading="lazy"/><br/>XFL and UFL franchises by ESPN id<br/><small>Spring football</small>](tutorials/leagues/spring-football.md#1-one-id-per-franchise-across-three-leagues)
 
-[<img src="/img/gallery/tutorials/leagues/spring-football_9.png" alt="Three panels for the 2024, 2025 and 2026 UFL seasons, each team&#x27;s logo placed by points scored and allowed per game" loading="lazy"/><br/>UFL points for and against<br/><small>Spring football</small>](tutorials/leagues/spring-football.md#4-every-ufl-season-points-for-and-against)
+[<img src="/img/gallery/tutorials/leagues/spring-football_11.png" alt="Three panels for the 2024, 2025 and 2026 UFL seasons, each team&#x27;s logo placed by points scored and allowed per game" loading="lazy"/><br/>UFL points for and against<br/><small>Spring football</small>](tutorials/leagues/spring-football.md#4-every-ufl-season-points-for-and-against)
 
 [<img src="/img/gallery/tutorials/leagues/nba_6.png" alt="Scatter of NBA offensive vs defensive rating with each team&#x27;s logo as its marker" loading="lazy"/><br/>NBA offense vs defense with logos<br/><small>NBA</small>](tutorials/leagues/nba.md#1-offense-vs-defense-with-logos)
 
@@ -68,7 +68,7 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/mlb_18.png" alt="Every 2026 regular-season home run by MLB&#x27;s home run leader plotted on a baseball field, colored by distance, with his team&#x27;s logo." loading="lazy"/><br/>Home run spray chart on a baseball field<br/><small>MLB</small>](tutorials/leagues/mlb.md#7-a-home-run-spray-chart-on-the-field)
 
-[<img src="/img/gallery/tutorials/leagues/mlb_20.png" alt="Timeline from 1950 of six MLB franchises&#x27; names and moves, one row per franchise with its current logo." loading="lazy"/><br/>MLB franchise name eras<br/><small>MLB</small>](tutorials/leagues/mlb.md#8-franchise-eras-renames-and-relocations)
+[<img src="/img/gallery/tutorials/leagues/mlb_22.png" alt="Timeline from 1950 of six MLB franchises&#x27; names and moves, one row per franchise with its current logo." loading="lazy"/><br/>MLB franchise name eras<br/><small>MLB</small>](tutorials/leagues/mlb.md#8-franchise-eras-renames-and-relocations)
 
 [<img src="/img/gallery/tutorials/leagues/college-baseball-softball_7.png" alt="Bar chart of each 2026 Men&#x27;s College World Series team&#x27;s run differential in Omaha, with logos and records." loading="lazy"/><br/>College World Series run differential<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#2-run-differential-in-omaha)
 
@@ -94,7 +94,7 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/college-hockey_7.png" alt="Every Division I men&#x27;s team&#x27;s logo by opponent-adjusted goals for and against, 2025-26" loading="lazy"/><br/>College hockey adjusted ratings<br/><small>College hockey</small>](tutorials/leagues/college-hockey.md#3-opponent-adjusted-ratings)
 
-[<img src="/img/gallery/tutorials/leagues/college-hockey_21.png" alt="The top fifteen Division I women&#x27;s teams by net rating, 2025-26, logos on the axis" loading="lazy"/><br/>Women's college hockey ratings<br/><small>College hockey</small>](tutorials/leagues/college-hockey.md#8-womens-ratings-when-an-id-does-not-resolve-try-the-name)
+[<img src="/img/gallery/tutorials/leagues/college-hockey_21.png" alt="The top fifteen Division I women&#x27;s teams by net rating, 2025-26, logos on the axis" loading="lazy"/><br/>Women's college hockey ratings<br/><small>College hockey</small>](tutorials/leagues/college-hockey.md#8-womens-ratings-a-team-with-no-logo-yet)
 
 [<img src="/img/gallery/tutorials/leagues/soccer_16.png" alt="Twenty small panels of rolling five-match points, one per Premier League club in its ESPN color, with crests" loading="lazy"/><br/>Premier League form in club colors<br/><small>Soccer</small>](tutorials/leagues/soccer.md#5-form-club-by-club-in-club-colors)
 

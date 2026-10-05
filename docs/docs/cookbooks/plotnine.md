@@ -73,7 +73,7 @@ college basketball's adjusted efficiency with each team's conference.
 ```python
 wnba_games = wnba.load_wnba_team_boxscore(seasons=[SEASON]).filter(pl.col("season_type") == 2)
 wnba_teams = (
-    wnba_games.group_by("team_abbreviation")
+    wnba_games.group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), scored=pl.col("team_score").mean(), allowed=pl.col("opponent_team_score").mean())
     .filter(pl.col("games") > 10)
     .sort("team_abbreviation")
@@ -83,9 +83,12 @@ nfl_weeks = nfl.load_nfl_team_stats([NFL_SEASON]).filter(pl.col("season_type") =
 plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
 epa = pl.col("passing_epa") + pl.col("rushing_epa")
 nfl_epa = (
-    nfl_weeks.group_by("team")
+    nfl_weeks.group_by("team", maintain_order=True)
     .agg(off_epa=epa.sum() / plays.sum())
-    .join(nfl_weeks.group_by(team=pl.col("opponent_team")).agg(def_epa=epa.sum() / plays.sum()), on="team")
+    .join(
+        nfl_weeks.group_by(team=pl.col("opponent_team"), maintain_order=True).agg(def_epa=epa.sum() / plays.sum()),
+        on="team",
+    )
     .join(nfl.load_nfl_teams().select(team="team_abbr", division="team_division"), on="team")
     .sort("team")
 )
@@ -178,7 +181,7 @@ players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).filter(
     (pl.col("season_type") == 2) & ~pl.col("did_not_play")
 )
 scorers = (
-    players.group_by("athlete_id", "athlete_display_name")
+    players.group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -220,7 +223,7 @@ scorers = (
 
 ```python
 power_play = (
-    nhl_games.group_by("team_abbrev")
+    nhl_games.group_by("team_abbrev", maintain_order=True)
     .agg(pl.col("power_play_goals").sum())
     .sort(["power_play_goals", "team_abbrev"], descending=[True, False])
     .head(12)
@@ -315,7 +318,7 @@ conference, cast from the raw integer so the join keys agree.
 ```python
 east = sdvplot.teams("nba").filter(pl.col("conference") == "Eastern Conference").select("team_id")
 threes = (
-    nba_box.group_by("team_id", "team_abbreviation")
+    nba_box.group_by("team_id", "team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), fg3a=pl.col("three_point_field_goals_attempted").mean())
     .filter(pl.col("games") > 10)
     .with_columns(pl.col("team_id").cast(pl.Int64).cast(pl.Utf8))
@@ -358,7 +361,7 @@ decided = avs.filter(pl.col("margin") != 0).with_columns(
     result=pl.when(pl.col("margin") > 0).then(pl.lit("Won")).otherwise(pl.lit("Lost"))
 )
 shootouts = avs.height - decided.height
-colors = {"Won": sdvplot.team_colors("COL", "nhl"), "Lost": sdvplot.team_colors("COL", "nhl", "secondary")}
+colors = {"Won": sdvplot.team_colors("nhl", "COL"), "Lost": sdvplot.team_colors("nhl", "COL", which="secondary")}
 (
     ggplot(decided, aes("game_no", "margin", fill="result"))
     + geom_col(width=0.8)
@@ -433,7 +436,7 @@ CONFERENCES = {
     "Missouri Valley Conference": "missouri_valley",
 }
 members = mbb_ratings.filter(pl.col("conference").is_in(list(CONFERENCES)))
-means = members.group_by("conference").agg(pl.col("adj_em").mean()).sort("adj_em")
+means = members.group_by("conference", maintain_order=True).agg(pl.col("adj_em").mean()).sort("adj_em")
 rows = pl.Enum(means["conference"].to_list())  # weakest at the bottom, strongest on top
 members = members.with_columns(pl.col("conference").cast(rows))
 means = means.with_columns(
@@ -473,7 +476,7 @@ a ggplot out, so `+ theme(...)` still works. NHL teams by goal differential per 
 
 ```python
 nhl_tiers = (
-    nhl_games.group_by("team_abbrev")
+    nhl_games.group_by("team_abbrev", maintain_order=True)
     .agg(gd=(pl.col("goals") - pl.col("goals_against")).mean())
     .sort(["gd", "team_abbrev"], descending=[True, False])
     .with_columns(

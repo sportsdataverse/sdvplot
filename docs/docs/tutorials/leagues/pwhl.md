@@ -54,7 +54,7 @@ The team list already holds the four clubs that join for 2026-27, and every club
 matter: the index has no official PWHL colors yet (`color_source` is `"fallback"`), so the charts below lean on logos.
 
 ```python
-sdvplot.teams("pwhl").group_by("color_source").len()
+sdvplot.teams("pwhl").group_by("color_source", maintain_order=True).len()
 ```
 
 <div class="sdv-output">
@@ -221,7 +221,7 @@ ids on the y axis for logos.
 from plotnine import aes, element_blank, element_text, geom_tile, ggplot, labs, scale_fill_manual, theme, theme_minimal
 
 pbp = pwhl.load_pwhl_pbp(seasons=[SEASON])
-dates = pbp.group_by("game_id").agg(pl.col("game_date").first())
+dates = pbp.group_by("game_id", maintain_order=True).agg(pl.col("game_date").first())
 schedule = schedule.with_columns(
     pl.col("game_id").cast(pl.Int64)
 )  # a string in the schedule, Int64 in the play-by-play
@@ -333,7 +333,7 @@ import altair as alt
 
 quality = (
     pbp.filter(pl.col("event") == "shot")
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(pl.len().alias("shots"), pl.col("shot_quality").str.starts_with("Quality").mean().alias("quality"))
     .sort("quality", descending=True)
 )
@@ -410,7 +410,7 @@ sides = [
 ]
 phf_table = (
     pl.concat(sides)
-    .group_by("team")
+    .group_by("team", maintain_order=True)
     .agg(pl.len().alias("gp"), (pl.col("gf") > pl.col("ga")).sum().alias("w"), pl.col("gf").sum(), pl.col("ga").sum())
     .with_columns(diff=pl.col("gf") - pl.col("ga"))
     .sort("w", "diff", descending=True)

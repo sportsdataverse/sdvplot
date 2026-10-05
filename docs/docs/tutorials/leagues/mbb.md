@@ -158,7 +158,7 @@ plot the `team_id` strings as categories, then replace them.
 bars = top25.reverse()  # barh draws from the bottom up
 
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.barh(bars["team_id"], bars["adj_em"], color=sdvplot.team_colors(bars["team_id"].to_list(), "mbb"))
+ax.barh(bars["team_id"], bars["adj_em"], color=sdvplot.team_colors("mbb", bars["team_id"].to_list()))
 for y, (value, name) in enumerate(zip(bars["adj_em"], bars["short_name"], strict=True)):
     ax.text(value + 0.5, y, f"{name}  {value:.1f}", va="center", fontsize=8)
 sdvplot.axis_logos(ax, "y", league="mbb", height=0.032)
@@ -353,7 +353,7 @@ net = (
         + pl.col("total_turnovers")
         + 0.475 * pl.col("free_throws_attempted")
     )
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(net=100 * (pl.col("team_score").sum() - pl.col("opponent_team_score").sum()) / pl.col("poss").sum())
     .sort("net", descending=True)
     .head(32)
@@ -406,13 +406,13 @@ edge = (
     .filter(pl.col("conference_competition") & ~pl.col("neutral_site"))
     .with_columns(pl.col("team_id").cast(pl.Utf8), margin=pl.col("team_score") - pl.col("opponent_team_score"))
     .filter(pl.col("team_id").is_in(sec))
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(
         home=pl.col("margin").filter(pl.col("team_home_away") == "home").mean(),
         road=pl.col("margin").filter(pl.col("team_home_away") == "away").mean(),
     )
     .with_columns(edge=pl.col("home") - pl.col("road"))
-    .sort("edge", descending=True)
+    .sort(["edge", "team_id"], descending=[True, False])
 )
 
 p = (
@@ -449,7 +449,7 @@ players = mbb.load_mbb_player_boxscore(SEASON)
 leaders = (
     players.filter(~pl.col("did_not_play"))
     .with_columns(pl.col("team_id", "athlete_id").cast(pl.Utf8))
-    .group_by("athlete_id", "athlete_display_name", "team_id")
+    .group_by("athlete_id", "athlete_display_name", "team_id", maintain_order=True)
     .agg(games=pl.len(), ppg=pl.col("points").mean())
     .filter((pl.col("games") >= 20) & pl.col("team_id").is_in(d1_ids))
     .sort("ppg", descending=True)
@@ -459,7 +459,7 @@ leaders = (
 
 fig, ax = plt.subplots(figsize=(10, 6))
 y = list(range(leaders.height))
-ax.barh(y, leaders["ppg"], color=sdvplot.team_colors(leaders["team_id"].to_list(), "mbb"), height=0.7)
+ax.barh(y, leaders["ppg"], color=sdvplot.team_colors("mbb", leaders["team_id"].to_list()), height=0.7)
 sdvplot.add_logos(ax, [-1.6] * leaders.height, y, leaders["team_id"], league="mbb", height=0.07)
 sdvplot.add_headshots(ax, leaders["ppg"] + 1.3, y, leaders["athlete_id"], league="mbb", height=0.09)
 for yi, ppg in zip(y, leaders["ppg"], strict=True):
@@ -499,7 +499,7 @@ sides = [
 ]
 runs = (
     pl.concat(sides)
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(pl.col("round_no").max(), champion=pl.col("won").filter(pl.col("round_no") == 6).any())
     .with_columns(
         tournament=pl.when(pl.col("champion"))

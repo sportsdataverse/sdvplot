@@ -50,6 +50,8 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/_layout.py` | wave C2: legends (`gt_legend_*`), `gt_percentile_bar`, `gt_tiers`, row emphasis, notes, `gt_snake`; reads the `_sdvplot_scale` / `_sdvplot_key` records |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
+| `_types.py` | the `Literal` aliases of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`, `MarkType`); `tests/test_types.py` keeps them equal to the runtime sets and is in mypy's `files` |
+| `typing.py` | `sdvplot.typing`, the public re-export of those aliases for user annotations (the `numpy.typing` precedent) |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
 `home_figures.py`, `export_sdvplotr.R`). `docs/` is the Docusaurus site; `docs/COMPATIBILITY.md` (outside the site's pages) is the
@@ -77,6 +79,7 @@ uv run pre-commit run --all-files           # `pre-commit install` refuses when 
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` |
+| `docs/static/img/sdvplot-logo.png` (the hex, 1036 x 1200), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network: the eight logos; starfield and Russo One in `tools/brand/`) | the script asserts the size |
 | `docs/src/pages/CHANGELOG.md` | copy of `CHANGELOG.md` (pre-commit hook) | tests |
 | `data-raw/sdvplotr_*.csv` | `Rscript tools/export_sdvplotr.R` | rebuild the index |
 
@@ -110,7 +113,10 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 ## Docstring standard
 
 Google-style (napoleon) with `Args`, `Returns`, `Raises`, `Example` and `See Also`, linking the reference page.
-`uv run python tools/gen_docs.py --check` enforces it. Polars 1.x API only; ruff line length 120.
+`uv run python tools/gen_docs.py --check` enforces it for the top level and for every public submodule's `__all__`
+functions, and checks each submodule Example statically (syntax, undefined names). `tests/test_submodule_examples.py`
+runs them offline against an empty cache, with a 20 s limit each; one that needs the network or a browser must be listed
+in its `TOLERATED` with a reason, and never excuses an `AssertionError` or `NameError`. Polars 1.x API only; ruff line length 120.
 
 ## Commits
 

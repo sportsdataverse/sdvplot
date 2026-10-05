@@ -12,9 +12,10 @@ sidebar_position: 7
 logo_image(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark'] = 'logo',
     size: int | None = None,
 ) -> PIL.Image.Image | None
 ```
@@ -31,7 +32,7 @@ The team's mark as a PIL image (downloaded once, then cached).
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
 | `size` | `int \| None` | The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512). |
 
 ## Returns
@@ -43,9 +44,12 @@ PIL.Image.Image | None: The image, or None when the team does not resolve or has
 - `TypeError`: If ``team`` is not a single value.
 - `OptionalDependencyError`: If the mark is an SVG and the ``svg`` extra is not installed.
 - `OfflineError`: If the download fails and no cached copy exists.
+- `UnsafeDownloadError`: (an OSError) If the download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If the manifest's sha256 or extension for the mark would put the file outside the cache directory.
 - `requests.HTTPError`: If the CDN refuses the file (a 4xx response).
 - `OSError`: If the download does not match the manifest's sha256, or is not an image PIL can decode (``PIL.UnidentifiedImageError`` subclasses OSError).
-- `ValueError`: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", or an SVG cannot be parsed.
+- `InputError`: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
+- `ValueError`: If an SVG cannot be parsed.
 
 ## Example
 

@@ -72,7 +72,7 @@ season's standings.
 with warnings.catch_warnings(record=True) as caught:
     warnings.simplefilter("always")
     print(sdvplot.resolve(["UConn", "TENN", "Lady Vols", 2579], "wbb"))
-    opponents = sdvplot.resolve(box["opponent_team_id"].cast(pl.Utf8).unique(), "wbb")
+    opponents = sdvplot.resolve(box["opponent_team_id"].cast(pl.Utf8).unique(maintain_order=True), "wbb")
     ids = sdvplot.resolve(ratings["team_id"], "wbb")
 for w in caught:
     print(str(w.message)[:100], "...")
@@ -95,7 +95,7 @@ d1.select("d1_rank", "team_id", "short_name", "conference", "adj_o", "adj_d", "a
 ```text
 ['41', '2633', None, '2579']
 1 value(s) did not resolve to a wbb team: 'Lady Vols' (unknown). Use sdvplot.suggest() for candidate ...
-300 value(s) did not resolve to a wbb team: '100277' (unknown), '2863' (unknown), '502' (unknown), ' ...
+300 value(s) did not resolve to a wbb team: '408' (unknown), '111205' (unknown), '131832' (unknown), ...
 300 value(s) did not resolve to a wbb team: '3163' (unknown), '2606' (unknown), '2778' (unknown), '2 ...
 ```
 
@@ -238,13 +238,13 @@ margins = (
     .filter(pl.col("team_id").is_in(big_ten) & pl.col("opponent_team_id").is_in(d1_ids))
     .with_columns(margin=pl.col("team_score") - pl.col("opponent_team_score"))
 )
-order = margins.group_by("team_id").agg(pl.col("margin").median()).sort("margin", descending=True)
+order = margins.group_by("team_id", maintain_order=True).agg(pl.col("margin").median()).sort("margin", descending=True)
 
 p = (
     ggplot(margins.to_pandas(), aes("team_id", "margin"))
     + geom_hline(yintercept=0, color="#555555")
     + geom_boxplot(outlier_shape="", width=0.6, color="#444444", fill="white")
-    + geom_jitter(aes(color="team_id"), width=0.15, height=0, size=1.6, alpha=0.85, show_legend=False)
+    + geom_jitter(aes(color="team_id"), width=0.15, height=0, size=1.6, alpha=0.85, show_legend=False, random_state=1)
     + scale_x_discrete(limits=order["team_id"].to_list())
     + scale_color_sdv("wbb")
     + labs(
@@ -276,7 +276,7 @@ from sdvplot.great_tables import gt_sdv_headshots, gt_theme_broadsheet
 players = wbb.load_wbb_player_boxscore(SEASON)
 leaders = (
     players.filter(~pl.col("did_not_play"))
-    .group_by("athlete_id", "athlete_display_name", "team_id")
+    .group_by("athlete_id", "athlete_display_name", "team_id", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -381,7 +381,7 @@ fig = go.Figure(
         x=top25["adj_em"],
         y=top25["team_id"],
         orientation="h",
-        marker_color=sdvplot.team_colors(top25["team_id"].to_list(), "wbb"),
+        marker_color=sdvplot.team_colors("wbb", top25["team_id"].to_list()),
         customdata=top25.select("short_name", "conference").rows(),
         hovertemplate="%{customdata[0]} (%{customdata[1]})<br>Adj. EM %{x:+.1f}<extra></extra>",
     )
@@ -464,7 +464,7 @@ champ_name = sdvplot.teams("wbb").filter(pl.col("team_id") == str(champ))["name"
 
 fig, ax = plt.subplots(figsize=(9, 5.5))
 x = list(range(run.height))
-ax.bar(x, run["margin"], color=sdvplot.team_colors(champ, "wbb"), width=0.65)
+ax.bar(x, run["margin"], color=sdvplot.team_colors("wbb", champ), width=0.65)
 sdvplot.add_logos(ax, x, run["margin"] + 5, run["opponent"], league="wbb", height=0.11)
 for xi, m in zip(x, run["margin"], strict=True):
     ax.text(xi, m / 2, f"+{m}", ha="center", va="center", color="white", fontsize=12, fontweight="bold")
@@ -502,11 +502,16 @@ polls = (
         for side in ("home", "away")
     )
     .filter((pl.col("rank") < 99) & (pl.col("season_type") == 2))  # ranked, regular season
-    .group_by("team_id", week=pl.col("game_date").dt.truncate("1w"))
+    .group_by("team_id", week=pl.col("game_date").dt.truncate("1w"), maintain_order=True)
     .agg(pl.col("rank").min().cast(pl.Int64))
     .sort("week")
 )
-final = polls.group_by("team_id").agg(pl.col("rank").last(), pl.col("week").last()).sort("rank").head(8)
+final = (
+    polls.group_by("team_id", maintain_order=True)
+    .agg(pl.col("rank").last(), pl.col("week").last())
+    .sort("rank")
+    .head(8)
+)
 colors = sdvplot.palette("wbb", teams=final["team_id"])
 
 fig, ax = plt.subplots(figsize=(10, 6))

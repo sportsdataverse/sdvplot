@@ -18,20 +18,27 @@ import pygal
 from pygal.style import Style
 
 from sdvplot._colors import team_colors
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
 from sdvplot._web import aspect, image_src
 
-SUPPORTS_AXIS_LOGOS = False
-SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
+_SUPPORTS_AXIS_LOGOS = False
+_SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
 _MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "team_style"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _check_chart(chart: Any) -> None:
     if not isinstance(chart, pygal.XY):
-        raise TypeError(
-            f"sdvplot.pygal draws on XY-family charts ({SUPPORTED}); a {type(chart).__name__} chart places values by "
+        raise UnsupportedTargetError(
+            f"sdvplot.pygal draws on XY-family charts ({_SUPPORTED}); a {type(chart).__name__} chart places values by "
             "category or angle, not at an (x, y) point"
         )
 
@@ -65,7 +72,7 @@ class _MarksFilter:
                 _HREF: src, "x": f"{cx - w / 2:.3f}", "y": f"{cy - h / 2:.3f}", "width": f"{w:.3f}",
                 "height": f"{h:.3f}", "preserveAspectRatio": "xMidYMid meet", "opacity": f"{alpha:g}",
                 "pointer-events": "none",  # hovering still reaches pygal's dot (and its tooltip) underneath
-                _MARK: str(index),  # which recorded mark this is: lets drawn_marks measure the rendered image
+                _MARK: str(index),  # which recorded mark this is: lets _drawn_marks measure the rendered image
             }  # fmt: skip
             overlay.append(overlay.makeelement("image", attrs))
         return root
@@ -141,6 +148,7 @@ def add_logos(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart (Bar, Line and Pie place values by category or angle).
         ValueError: If ``height`` or ``alpha`` is out of range, or ``x``/``y``/``teams`` differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::
@@ -201,6 +209,7 @@ def add_wordmarks(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart.
         ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::
@@ -255,6 +264,7 @@ def add_headshots(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart.
         ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::
@@ -303,7 +313,7 @@ def axis_logos(chart: Any, axis: str, **kwargs: Any) -> Any:
     See Also:
         sdvplot.matplotlib.axis_logos(): https://sdvplot.sportsdataverse.org/
     """
-    raise TypeError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
+    raise UnsupportedTargetError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
 
 
 def team_style(teams: Any, *, league: str, which: str = "primary", season: Any = None, **style_kwargs: Any) -> Style:
@@ -341,11 +351,11 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
         pygal styles: https://www.pygal.org/en/stable/documentation/styles.html
     """
     defaults = Style.colors
-    colors = team_colors(_unpack(teams)[0], league, which=which, season=season)  # a bare "KC" is one team
+    colors = team_colors(league, _unpack(teams)[0], which=which, season=season)  # a bare "KC" is one team
     return Style(colors=tuple(c or defaults[i % len(defaults)] for i, c in enumerate(colors)), **style_kwargs)
 
 
-def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     """Test hook: render the chart, then (team_id, x, y, height, url) for each mark image in the SVG, in draw order;
     height = the image's height attribute / the plot area's height."""
     recorded = vars(chart).get("_sdvplot_marks", ())

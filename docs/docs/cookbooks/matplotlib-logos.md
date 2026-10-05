@@ -46,8 +46,8 @@ sdvplot needs.
 def epa_per_play(stats: pl.DataFrame) -> pl.DataFrame:
     plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
     epa = pl.col("passing_epa") + pl.col("rushing_epa")
-    offense = stats.group_by("team").agg(off_epa=epa.sum() / plays.sum())
-    defense = stats.group_by(team=pl.col("opponent_team")).agg(def_epa=epa.sum() / plays.sum())
+    offense = stats.group_by("team", maintain_order=True).agg(off_epa=epa.sum() / plays.sum())
+    defense = stats.group_by(team=pl.col("opponent_team"), maintain_order=True).agg(def_epa=epa.sum() / plays.sum())
     return offense.join(defense, on="team").sort("team")
 
 
@@ -56,7 +56,7 @@ nfl_epa = epa_per_play(nfl_weeks)
 
 nba_box = nba.load_nba_team_boxscore(seasons=[SEASON]).filter(pl.col("season_type") == 2)
 nba_teams = (
-    nba_box.group_by("team_abbreviation")
+    nba_box.group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .filter(pl.col("games") > 10)
     .sort("team_abbreviation")
@@ -116,7 +116,7 @@ x = list(range(ranked.height))
 ends = [d + 1.4 if d >= 0 else d - 1.4 for d in ranked["diff"]]
 
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(x, ranked["diff"], color=sdvplot.team_colors(ranked["team_abbreviation"], "nba"), width=0.75)
+ax.bar(x, ranked["diff"], color=sdvplot.team_colors("nba", ranked["team_abbreviation"]), width=0.75)
 ax.axhline(0, color="black", linewidth=0.8)
 ax.set_ylim(ranked["diff"].min() - 3.5, ranked["diff"].max() + 3.5)
 sdvplot.add_logos(ax, x, ends, ranked["team_abbreviation"], league="nba", height=0.055)
@@ -142,21 +142,23 @@ NFL abbreviations).
 
 ```python
 nhl_scoring = (
-    nhl_games.group_by("team_abbrev")
+    nhl_games.group_by("team_abbrev", maintain_order=True)
     .agg(gpg=pl.col("goals").mean())
     .sort(["gpg", "team_abbrev"], descending=[True, False])
     .head(10)
 )
-nfl_sacks = nfl_weeks.group_by("team").agg(pl.col("def_sacks").sum()).sort("def_sacks", "team").tail(10)
+nfl_sacks = (
+    nfl_weeks.group_by("team", maintain_order=True).agg(pl.col("def_sacks").sum()).sort("def_sacks", "team").tail(10)
+)
 
 fig, (left, right) = plt.subplots(1, 2, figsize=(10, 5))
-colors = sdvplot.team_colors(nhl_scoring["team_abbrev"], "nhl")
+colors = sdvplot.team_colors("nhl", nhl_scoring["team_abbrev"])
 left.bar(nhl_scoring["team_abbrev"], nhl_scoring["gpg"], color=colors)
 left.set_ylim(2.5, nhl_scoring["gpg"].max() + 0.2)
 left.set_title("NHL goals per game, 2025-26 (top 10)", loc="left", fontsize=10, fontweight="bold")
 sdvplot.axis_logos(left, "x", league="nhl", height=0.08)
 
-right.barh(nfl_sacks["team"], nfl_sacks["def_sacks"], color=sdvplot.team_colors(nfl_sacks["team"], "nfl"))
+right.barh(nfl_sacks["team"], nfl_sacks["def_sacks"], color=sdvplot.team_colors("nfl", nfl_sacks["team"]))
 right.set_title(f"NFL sacks, {NFL_SEASON} (top 10)", loc="left", fontsize=10, fontweight="bold")
 sdvplot.axis_logos(right, "y", league="nfl", height=0.07)
 fig.text(0.99, 0.01, f"{FASTRHOCKEY} | {NFLVERSE}", ha="right", fontsize=8, color="grey")
@@ -186,7 +188,11 @@ runs = (
         goal_diff=(pl.col("goals") - pl.col("goals_against")).cum_sum().over("team_abbrev"),
     )
 )
-last = runs.group_by("team_abbrev").agg(pl.all().sort_by("game_no").last()).sort("goal_diff", "team_abbrev")
+last = (
+    runs.group_by("team_abbrev", maintain_order=True)
+    .agg(pl.all().sort_by("game_no").last())
+    .sort("goal_diff", "team_abbrev")
+)
 gap = 9  # goals: about one logo height on this axis
 spots = []
 for y in last["goal_diff"]:
@@ -196,7 +202,7 @@ end = last["game_no"].max()
 fig, ax = plt.subplots(figsize=(10, 6))
 for team in PACIFIC:
     run = runs.filter(pl.col("team_abbrev") == team)
-    ax.plot(run["game_no"], run["goal_diff"], color=sdvplot.team_colors(team, "nhl"), linewidth=2)
+    ax.plot(run["game_no"], run["goal_diff"], color=sdvplot.team_colors("nhl", team), linewidth=2)
 for y, spot in zip(last["goal_diff"], spots, strict=True):
     ax.plot([end, end + 4], [y, spot], color="grey", linewidth=0.6)
 ax.axhline(0, color="grey", linewidth=0.8)
@@ -324,7 +330,7 @@ kc = (
     .with_columns(epa=(pl.col("passing_epa") + pl.col("rushing_epa")) / plays)
     .sort("week")
 )
-good, bad = sdvplot.team_colors("KC", "nfl"), sdvplot.team_colors("KC", "nfl", "secondary")
+good, bad = sdvplot.team_colors("nfl", "KC"), sdvplot.team_colors("nfl", "KC", which="secondary")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 ax.bar(kc["week"], kc["epa"], color=[good if e >= 0 else bad for e in kc["epa"]], edgecolor="black")
@@ -403,7 +409,7 @@ CONFERENCES = {
 }
 conf = (
     mbb_ratings.filter(pl.col("conference").is_in(list(CONFERENCES)))
-    .group_by("conference")
+    .group_by("conference", maintain_order=True)
     .agg(pl.col("adj_em").mean())
     .sort("adj_em")
 )
@@ -436,7 +442,7 @@ box score, work directly. The season's top scorers (50+ games), by volume and ef
 ```python
 players = nba.load_nba_player_boxscore(seasons=[SEASON]).filter((pl.col("season_type") == 2) & ~pl.col("did_not_play"))
 scorers = (
-    players.group_by("athlete_id", "athlete_display_name")
+    players.group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -498,13 +504,10 @@ display(Image(filename=out / "landscape.png", width=600))
 
 ```text
 square (1080, 1080)
-```
-
-```text
 landscape (1200, 675)
 ```
 
-![png](matplotlib-logos_files/matplotlib-logos_27_2.png)
+![png](matplotlib-logos_files/matplotlib-logos_27_1.png)
 
 </div>
 

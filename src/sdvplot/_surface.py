@@ -7,7 +7,7 @@ from typing import Any
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import contrast, on_color
-from sdvplot._errors import OptionalDependencyError
+from sdvplot._errors import InputError, OptionalDependencyError
 
 # SDV league -> (sportypy.surfaces module, class). Always the sport module: the top-level sportypy.surfaces.NCAACourt
 # is the tennis court and NCAAField the football field, shadowing the basketball court and the baseball field.
@@ -125,7 +125,7 @@ def surface(
         sportypy: https://sportypy.sportsdataverse.org/
     """
     if league not in SURFACES:
-        raise ValueError(f"no sportypy surface for league {league!r}; supported: {sorted(SURFACES)}")
+        raise InputError(f"no sportypy surface for league {league!r}; supported: {sorted(SURFACES)}")
     sport, cls_name = SURFACES[league]
     try:
         module = importlib.import_module(f"sportypy.surfaces.{sport}")
@@ -140,7 +140,7 @@ def surface(
         # Naming that default draws the same numbers (bar sportypy's Clarendon-only nudge of one "1") and logs nothing.
         sportypy_kwargs["field_updates"] = {"number_font": "DejaVu Sans", **sportypy_kwargs.get("field_updates", {})}
     if team is not None:
-        primary, secondary = (team_colors([team], league, which=w, season=season)[0] for w in ("primary", "secondary"))
+        primary, secondary = (team_colors(league, [team], which=w, season=season)[0] for w in ("primary", "secondary"))
         if primary is not None:
             sportypy_kwargs["color_updates"] = {
                 **color_updates(sport, primary, secondary),

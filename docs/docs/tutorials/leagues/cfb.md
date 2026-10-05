@@ -130,7 +130,7 @@ sides = pl.concat(
 
 big_ten = (
     sides.filter(pl.col("conf") == "Big Ten")
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(
         conf_w=(pl.col("win") & pl.col("conference_game")).sum(),
         conf_l=(~pl.col("win") & pl.col("conference_game")).sum(),
@@ -187,7 +187,7 @@ games = (
 game_no = list(range(1, games.height + 1))
 
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(game_no, games["margin"], color=sdvplot.team_colors(team, "cfb"), width=0.7)
+ax.bar(game_no, games["margin"], color=sdvplot.team_colors("cfb", team), width=0.7)
 sdvplot.add_logos(ax, game_no, games["margin"] + 7, games["opponent"], league="cfb", season=SEASON, height=0.08)
 ax.set_ylim(0, games["margin"].max() + 14)
 ax.set_xticks(game_no)
@@ -241,7 +241,7 @@ rivalry = (
 )
 
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(rivalry["season"], rivalry["osu_margin"], color=sdvplot.team_colors(rivalry["winner"], "cfb").to_list())
+ax.bar(rivalry["season"], rivalry["osu_margin"], color=sdvplot.team_colors("cfb", rivalry["winner"]).to_list())
 tip = rivalry["osu_margin"] + pl.Series([8 if m > 0 else -8 for m in rivalry["osu_margin"]])
 sdvplot.add_logos(ax, rivalry["season"], tip, rivalry["winner"], league="cfb", season=SEASON, height=0.08)
 ax.axhline(0, color="black", lw=0.8)
@@ -283,7 +283,7 @@ print(str(caught[0].message)[:160], "...")
 
 (
     opponents.with_columns(found=resolved.is_not_null())
-    .group_by("division")
+    .group_by("division", maintain_order=True)
     .agg(teams=pl.len(), in_sdvplot=pl.col("found").sum())
     .sort("teams", descending=True)
 )
@@ -396,7 +396,7 @@ top = (
 )
 
 fig, ax = plt.subplots(figsize=(9, 6))
-ax.barh(top["team_id"], top["fpi"], color=sdvplot.team_colors(top["team_id"], "cfb").to_list())
+ax.barh(top["team_id"], top["fpi"], color=sdvplot.team_colors("cfb", top["team_id"]).to_list())
 for y, value in enumerate(top["fpi"]):
     ax.text(value + 0.3, y, f"{value:.1f}", va="center", fontsize=8)
 sdvplot.axis_logos(ax, "y", league="cfb", season=SEASON, height=0.04)
@@ -416,7 +416,8 @@ plt.show()
 ## 9. Tiers of a ranking you compute
 
 A composite ranking: the average of each team's rank in two systems, cfbfastR's adjusted net EPA and FEI. The top
-32 go into five tiers with `team_tiers`.
+32 go into five tiers with `team_tiers`, on its light theme: Ohio State's, Texas A&M's and Penn State's dark logos
+vanish on the default dark one.
 
 ```python
 from sdvplot.matplotlib import team_tiers
@@ -424,7 +425,7 @@ from sdvplot.matplotlib import team_tiers
 composite = (
     cfb.load_cfb_ratings([SEASON])
     .with_columns(pl.col("team_id").cast(pl.Utf8), score=(pl.col("net_rank") + pl.col("fei_net_rank")) / 2)
-    .sort("score")
+    .sort("score", "net_rank", "team_id")
     .head(32)
 )
 sizes = [4, 6, 7, 7, 8]  # teams per tier, top to bottom
@@ -437,6 +438,7 @@ fig = team_tiers(
     subtitle="average rank in adjusted net EPA and FEI",
     caption=CAPTION,
     alpha=1,
+    theme="light",
     tier_desc={1: "Elite", 2: "Contenders", 3: "Very good", 4: "Good", 5: "Solid"},
 )
 plt.show()

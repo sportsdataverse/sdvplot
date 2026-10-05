@@ -64,4 +64,9 @@ def test_docs_changelog_mirrors_the_root_changelog():  # Review Focus 5
 def test_contributor_files_exist():
     for rel in ("CHANGELOG.md", "CONTRIBUTING.md", "CLAUDE.md", ".github/copilot-instructions.md"):
         assert (ROOT / rel).is_file(), rel
-    assert "## Unreleased" in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert "## [Unreleased]" in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+
+
+def test_unreleased_is_the_first_changelog_section():
+    headings = [ln for ln in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8").splitlines() if ln.startswith("## ")]
+    assert headings[0] == "## [Unreleased]"

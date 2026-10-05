@@ -10,7 +10,7 @@ out as plain `"#rrggbb"` strings, so no plotting library needs an adapter for th
 
 ## `palette()`
 
-`palette(league, which="primary", teams=None, season=None)` returns a `{team: "#hex"}` dict.
+`palette(league, teams=None, *, which="primary", season=None)` returns a `{team: "#hex"}` dict.
 
 **With `teams`,** the keys are your own values, exactly as you passed them. That way the dict matches a seaborn `hue`
 column or a Plotly color column without any renaming:
@@ -18,8 +18,8 @@ column or a Plotly color column without any renaming:
 ```python
 import sdvplot
 
-sdvplot.palette("nfl", teams=["KC", "SF"])                    # {'KC': '#e31837', 'SF': '#aa0000'}
-sdvplot.palette("nfl", teams=["Kansas City Chiefs", 12])     # {'Kansas City Chiefs': '#e31837', 12: '#e31837'}
+sdvplot.palette("nfl", teams=["KC", "SF"])  # {'KC': '#e31837', 'SF': '#aa0000'}
+sdvplot.palette("nfl", teams=["Kansas City Chiefs", 12])  # {'Kansas City Chiefs': '#e31837', 12: '#e31837'}
 ```
 
 ```python
@@ -32,8 +32,8 @@ sns.barplot(data=df, x="team", y="epa", hue="team", palette=sdvplot.palette("nfl
 its `team_id`, as in the OHL:
 
 ```python
-nfl = sdvplot.palette("nfl")    # 32 entries: {'ATL': '#a71930', ...}
-ohl = sdvplot.palette("ohl")    # 27 entries keyed by team_id: {'1': '#76b7b2', ...}
+nfl = sdvplot.palette("nfl")  # 32 entries: {'ATL': '#a71930', ...}
+ohl = sdvplot.palette("ohl")  # 27 entries keyed by team_id: {'1': '#76b7b2', ...}
 ```
 
 Teams that do not resolve, or have no color of that kind, are left out of the dict. The usual `SdvplotWarning` names
@@ -44,12 +44,12 @@ Express, `alt.Scale(domain=list(p), range=list(p.values()))` to Altair, or the k
 
 ## `team_colors()`
 
-`team_colors(teams, league, which="primary", season=None)` returns one color per value, in the container you passed
+`team_colors(league, teams, *, which="primary", season=None)` returns one color per value, in the container you passed
 (see [Team identity](identity.md#containers)). It returns `None` where a team does not resolve or has no color:
 
 ```python
-sdvplot.team_colors(["KC", "SF"], "nfl")        # ['#e31837', '#aa0000']
-sdvplot.team_colors("KC", "nfl", "secondary")   # '#ffb612'
+sdvplot.team_colors("nfl", ["KC", "SF"])  # ['#e31837', '#aa0000']
+sdvplot.team_colors("nfl", "KC", which="secondary")  # '#ffb612'
 ```
 
 ## `which`

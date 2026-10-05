@@ -50,10 +50,10 @@ is for `surface()`, and `[reactable]` and `[plottable]` add column helpers (`sdv
 ```python
 import sdvplot
 
-sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")   # ['13', '13', '13']
-sdvplot.palette("nfl", teams=["LV", "KC"])                  # {'LV': '#000000', 'KC': '#e31837'}
-sdvplot.logo_url("OAK", "nfl", season=2010)                 # the CDN URL of the Oakland-era mark
-img = sdvplot.logo_image("LV", "nfl", size=128)             # a 128x128 PIL image, cached after the first download
+sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")  # ['13', '13', '13']
+sdvplot.palette("nfl", teams=["LV", "KC"])  # {'LV': '#000000', 'KC': '#e31837'}
+sdvplot.logo_url("OAK", "nfl", season=2010)  # the CDN URL of the Oakland-era mark
+img = sdvplot.logo_image("LV", "nfl", size=128)  # a 128x128 PIL image, cached after the first download
 ```
 
 - `resolve()` turns any team identifier into the canonical `team_id` and never guesses.

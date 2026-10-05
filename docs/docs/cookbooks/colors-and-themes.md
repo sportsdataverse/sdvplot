@@ -82,17 +82,17 @@ There are two colors per team; ask for any other and you get a `ValueError` that
 
 ```python
 top = (
-    nhl_box.group_by("team_abbrev")
+    nhl_box.group_by("team_abbrev", maintain_order=True)
     .agg(gf=pl.col("goals").mean())
     .sort(["gf", "team_abbrev"], descending=[True, False])
     .head(5)
 )
 top = top.with_columns(
-    primary=sdvplot.team_colors(top["team_abbrev"], "nhl"),
-    secondary=sdvplot.team_colors(top["team_abbrev"], "nhl", which="secondary"),
+    primary=sdvplot.team_colors("nhl", top["team_abbrev"]),
+    secondary=sdvplot.team_colors("nhl", top["team_abbrev"], which="secondary"),
 )
 try:
-    sdvplot.team_colors(top["team_abbrev"], "nhl", which="alternate")
+    sdvplot.team_colors("nhl", top["team_abbrev"], which="alternate")
 except ValueError as e:
     print(e)
 top
@@ -128,7 +128,7 @@ west_ids = sdvplot.teams("nba").filter(pl.col("conference") == "Western Conferen
 west = (
     nba_box.with_columns(pl.col("team_id").cast(pl.Int64).cast(pl.Utf8))
     .join(west_ids, on="team_id")
-    .group_by("team_abbreviation", "team_display_name")
+    .group_by("team_abbreviation", "team_display_name", maintain_order=True)
     .agg(wins=pl.col("team_winner").sum(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .sort(["wins", "team_abbreviation"], descending=[True, False])
 )
@@ -159,7 +159,7 @@ CENTRAL = ["CHI", "COL", "DAL", "MIN", "NSH", "STL", "UTA", "WPG"]
 central = nhl_box.filter(pl.col("team_abbrev").is_in(CENTRAL)).with_columns(
     margin=pl.col("goals") - pl.col("goals_against")
 )
-means = central.group_by("team_abbrev").agg(pl.col("margin").mean())
+means = central.group_by("team_abbrev", maintain_order=True).agg(pl.col("margin").mean())
 order = means.sort(["margin", "team_abbrev"], descending=[True, False])["team_abbrev"]
 palette = sdvplot.palette("nhl", teams=central["team_abbrev"])
 
@@ -194,10 +194,10 @@ def distance(a: str, b: str) -> float:
     return sum((x - y) ** 2 for x, y in zip(to_rgb(a), to_rgb(b), strict=True)) ** 0.5
 
 
-lal, sac = sdvplot.team_colors(["LAL", "SAC"], "nba")
+lal, sac = sdvplot.team_colors("nba", ["LAL", "SAC"])
 print(f"primaries {lal} vs {sac}: distance {distance(lal, sac):.2f}")
 if distance(lal, sac) < 0.25:
-    sac = sdvplot.team_colors("SAC", "nba", which="secondary")
+    sac = sdvplot.team_colors("nba", "SAC", which="secondary")
     print(f"using the Kings' secondary {sac}: distance {distance(lal, sac):.2f}")
 
 race = (
@@ -251,11 +251,11 @@ east = (
     .with_columns(game_no=pl.int_range(pl.len()).over("team_abbreviation"))
 )
 order = (
-    east.group_by("team_abbreviation")
+    east.group_by("team_abbreviation", maintain_order=True)
     .agg(pl.col("team_winner").sum())
     .sort(["team_winner", "team_abbreviation"], descending=[True, False])
 )["team_abbreviation"].to_list()
-cmap = ListedColormap(sdvplot.team_colors(order, "nba") + ["#e6e6e6"])  # one color per team, then a loss
+cmap = ListedColormap(sdvplot.team_colors("nba", order) + ["#e6e6e6"])  # one color per team, then a loss
 
 grid = [[float("nan")] * (east["game_no"].max() + 1) for _ in order]
 for team, game_no, won in east.select("team_abbreviation", "game_no", "team_winner").iter_rows():
@@ -292,7 +292,7 @@ from pypalettes import create_cmap
 
 shots = nba.load_nba_stats_shots(seasons=SEASON - 1)  # this loader takes the season's start year
 sga = sdvplot.court_coords(shots.filter((pl.col("person_id") == 1628983) & (pl.col("season_type_id") == "2")))
-okc_primary, okc_secondary = sdvplot.team_colors("OKC", "nba"), sdvplot.team_colors("OKC", "nba", "secondary")
+okc_primary, okc_secondary = sdvplot.team_colors("nba", "OKC"), sdvplot.team_colors("nba", "OKC", which="secondary")
 cmap = create_cmap(["#d6e8f5", okc_primary, okc_secondary], cmap_type="continuous")
 
 fig, ax = plt.subplots(figsize=(7.5, 6.5))
@@ -321,7 +321,7 @@ chart and restore your defaults afterwards. Team colors and logos draw over the 
 import morethemes as mt
 
 net = (
-    nba_box.group_by("team_abbreviation")
+    nba_box.group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .filter(pl.col("games") > 10)
     .sort(["diff", "team_abbreviation"], descending=[True, False])
@@ -331,7 +331,7 @@ net = (
 with plt.rc_context():
     mt.set_theme("economist")
     fig, ax = plt.subplots(figsize=(9, 5.5))
-    ax.barh(net["team_abbreviation"], net["diff"], color=sdvplot.team_colors(net["team_abbreviation"], "nba"))
+    ax.barh(net["team_abbreviation"], net["diff"], color=sdvplot.team_colors("nba", net["team_abbreviation"]))
     sdvplot.axis_logos(ax, "y", league="nba", height=0.07)
     ax.set_xlabel("Average point differential per game")
     ax.set_title("The NBA's top ten by point differential, 2025-26", loc="left", fontweight="bold")
@@ -355,7 +355,7 @@ the fallbacks with the clubs' real colors in your own dict.
 ```python
 share = (
     sdvplot.teams()
-    .group_by("league")
+    .group_by("league", maintain_order=True)
     .agg(teams=pl.len(), fallback=(pl.col("color_source") == "fallback").mean())
     .sort("fallback", "league")
 )

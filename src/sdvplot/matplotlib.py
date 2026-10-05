@@ -2,14 +2,13 @@
 
 sdvplot routes matplotlib and seaborn targets here (sdvplot._dispatch). An image's height is a fraction of its Axes'
 height at draw time (_AxesFractionImage), so it holds at any dpi or figure size. plotnine draws through
-draw_placements too. Cartopy GeoAxes are matplotlib Axes: transform= takes the CRS of the caller's coordinates.
+_draw_placements too. Cartopy GeoAxes are matplotlib Axes: transform= takes the CRS of the caller's coordinates.
 """
 
 from __future__ import annotations
 
 import numbers
 import sys
-import warnings
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -23,14 +22,20 @@ from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, SdvplotWarning
+from sdvplot._errors import OfflineError, UnsupportedTargetError, warn
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
-SUPPORTS_AXIS_LOGOS = True
-MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
-TITLE_GAP = 4  # points between a title image and its title text
+_SUPPORTS_AXIS_LOGOS = True
+_MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
+_TITLE_GAP = 4  # points between a title image and its title text
 _HA = {"left": 0.0, "center": 0.5, "right": 1.0}
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "add_images", "title_image", "team_tiers"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 class _AxesFractionImage(OffsetImage):
@@ -46,16 +51,16 @@ class _AxesFractionImage(OffsetImage):
         return Bbox.from_bounds(0, 0, h * self._sdv_cols / self._sdv_rows, h)
 
 
-def rgba_array(img: Image.Image) -> np.ndarray:
-    """An image as an RGBA array, at most MAX_IMAGE_HEIGHT pixels tall."""
+def _rgba_array(img: Image.Image) -> np.ndarray:
+    """An image as an RGBA array, at most _MAX_IMAGE_HEIGHT pixels tall."""
     img = img.convert("RGBA")
-    if img.height > MAX_IMAGE_HEIGHT:
-        width = max(1, round(img.width * MAX_IMAGE_HEIGHT / img.height))
-        img = img.resize((width, MAX_IMAGE_HEIGHT), Image.Resampling.LANCZOS)
+    if img.height > _MAX_IMAGE_HEIGHT:
+        width = max(1, round(img.width * _MAX_IMAGE_HEIGHT / img.height))
+        img = img.resize((width, _MAX_IMAGE_HEIGHT), Image.Resampling.LANCZOS)
     return np.asarray(img)
 
 
-def target_axes(target: Any) -> Axes:
+def _target_axes(target: Any) -> Axes:
     """The one Axes to draw on: an Axes, a Figure's only Axes, a JointGrid's joint Axes, or a one-Axes grid."""
     if isinstance(target, Axes):
         return target
@@ -73,11 +78,11 @@ def target_axes(target: Any) -> Axes:
         if len(flat) == 1 and isinstance(flat[0], Axes):
             return flat[0]
         raise ValueError(f"this grid has {len(flat)} Axes; pass the Axes to draw on, e.g. g.axes.flat[0]")
-    raise TypeError(f"sdvplot.matplotlib cannot draw on a {type(target).__name__}")
+    raise UnsupportedTargetError(f"sdvplot.matplotlib cannot draw on a {type(target).__name__}")
 
 
 def _image(p: Placement) -> np.ndarray:
-    return rgba_array(load_mark_image(p.mark) if p.mark is not None else load_url_image(p.url))
+    return _rgba_array(load_mark_image(p.mark) if p.mark is not None else load_url_image(p.url))
 
 
 def _xycoords(ax: Axes, transform: Any) -> Any:
@@ -93,7 +98,7 @@ def _xycoords(ax: Axes, transform: Any) -> Any:
     return transform._as_mpl_transform(ax) if hasattr(transform, "_as_mpl_transform") else transform
 
 
-def draw_placements(
+def _draw_placements(
     ax: Axes,
     placements: list[Placement],
     *,
@@ -145,10 +150,10 @@ def _add(
     transform: Any,
 ) -> Any:
     h, a = check_height(height), check_alpha(alpha)
-    ax = target_axes(target)
+    ax = _target_axes(target)
     xycoords = _xycoords(ax, transform)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
-    draw_placements(ax, placements, height=h, alpha=a, zorder=zorder, xycoords=xycoords)
+    _draw_placements(ax, placements, height=h, alpha=a, zorder=zorder, xycoords=xycoords)
     return target
 
 
@@ -203,13 +208,11 @@ def add_logos(
             ax.set_ylim(-10, 0)
             sdvplot.add_logos(ax, [10, 20], [-3, -7], ["KC", "BUF"], league="nfl", height=0.15)
 
-        On a Cartopy map, at longitude/latitude::
-
-            import cartopy.crs as ccrs
-
-            ax = plt.axes(projection=ccrs.Robinson())
-            ax.set_global()
-            sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
+            # On a Cartopy map, at longitude/latitude:
+            #   import cartopy.crs as ccrs
+            #   ax = plt.axes(projection=ccrs.Robinson())
+            #   ax.set_global()
+            #   sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
 
     See Also:
         sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
@@ -333,19 +336,19 @@ def add_headshots(
     )  # fmt: skip
 
 
-def read_images(placements: list[Placement], cache: dict[str, np.ndarray | None]) -> list[str]:
+def _read_images(placements: list[Placement], cache: dict[str, np.ndarray | None]) -> list[str]:
     """Read each placement's image into ``cache`` (url -> RGBA array, or None when it cannot be read), each url once
     across calls; return the urls of the points whose image cannot be read, one per point."""
     for p in placements:
         if p.url not in cache:
             try:
-                cache[p.url] = rgba_array(load_path_image(p.url))
+                cache[p.url] = _rgba_array(load_path_image(p.url))
             except (OSError, ValueError, OfflineError):  # missing file, not an image, failed download
                 cache[p.url] = None
     return [p.url for p in placements if cache[p.url] is None]
 
 
-def draw_images(
+def _draw_images(
     ax: Axes,
     placements: list[Placement],
     *,
@@ -356,16 +359,16 @@ def draw_images(
     cache: dict[str, np.ndarray | None] | None = None,
     warn: bool = True,
 ) -> list[AnnotationBbox]:
-    """``draw_placements`` for ``place_images``: each image is read once; the points whose image cannot be read are
-    skipped with one SdvplotWarning. ``cache`` holds images already read (``read_images``); ``warn=False`` skips
+    """``_draw_placements`` for ``place_images``: each image is read once; the points whose image cannot be read are
+    skipped with one SdvplotWarning. ``cache`` holds images already read (``_read_images``); ``warn=False`` skips
     without warning, for a caller that already warned (plotnine reads and warns once per render, then draws panels)."""
     cache = {} if cache is None else cache
-    unreadable = read_images(placements, cache)
+    unreadable = _read_images(placements, cache)
     if warn:
         _warn_skipped("whose image could not be read", unreadable)
     images = {url: img for url, img in cache.items() if img is not None}
     drawable = [p for p in placements if p.url in images]
-    return draw_placements(ax, drawable, height=height, alpha=alpha, zorder=zorder, xycoords=xycoords, images=images)
+    return _draw_placements(ax, drawable, height=height, alpha=alpha, zorder=zorder, xycoords=xycoords, images=images)
 
 
 def add_images(
@@ -422,8 +425,8 @@ def add_images(
         sdvplotR: https://sdvplotR.sportsdataverse.org/
     """
     h, a = check_height(height), check_alpha(alpha)
-    ax = target_axes(target)
-    draw_images(ax, place_images(x, y, paths), height=h, alpha=a, zorder=zorder, xycoords=_xycoords(ax, transform))
+    ax = _target_axes(target)
+    _draw_images(ax, place_images(x, y, paths), height=h, alpha=a, zorder=zorder, xycoords=_xycoords(ax, transform))
     return target
 
 
@@ -510,7 +513,7 @@ def _axis_logos(
     """axis_logos; ``warn=False`` skips the labels that are not teams without warning (plotnine warns once for every
     panel's labels, then draws each panel quietly)."""
     h = check_height(height)
-    ax = target_axes(target)
+    ax = _target_axes(target)
     which = _axis(ax, axis)
     locs, labels = _ticks(which)
     view_locs, view_labels = _in_view(ax, axis)
@@ -568,7 +571,7 @@ class _TitleImage(AnnotationBbox):
             OffsetImage(arr, zoom=height / arr.shape[0]),  # OffsetImage sizes in points: rows * zoom
             (0.0, 0.5) if left else (1.0, 0.5),
             xycoords=text,  # a fraction of the text's bbox
-            xybox=(-TITLE_GAP if left else TITLE_GAP, 0),
+            xybox=(-_TITLE_GAP if left else _TITLE_GAP, 0),
             boxcoords="offset points",
             box_alignment=(1.0, 0.5) if left else (0.0, 0.5),
             frameon=False,
@@ -591,7 +594,7 @@ class _TitleImage(AnnotationBbox):
 
     def update_positions(self, renderer: Any) -> None:
         self._shift_text()
-        room = self.offsetbox.get_bbox(renderer).width + renderer.points_to_pixels(TITLE_GAP)
+        room = self.offsetbox.get_bbox(renderer).width + renderer.points_to_pixels(_TITLE_GAP)
         rel = self._sdv_align()
         self._sdv_shift.clear().translate((1 - rel) * room if self._sdv_left else -rel * room, 0)
         super().update_positions(renderer)
@@ -603,7 +606,7 @@ class _TitleImage(AnnotationBbox):
         super().remove()
 
 
-def check_title_image(side: Any, height: Any) -> float:
+def _check_title_image(side: Any, height: Any) -> float:
     """``height`` as a float, or ValueError unless ``side`` is "left"/"right" and ``height`` is a positive number."""
     if side not in ("left", "right"):
         raise ValueError(f"side must be 'left' or 'right', got {side!r}")
@@ -612,22 +615,22 @@ def check_title_image(side: Any, height: Any) -> float:
     return float(height)
 
 
-def title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarray, str] | None:
+def _title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarray, str] | None:
     """The image to put beside a title, plus what it was: a team's logo when ``league`` is given (None, with one
     SdvplotWarning, when the team does not resolve or has no logo; a failed download raises, as in add_logos), else
     the image at a URL or local path (None, with one SdvplotWarning, when it cannot be read)."""
     if league is not None:
         img = logo_image(image, league, season=season)
-        return None if img is None else (rgba_array(img), str(image))
+        return None if img is None else (_rgba_array(img), str(image))
     source = str(image)
     try:
-        return rgba_array(load_path_image(source)), source
-    except (OSError, ValueError, OfflineError) as e:  # missing file, not an image, failed download (as read_images)
-        warnings.warn(f"title_image: could not read {source!r} ({e}); drawn without it", SdvplotWarning, stacklevel=3)
+        return _rgba_array(load_path_image(source)), source
+    except (OSError, ValueError, OfflineError) as e:  # missing file, not an image, failed download (as _read_images)
+        warn(f"title_image: could not read {source!r} ({e}); drawn without it")
         return None
 
 
-def add_title_image(
+def _add_title_image(
     container: Any,
     text: Text,
     source: tuple[np.ndarray, str] | None,
@@ -635,7 +638,7 @@ def add_title_image(
     height: float,
     align: Callable[[], float],
 ) -> AnnotationBbox | None:
-    """Draw ``source`` (from title_source) beside ``text``, an Axes title or a Figure's suptitle/text, replacing any
+    """Draw ``source`` (from _title_source) beside ``text``, an Axes title or a Figure's suptitle/text, replacing any
     image already beside that text; None draws nothing new."""
     for old in [a for a in container.artists if isinstance(a, _TitleImage) and a._sdv_text is text]:
         old.remove()
@@ -694,23 +697,22 @@ def title_image(
             ax.plot([1, 2, 3], [3, 1, 2])
             title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
 
-        A Figure's suptitle, the image on the right::
-
+            # A Figure's suptitle, the image on the right:
             title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
 
     See Also:
         sdvplotR ggtitle_image(): https://sdvplotR.sportsdataverse.org/reference/ggtitle_image.html ;
         sdvplot.plotnine.title_image: the same for plotnine.
     """
-    h = check_title_image(side, height)
-    source = title_source(image, league, season)
+    h = _check_title_image(side, height)
+    source = _title_source(image, league, season)
     if isinstance(target, Figure):
         container: Any = target
         text = target.suptitle(title or " ", **text_kw)  # a blank title still gives the image a line to sit on
     else:
-        container = target_axes(target)
+        container = _target_axes(target)
         text = container.set_title(title or " ", **text_kw)
-    add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
+    _add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
     return target
 
 
@@ -769,12 +771,10 @@ def team_tiers(
             df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
             fig = team_tiers(df, "nfl")
 
-        Draft it as text first, then add logos::
-
+            # Draft it as text first, then add logos:
             fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
-        Dark logos on a white background::
-
+            # Dark logos on a white background:
             fig = team_tiers(df, "cfb", theme="light")
 
     See Also:
@@ -802,7 +802,7 @@ def team_tiers(
             ax.text(x, y, label, color=t.text, ha="center", va="center")
     else:
         placements = place(t.x, t.y, t.team_ids, league=league, id_system="team_id")
-        draw_placements(ax, placements, height=t.height, alpha=t.alpha)
+        _draw_placements(ax, placements, height=t.height, alpha=t.alpha)
     anchor: Text | None = None  # the subtitle sits on the panel, the title on the subtitle, both left-aligned
     size = ax.title.get_fontproperties().get_size_in_points()
     styles: list[tuple[str | None, dict[str, Any]]] = [
@@ -823,16 +823,16 @@ def team_tiers(
     return fig
 
 
-def drawn_title_images(target: Any) -> list[tuple[str, str]]:
+def _drawn_title_images(target: Any) -> list[tuple[str, str]]:
     """Test hook: (side, image) for each title image on a Figure or an Axes, image being the team or URL/path given."""
-    container = target if isinstance(target, Figure) else target_axes(target)
+    container = target if isinstance(target, Figure) else _target_axes(target)
     return [a._sdvplot_title_image for a in container.artists if hasattr(a, "_sdvplot_title_image")]
 
 
 def _drawn_boxes(target: Any, tag: str) -> tuple[Axes, list[Any]]:
     """The Axes and its sdvplot image boxes tagged ``tag``, after a draw. A layout engine (constrained, tight) resizes
     the Axes on draw, so an image sized before that only shows the wrong fraction afterwards."""
-    ax = target_axes(target)
+    ax = _target_axes(target)
     ax.figure.canvas.draw()
     return ax, [a for a in ax.artists if hasattr(a, tag)]
 
@@ -842,14 +842,14 @@ def _drawn_height(ax: Axes, box: Any) -> float:
     return float(box.offsetbox.get_window_extent().height / ax.bbox.height)
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) for each image add_logos/add_wordmarks/add_headshots drew; height is
     measured from the drawn image."""
     ax, boxes = _drawn_boxes(target, "_sdvplot_mark")
     return [(*b._sdvplot_mark[:3], _drawn_height(ax, b), b._sdvplot_mark[3]) for b in boxes]
 
 
-def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
+def _drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: (team_id, tick position, height) for each axis image on ``axis``, in tick order; height is measured
     from the drawn image."""
     ax, boxes = _drawn_boxes(target, "_sdvplot_axis_mark")
@@ -857,7 +857,7 @@ def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
     return sorted(((team_id, loc, h) for (which, team_id, loc), h in marks if which == axis), key=lambda m: m[1])
 
 
-def visible_axis_labels(target: Any, axis: str) -> list[str]:
+def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     """Test hook: the tick labels on ``axis`` still shown as text."""
-    _, labels = _ticks(_axis(target_axes(target), axis))
+    _, labels = _ticks(_axis(_target_axes(target), axis))
     return [lab for lab in labels if lab]

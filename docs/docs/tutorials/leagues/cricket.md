@@ -60,7 +60,11 @@ matches = pl.DataFrame(rows).with_columns(
 )
 team_colors = dict(zip(matches["team_id"], matches["color"], strict=True))  # ESPN's colors, keyed by team id
 league = matches.filter(pl.col("stage").str.ends_with("Match"))  # "1st Match" ... "70th Match"; then the playoffs
-check = league.group_by("team_id").agg(pl.col("pts").sum()).join(table.select("team_id", "match_points"), on="team_id")
+check = (
+    league.group_by("team_id", maintain_order=True)
+    .agg(pl.col("pts").sum())
+    .join(table.select("team_id", "match_points"), on="team_id")
+)
 assert (check["pts"] == check["match_points"]).all()
 table.height, matches["event_id"].n_unique()
 ```

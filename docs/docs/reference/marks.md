@@ -12,9 +12,9 @@ sidebar_position: 8
 marks(
     team: Any,
     league: str,
-    season: Any = None,
     *,
-    id_system: str = 'auto',
+    season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
 ) -> polars.dataframe.frame.DataFrame
 ```
 
@@ -33,7 +33,7 @@ manifest's, narrowed by the mark alias's (an open side takes the alias's).
 | `team` | `Any` | One team identifier (abbreviation, name, ESPN id, ...). |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `season` | `Any` | A season year, used to resolve a reused code. |
-| `id_system` | `str` | "auto" or one id-system name, as in ``resolve``. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | "auto" or one id-system name, as in ``resolve``. |
 
 ## Returns
 

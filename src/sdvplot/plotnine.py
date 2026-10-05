@@ -1,12 +1,11 @@
 """The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines.
 
-The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
+The geoms draw through the matplotlib adapter's drawing step, so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
 """
 
 from __future__ import annotations
 
-import warnings
 from typing import Any, Literal
 
 import numpy as np
@@ -33,26 +32,26 @@ from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
 from sdvplot.matplotlib import (
+    _add_title_image,
     _align,
+    _check_title_image,
+    _draw_images,
+    _draw_placements,
     _in_view,
-    add_title_image,
-    check_title_image,
-    draw_images,
-    draw_placements,
-    read_images,
-    title_source,
+    _read_images,
+    _title_source,
 )
 from sdvplot.matplotlib import _axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
-from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
-from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
+from sdvplot.matplotlib import _drawn_axis_marks as _mpl_drawn_axis_marks
+from sdvplot.matplotlib import _drawn_marks as _mpl_drawn_marks
+from sdvplot.matplotlib import _visible_axis_labels as _mpl_visible_axis_labels
 
-SUPPORTS_AXIS_LOGOS = True
+_SUPPORTS_AXIS_LOGOS = True
 _MARK_PARAMS = {
     "stat": "identity",
     "position": "identity",
@@ -64,6 +63,27 @@ _MARK_PARAMS = {
     "variant": "default",
     "id_system": "auto",
 }
+
+__all__ = [
+    "add_logos",
+    "add_wordmarks",
+    "add_headshots",
+    "axis_logos",
+    "geom_sdv_logos",
+    "geom_sdv_wordmarks",
+    "geom_sdv_headshots",
+    "geom_from_path",
+    "geom_mean_lines",
+    "geom_median_lines",
+    "scale_color_sdv",
+    "scale_fill_sdv",
+    "title_image",
+    "team_tiers",
+]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 class _geom_sdv_marks(geom):
@@ -105,13 +125,29 @@ class _geom_sdv_marks(geom):
         # setup_data already warned for this layer's rows in every panel, so each panel places its rows quietly
         data = coord.transform(data, panel_params)
         placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
-        draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
+        _draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 
 class geom_sdv_logos(_geom_sdv_marks):
-    """Team logos at (x, y): ``aes(x=..., y=..., team=...)``, plus ``league=`` and optional ``season``, ``height``
-    (fraction of the panel height), ``alpha``, ``variant`` and ``id_system``. For a season per row, map it instead:
-    ``aes(..., season="season")`` (a ``season=`` parameter wins over the mapping).
+    """Team logos at (x, y), as a plotnine layer.
+
+    For a season per row, map it instead of passing ``season=``: ``aes(..., season="season")`` (a ``season=``
+    parameter wins over the mapping).
+
+    Args:
+        mapping: ``aes(x=..., y=..., team=...)``, plus optional ``season``.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``league`` (required, e.g. "nfl"), ``season``, ``height`` (a fraction of the panel height, in (0, 1],
+            default 0.1), ``alpha`` (0 to 1), ``variant`` ("default", "dark" or a named variant), ``id_system`` and
+            plotnine's layer arguments (``inherit_aes``, ...).
+
+    Returns:
+        geom: A plotnine layer to add with ``+``. Marks that cannot be placed (an unknown team, a missing mark) are
+        skipped with one SdvplotWarning when the plot is drawn.
+
+    Raises:
+        TypeError: If ``league`` is missing.
+        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
 
     Example:
         ::
@@ -122,29 +158,80 @@ class geom_sdv_logos(_geom_sdv_marks):
 
             df = pd.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15], "sr": [0.48, 0.47]})
             p = ggplot(df, aes("epa", "sr", team="team")) + geom_sdv_logos(league="nfl", height=0.12)
+
+    See Also:
+        sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_wordmarks: the same with wordmarks
     """
 
 
 class geom_sdv_wordmarks(_geom_sdv_marks):
-    """Team wordmarks at (x, y): the same aesthetics and parameters as ``geom_sdv_logos``.
+    """Team wordmarks at (x, y), as a plotnine layer: the same aesthetics and parameters as ``geom_sdv_logos``.
+
+    Args:
+        mapping: ``aes(x=..., y=..., team=...)``, plus optional ``season``.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``league`` (required, e.g. "nfl"), ``season``, ``height`` (a fraction of the panel height, in (0, 1],
+            default 0.1), ``alpha`` (0 to 1), ``variant`` ("default", "dark" or a named variant), ``id_system`` and
+            plotnine's layer arguments (``inherit_aes``, ...).
+
+    Returns:
+        geom: A plotnine layer to add with ``+``. Marks that cannot be placed (an unknown team, a missing mark) are
+        skipped with one SdvplotWarning when the plot is drawn.
+
+    Raises:
+        TypeError: If ``league`` is missing.
+        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
 
     Example:
         ::
 
+            import pandas as pd
+            from plotnine import aes, ggplot
+            from sdvplot.plotnine import geom_sdv_wordmarks
+
+            df = pd.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15], "sr": [0.48, 0.47]})
             p = ggplot(df, aes("epa", "sr", team="team")) + geom_sdv_wordmarks(league="nfl", height=0.08)
+
+    See Also:
+        sdvplotR geom_nfl_wordmarks(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_logos: the same with logos
     """
 
     _kind = "wordmark"
 
 
 class geom_sdv_headshots(_geom_sdv_marks):
-    """Player headshots at (x, y): ``aes(x=..., y=..., player_id=...)``, plus ``league=`` and ``id_system``
-    ("espn" or "gsis"), ``height`` and ``alpha``.
+    """Player headshots at (x, y), as a plotnine layer.
+
+    Args:
+        mapping: ``aes(x=..., y=..., player_id=...)``.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1],
+            default 0.1), ``alpha`` (0 to 1), ``id_system`` and
+            plotnine's layer arguments (``inherit_aes``, ...).
+
+    Returns:
+        geom: A plotnine layer to add with ``+``. Marks that cannot be placed (an unknown team, a missing mark) are
+        skipped with one SdvplotWarning when the plot is drawn.
+
+    Raises:
+        TypeError: If ``league`` is missing.
+        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
 
     Example:
         ::
 
+            import pandas as pd
+            from plotnine import aes, ggplot
+            from sdvplot.plotnine import geom_sdv_headshots
+
+            df = pd.DataFrame({"x": [0.3, 0.7], "y": [0.4, 0.6], "espn_id": ["3139477", "3918298"]})
             p = ggplot(df, aes("x", "y", player_id="espn_id")) + geom_sdv_headshots(league="nfl", height=0.15)
+
+    See Also:
+        sdvplotR geom_nfl_headshots(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_logos: the same with team logos
     """
 
     _kind = "headshot"
@@ -201,7 +288,7 @@ class geom_from_path(_geom_sdv_marks):
         rows = data.drop(columns="PANEL", errors="ignore").drop_duplicates()  # a row plotnine copies to every panel
         zeros = [0.0] * len(rows)
         self._sdv_images = {}
-        _warn_skipped("whose image could not be read", read_images(self._place(rows, zeros, zeros, warn=True),
+        _warn_skipped("whose image could not be read", _read_images(self._place(rows, zeros, zeros, warn=True),
                                                                    self._sdv_images))  # fmt: skip
         return data
 
@@ -209,7 +296,7 @@ class geom_from_path(_geom_sdv_marks):
         # setup_data already read the images and warned, so each panel draws its rows quietly
         data = coord.transform(data, panel_params)
         placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
-        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
+        _draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
                     cache=self._sdv_images, warn=False)  # fmt: skip
 
 
@@ -285,9 +372,11 @@ class geom_mean_lines(_geom_ref_lines):
     Example:
         ::
 
+            import pandas as pd
             from plotnine import aes, geom_point, ggplot
             from sdvplot.plotnine import geom_mean_lines
 
+            df = pd.DataFrame({"epa": [0.2, 0.15, 0.05], "success_rate": [0.48, 0.47, 0.44]})
             p = (ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate"))
                  + geom_point() + geom_mean_lines(color="grey"))
 
@@ -316,6 +405,11 @@ class geom_median_lines(_geom_ref_lines):
     Example:
         ::
 
+            import pandas as pd
+            from plotnine import aes, geom_point, ggplot
+            from sdvplot.plotnine import geom_median_lines
+
+            df = pd.DataFrame({"epa": [0.2, 0.15, 0.05], "success_rate": [0.48, 0.47, 0.44]})
             p = ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate")) + geom_point() + geom_median_lines()
 
     See Also:
@@ -324,6 +418,12 @@ class geom_median_lines(_geom_ref_lines):
     """
 
     _ref = staticmethod(np.median)
+
+
+def _ggplot(target: Any) -> ggplot:
+    if not isinstance(target, ggplot):
+        raise UnsupportedTargetError(f"sdvplot.plotnine draws on a plotnine ggplot, got {type(target).__name__}")
+    return target
 
 
 def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:
@@ -370,14 +470,23 @@ def add_logos(
     Example:
         ::
 
+            import pandas as pd
             import sdvplot
+            from plotnine import aes, geom_point, ggplot
+
+            df = pd.DataFrame({"epa": [0.2, 0.15], "sr": [0.48, 0.47]})
+            p = ggplot(df, aes("epa", "sr")) + geom_point()
             p2 = sdvplot.add_logos(p, [0.2], [0.48], ["KC"], league="nfl")
+
+    See Also:
+        sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_logos: the layer this adds
     """
     layer = geom_sdv_logos(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_wordmarks(
@@ -416,13 +525,23 @@ def add_wordmarks(
     Example:
         ::
 
+            import pandas as pd
+            import sdvplot
+            from plotnine import aes, geom_point, ggplot
+
+            df = pd.DataFrame({"epa": [0.2, 0.15], "sr": [0.48, 0.47]})
+            p = ggplot(df, aes("epa", "sr")) + geom_point()
             p2 = sdvplot.add_wordmarks(p, [0.2], [0.48], ["KC"], league="nfl")
+
+    See Also:
+        sdvplotR geom_nfl_wordmarks(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_wordmarks: the layer this adds
     """
     layer = geom_sdv_wordmarks(
         aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
         league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 def add_headshots(
@@ -457,13 +576,23 @@ def add_headshots(
     Example:
         ::
 
+            import pandas as pd
+            import sdvplot
+            from plotnine import aes, geom_point, ggplot
+
+            df = pd.DataFrame({"epa": [0.2, 0.15], "sr": [0.48, 0.47]})
+            p = ggplot(df, aes("epa", "sr")) + geom_point()
             p2 = sdvplot.add_headshots(p, [0.2], [0.48], ["3139477"], league="nfl")
+
+    See Also:
+        sdvplotR geom_nfl_headshots(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.geom_sdv_headshots: the layer this adds
     """
     layer = geom_sdv_headshots(
         aes("x", "y", player_id="player_id"), data=_frame(x, y, players, "player_id"), inherit_aes=False,
         league=league, height=height, alpha=alpha, id_system=id_system,
     )  # fmt: skip
-    return target + layer
+    return _ggplot(target) + layer
 
 
 class _AxisLogos:
@@ -528,11 +657,19 @@ def axis_logos(
     Example:
         ::
 
+            import pandas as pd
+            import sdvplot
             from plotnine import aes, geom_col, ggplot
+
+            df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "epa": [0.2, 0.15, 0.1]})
             p = ggplot(df, aes("team", "epa")) + geom_col()
             p2 = sdvplot.axis_logos(p, "x", league="nfl")
+
+    See Also:
+        sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.title_image: an image beside the plot title
     """
-    return target + _AxisLogos(
+    return _ggplot(target) + _AxisLogos(
         axis, league=league, season=season, height=height, variant=variant, mark_type=mark_type, id_system=id_system
     )
 
@@ -542,9 +679,9 @@ class _TitleImage:
     beside the rendered title, aligned with it as the theme's ``plot_title`` alignment says."""
 
     def __init__(self, image: Any, title: str, league: str | None, season: Any, side: str, height: float) -> None:
-        self.height = check_title_image(side, height)
+        self.height = _check_title_image(side, height)
         self.side, self.title = side, title or " "  # a blank title still gives the image a line to sit on
-        self.source = title_source(image, league, season)  # resolved (and warned about) when built, not drawn
+        self.source = _title_source(image, league, season)  # resolved (and warned about) when built, not drawn
 
     def __radd__(self, gg: ggplot) -> ggplot:
         gg += labs(title=self.title)
@@ -556,18 +693,14 @@ class _TitleImage:
             return
         text = next((t for t in figure.texts if t.get_text() == self.title), None)
         if text is None:
-            warnings.warn(
-                f"title_image: the plot's title is no longer {self.title!r}; add title_image() after labs(title=...)",
-                SdvplotWarning,
-                stacklevel=2,
-            )
+            warn(f"title_image: the plot's title is no longer {self.title!r}; add title_image() after labs(title=...)")
             return
 
         def align() -> float:  # plotnine left-aligns the text and places it by the theme's plot_title ha
             theme_ = getattr(figure.get_layout_engine(), "theme", None)
             return _align(theme_.getp(("plot_title", "ha")) if theme_ is not None else "left")
 
-        add_title_image(figure, text, self.source, self.side, self.height, align)
+        _add_title_image(figure, text, self.source, self.side, self.height, align)
 
 
 def title_image(
@@ -606,9 +739,11 @@ def title_image(
     Example:
         ::
 
+            import pandas as pd
             from plotnine import aes, geom_point, ggplot
             from sdvplot.plotnine import title_image
 
+            df = pd.DataFrame({"epa": [0.2, 0.15], "sr": [0.48, 0.47]})
             p = ggplot(df, aes("epa", "sr")) + geom_point() + title_image("KC", "Chiefs", league="nfl", height=20)
 
     See Also:
@@ -672,12 +807,10 @@ def team_tiers(
             df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
             p = team_tiers(df, "nfl", caption="data: nflverse")
 
-        Draft it as text first::
-
+            # Draft it as text first:
             p = team_tiers(df, "nfl", devel=True)
 
-        Dark logos on a white background::
-
+            # Dark logos on a white background:
             p = team_tiers(df, "cfb", theme="light")
 
     See Also:
@@ -726,7 +859,7 @@ def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwarg
 
         def map(self, x: Any, limits: Any = None) -> Any:
             values = [v for v in (limits if limits is not None else self.final_limits) if v is not None]
-            colors = team_colors(values, league, which=which, season=season)
+            colors = team_colors(league, values, which=which, season=season)
             self._values = {v: c for v, c in zip(values, colors, strict=True) if c is not None}
             self.palette = lambda n: [self._values.get(v, na_value) for v in values]
             return [self._values.get(v, na_value) for v in x]
@@ -749,10 +882,22 @@ def scale_color_sdv(
     Returns:
         scale: A plotnine color scale.
 
+    Raises:
+        ValueError: If ``which`` is not "primary" or "secondary".
+
     Example:
         ::
 
+            import pandas as pd
+            from plotnine import aes, geom_point, ggplot
+            from sdvplot.plotnine import scale_color_sdv
+
+            df = pd.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15], "sr": [0.48, 0.47]})
             p = ggplot(df, aes("epa", "sr", color="team")) + geom_point() + scale_color_sdv("nfl")
+
+    See Also:
+        sdvplotR scale_color_sdv(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.scale_fill_sdv: the fill scale
     """
     return _scale(scale_color_manual, league, which, season, na_value, kwargs)
 
@@ -772,10 +917,22 @@ def scale_fill_sdv(
     Returns:
         scale: A plotnine fill scale.
 
+    Raises:
+        ValueError: If ``which`` is not "primary" or "secondary".
+
     Example:
         ::
 
+            import pandas as pd
+            from plotnine import aes, geom_col, ggplot
+            from sdvplot.plotnine import scale_fill_sdv
+
+            df = pd.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15]})
             p = ggplot(df, aes("team", "epa", fill="team")) + geom_col() + scale_fill_sdv("nfl")
+
+    See Also:
+        sdvplotR scale_fill_sdv(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plotnine.scale_color_sdv: the color scale
     """
     return _scale(scale_fill_manual, league, which, season, na_value, kwargs)
 
@@ -784,7 +941,7 @@ def _drawn(target: ggplot) -> Figure:
     return target.draw()
 
 
-def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
     """Test hook: draw the plot, then (team_id, x, y, height, url) for each mark image on any panel."""
     import matplotlib.pyplot as plt
 
@@ -795,7 +952,7 @@ def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
         plt.close(fig)
 
 
-def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
+def _drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: draw the plot, then (team_id, tick position, measured height) for each axis image on the first
     panel."""
     import matplotlib.pyplot as plt
@@ -807,7 +964,7 @@ def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]
         plt.close(fig)
 
 
-def visible_axis_labels(target: ggplot, axis: str) -> list[str]:
+def _visible_axis_labels(target: ggplot, axis: str) -> list[str]:
     """Test hook: draw the plot, then the first panel's tick labels still shown as text."""
     import matplotlib.pyplot as plt
 

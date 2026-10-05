@@ -10,8 +10,9 @@ sidebar_position: 5
 
 ```python
 team_colors(
-    teams: Any,
     league: str,
+    teams: Any,
+    *,
     which: str = 'primary',
     season: Any = None,
 ) -> Any
@@ -25,8 +26,8 @@ One "#hex" (or None) per team value, in the same container the values came in.
 
 | Name | Type | Description |
 |---|---|---|
-| `teams` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
+| `teams` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers. |
 | `which` | `str` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 
@@ -37,15 +38,16 @@ str | list | Series | None: The hex color for each team, None where a team does 
 ## Raises
 
 - `TypeError`: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-- `ValueError`: If ``league`` is unknown, ``which`` is not "primary"/"secondary", or ``season`` is not a year (or a list whose length does not match the teams).
+- `InputError`: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1 ``team_colors(teams, league)`` order) or ``which`` is not "primary"/"secondary".
+- `ValueError`: If ``season`` is not a year (or a list whose length does not match the teams).
 
 ## Example
 
 ```python
 import sdvplot
 
-sdvplot.team_colors(["KC", "SF"], "nfl")      # ['#e31837', '#aa0000']
-sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
+sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
+sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
 ```
 
 ## See also

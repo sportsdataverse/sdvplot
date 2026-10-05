@@ -310,13 +310,10 @@ Image(OUT / "premier_league_bump_1600x900.png", width=800)
 
 ```text
 premier_league_bump_1600x900.png (1600, 900)
-```
-
-```text
 premier_league_bump_1200x675.png (1200, 675)
 ```
 
-![png](rank-bump-chart_files/rank-bump-chart_13_2.png)
+![png](rank-bump-chart_files/rank-bump-chart_13_1.png)
 
 </div>
 

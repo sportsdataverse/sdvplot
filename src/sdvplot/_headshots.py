@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import functools
 import io
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any
 
 from sdvplot._cache import fetch_cached
+from sdvplot._errors import InputError
 from sdvplot._normalize import norm_value
+from sdvplot._types import HeadshotIdSystem
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 ESPN_HEADSHOT_LEAGUES = {
     "nfl": "nfl",
@@ -54,7 +59,7 @@ def _transform_nfl_headshot(url: str) -> str:
     return transformed
 
 
-def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | None:
+def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "espn") -> str | None:
     """A headshot URL for one player.
 
     Args:
@@ -86,9 +91,9 @@ def headshot_url(player_id: Any, league: str, id_system: str = "espn") -> str | 
     """
     # check the arguments first, so a null id never hides a bad league or id_system
     if id_system == "espn" and league not in ESPN_HEADSHOT_LEAGUES:
-        raise ValueError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
+        raise InputError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
     if id_system != "espn" and (id_system, league) != ("gsis", "nfl"):
-        raise ValueError(f"id_system must be 'espn' (any league) or 'gsis' (nfl), got {id_system!r} for {league!r}")
+        raise InputError(f"id_system must be 'espn' (any league) or 'gsis' (nfl), got {id_system!r} for {league!r}")
     pid = norm_value(player_id)
     if pid is None:
         return None

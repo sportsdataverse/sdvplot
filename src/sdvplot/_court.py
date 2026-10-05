@@ -44,7 +44,7 @@ def _tenths(frame: Any, name: str) -> Any:
     return nw.new_series(name, values, nw.Float64(), backend=nw.get_native_namespace(frame))
 
 
-def court_coords(data: Any, x: str = "x_legacy", y: str = "y_legacy") -> Any:
+def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
     """Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws.
 
     The stats API's legacy shot frame (``LOC_X``/``LOC_Y``; hoopR, wehoop and sdv-py ``x_legacy``/``y_legacy``) is in

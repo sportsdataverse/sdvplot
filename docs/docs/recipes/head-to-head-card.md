@@ -43,7 +43,7 @@ sides = pl.concat(
         regular.select(team="away_team", pf="away_score", pa="home_score"),
     ]
 )
-scoring = sides.group_by("team").agg(
+scoring = sides.group_by("team", maintain_order=True).agg(
     w=(pl.col("pf") > pl.col("pa")).sum(),
     l=(pl.col("pf") < pl.col("pa")).sum(),
     ppg=pl.col("pf").mean(),
@@ -52,13 +52,13 @@ scoring = sides.group_by("team").agg(
 
 pbp = nfl.load_nfl_pbp([SEASON]).filter(pl.col("season_type") == "REG", pl.col("epa").is_not_null())
 plays = pbp.filter(pl.col("play_type").is_in(["pass", "run"]))
-offense = plays.group_by("posteam").agg(
+offense = plays.group_by("posteam", maintain_order=True).agg(
     off_epa=pl.col("epa").mean(),
     pass_epa=pl.col("epa").filter(pl.col("pass") == 1).mean(),
     rush_epa=pl.col("epa").filter(pl.col("rush") == 1).mean(),
     giveaways=(pl.col("interception") + pl.col("fumble_lost")).sum(),
 )
-defense = plays.group_by("defteam").agg(
+defense = plays.group_by("defteam", maintain_order=True).agg(
     def_epa=pl.col("epa").mean(), takeaways=(pl.col("interception") + pl.col("fumble_lost")).sum()
 )
 teams = (
@@ -173,8 +173,8 @@ navy (`#002244`), so the card would be one color on both sides. Each team's seco
 and New England's red, tells them apart.
 
 ```python
-primary = dict(zip(pair, sdvplot.team_colors(pair, "nfl"), strict=True))
-secondary = dict(zip(pair, sdvplot.team_colors(pair, "nfl", which="secondary"), strict=True))
+primary = dict(zip(pair, sdvplot.team_colors("nfl", pair), strict=True))
+secondary = dict(zip(pair, sdvplot.team_colors("nfl", pair, which="secondary"), strict=True))
 print("primary:", primary, " secondary:", secondary)
 colors = secondary if len(set(primary.values())) == 1 else primary
 
@@ -274,13 +274,10 @@ Image(OUT / "sb_tale_of_the_tape_1200x675.png")
 
 ```text
 sb_tale_of_the_tape_1200x675.png (1200, 675)
-```
-
-```text
 sb_tale_of_the_tape_1080x1080.png (1080, 1080)
 ```
 
-![png](head-to-head-card_files/head-to-head-card_13_2.png)
+![png](head-to-head-card_files/head-to-head-card_13_1.png)
 
 </div>
 

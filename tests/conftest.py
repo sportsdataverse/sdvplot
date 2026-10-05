@@ -198,6 +198,12 @@ ALIASES = [
 ]
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    # Not in pyproject's filterwarnings: pytest imports a named category while parsing the ini file, which imported
+    # sdvplot before pytest-cov started and left every import-time line unmeasured.
+    config.addinivalue_line("filterwarnings", "error::sdvplot._errors.SdvplotWarning")
+
+
 @pytest.fixture(autouse=True)
 def fixture_index(request, tmp_path, monkeypatch):
     """The fixture index, unless the test is marked real_index (tests/test_real_index.py): then the shipped one."""
@@ -225,6 +231,13 @@ class FakeResponse:
     def __init__(self, status=200, body=b"", headers=None):
         self.status_code, self.content, self.headers = status, body, headers or {}
 
+    def iter_content(self, chunk_size=1):
+        for i in range(0, len(self.content), chunk_size):
+            yield self.content[i : i + chunk_size]
+
+    def close(self):
+        pass
+
     def raise_for_status(self):
         if self.status_code >= 400:
             err = requests.HTTPError(f"HTTP {self.status_code}")
@@ -239,7 +252,8 @@ class FakeSession:
         self.responses, self.calls, self.timeouts = list(responses), [], []
         self.headers = {}
 
-    def get(self, url, headers=None, timeout=None):
+    def get(self, url, headers=None, timeout=None, stream=False, allow_redirects=True):
+        assert allow_redirects is False, "sdvplot must follow redirects itself (https-only)"
         self.calls.append((url, headers or {}))
         self.timeouts.append(timeout)
         nxt = self.responses.pop(0)
@@ -253,6 +267,8 @@ def cache(tmp_path, monkeypatch):
     root = tmp_path / "cache"
     monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(root))
     _cache._warned.clear()
+    for clear in _cache.MEMORY_CACHES:  # decoded images from an earlier test's cache directory
+        clear()
     return root
 
 
@@ -281,7 +297,8 @@ def mark_images(manifest, cache):
     rows = pl.read_csv(FIXTURE, schema_overrides={"entity_id": pl.Utf8})
     for sha, ext, w, h in rows.select("sha256", "ext", "width", "height").iter_rows():
         tint = hashlib.md5(sha.encode()).digest()[:3]  # a color per mark, so a swapped logo shows in baselines
-        seed_image(cache / "images" / sha[:2] / f"{sha}.{ext}", size=(w // 10, h // 10), color=(*tint, 255))
+        path = seed_image(cache / "images" / sha[:2] / f"{sha}.{ext}", size=(w // 10, h // 10), color=(*tint, 255))
+        _cache._intact.add(str(path.resolve()))  # the fixture shas are made up: count the seeded files as verified
     return cache
 
 
@@ -306,3 +323,36 @@ def headshot_images(cache):
         path = seed_image(cache / "urlimages" / key[:2] / key, size=(150, 109))
         _cache._meta_path(path).write_text(json.dumps({"fetched_at": time.time()}))
     return cache
+
+
+# The sdist ships src/ and tests/ but not the repository's tooling, data-raw/, docs/ or examples/. Tests that read those
+# paths are repo-only: a module that fails at import is left out of collection, any other test is skipped, and only when
+# its input is absent, so the repository itself still runs every one of them.
+_ROOT = Path(__file__).parents[1]
+_NEEDS_AT_IMPORT = {  # module -> a path it reads while importing
+    "test_automation_example.py": "examples",
+    "test_build_index.py": "tools",
+    "test_fetch_sources.py": "tools",
+    "test_gen_docs.py": "tools",
+    "test_submodule_examples.py": "tools",
+    "test_home_figures.py": "tools",
+    "test_notebooks.py": "tools",
+}
+_NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
+    "tests/test_commit_msg_hook.py": "tools",
+    "tests/test_compat_matrix.py::test_every_test_the_compatibility_page_names_exists": "docs",
+    "tests/test_gt_themes.py::test_every_theme_has_a_ported_row_in_the_parity_table": "docs",
+    "tests/test_real_index.py::test_espn_team_endpoint_abbreviations_never_name_another_team": "data-raw",
+    "tests/test_sdvplotr_parity.py": "data-raw",
+    "tests/test_repo_files.py::test_sdv_py_dotfiles_exist_and_parse": "CLAUDE.md",
+    "tests/test_repo_files.py::test_docs_changelog_mirrors_the_root_changelog": "docs",
+    "tests/test_repo_files.py::test_contributor_files_exist": "CLAUDE.md",
+}
+collect_ignore = [name for name, need in _NEEDS_AT_IMPORT.items() if not (_ROOT / need).exists()]
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        for prefix, need in _NEEDS_AT_RUN.items():
+            if item.nodeid.startswith(prefix) and not (_ROOT / need).exists():
+                item.add_marker(pytest.mark.skip(reason=f"repo-only: needs {need}/ (not in the sdist)"))

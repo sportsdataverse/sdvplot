@@ -11,31 +11,38 @@ from __future__ import annotations
 import datetime as dt
 import math
 import re
-import warnings
 from typing import Any
 
 import plotly.graph_objects as go
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._web import aspect, image_sources
+from sdvplot._web import aspect, axis_letter, image_sources
 
-SUPPORTS_AXIS_LOGOS = True
-PLOTLY_DEFAULT_WIDTH, PLOTLY_DEFAULT_HEIGHT = 700, 450  # plotly.js's figure size when layout.width/height are unset
-PLOTLY_DEFAULT_MARGIN = {"t": 100, "b": 80, "l": 80, "r": 80}  # plotly.js's margins when unset
+_SUPPORTS_AXIS_LOGOS = True
+_PLOTLY_DEFAULT_WIDTH, _PLOTLY_DEFAULT_HEIGHT = 700, 450  # plotly.js's figure size when layout.width/height are unset
+_PLOTLY_DEFAULT_MARGIN = {"t": 100, "b": 80, "l": 80, "r": 80}  # plotly.js's margins when unset
 _REF = re.compile(r"^([xy])(\d*)$")
 _READABLE = ("scatter", "scattergl", "bar")  # trace types whose extent sdvplot can work out
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _figure(target: Any) -> go.Figure:
     if not isinstance(target, go.Figure):  # FigureWidget subclasses Figure
-        raise TypeError(f"sdvplot.plotly draws on a plotly.graph_objects.Figure, got {type(target).__name__}")
+        raise UnsupportedTargetError(
+            f"sdvplot.plotly draws on a plotly.graph_objects.Figure, got {type(target).__name__}"
+        )
     return target
 
 
 def _margin(fig: go.Figure, side: str) -> float:
     m = fig.layout.margin[side]
-    return float(PLOTLY_DEFAULT_MARGIN[side] if m is None else m)
+    return float(_PLOTLY_DEFAULT_MARGIN[side] if m is None else m)
 
 
 def _key(ref: str, letter: str) -> str:
@@ -185,8 +192,8 @@ def _range(fig: go.Figure, letter: str, ref: str, coords: list[float], index: di
 
 def _plot_size(fig: go.Figure, xref: str, yref: str) -> tuple[float, float]:
     """The subplot's size in pixels at the layout's width and height (plotly.js's defaults when unset)."""
-    w = (fig.layout.width or PLOTLY_DEFAULT_WIDTH) - _margin(fig, "l") - _margin(fig, "r")
-    h = (fig.layout.height or PLOTLY_DEFAULT_HEIGHT) - _margin(fig, "t") - _margin(fig, "b")
+    w = (fig.layout.width or _PLOTLY_DEFAULT_WIDTH) - _margin(fig, "l") - _margin(fig, "r")
+    h = (fig.layout.height or _PLOTLY_DEFAULT_HEIGHT) - _margin(fig, "t") - _margin(fig, "b")
     xd = fig.layout[_key(xref, "x")].domain or (0, 1)
     yd = fig.layout[_key(yref, "y")].domain or (0, 1)
     return w * (xd[1] - xd[0]), h * (yd[1] - yd[0])
@@ -228,8 +235,7 @@ def _add(
     keep = [i for i, (cx, cy) in enumerate(zip(xs, ys, strict=True)) if cx is not None and cy is not None]
     if len(keep) < len(placements):
         off = [p.team_id for i, p in enumerate(placements) if i not in keep]
-        warnings.warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}", SdvplotWarning,
-                      stacklevel=3)  # fmt: skip
+        warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}")  # fmt: skip
     placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
     if not placements:
         return fig
@@ -436,12 +442,6 @@ def add_headshots(
     )  # fmt: skip
 
 
-def _letter(axis: str) -> str:
-    if axis not in ("x", "y"):
-        raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
-    return axis
-
-
 def axis_logos(
     target: Any,
     axis: str,
@@ -491,7 +491,7 @@ def axis_logos(
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     h = check_height(height)
     fig = _figure(target)
     if _axis_type(fig, letter, letter, []) != "category":
@@ -539,7 +539,7 @@ def _height(fig: go.Figure, im: Any) -> float:
     return float(im.sizey) / (1.0 if im.yref == "paper" else _span(fig, im.yref))
 
 
-def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, source) for each image add_logos/add_wordmarks/add_headshots drew."""
     out = []
     for im in _figure(target).layout.images:
@@ -549,9 +549,9 @@ def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     return out
 
 
-def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
+def _drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: (team_id, category index, height) for each image on ``axis``, in tick order."""
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     marks = []
     for im in _figure(target).layout.images:
         parts = (im.name or "").split(":", 3)
@@ -560,6 +560,6 @@ def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
     return sorted(marks, key=lambda m: m[1])
 
 
-def visible_axis_labels(target: Any, axis: str) -> list[str]:
+def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     """Test hook: the tick labels on ``axis`` still shown as text."""
-    return [t for t in (_figure(target).layout[_key(_letter(axis), axis)].ticktext or ()) if t]
+    return [t for t in (_figure(target).layout[_key(axis_letter(axis), axis)].ticktext or ()) if t]

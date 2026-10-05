@@ -62,7 +62,7 @@ def test_the_logo_sits_left_of_the_title_at_its_height_in_points(mark_images, dp
     assert img.height == pytest.approx(20 * dpi / 72, abs=0.5)
     assert img.x1 < text.x0 and text.x0 - img.x1 == pytest.approx(4 * dpi / 72, abs=0.5)  # a 4-point gap
     assert (img.y0 + img.y1) / 2 == pytest.approx((text.y0 + text.y1) / 2, abs=0.5)
-    assert smpl.drawn_title_images(ax) == [("left", "LV")]
+    assert smpl._drawn_title_images(ax) == [("left", "LV")]
 
 
 def test_the_title_and_image_keep_the_titles_alignment(mark_images):
@@ -90,7 +90,7 @@ def test_an_image_by_url_or_local_path(url_image, tmp_path):
     smpl.title_image(ax, url_image, "From a URL", height=10)
     img, _ = _extents(fig, _box(ax), ax.title)
     assert img.width / img.height == pytest.approx(1.5, rel=0.02)
-    assert smpl.drawn_title_images(ax) == [("left", URL)]
+    assert smpl._drawn_title_images(ax) == [("left", URL)]
 
     path = tmp_path / "local.png"
     Image.new("RGBA", (10, 40), (0, 0, 255, 255)).save(path)
@@ -104,7 +104,7 @@ def test_an_unknown_team_warns_once_and_keeps_the_title(mark_images):
     _, ax = plt.subplots()
     with pytest.warns(SdvplotWarning) as rec:
         smpl.title_image(ax, "XXX", "No logo", league="nfl")
-    assert len(rec) == 1 and ax.get_title() == "No logo" and smpl.drawn_title_images(ax) == []
+    assert len(rec) == 1 and ax.get_title() == "No logo" and smpl._drawn_title_images(ax) == []
 
 
 def test_bad_side_or_height_raise(mark_images):
@@ -209,7 +209,7 @@ def test_a_second_call_replaces_the_image(mark_images):
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     smpl.title_image(ax, "LV", "Raiders", league="nfl")
     smpl.title_image(ax, "LAR", "Rams", league="nfl")
-    assert smpl.drawn_title_images(ax) == [("left", "LAR")] and ax.get_title() == "Rams"
+    assert smpl._drawn_title_images(ax) == [("left", "LAR")] and ax.get_title() == "Rams"
     img, text = _extents(fig, _box(ax), ax.title)
     assert _pair_centre(img, text) == pytest.approx((ax.bbox.x0 + ax.bbox.x1) / 2, abs=1)
 
@@ -218,7 +218,7 @@ def test_a_second_call_on_a_figure_shifts_the_suptitle_once(mark_images):
     fig, _ = plt.subplots(1, 2, figsize=(6, 4), dpi=100)
     smpl.title_image(fig, "LV", "Two panels", league="nfl")
     smpl.title_image(fig, "LAR", "Two panels", league="nfl")
-    assert smpl.drawn_title_images(fig) == [("left", "LAR")]
+    assert smpl._drawn_title_images(fig) == [("left", "LAR")]
     img, text = _extents(fig, _box(fig), fig._suptitle)
     assert _pair_centre(img, text) == pytest.approx(fig.bbox.width / 2, abs=1)
 
@@ -229,7 +229,7 @@ def test_an_unreadable_file_warns_once_and_keeps_the_title(tmp_path, bad):
     _, ax = plt.subplots()
     with pytest.warns(SdvplotWarning, match="title_image") as rec:
         assert smpl.title_image(ax, str(tmp_path / bad), "Still titled") is ax
-    assert len(rec) == 1 and ax.get_title() == "Still titled" and smpl.drawn_title_images(ax) == []
+    assert len(rec) == 1 and ax.get_title() == "Still titled" and smpl._drawn_title_images(ax) == []
 
 
 def test_an_unreachable_url_warns_once_and_keeps_the_title(cache, monkeypatch):
@@ -239,7 +239,7 @@ def test_an_unreachable_url_warns_once_and_keeps_the_title(cache, monkeypatch):
     _, ax = plt.subplots()
     with pytest.warns(SdvplotWarning, match="title_image") as rec:
         smpl.title_image(ax, URL, "Still titled")
-    assert len(rec) == 1 and smpl.drawn_title_images(ax) == []
+    assert len(rec) == 1 and smpl._drawn_title_images(ax) == []
 
 
 def test_a_team_logo_that_cannot_download_still_raises(manifest, monkeypatch):
@@ -262,7 +262,7 @@ def test_plotnine_a_second_title_image_replaces_the_first(mark_images):
     p9, sp9 = _sp9()
     p = _p9_plot(p9) + sp9.title_image("LV", "A", league="nfl") + sp9.title_image("LAR", "B", league="nfl")
     fig = p.draw()  # no warning about a replaced title: the second one is the only title image
-    assert smpl.drawn_title_images(fig) == [("left", "LAR")]
+    assert smpl._drawn_title_images(fig) == [("left", "LAR")]
 
 
 def test_plotnine_an_unreadable_file_warns_once_when_built(tmp_path):
@@ -271,4 +271,4 @@ def test_plotnine_an_unreadable_file_warns_once_when_built(tmp_path):
         layer = sp9.title_image(str(tmp_path / "missing.png"), "Still titled")
     assert len(rec) == 1
     fig = (_p9_plot(p9) + layer).draw()
-    assert smpl.drawn_title_images(fig) == [] and any(t.get_text() == "Still titled" for t in fig.texts)
+    assert smpl._drawn_title_images(fig) == [] and any(t.get_text() == "Still titled" for t in fig.texts)

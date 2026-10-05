@@ -67,7 +67,7 @@ games = games.join(opponents, on=["game_id", "opponent_team_id"]).with_columns(
     game_poss=(pl.col("poss") + pl.col("opp_poss")) / 2
 )
 ratings = (
-    games.group_by("team_abbreviation")
+    games.group_by("team_abbreviation", maintain_order=True)
     .agg(
         ortg=100 * pl.col("team_score").sum() / pl.col("game_poss").sum(),
         drtg=100 * pl.col("opponent_team_score").sum() / pl.col("game_poss").sum(),
@@ -225,7 +225,7 @@ The two conference leaders get their net rating printed under the logo.
 
 ```python
 leaders = (
-    ratings.group_by("conference")
+    ratings.group_by("conference", maintain_order=True)
     .agg(pl.all().sort_by("net").last())
     .sort("conference")
     .with_columns(

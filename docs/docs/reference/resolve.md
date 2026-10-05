@@ -12,8 +12,9 @@ sidebar_position: 1
 resolve(
     values: Any,
     league: str,
+    *,
     season: Any = None,
-    id_system: str = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
 ) -> Any
 ```
@@ -33,7 +34,7 @@ come back as None with one SdvplotWarning, or raise with ``strict=True``.
 | `values` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported id system. NHL stats API ids overlap ESPN's, so "auto" never reads a number as one: pass ``id_system="nhl_id"`` for them (NHL tri-codes such as "NJD" resolve under "auto"). |
 | `league` | `str` | The SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different teams in different leagues. |
 | `season` | `Any` | One season for all values, or one per value. Picks the right team for a reused code; without one, a reused code means its current holder (KCA: the Royals, not the 1955-67 Kansas City Athletics). |
-| `id_system` | `str` | "auto" (try the priority order) or one system name. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | "auto" (try the priority order) or one system name. |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ## Returns
@@ -42,8 +43,8 @@ str | list | Series | None: The same shape as ``values``: a team_id string (or N
 
 ## Raises
 
-- `TypeError`: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-- `ValueError`: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year (or a list whose length does not match the teams).
+- `TypeError`: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is neither a year nor a list of them.
+- `ValueError`: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next year), or is a list whose length does not match the teams.
 - `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ## Example

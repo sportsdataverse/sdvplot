@@ -12,7 +12,8 @@ sidebar_position: 9
 headshot_url(
     player_id: Any,
     league: str,
-    id_system: str = 'espn',
+    *,
+    id_system: Literal['espn', 'gsis'] = 'espn',
 ) -> str | None
 ```
 
@@ -26,7 +27,7 @@ A headshot URL for one player.
 |---|---|---|
 | `player_id` | `Any` | One player id: an ESPN athlete id, or an nflverse gsis id. |
 | `league` | `str` | The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only. |
-| `id_system` | `str` | "espn" (ESPN athlete id, any ESPN league) or "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot). |
+| `id_system` | `Literal['espn', 'gsis']` | "espn" (ESPN athlete id, any ESPN league) or "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot). |
 
 ## Returns
 

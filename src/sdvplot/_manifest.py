@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import functools
 import io
-
-import polars as pl
+from typing import TYPE_CHECKING
 
 from sdvplot._cache import fetch_cached
+
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 MANIFEST_URL = "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/manifest/marks.csv"
 # The columns sdvplot reads: a contract with sdv-assets (checked live by tests/test_manifest.py)

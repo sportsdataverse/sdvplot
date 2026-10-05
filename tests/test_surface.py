@@ -61,7 +61,7 @@ def test_surface_passes_the_team_colors_to_sportypy(monkeypatch):
 
 def test_surface_draws_the_center_logo(mark_images):
     ax = sdvplot.surface("nfl", "LV", center_logo=True)
-    assert [m[:4] for m in smpl.drawn_marks(ax)] == [("13", 0.0, 0.0, pytest.approx(0.25))]
+    assert [m[:4] for m in smpl._drawn_marks(ax)] == [("13", 0.0, 0.0, pytest.approx(0.25))]
 
 
 def test_an_unknown_league_lists_the_supported_ones():

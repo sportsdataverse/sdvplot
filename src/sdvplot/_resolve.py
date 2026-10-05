@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import functools
 import numbers
-import warnings
 from collections.abc import Callable, Sequence
-from typing import Any
-
-import polars as pl
+from typing import TYPE_CHECKING, Any, overload
 
 from sdvplot import _index
-from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
-from sdvplot._normalize import _is_na, norm_season, norm_value
+from sdvplot._errors import InputError, UnresolvedTeamError, warn
+from sdvplot._normalize import _is_na, check_season, norm_season, norm_value
+from sdvplot._types import IdSystem
+
+if TYPE_CHECKING:
+    import numpy as np
+    import pandas as pd
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
 
 # The order "auto" tries id systems in; the first system with a candidate decides
 PRIORITY: tuple[str, ...] = (
@@ -165,7 +170,10 @@ def _seasons(season: Any, n: int) -> list[int | None]:
     one, season = _scalar(season)
     if one or _is_na(season):
         return [norm_season(season)] * n
-    items, _ = _unpack(season)
+    try:
+        items, _ = _unpack(season)
+    except TypeError:  # _unpack's message names values; this is the season argument
+        raise TypeError(f"season must be a year, or one per team, got {type(season).__name__}") from None
     if len(items) != n:
         raise ValueError(f"season has {len(items)} values but there are {n} teams")
     return [norm_season(s) for s in items]
@@ -176,12 +184,43 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     msg = f"{len(unresolved)} value(s) did not resolve to a {league} team: {shown}"
     if strict:
         raise UnresolvedTeamError(msg)
-    warnings.warn(
-        msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.", SdvplotWarning, stacklevel=3
-    )
+    warn(msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.")
 
 
-def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto", strict: bool = False) -> Any:
+# The result comes back in the container the values came in (_unpack). The last overload takes what the others do not
+# name: numpy scalars, pandas NA, other narwhals backends. pandas ships no types, so without pandas-stubs (as here)
+# pd.Series is Any and the last overload is never reached: hence its ignore.
+@overload
+def resolve(
+    values: str | bytes | int | float | None,
+    league: str,
+    *,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> str | None: ...
+@overload
+def resolve(
+    values: pl.Series, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> pl.Series: ...
+@overload
+def resolve(
+    values: list[Any] | tuple[Any, ...] | np.ndarray[Any, Any],
+    league: str,
+    *,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> list[str | None]: ...
+@overload
+def resolve(
+    values: pd.Series, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> pd.Series: ...
+@overload
+def resolve(  # type: ignore[overload-cannot-match]
+    values: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> Any: ...
+def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False) -> Any:
     """Canonical team_id(s) for team values in one league.
 
     Accepts ids and names from any supported source (ESPN, nflverse, MLB Stats, nba_api, HockeyTech, CFBD, sdvplotR) and
@@ -204,9 +243,11 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
         caller's library.
 
     Raises:
-        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` or ``id_system`` is unknown, or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is
+            neither a year nor a list of them.
+        ValueError: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons
+            sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next
+            year), or is a list whose length does not match the teams.
         UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
@@ -232,7 +273,7 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
 
 def _systems(id_system: str) -> tuple[str, ...]:
     if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
-        raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
+        raise InputError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
     return PRIORITY if id_system == "auto" else (id_system,)
 
 
@@ -243,6 +284,8 @@ def _resolve_ids(
     why ("unknown" or "ambiguous"). The caller decides whether to warn."""
     _index.check_league(league)
     systems = _systems(id_system)
+    for year in {s for s in seasons if s is not None}:  # every season path resolves here: the league's own range
+        check_season(year, league)
     table, latest = _lookup(league), _latest(league)
     out: list[str | None] = []
     unresolved: dict[str, str] = {}
@@ -263,7 +306,7 @@ def _resolve_ids(
     return out, unresolved
 
 
-def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:
+def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     """Up to n (team_id, name) candidates for a value that did not resolve, best first.
 
     It never picks one for you: similar names can be different teams ("Bethany (KS)" and "Bethany (WV)").

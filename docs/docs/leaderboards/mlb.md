@@ -57,10 +57,10 @@ if season < current:
     through = "final regular season"
 elif today <= regular_end:
     games = int(standings["games_played"].median())
-    status = f"**Updated {today}:** the {season} season to date, about {games} games per team."
+    status = f"**Season to date:** the {season} season to date, about {games} games per team."
     through = f"through {games} games"
 elif today <= post_end:
-    status = f"**Updated {today}:** the final {season} regular season; the postseason is under way."
+    status = f"**Postseason:** the final {season} regular season; the postseason is under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {season} regular season."
@@ -88,7 +88,7 @@ standings.sort("division", "rank").head()
 
 <div class="sdv-output">
 
-**Updated 2026-10-05:** the final 2026 regular season; the postseason is under way.
+**Postseason:** the final 2026 regular season; the postseason is under way.
 
 | abbreviation | team_name | division                | rank | w  | l  | pct  | gb   | rs  | ra  | diff | strk |
 |--------------|-----------|-------------------------|------|----|----|------|------|-----|-----|------|------|
@@ -162,7 +162,7 @@ Every club's run differential as a bar in its colors, best at the top, the logo 
 rd = standings.sort("diff", "abbreviation")  # ties broken by name, so each re-render matches
 fig, ax = plt.subplots(figsize=(9, 8))
 y = list(range(rd.height))
-ax.barh(y, rd["diff"], color=sdvplot.team_colors(rd["abbreviation"].to_list(), "mlb"), height=0.72)
+ax.barh(y, rd["diff"], color=sdvplot.team_colors("mlb", rd["abbreviation"].to_list()), height=0.72)
 ax.axvline(0, color="#222222", lw=0.8)
 reach = max(abs(rd["diff"].min()), rd["diff"].max())
 ends = [d + (0.06 if d >= 0 else -0.06) * reach for d in rd["diff"]]

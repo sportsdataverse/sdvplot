@@ -77,7 +77,7 @@ elif season < current:
     status = f"**Offseason:** the final {label(season)} regular season; the {label(current)} season has no games yet."
     through = "final regular season"
 elif (today - playoffs["game_date"].max()).days <= 10:
-    status = f"**Updated {today}:** the final {label(season)} regular season; the playoffs are under way."
+    status = f"**Playoffs:** the final {label(season)} regular season; the playoffs are under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {label(season)} regular season."
@@ -173,7 +173,7 @@ fig, ax = plt.subplots(figsize=(10, 5.5))
 ax.bar(
     gd["team_abbrev_default"],
     gd["goal_differential"],
-    color=sdvplot.team_colors(gd["team_abbrev_default"].to_list(), "nhl", season=season),
+    color=sdvplot.team_colors("nhl", gd["team_abbrev_default"].to_list(), season=season),
 )
 ax.axhline(0, color="#222222", lw=0.8)
 ax.margins(x=0.01)

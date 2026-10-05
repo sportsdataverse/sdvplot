@@ -70,10 +70,10 @@ if season < current:
     status = f"**Offseason:** the final {label(season)} regular season; the {label(current)} season has no games yet."
     through = "final regular season"
 elif box.filter(pl.col("season_type") == 3).is_empty():
-    status = f"**Updated {today}:** the {label(season)} season through {last_game:%B} {last_game.day}."
+    status = f"**Season to date:** the {label(season)} season through {last_game:%B} {last_game.day}."
     through = f"through {last_game:%b} {last_game.day}"
 elif (today - last_game).days <= 10:
-    status = f"**Updated {today}:** the final {label(season)} regular season; the playoffs are under way."
+    status = f"**Playoffs:** the final {label(season)} regular season; the playoffs are under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {label(season)} regular season."
@@ -111,7 +111,7 @@ games = regular.with_columns(poss=possessions).with_columns(poss=pl.col("poss").
 teams = sdvplot.teams("nba").select(team="team_id", abbr="abbr", name="short_name", conference="conference")
 ratings = (
     games.sort("game_date")
-    .group_by("team")
+    .group_by("team", maintain_order=True)
     .agg(
         w=pl.col("team_winner").sum(),
         l=(~pl.col("team_winner")).sum(),
@@ -197,7 +197,7 @@ The same net ratings as bars in team colors; `axis_logos` swaps the abbreviation
 ```python
 by_net = ratings.sort(["net", "team"], descending=[True, False])
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(by_net["abbr"], by_net["net"], color=sdvplot.team_colors(by_net["team"].to_list(), "nba"))
+ax.bar(by_net["abbr"], by_net["net"], color=sdvplot.team_colors("nba", by_net["team"].to_list()))
 ax.axhline(0, color="#222222", lw=0.8)
 ax.margins(x=0.01)
 ax.set_ylabel("Net rating (points per 100 possessions)")
@@ -225,10 +225,10 @@ players = (
     .filter((pl.col("season_type") == 2) & ~pl.col("did_not_play") & pl.col("minutes").is_not_null())
     .join(standard.select("game_id"), on="game_id", how="semi")
 )  # no All-Star or cup final
-games_played = players.group_by("team_id").agg(pl.col("game_id").n_unique())["game_id"].max()
+games_played = players.group_by("team_id", maintain_order=True).agg(pl.col("game_id").n_unique())["game_id"].max()
 leaders = (
     players.sort("game_date")
-    .group_by("athlete_id")
+    .group_by("athlete_id", maintain_order=True)
     .agg(
         name=pl.col("athlete_display_name").last(),
         team=pl.col("team_abbreviation").last(),
@@ -243,7 +243,7 @@ leaders = (
 
 fig, ax = plt.subplots(figsize=(9, 7))
 y = list(range(leaders.height))
-ax.barh(y, leaders["ppg"], color=sdvplot.team_colors(leaders["team"].to_list(), "nba"), height=0.7)
+ax.barh(y, leaders["ppg"], color=sdvplot.team_colors("nba", leaders["team"].to_list()), height=0.7)
 ax.set_yticks(y, [f"{name}  " for name in leaders["name"]])
 top = leaders["ppg"].max()
 for i, (ppg, gp) in enumerate(zip(leaders["ppg"], leaders["gp"], strict=True)):

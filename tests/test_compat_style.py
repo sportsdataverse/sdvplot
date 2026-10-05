@@ -26,13 +26,13 @@ def _close_figures():
 
 def test_pypalettes_builds_a_colormap_from_team_colors(mark_images):
     pypalettes = pytest.importorskip("pypalettes")
-    colors = sdvplot.team_colors(TEAMS, "nfl")
+    colors = sdvplot.team_colors("nfl", TEAMS)
     cmap = pypalettes.create_cmap(colors, cmap_type="discrete")
     assert [to_hex(c) for c in cmap.colors] == colors
     _, ax = plt.subplots()
     ax.scatter([10, 20], [-3, -7], c=[0, 1], cmap=cmap, s=400)
     sdvplot.add_logos(ax, [10, 20], [-3, -7], TEAMS, league="nfl")
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "14"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "14"]
 
 
 def test_a_morethemes_theme_keeps_logos_drawing(mark_images):
@@ -43,13 +43,13 @@ def test_a_morethemes_theme_keeps_logos_drawing(mark_images):
         ax.plot([0, 30], [-10, 0])
         sdvplot.add_logos(ax, [10, 20], [-3, -7], TEAMS, league="nfl", height=0.15)
         ax.figure.canvas.draw()
-        assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "14"]
+        assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "14"]
 
 
 def test_wordcloud_colors_each_team_with_its_own_color(mark_images):
     wordcloud = pytest.importorskip("wordcloud")
     names = ["Las Vegas Raiders", "Los Angeles Rams"]
-    color = dict(zip(names, sdvplot.team_colors(names, "nfl"), strict=True))  # names resolve like any other id
+    color = dict(zip(names, sdvplot.team_colors("nfl", names), strict=True))  # names resolve like any other id
     cloud = wordcloud.WordCloud(
         width=200, height=100, background_color="white", random_state=1, color_func=lambda word, **kw: color[word]
     ).generate_from_frequencies({"Las Vegas Raiders": 3, "Los Angeles Rams": 2})
@@ -65,4 +65,4 @@ def test_a_pyfonts_font_and_logos_share_an_axes(mark_images):
     sdvplot.add_logos(ax, [10, 20], [-3, -7], TEAMS, league="nfl")
     ax.figure.canvas.draw()
     assert ax.title.get_fontproperties().get_name() == "Roboto"
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "14"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "14"]

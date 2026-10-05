@@ -157,7 +157,7 @@ def test_prep_title_height_and_alpha():
 def test_matplotlib_tiers_draw_each_logo_at_its_rank_and_tier(mark_images):
     fig = smpl.team_tiers(_frame(tier_no=[1, 2, 2], team=["LV", "LV", "LAR"]), "nfl")
     (ax,) = fig.axes
-    marks = smpl.drawn_marks(ax)
+    marks = smpl._drawn_marks(ax)
     assert [m[:3] for m in marks] == [("13", 1, 1), ("13", 1, 2), ("14", 2, 2)]
     assert [m[3] for m in marks] == pytest.approx([_tiers.DEFAULT_HEIGHT] * 3)  # a measured height
     assert ax.get_ylim() == pytest.approx((2.6, 0.4))  # tier 1 on top
@@ -185,7 +185,7 @@ def test_matplotlib_tiers_titles(mark_images):
 def test_matplotlib_tiers_devel_draws_team_text_not_logos():
     fig = smpl.team_tiers(_frame(tier_no=[1, 1], team=["LV", "LAR"]), "nfl", devel=True)
     ax = fig.axes[0]
-    assert smpl.drawn_marks(ax) == []
+    assert smpl._drawn_marks(ax) == []
     assert [(t.get_text(), t.get_position()) for t in ax.texts if not isinstance(t, Annotation)] == [
         ("LV", (1, 1)),
         ("LAR", (2, 1)),
@@ -194,7 +194,7 @@ def test_matplotlib_tiers_devel_draws_team_text_not_logos():
 
 def test_matplotlib_tiers_accept_polars(mark_images):
     fig = smpl.team_tiers(pl.DataFrame({"tier_no": [1], "team": ["LV"]}), "nfl")
-    assert [m[0] for m in smpl.drawn_marks(fig.axes[0])] == ["13"]
+    assert [m[0] for m in smpl._drawn_marks(fig.axes[0])] == ["13"]
 
 
 def test_matplotlib_default_height_fits_32_logos_in_5_tiers(mark_images):
@@ -219,7 +219,7 @@ def _sp9():
 def test_plotnine_tiers_draw_each_logo_at_its_rank_and_tier(mark_images):
     sp9 = _sp9()
     p = sp9.team_tiers(_frame(tier_no=[1, 2, 2], team=["LV", "LV", "LAR"]), "nfl")
-    marks = sp9.drawn_marks(p)
+    marks = sp9._drawn_marks(p)
     assert [(m[0], m[1], -m[2]) for m in marks] == [("13", 1, 1), ("13", 1, 2), ("14", 2, 2)]  # y is reversed
     fig = p.draw()
     ax = fig.axes[0]
@@ -232,7 +232,7 @@ def test_plotnine_tiers_devel_draws_team_text(mark_images):
     sp9 = _sp9()
     fig = sp9.team_tiers(_frame(tier_no=[1, 1], team=["LV", "LAR"]), "nfl", devel=True).draw()
     assert [t.get_text() for t in fig.axes[0].texts] == ["LV", "LAR"]
-    assert smpl.drawn_marks(fig.axes[0]) == []
+    assert smpl._drawn_marks(fig.axes[0]) == []
 
 
 def test_plotnine_tiers_accept_polars_and_warn_once_for_unknown_teams(mark_images):
@@ -240,7 +240,7 @@ def test_plotnine_tiers_accept_polars_and_warn_once_for_unknown_teams(mark_image
     with pytest.warns(SdvplotWarning) as rec:
         p = sp9.team_tiers(pl.DataFrame({"tier_no": [1, 1], "team": ["LV", "XXX"]}), "nfl")
     assert len(rec) == 1
-    assert [m[0] for m in sp9.drawn_marks(p)] == ["13"]
+    assert [m[0] for m in sp9._drawn_marks(p)] == ["13"]
 
 
 def test_plotnine_default_height_fits_32_logos_in_5_tiers(mark_images):

@@ -52,9 +52,12 @@ nfl_weeks = nfl.load_nfl_team_stats([NFL_SEASON]).filter(pl.col("season_type") =
 plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
 epa = pl.col("passing_epa") + pl.col("rushing_epa")
 nfl_epa = (
-    nfl_weeks.group_by("team")
+    nfl_weeks.group_by("team", maintain_order=True)
     .agg(off_epa=epa.sum() / plays.sum())
-    .join(nfl_weeks.group_by(team=pl.col("opponent_team")).agg(def_epa=epa.sum() / plays.sum()), on="team")
+    .join(
+        nfl_weeks.group_by(team=pl.col("opponent_team"), maintain_order=True).agg(def_epa=epa.sum() / plays.sum()),
+        on="team",
+    )
     .sort("team")
 )
 
@@ -69,7 +72,7 @@ mlb_standings = (
 wnba_teams = (
     wnba.load_wnba_team_boxscore(seasons=[SEASON])
     .filter(pl.col("season_type") == 2)
-    .group_by("team_abbreviation")
+    .group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), scored=pl.col("team_score").mean(), allowed=pl.col("opponent_team_score").mean())
     .filter(pl.col("games") > 10)
     .sort("team_abbreviation")
@@ -78,7 +81,7 @@ wnba_teams = (
 nhl_teams = (
     nhl.load_nhl_team_box(seasons=[SEASON])
     .filter(pl.col("game_id") // 10_000 % 100 == 2)
-    .group_by("team_abbrev")
+    .group_by("team_abbrev", maintain_order=True)
     .agg(gf=pl.col("goals").mean(), ga=pl.col("goals_against").mean(), sv=pl.col("save_pctg").mean())
     .sort("team_abbrev")
 )
@@ -86,7 +89,7 @@ nhl_teams = (
 nba_threes = (
     nba.load_nba_team_boxscore(seasons=[SEASON])
     .filter(pl.col("season_type") == 2)
-    .group_by("team_id", "team_abbreviation")
+    .group_by("team_id", "team_abbreviation", maintain_order=True)
     .agg(
         games=pl.len(),
         fg3a=pl.col("three_point_field_goals_attempted").mean(),
@@ -165,7 +168,7 @@ fig = go.Figure(
     go.Bar(
         x=ranked["team_abbreviation"],
         y=ranked["point_differential"],
-        marker_color=sdvplot.team_colors(ranked["team_abbreviation"], "mlb"),
+        marker_color=sdvplot.team_colors("mlb", ranked["team_abbreviation"]),
         customdata=ranked["team_display_name"],
         hovertemplate="%{customdata}<br>Run differential %{y:+d}<extra></extra>",
     )
@@ -294,7 +297,7 @@ Bokeh glyphs cannot sit outside the plot frame, so `axis_logos` raises on Bokeh 
 top = nhl_teams.sort(["gf", "team_abbrev"], descending=[True, False]).head(12)
 teams = top["team_abbrev"].to_list()
 p = figure(x_range=teams, frame_width=700, frame_height=360, title="NHL goals per game, 2025-26 (top 12)")
-p.vbar(x=teams, top=top["gf"].to_list(), width=0.7, color=sdvplot.team_colors(teams, "nhl"))
+p.vbar(x=teams, top=top["gf"].to_list(), width=0.7, color=sdvplot.team_colors("nhl", teams))
 try:
     sdvplot.axis_logos(p, "x", league="nhl")
 except TypeError as e:

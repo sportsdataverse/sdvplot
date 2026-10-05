@@ -17,7 +17,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 
 | # | sdvplotR / ggpath export | sdvplot | Decision |
 | --- | --- | --- | --- |
-| X1 | `sdv_court_coords()` | `sdvplot.court_coords(data, x="x_legacy", y="y_legacy")` | ported (below) |
+| X1 | `sdv_court_coords()` | `sdvplot.court_coords(data, *, x="x_legacy", y="y_legacy")` | ported (below) |
 | X2 | `ggtitle_image()` + `theme_title_image()` | `sdvplot.matplotlib.title_image()`, `sdvplot.plotnine.title_image()` | ported (below) |
 | X3 | `sdv_team_tiers()` | `sdvplot.matplotlib.team_tiers()`, `sdvplot.plotnine.team_tiers()` | ported (below) |
 | X4 | ggpath `geom_from_path()` | `sdvplot.plotnine.geom_from_path()`, `sdvplot.matplotlib.add_images()` | ported (below) |
@@ -106,8 +106,18 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from PIL import Image
 
 img = OffsetImage(Image.open("label.png"), zoom=0.2)
-ax.add_artist(AnnotationBbox(img, (tick_x, 0), xycoords=ax.get_xaxis_transform(), box_alignment=(0.5, 1.0),
-                             xybox=(0, -4), boxcoords="offset points", frameon=False, annotation_clip=False))
+ax.add_artist(
+    AnnotationBbox(
+        img,
+        (tick_x, 0),
+        xycoords=ax.get_xaxis_transform(),
+        box_alignment=(0.5, 1.0),
+        xybox=(0, -4),
+        boxcoords="offset points",
+        frameon=False,
+        annotation_clip=False,
+    )
+)
 ```
 
 **X7 `team_reference`.** Identity and colors: `sdvplot.teams("nfl")` (`team_id`, `abbr`, `name`, `short_name`,

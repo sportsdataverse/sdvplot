@@ -39,7 +39,7 @@ schedule = mlb.parse_mlb_api_schedule(mlb.mlb_schedule(season=SEASON, sport_id=1
 finals = (
     schedule.filter(pl.col("status_coded_game_state") == "F")  # final, including games completed early
     .sort("schedule_date")
-    .unique("game_pk", keep="last")
+    .unique("game_pk", keep="last", maintain_order=True)
 )
 games = (
     pl.concat(
@@ -58,7 +58,7 @@ games = (
             ),
         ]
     )
-    .sort("official_date", "game_pk")
+    .sort("official_date", "game_pk", "team_id")  # a game's two rows, in one order every run
     .with_columns(
         game=pl.int_range(1, pl.len() + 1).over("team_id"),
         run_diff=pl.col("margin").cum_sum().over("team_id"),
@@ -66,7 +66,7 @@ games = (
 )
 clubs = mlb.parse_mlb_api_teams(mlb.mlb_teams(season=SEASON)).select(team_id="id", team="abbreviation")
 totals = (
-    games.group_by("team_id")
+    games.group_by("team_id", maintain_order=True)
     .agg(diff=pl.col("margin").sum().cast(pl.Int64), games=pl.len())
     .join(clubs, on="team_id")
     .sort("diff", "team")  # ties (two teams at -58) need a second key to keep one order every run
@@ -118,7 +118,7 @@ Horizontal bars give every team a readable row, sorting turns the chart into a r
 the diverging bars.
 
 ```python
-colors = sdvplot.team_colors(totals["team"], "mlb")
+colors = sdvplot.team_colors("mlb", totals["team"])
 
 fig, ax = plt.subplots(figsize=(7, 8))
 ax.barh(totals["team"], totals["diff"], color=colors, height=0.7)
@@ -147,7 +147,7 @@ def bars(ax, logo_height=0.026):
     pad = 0.045 * span  # the gap between a bar's end and its logo, in runs
     y = list(range(totals.height))
     side = totals["diff"].sign().replace(0, 1)
-    ax.barh(y, totals["diff"], color=sdvplot.team_colors(totals["team"], "mlb"), height=0.72)
+    ax.barh(y, totals["diff"], color=sdvplot.team_colors("mlb", totals["team"]), height=0.72)
     ax.axvline(0, color="#333333", lw=0.8)
     sdvplot.add_logos(
         ax, totals["diff"] + side * pad, y, totals["team"], league="mlb", season=SEASON, height=logo_height
@@ -193,7 +193,7 @@ def arc(ax, logo_height=0.07):
     for team_id in best_worst:
         g = games.filter(pl.col("team_id") == team_id)  # a filter keeps the game order
         team = abbreviation[team_id]
-        ax.plot(g["game"], g["run_diff"], color=sdvplot.team_colors(team, "mlb"), lw=2.2, zorder=3)
+        ax.plot(g["game"], g["run_diff"], color=sdvplot.team_colors("mlb", team), lw=2.2, zorder=3)
         ends.append((g["game"][-1] + 7, g["run_diff"][-1], team))
     ax.axhline(0, color="#333333", lw=0.8, zorder=2)
     # the top two finish close together: nudge their logos apart so they do not overlap

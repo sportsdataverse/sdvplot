@@ -4,15 +4,19 @@
 Usage: uv run python tools/gen_docs.py [--out DIR] [--data-out DIR] [--check]
 
 Pages are generated, never hand-edited. --check renders to a temp dir and byte-compares (exit 1 on drift). Both modes
-fail when a public function's docstring misses the standard sections (summary, Args, Returns, Example)."""
+fail when a public function's docstring misses the standard sections (summary, Args, Returns, Example), and when a
+public submodule's `__all__` function misses any of Args, Returns, Raises, Example or See Also, or its Example has a
+syntax error or an undefined name (found statically; tests/test_submodule_examples.py runs the examples)."""
 
 from __future__ import annotations
 
 import argparse
 import filecmp
+import importlib
 import inspect
 import json
 import re
+import subprocess
 import sys
 import tempfile
 import textwrap
@@ -35,7 +39,22 @@ SECTIONS = [
     ("Plots and tables", ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface", "court_coords"]),
     ("Housekeeping", ["versions", "clear_cache"]),
 ]
-ERRORS = ["SdvplotWarning", "UnresolvedTeamError", "OfflineError", "OptionalDependencyError", "UnsupportedTargetError"]
+ERRORS = [
+    "SdvplotWarning",
+    "SdvplotDeprecationWarning",
+    "SdvplotError",
+    "InputError",
+    "UnresolvedTeamError",
+    "OfflineError",
+    "OptionalDependencyError",
+    "UnsupportedTargetError",
+    "UnsafeDownloadError",
+    "UnsafeCachePathError",
+]
+SUBMODULES = [
+    "plotnine", "matplotlib", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal",
+    "great_tables", "reactable", "plottable", "testing",
+]  # fmt: skip
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
 # never typed), and two-color swatches for six teams in three leagues, from palette().
@@ -43,8 +62,8 @@ HOME_INSTALL = "pip install sdvplot"
 HOME_SAMPLE = [
     'sdvplot.resolve(["KC", "Kansas City Chiefs", 12], "nfl")',
     'sdvplot.palette("nfl", teams=["KC", "SF"])',
-    'sdvplot.team_colors(["LAL", "BOS"], "nba")',
-    'sdvplot.team_colors("NYY", "mlb", which="secondary")',
+    'sdvplot.team_colors("nba", ["LAL", "BOS"])',
+    'sdvplot.team_colors("mlb", "NYY", which="secondary")',
 ]
 HOME_TEAMS = [("nfl", "KC"), ("nfl", "SF"), ("nba", "LAL"), ("nba", "BOS"), ("mlb", "NYY"), ("mlb", "LAD")]
 
@@ -122,7 +141,9 @@ def render_function(name: str, fn: object, position: int) -> tuple[str, list[str
     raw = inspect.getdoc(fn) or ""
     doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
     try:  # the package uses `from __future__ import annotations`; resolve them so pages show types, not strings
-        sig = inspect.signature(fn, eval_str=True)  # type: ignore[arg-type]
+        from PIL import Image  # imported under TYPE_CHECKING in the package, so that `import sdvplot` stays light
+
+        sig = inspect.signature(fn, eval_str=True, locals={"Image": Image})  # type: ignore[arg-type]
     except NameError:
         sig = inspect.signature(fn)  # type: ignore[arg-type]
     errors: list[str] = []
@@ -184,7 +205,9 @@ def _errors_page(position: int) -> str:
     ]
     for n in ERRORS:
         cls = getattr(sdvplot, n)
-        lines.append(f"| `{n}` | `{cls.__mro__[1].__name__}` | {inspect.getdoc(cls) or ''} |")
+        bases = ", ".join(f"`{b.__name__}`" for b in cls.__bases__)
+        meaning = " ".join((inspect.getdoc(cls) or "").split())  # one table row, however the docstring wraps
+        lines.append(f"| `{n}` | {bases} | {meaning} |")
     return "\n".join(lines) + "\n"
 
 
@@ -210,7 +233,7 @@ def home_data() -> dict[str, object]:
         team_id = sdvplot.resolve(team, league)
         name = sdvplot.teams(league).filter(pl.col("team_id") == team_id)["name"][0]
         primary = sdvplot.palette(league, teams=[team])[team]
-        secondary = sdvplot.palette(league, "secondary", teams=[team])[team]
+        secondary = sdvplot.palette(league, which="secondary", teams=[team])[team]
         swatches.append(
             {"league": league.upper(), "team": team, "name": name, "primary": primary, "secondary": secondary}
         )
@@ -224,6 +247,70 @@ def home_data() -> dict[str, object]:
 
 def _write_json(path: Path, obj: object) -> None:
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+
+
+def submodule_examples(submodules: list[str] | None = None) -> dict[str, str]:
+    """The Example code of every public submodule function, keyed by ``"<submodule>.<name>"`` (the tests run them)."""
+    out: dict[str, str] = {}
+    for sub in SUBMODULES if submodules is None else submodules:
+        mod = importlib.import_module(f"sdvplot.{sub}")
+        for n in getattr(mod, "__all__", ()):
+            fn = getattr(mod, n)
+            if callable(fn) and (example := _example(inspect.getdoc(fn) or "")):
+                out[f"{sub}.{n}"] = example
+    return out
+
+
+def _static_example_errors(examples: dict[str, str]) -> list[str]:
+    """Syntax errors and undefined or redefined names in the examples, found without running them (one ruff call), so
+    an error after a network call cannot hide."""
+    with tempfile.TemporaryDirectory() as tmp:
+        files = {}
+        for i, (label, code) in enumerate(examples.items()):
+            path = Path(tmp) / f"ex{i}.py"
+            path.write_text(code + "\n", encoding="utf-8")
+            files[str(path)] = label
+        cmd = [sys.executable, "-m", "ruff", "check", "--isolated", "--no-cache", "--select", "F821,F811"]
+        run = subprocess.run([*cmd, "--output-format", "json", tmp], capture_output=True, text=True, check=False)
+        if run.returncode not in (0, 1):
+            return [f"examples: ruff failed: {run.stderr.strip()}"]
+        found = json.loads(run.stdout or "[]")
+    return [f"sdvplot.{files[d['filename']]}: Example: {d['message']} (line {d['location']['row']})" for d in found]
+
+
+def check_submodules(submodules: list[str] | None = None) -> list[str]:
+    """Check each public submodule's ``__all__`` functions: sections present, OfflineError listed when ``embed`` is
+    taken, and every Example free of syntax errors and undefined names (tests/test_submodule_examples.py runs them)."""
+    errors: list[str] = []
+    for sub in SUBMODULES if submodules is None else submodules:
+        mod = importlib.import_module(f"sdvplot.{sub}")
+        for n in getattr(mod, "__all__", ()):
+            fn = getattr(mod, n)
+            if not callable(fn):
+                continue
+            label = f"sdvplot.{sub}.{n}"
+            raw = inspect.getdoc(fn) or ""
+            doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
+            try:
+                params = inspect.signature(fn).parameters
+            except (TypeError, ValueError):
+                params = {}  # type: ignore[assignment]
+            if not doc.short_description:
+                errors.append(f"{label}: missing summary line")
+            if params and not doc.params:
+                errors.append(f"{label}: missing Args:")
+            if not doc.returns:
+                errors.append(f"{label}: missing Returns:")
+            if params and _section(raw, "Raises") is None:
+                errors.append(f"{label}: missing Raises:")
+            elif "embed" in params and "OfflineError" not in (_section(raw, "Raises") or ""):
+                errors.append(f"{label}: takes embed= but Raises: does not list OfflineError")
+            if not _see_also(raw):
+                errors.append(f"{label}: missing See Also:")
+            if _example(raw) is None:
+                errors.append(f"{label}: missing Example:")
+    errors += _static_example_errors(submodule_examples(submodules))
+    return errors
 
 
 def render(out_dir: Path, data_dir: Path) -> list[str]:
@@ -244,6 +331,7 @@ def render(out_dir: Path, data_dir: Path) -> list[str]:
         n for n in sdvplot.__all__ if callable(getattr(sdvplot, n)) and n not in listed and n not in ERRORS
     )
     errors += [f"{n}: public but not placed in a SECTIONS group" for n in missing]
+    errors += check_submodules()
     for title, names in SECTIONS:
         index.append(f"## {title}\n")
         index.append("| Function | What it does |\n|---|---|")

@@ -40,8 +40,8 @@ def test_add_logos_returns_a_copy_and_keeps_the_existing_hooks(mark_images):
     assert out is not element
     fig = hv.render(out, backend="bokeh")
     assert seen == ["mine"]
-    assert sbokeh.drawn_marks(fig) == [("13", 10, -3, pytest.approx(0.2), "https://cdn/1111.png")]
-    assert shv.drawn_marks(element) == []  # the element passed in is unchanged
+    assert sbokeh._drawn_marks(fig) == [("13", 10, -3, pytest.approx(0.2), "https://cdn/1111.png")]
+    assert shv._drawn_marks(element) == []  # the element passed in is unchanged
 
 
 def test_warnings_come_at_call_time_not_at_render_time(mark_images):
@@ -49,7 +49,7 @@ def test_warnings_come_at_call_time_not_at_render_time(mark_images):
         out = sdvplot.add_logos(_element(), [10, 20], [-3, -7], ["XXX", "LV"], league="nfl")
     with warnings.catch_warnings():
         warnings.simplefilter("error", SdvplotWarning)
-        assert [m[0] for m in shv.drawn_marks(out)] == ["13"]
+        assert [m[0] for m in shv._drawn_marks(out)] == ["13"]
 
 
 def test_a_responsive_plot_without_a_frame_height_says_to_set_one(mark_images, caplog):

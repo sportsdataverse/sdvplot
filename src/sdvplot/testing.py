@@ -2,7 +2,7 @@
 
 An adapter module must expose add_logos, add_wordmarks, add_headshots and axis_logos, and the test hook
 
-    drawn_marks(target) -> list[tuple]
+    _drawn_marks(target) -> list[tuple]
 
 returning one tuple per drawn image, in draw order: (team_id, x, y, height) or (team_id, x, y, height, url). team_id
 is the canonical team id (str; the player id for headshots), x and y are the caller's position values for that image,
@@ -10,18 +10,18 @@ height is the fraction of the plot height the image was drawn at, and url, when 
 adapter used (so the harness can check it drew the right mark). The hook measures height from what was drawn, never
 from the value the adapter was asked for or stored: the image's extent after a draw (matplotlib, plotnine), the size
 in the emitted spec or document (Plotly layout images, Vega-Lite marks, Bokeh and folium sizes), or the rendered SVG
-(pygal). The harness compares heights within HEIGHT_TOLERANCE (1%, relative), which absorbs pixel and attribute
+(pygal). The harness compares heights within 1% (relative), which absorbs pixel and attribute
 rounding (pygal writes three decimals) but not an ignored height or a wrong reference height.
 
-An adapter that draws axis logos sets SUPPORTS_AXIS_LOGOS = True (the default when the attribute is absent) and
+An adapter that draws axis logos sets _SUPPORTS_AXIS_LOGOS = True (the default when the attribute is absent) and
 exposes two more hooks:
 
-    drawn_axis_marks(target, axis) -> list[tuple[str, Any, float]]  # (team_id, tick position, height), tick order
-    visible_axis_labels(target, axis) -> list[str]                   # the tick labels still shown as text
+    _drawn_axis_marks(target, axis) -> list[tuple[str, Any, float]]  # (team_id, tick position, height), tick order
+    _visible_axis_labels(target, axis) -> list[str]                   # the tick labels still shown as text
 
-where height is measured as for drawn_marks.
+where height is measured as for _drawn_marks.
 
-An adapter that cannot (a map, a table) sets SUPPORTS_AXIS_LOGOS = False and raises TypeError from axis_logos.
+An adapter that cannot (a map, a table) sets _SUPPORTS_AXIS_LOGOS = False and raises TypeError from axis_logos.
 
 add_* must return the object that was drawn on. Libraries that mutate the target (matplotlib) return it; libraries that
 build a new object (plotnine, altair, tables) return the new one. The harness reads hooks from the returned object when
@@ -55,10 +55,10 @@ Table adapters (great_tables) have rows, columns and pixel heights instead, so t
 check_table_adapter_contract(), with rules T0-T6 (messages start with "rule T<n>"). A table adapter's add_* take
 (table, columns, *, league, height=<pixels>) and return the new table, and it exposes two hooks:
 
-    drawn_cells(table) -> list[tuple]   # (team_id, row, column, height_px[, src]) per image, in display order
-    rendered_html(table) -> str         # the table as it renders
+    _drawn_cells(table) -> list[tuple]   # (team_id, row, column, height_px[, src]) per image, in display order
+    _rendered_html(table) -> str         # the table as it renders
 
-In drawn_cells, row is the 0-based display row of a body cell and -1 for a column label.
+In _drawn_cells, row is the 0-based display row of a body cell and -1 for a column label.
 
 T0. Registration: the front door routes the table to this adapter.
 T1. Resolution: a column ["LV", "LAR"] renders both teams' canonical ids at rows 0 and 1 (and their own marks),
@@ -66,8 +66,8 @@ T1. Resolution: a column ["LV", "LAR"] renders both teams' canonical ids at rows
 T2. Warn and keep: ["XXX", "LV"] renders LV at row 1, keeps "XXX" as text, warns exactly once when called and never
     when rendered; all-unknown input renders no image and also warns exactly once.
 T3. pandas/polars parity: a pandas frame with a non-default index renders the same cells as a polars frame.
-T4. Height: height=24 is 24 px on every image (drawn_cells reads it from the rendered HTML); 0, negative and
-    non-numeric heights raise ValueError.
+T4. Height: height=24 is 24 px on every image (_drawn_cells reads it from the rendered HTML); 0, negative,
+    fractional (below 1 px: a plot's unit, not a table's) and non-numeric heights raise ValueError.
 T5. Wordmarks: add_wordmarks satisfies T1-T4.
 T6. Headshots: add_headshots satisfies T1-T4 for player ids.
 """
@@ -84,7 +84,13 @@ from typing import Any
 from sdvplot._errors import SdvplotWarning
 from sdvplot._resolve import resolve
 
-HEIGHT_TOLERANCE = 0.01  # relative; heights are measured from what was drawn, so rounding must pass
+_HEIGHT_TOLERANCE = 0.01  # relative; heights are measured from what was drawn, so rounding must pass
+
+__all__ = ["check_adapter_contract", "check_table_adapter_contract"]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)
 
 
 def _fail(rule: str, msg: str) -> None:
@@ -116,7 +122,7 @@ def _call(
 ) -> tuple[list[tuple[Any, ...]], int]:
     """Run adapter.<verb> on a fresh target; return (drawn marks, warnings). A raise becomes a named AssertionError."""
     try:
-        _, marks, count = _draw(adapter, verb, make_target(), adapter.drawn_marks, *args, **kw)
+        _, marks, count = _draw(adapter, verb, make_target(), adapter._drawn_marks, *args, **kw)
     except Exception as e:  # noqa: BLE001
         raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
     return marks, count
@@ -136,7 +142,7 @@ def _xyz(marks: list[tuple[Any, ...]]) -> list[tuple[Any, ...]]:
     return [m[:3] for m in marks]
 
 
-def _check_urls(rule: str, marks: list[tuple[Any, ...]], want: dict[str, Callable[[], str | None]]) -> None:
+def _check_urls(rule: str, marks: list[tuple[Any, ...]], want: dict[str | None, Callable[[], str | None]]) -> None:
     """Only adapters that report the url (5-tuples) are checked; the expected url is looked up lazily."""
     for m in marks:
         if len(m) >= 5 and m[0] in want and m[4] != (expected := want[m[0]]()):
@@ -149,8 +155,8 @@ def _check_marks(
     make_target: Callable[[], Any],
     league: str,
     pair: Sequence[str],
-    ids: Sequence[str],
-    urls: dict[str, Callable[[], str | None]],
+    ids: Sequence[str | None],
+    urls: dict[str | None, Callable[[], str | None]],
     names: tuple[str, str],
 ) -> None:
     """Rules 1 and 2 (named by ``names``) for one verb."""
@@ -180,14 +186,14 @@ def _check_marks(
 
 def _check_height(rule: str, verb: str, heights: Callable[[float, bool], list[float]]) -> None:
     """Rule 4 (named by ``rule``) for one verb. ``heights(h, read)`` calls the verb with height=h on a fresh target
-    and, when ``read``, returns the heights the hook measured: each must be h (within HEIGHT_TOLERANCE). 0 and values
+    and, when ``read``, returns the heights the hook measured: each must be h (within _HEIGHT_TOLERANCE). 0 and values
     above 1 must raise ValueError from the call itself, not later when the marks are read (rendered)."""
     for h in (0.1, 0.25):
         try:
             got = heights(h, True)
         except Exception as e:  # noqa: BLE001
             raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
-        if not got or not all(math.isclose(g, h, rel_tol=HEIGHT_TOLERANCE) for g in got):
+        if not got or not all(math.isclose(g, h, rel_tol=_HEIGHT_TOLERANCE) for g in got):
             _fail(rule, f"height={h} must be the height of every mark {verb} draws, it drew heights {got}")
     for bad in (0, 1.5):
         try:
@@ -219,8 +225,49 @@ def check_adapter_contract(
 ) -> None:
     """Raise an AssertionError naming the broken rule if the adapter breaks the sdvplot adapter contract.
 
-    ``make_axis_target(categories)`` must build a target whose x axis shows those categories, in order. It is
-    required when the adapter supports axis logos (rule 7).
+    The rules, and the test hooks the adapter must expose, are in this module's docstring.
+
+    Args:
+        adapter: The adapter module under test (it exposes ``add_logos``, ``add_wordmarks``, ``add_headshots``,
+            ``axis_logos`` and the ``_drawn_marks`` hook).
+        make_target: Builds a fresh target (a plot) to draw on each time it is called.
+        league: The SDV league key the checks run in.
+        known: Two team ids of ``league`` that have logos.
+        known_wordmarks: Two team ids of ``league`` that have wordmarks.
+        players: Two player ids of ``league`` that have headshots.
+        make_axis_target: ``make_axis_target(categories)`` builds a target whose x axis shows those categories, in
+            order. Required when the adapter supports axis logos (rule 7).
+
+    Returns:
+        None: Returns normally when every rule holds.
+
+    Raises:
+        AssertionError: Naming the broken rule ("rule N: ..."), when the adapter breaks it.
+        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            from sdvplot import matplotlib as adapter
+            from sdvplot.testing import check_adapter_contract
+
+            def make_target():
+                _, ax = plt.subplots()
+                ax.set_xlim(0, 30)
+                ax.set_ylim(-10, 0)
+                return ax
+
+            def make_axis_target(categories):
+                _, ax = plt.subplots()
+                ax.bar(categories, range(1, len(categories) + 1))
+                return ax
+
+            check_adapter_contract(adapter, make_target=make_target, make_axis_target=make_axis_target)
+
+    See Also:
+        Add an adapter: https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter ;
+        sdvplot.testing.check_table_adapter_contract: the harness for table adapters
     """
     import pandas as pd
     import polars as pl
@@ -259,7 +306,7 @@ def check_adapter_contract(
 
     def heights(verb: str, values: Sequence[str]) -> Callable[[float, bool], list[float]]:
         def draw(h: float, read: bool) -> list[float]:
-            _, marks, _ = _draw(adapter, verb, make_target(), adapter.drawn_marks if read else lambda _: [], xs, ys,
+            _, marks, _ = _draw(adapter, verb, make_target(), adapter._drawn_marks if read else lambda _: [], xs, ys,
                                 list(values), league=league, height=h)  # fmt: skip
             return [m[3] for m in marks]
 
@@ -302,14 +349,14 @@ def check_adapter_contract(
     r7 = "rule 7 (axis logos)"
     alpha_draws = {verb: with_alpha(verb, value) for verb, value in
                    (("add_logos", a), ("add_wordmarks", wa), ("add_headshots", p))}  # fmt: skip
-    if getattr(adapter, "SUPPORTS_AXIS_LOGOS", True):
+    if getattr(adapter, "_SUPPORTS_AXIS_LOGOS", True):
         if make_axis_target is None:
             _fail(r7, "make_axis_target is required for an adapter that supports axis logos")
         assert make_axis_target is not None
         make_axis = make_axis_target
 
         def read_axis(drawn: Any) -> Any:
-            return adapter.drawn_axis_marks(drawn, "x")
+            return adapter._drawn_axis_marks(drawn, "x")
 
         try:
             drawn, axis_marks, count = _draw(adapter, "axis_logos", make_axis([a, "XXX", b]), read_axis, "x",
@@ -318,7 +365,7 @@ def check_adapter_contract(
             raise AssertionError(f"{r7}: axis_logos raised {e!r}") from e
         with warnings.catch_warnings():  # counted above: a hook that renders again (plotnine) warns again
             warnings.simplefilter("ignore", SdvplotWarning)
-            shown = list(adapter.visible_axis_labels(drawn, "x"))
+            shown = list(adapter._visible_axis_labels(drawn, "x"))
         if [m[0] for m in axis_marks] != [id_a, id_b]:
             _fail(r7, f"expected axis images for [{id_a!r}, {id_b!r}] in tick order, drew {axis_marks}")
         if not axis_marks[0][1] < axis_marks[1][1]:
@@ -364,8 +411,8 @@ def _table_call(
     drawn = t if out is None else out
     with warnings.catch_warnings(record=True) as rendered:
         warnings.simplefilter("always")
-        cells = [tuple(c) for c in adapter.drawn_cells(drawn)]
-        text = adapter.rendered_html(drawn)
+        cells = [tuple(c) for c in adapter._drawn_cells(drawn)]
+        text = adapter._rendered_html(drawn)
     count = sum(issubclass(w.category, SdvplotWarning) for w in called)
     late = sum(issubclass(w.category, SdvplotWarning) for w in rendered)
     return cells, count, late, text
@@ -377,9 +424,9 @@ def _check_table_verb(
     make_table: Callable[[Any], Any],
     league: str,
     pair: Sequence[str],
-    ids: Sequence[str],
+    ids: Sequence[str | None],
     unknown: str,
-    urls: dict[str, Callable[[], str | None]],
+    urls: dict[str | None, Callable[[], str | None]],
     rules: tuple[str, str, str, str],
 ) -> None:
     """Rules T1-T4 (named by ``rules``) for one verb."""
@@ -426,13 +473,13 @@ def _check_table_verb(
                                  height=24)  # fmt: skip
     if len(cells) != 2 or not all(math.isclose(c[3], 24) for c in cells):
         _fail(r4, f"height=24 must be 24 px on every image, rendered heights {[c[3] for c in cells]}")
-    for bad in (0, -5, "30px"):
+    for bad in (0, -5, 0.5, "30px"):
         try:
             getattr(adapter, verb)(make_table(pl.DataFrame({"team": [a]})), "team", league=league, height=bad)
         except ValueError:
             pass
         else:
-            _fail(r4, f"height={bad!r} must raise ValueError (height is a number of pixels > 0)")
+            _fail(r4, f"height={bad!r} must raise ValueError (height is a number of pixels, at least 1)")
 
 
 def check_table_adapter_contract(
@@ -446,8 +493,37 @@ def check_table_adapter_contract(
 ) -> None:
     """Raise an AssertionError naming the broken rule (T0-T6) if a table adapter breaks the table contract.
 
-    ``make_table(frame)`` builds the adapter's table from a pandas or polars DataFrame (for great_tables: ``GT``).
-    The rules and hooks are in this module's docstring.
+    The rules and the ``_drawn_cells`` and ``_rendered_html`` hooks are in this module's docstring.
+
+    Args:
+        adapter: The table adapter module under test (it exposes ``add_logos``, ``add_wordmarks``, ``add_headshots``
+            and the two hooks).
+        make_table: ``make_table(frame)`` builds the adapter's table from a pandas or polars DataFrame (for
+            great_tables: ``GT``).
+        league: The SDV league key the checks run in.
+        known: Two team ids of ``league`` that have logos.
+        known_wordmarks: Two team ids of ``league`` that have wordmarks.
+        players: Two player ids of ``league`` that have headshots.
+
+    Returns:
+        None: Returns normally when every rule holds.
+
+    Raises:
+        AssertionError: Naming the broken rule ("rule T<n>: ..."), when the adapter breaks it.
+        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot import great_tables as adapter
+            from sdvplot.testing import check_table_adapter_contract
+
+            check_table_adapter_contract(adapter, make_table=GT)
+
+    See Also:
+        Add an adapter: https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter ;
+        sdvplot.testing.check_adapter_contract: the harness for plot adapters
     """
     import polars as pl
 

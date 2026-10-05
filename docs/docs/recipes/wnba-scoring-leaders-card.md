@@ -39,7 +39,7 @@ of the 44-game schedule), and a player traded mid-season is listed with her last
 ```python
 regular = wnba.load_wnba_schedule(seasons=[SEASON]).filter(pl.col("season_type") == 2)
 print(
-    regular.group_by("type_abbreviation").len().sort("type_abbreviation")
+    regular.group_by("type_abbreviation", maintain_order=True).len().sort("type_abbreviation")
 )  # STD, plus one ALLSTAR and one CC (the Cup final)
 standard = regular.filter(pl.col("type_abbreviation") == "STD").select("game_id")
 
@@ -47,7 +47,7 @@ box = wnba.load_wnba_player_boxscore(seasons=[SEASON])
 assert box.schema["game_id"] == standard.schema["game_id"]  # one dtype on both sides of the join key
 box = box.join(standard, on="game_id", how="semi").filter(~pl.col("did_not_play"))
 leaders = (
-    box.group_by("athlete_id", "athlete_display_name")
+    box.group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -118,8 +118,8 @@ def luminance(color):
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
-primary = sdvplot.team_colors(leaders["team"], "wnba")
-secondary = sdvplot.team_colors(leaders["team"], "wnba", which="secondary")
+primary = sdvplot.team_colors("wnba", leaders["team"])
+secondary = sdvplot.team_colors("wnba", leaders["team"], which="secondary")
 leaders = leaders.with_columns(
     color=pl.Series([p if luminance(p) < 0.3 else s for p, s in zip(primary, secondary, strict=True)])
 )
@@ -256,13 +256,10 @@ Image(OUT / "wnba_scoring_1080x1080.png", width=600)
 
 ```text
 wnba_scoring_1080x1080.png (1080, 1080)
-```
-
-```text
 wnba_scoring_top5_1200x675.png (1200, 675)
 ```
 
-![png](wnba-scoring-leaders-card_files/wnba-scoring-leaders-card_13_2.png)
+![png](wnba-scoring-leaders-card_files/wnba-scoring-leaders-card_13_1.png)
 
 </div>
 

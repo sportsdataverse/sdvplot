@@ -15,7 +15,6 @@ import numbers
 import re
 import sys
 import tempfile
-import warnings
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from os import PathLike
@@ -27,7 +26,7 @@ import narwhals as nw
 from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import warn
 from sdvplot.great_tables._marks import _check_gt
 
 _GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
@@ -220,6 +219,15 @@ def gt_save_crop(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_save_crop
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_save_crop(GT(df), "table.png", bg="#FBFAF7", width=900)
 
@@ -274,6 +282,15 @@ def gt_social_crop(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_social_crop
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_social_crop(GT(df), "post.png", aspect_ratio="4:5", bg="#0C0D10")
 
@@ -348,6 +365,9 @@ def gt_save_batch(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_save_batch
+            import polars as pl
+
+            cars = pl.DataFrame({"cyl": [4, 4, 6], "mpg": [22.8, 24.4, 21.0]})
 
             def build(df, value):
                 return GT(df).tab_header(title=f"{value} cylinders")
@@ -403,9 +423,7 @@ def gt_save_batch(
         _pad(img, bg, pad).save(path, quality=_JPEG_QUALITY)
         paths.append(path)
     if failed:
-        warnings.warn(
-            f"{len(failed)} group(s) failed and were skipped:\n" + "\n".join(failed), SdvplotWarning, stacklevel=2
-        )
+        warn(f"{len(failed)} group(s) failed and were skipped:\n" + "\n".join(failed))
     if not quiet:
         print(f"Wrote {len(paths)} file(s) to {dir}", file=sys.stderr)
     return paths
@@ -659,7 +677,14 @@ def gt_grid(
     Example:
         ::
 
+            import polars as pl
+            from great_tables import GT
             from sdvplot.great_tables import gt_grid
+
+            east = GT(pl.DataFrame({"team": ["BUF", "MIA"], "wins": [11, 9]}))
+            west = GT(pl.DataFrame({"team": ["KC", "LV"], "wins": [12, 8]}))
+            north = GT(pl.DataFrame({"team": ["BAL", "CIN"], "wins": [10, 9]}))
+            south = GT(pl.DataFrame({"team": ["HOU", "IND"], "wins": [10, 8]}))
 
             gt_grid([east, west, north, south], ncol=2, title="Division leaders", caption="Data: ESPN")
             gt_grid([east, west], file="divisions.png", bg="#FBFAF7")
@@ -775,7 +800,12 @@ def gt_stack_tables(
     Example:
         ::
 
+            import polars as pl
+            from great_tables import GT
             from sdvplot.great_tables import gt_stack_tables
+
+            offense = GT(pl.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15]}))
+            defense = GT(pl.DataFrame({"team": ["BAL", "SF"], "epa": [-0.1, -0.08]}))
 
             gt_stack_tables([offense, defense], title="Two tables", title_style={"font": "Oswald", "size": 30})
 

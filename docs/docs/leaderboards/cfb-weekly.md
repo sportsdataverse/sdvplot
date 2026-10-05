@@ -66,10 +66,10 @@ regular = played.filter(pl.col("season_type") == "regular")
 week = regular["week"].max()
 left = schedule.filter(~pl.col("completed"))
 if left.filter(pl.col("season_type") == "regular").height:
-    status = f"**Updated {today}:** the {season} season through week {week}."
+    status = f"**Season to date:** the {season} season through week {week}."
     through = f"through week {week}"
 elif left.height:
-    status = f"**Updated {today}:** the {season} regular season is final; bowls and the playoff are under way."
+    status = f"**Postseason:** the {season} regular season is final; bowls and the playoff are under way."
     through = "regular season and finished bowls"
 else:
     status = f"**Offseason:** the final {season} season, bowls and playoff included."
@@ -96,7 +96,7 @@ sides = pl.concat(
 )
 fbs = (
     sides.filter(pl.col("division") == "fbs")
-    .group_by("team_id")
+    .group_by("team_id", maintain_order=True)
     .agg(pl.col("school", "conference").last(), w=pl.col("win").sum(), l=(~pl.col("win")).sum())
     .with_columns(record=pl.format("{}-{}", "w", "l"))
 )
@@ -105,7 +105,7 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Updated 2026-10-05:** the 2026 season through week 5.
+**Season to date:** the 2026 season through week 5.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
@@ -138,8 +138,12 @@ plays = pbp.filter(
 assert plays.schema["pos_team_id"] == fbs.schema["team_id"]
 
 avg = plays["EPA"].mean()
-offense = plays.group_by("pos_team_id").agg(faced_off=pl.col("EPA").mean())  # what each defense faced
-defense = plays.group_by("def_pos_team_id").agg(faced_def=pl.col("EPA").mean())  # what each offense faced
+offense = plays.group_by("pos_team_id", maintain_order=True).agg(
+    faced_off=pl.col("EPA").mean()
+)  # what each defense faced
+defense = plays.group_by("def_pos_team_id", maintain_order=True).agg(
+    faced_def=pl.col("EPA").mean()
+)  # what each offense faced
 adjusted = (  # keep the play order, so the means below sum in the same order every week
     plays.join(defense, on="def_pos_team_id", maintain_order="left").join(
         offense, on="pos_team_id", maintain_order="left"
@@ -149,9 +153,12 @@ adjusted = (  # keep the play order, so the means below sum in the same order ev
     adj_def=pl.col("EPA") - (pl.col("faced_off") - avg),
 )
 ratings = (
-    adjusted.group_by(team_id="pos_team_id")
+    adjusted.group_by(team_id="pos_team_id", maintain_order=True)
     .agg(off=pl.col("adj_off").mean())
-    .join(adjusted.group_by(team_id="def_pos_team_id").agg(dfn=pl.col("adj_def").mean()), on="team_id")
+    .join(
+        adjusted.group_by(team_id="def_pos_team_id", maintain_order=True).agg(dfn=pl.col("adj_def").mean()),
+        on="team_id",
+    )
     .with_columns(net=pl.col("off") - pl.col("dfn"))
     .join(fbs, on="team_id")
     .sort(["net", "team_id"], descending=[True, False])  # a tiebreaker keeps the weekly re-render stable
@@ -239,7 +246,12 @@ to its highest team.
 
 ```python
 by_conf = ratings.filter(pl.col("conference").is_not_null())
-order = by_conf.group_by("conference").agg(pl.col("net").mean()).sort("net", "conference")["conference"].to_list()
+order = (
+    by_conf.group_by("conference", maintain_order=True)
+    .agg(pl.col("net").mean())
+    .sort("net", "conference")["conference"]
+    .to_list()
+)
 
 fig, ax = plt.subplots(figsize=(10, 7.5))
 for row, conf in enumerate(order):

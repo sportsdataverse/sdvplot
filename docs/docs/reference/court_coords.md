@@ -11,6 +11,7 @@ sidebar_position: 15
 ```python
 court_coords(
     data: Any,
+    *,
     x: str = 'x_legacy',
     y: str = 'y_legacy',
 ) -> Any

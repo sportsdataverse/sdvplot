@@ -9,15 +9,17 @@ from __future__ import annotations
 import math
 import numbers
 import os
-import warnings
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, warn
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
 from sdvplot._normalize import norm_value
 from sdvplot._resolve import _resolve_ids, _seasons, _unpack, resolve
+
+if TYPE_CHECKING:
+    from sdvplot._types import HeadshotIdSystem, IdSystem
 
 KINDS = ("logo", "wordmark", "headshot")
 
@@ -41,14 +43,14 @@ def _real(value: Any) -> bool:
 def check_height(height: Any) -> float:
     """``height`` as a float, or ValueError unless it is a fraction of the plot height in (0, 1]."""
     if not _real(height) or not 0 < height <= 1:
-        raise ValueError(f"height is a fraction of the plot height in (0, 1], got {height!r}")
+        raise InputError(f"height is a fraction of the plot height in (0, 1], got {height!r}")
     return float(height)
 
 
 def check_alpha(alpha: Any) -> float:
     """``alpha`` as a float, or ValueError unless it is an opacity in [0, 1]."""
     if not _real(alpha) or not 0 <= alpha <= 1:
-        raise ValueError(f"alpha is an opacity in [0, 1], got {alpha!r}")
+        raise InputError(f"alpha is an opacity in [0, 1], got {alpha!r}")
     return float(alpha)
 
 
@@ -61,7 +63,7 @@ def _missing(value: Any) -> bool:
 def _warn_skipped(reason: str, values: list[Any]) -> None:
     if values:
         shown = ", ".join(repr(v) for v in values[:10]) + (f" and {len(values) - 10} more" if len(values) > 10 else "")
-        warnings.warn(f"skipped {len(values)} point(s) {reason}: {shown}", SdvplotWarning, stacklevel=3)
+        warn(f"skipped {len(values)} point(s) {reason}: {shown}")
 
 
 def place(
@@ -86,7 +88,7 @@ def place(
     """
     skipped = _warn_skipped if _warn else lambda reason, values: None
     if kind not in KINDS:
-        raise ValueError(f"kind must be one of {KINDS}, got {kind!r}")
+        raise InputError(f"kind must be one of {KINDS}, got {kind!r}")
     xs, _ = _unpack(x)
     ys, _ = _unpack(y)
     ts, _ = _unpack(teams)
@@ -102,7 +104,8 @@ def place(
             if _missing(xi) or _missing(yi):
                 missing_xy.append(pid)
                 continue
-            url = headshot_url(pid, league, id_system=id_system)
+            # id_system is a team or a headshot id system by kind; the callee validates it
+            url = headshot_url(pid, league, id_system=cast("HeadshotIdSystem", id_system))
             if url is None:
                 no_image.append(pid)
                 continue
@@ -113,8 +116,8 @@ def place(
         skipped("with no headshot", no_image)
     else:
         seasons = _seasons(season, len(ts))
-        if _warn:
-            ids = resolve(ts, league, season=seasons, id_system=id_system)  # one warning for unknown values
+        if _warn:  # one warning for unknown values
+            ids = resolve(ts, league, season=seasons, id_system=cast("IdSystem", id_system))
         else:
             ids, _ = _resolve_ids(ts, league, seasons, id_system)
         rows: dict[tuple[str, int | None], dict[str, Any] | None] = {}

@@ -34,6 +34,7 @@ def test_an_svg_mark_embeds_as_svg(cache):
     path = cache / "images" / sha[:2] / f"{sha}.svg"
     path.parent.mkdir(parents=True)
     path.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>')
+    _cache._intact.add(str(path.resolve()))  # the sha is made up: count the seeded file as verified
     row = {"sha256": sha, "ext": "svg", "archive_url": "https://cdn/eeee.svg"}
     p = Placement("13", 0, 0, "https://cdn/eeee.svg", 1.0, row)
     assert _web.image_src(p, embed=True).startswith("data:image/svg+xml;base64,")

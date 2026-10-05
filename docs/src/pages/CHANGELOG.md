@@ -2,32 +2,108 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Changelog](#changelog)
-  - [Unreleased](#unreleased)
-    - [Added — core (team identity, colors, logos, cache, adapter contract)](#added--core-team-identity-colors-logos-cache-adapter-contract)
-    - [Added — repository standards](#added--repository-standards)
-    - [Added — matplotlib family](#added--matplotlib-family)
-    - [Added — tables, wave A (marks and team identity)](#added--tables-wave-a-marks-and-team-identity)
-    - [Added — table themes](#added--table-themes)
-    - [Added — tables wave C1 (cell styling and formatting)](#added--tables-wave-c1-cell-styling-and-formatting)
-    - [Added — tables, wave D (image export and composition)](#added--tables-wave-d-image-export-and-composition)
-    - [Added — web family](#added--web-family)
-    - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
-    - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
-    - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
-    - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
-    - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
-    - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
-    - [Documentation](#documentation)
-    - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
-    - [Fixed — content findings (team index, team tiers, surface)](#fixed--content-findings-team-index-team-tiers-surface)
+  - [[Unreleased]](#unreleased)
+    - [Added](#added)
+    - [Changed](#changed)
+    - [Fixed](#fixed)
+  - [[0.1.0] - Unreleased](#010---unreleased)
+    - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
+    - [Added](#added-1)
+      - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
+      - [Repository standards](#repository-standards)
+      - [Matplotlib family](#matplotlib-family)
+      - [Tables, wave A (marks and team identity)](#tables-wave-a-marks-and-team-identity)
+      - [Table themes](#table-themes)
+      - [Tables wave C1 (cell styling and formatting)](#tables-wave-c1-cell-styling-and-formatting)
+      - [Tables, wave D (image export and composition)](#tables-wave-d-image-export-and-composition)
+      - [Web family](#web-family)
+      - [Long tail (pygal, Cartopy, gallery compatibility)](#long-tail-pygal-cartopy-gallery-compatibility)
+      - [Tables wave C2 (legends, layout and annotation)](#tables-wave-c2-legends-layout-and-annotation)
+      - [Parity extras (court coordinates, images by path, reference lines)](#parity-extras-court-coordinates-images-by-path-reference-lines)
+      - [Parity extras (title images, team tiers)](#parity-extras-title-images-team-tiers)
+    - [Changed](#changed-1)
+      - [Documentation](#documentation)
+      - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
+    - [Fixed](#fixed-1)
+      - [Adapter contract follow-ups](#adapter-contract-follow-ups)
+      - [Tables follow-ups](#tables-follow-ups)
+      - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Changelog
 
-## Unreleased
+All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Added — core (team identity, colors, logos, cache, adapter contract)
+## [Unreleased]
+
+### Added
+
+- A deprecation helper, `sdvplot._deprecate` (`deprecate()` and `@deprecated_alias`), and its warning,
+  `sdvplot.SdvplotDeprecationWarning` (a `FutureWarning` and a `SdvplotWarning`), with a deprecation policy in
+  CONTRIBUTING.md: one minor release of warnings before a removal. Nothing is deprecated yet.
+- `sdvplot.typing`: the `Literal` types of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`,
+  `MarkType`), for annotating code that keeps an argument in a variable (`which: Which = "primary"`).
+
+### Changed
+
+- Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
+  the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+
+### Fixed
+
+- A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
+  wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
+  NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the
+  last is next year. `logo_url("OAK", "nfl", season=1900)` and `resolve(..., season=20)` used to resolve silently. A
+  split season such as `"2020-21"` gets a hint (pass the ending year), and a season of the wrong type (a `pd.Timestamp`)
+  is a `TypeError` that names `season` rather than the team values.
+- A `variant` that no mark in the archive has (a typo, or not a string) is an `InputError` listing the league's
+  variants; it used to fall back to the default mark without a word. A variant the team lacks still falls back, as
+  before.
+- Warnings point at the caller's line: they walk out of sdvplot's frames instead of using fixed `stacklevel`s, which
+  named `_colors.py`, `_placement.py` and other sdvplot files whenever the call went through more than one function.
+- A misspelled column name is the same `ValueError` on pandas and polars (`column(s) ['teamz'] not in the table; its
+  columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
+  `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
+  column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+
+## [0.1.0] - Unreleased
+
+First release. The date is set when v0.1.0 is tagged.
+
+### Migrating from the git pre-release
+
+0.1.0 freezes the public API. Code written against a git install from before it needs these changes; each old call now
+fails loudly, with the message shown:
+
+- `palette("nfl", "secondary")` is `palette("nfl", which="secondary")`: `palette` is `palette(league, teams=None, *,
+  which="primary", season=None)`, as sdvplotR's `sdv_color_palette(sport, teams, type)`. The old call raises
+  `InputError: 'secondary' is a color slot, not a team; pass it by keyword: palette(league, teams=...,
+  which="secondary")`.
+- `team_colors(teams, "nfl")` is `team_colors("nfl", teams)`: the league comes first, as in sdvplotR's
+  `sdv_team_colors(sport, team, type)`. With a list or Series of teams the old order raises `InputError: league must be
+  a league key such as 'nfl', got list; team_colors and palette take the league first: team_colors(league, teams)`;
+  with one team, `InputError: unknown league 'KC'; known leagues: [...]`.
+- Secondary arguments are keyword-only: `season`, `id_system` and `strict` on `resolve`; `season`, `variant`,
+  `mark_type` and `size` on `logo_url` and `logo_image`; `season` on `marks`; `n` on `suggest`; `id_system` on
+  `headshot_url`; `x` and `y` on `court_coords`. `resolve(v, "nfl", 2020)` raises `TypeError: resolve() takes 2
+  positional arguments but 3 were given`; write `resolve(v, "nfl", season=2020)`.
+- Each public submodule exports only its `__all__`, and `dir()` shows only that. Helpers and the adapter test hooks are
+  underscored (`_drawn_marks`, `_drawn_axis_marks`, `_visible_axis_labels`, `_SUPPORTS_AXIS_LOGOS`,
+  `_drawn_title_images`, great_tables' `_drawn_cells` and `_rendered_html`), so `sdvplot.matplotlib.draw_placements`
+  raises `AttributeError: module 'sdvplot.matplotlib' has no attribute 'draw_placements'`.
+- A table's `height` is pixels: `gt_sdv_logos(gt, "team", league="nfl", height=0.1)` (and the front door on a `GT`)
+  raises `InputError: height is the image height in pixels for a table (such as 30), got 0.1; a fraction of the plot
+  height is the unit for plots, not tables` instead of drawing a 0.1 px image.
+- New errors, each still the builtin you may already catch: `SdvplotError` is the base of them all; `InputError` (a
+  `ValueError`) is raised by the shared argument checks (league, `which`, `id_system`, `mark_type`, height, alpha);
+  `UnsupportedTargetError` (a `TypeError`) by an adapter given the wrong kind of object or asked for axis logos it
+  cannot draw; `UnsafeDownloadError` (an `OSError`) and `UnsafeCachePathError` (a `ValueError`) are exported.
+
+### Added
+
+#### Core (team identity, colors, logos, cache, adapter contract)
 
 - Team resolver and id systems: `resolve()` maps abbreviations, names and provider ids (ESPN, NHL, nflverse, MLB, NBA, HockeyTech, NCAA, PFF, Cricinfo, CFBD, Baseball-Reference, FanGraphs, sdvplotR) to a stable string `team_id`, with a documented `PRIORITY` order and `nhl_id` available only through an explicit `id_system`.
 - `suggest()` for near-miss candidates when a value does not resolve.
@@ -39,14 +115,14 @@
 - A bundled index of 5,879 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
 - sdvplotR parity: 99.8% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,232 of 4,241 checked).
 
-### Added — repository standards
+#### Repository standards
 
 - A Docusaurus docs site at <https://sdvplot.sportsdataverse.org> with a generated API reference and rendered tutorials.
 - Example notebooks, executed by `tools/render_notebooks.py` into the tutorials.
 - CI, a release workflow, and pre-commit hooks, in sdv-py's layout.
 - `CONTRIBUTING.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, issue and pull-request templates, and sdv-py's dotfiles.
 
-### Added — matplotlib family
+#### Matplotlib family
 
 - `add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` work on matplotlib Axes, one-Axes Figures and seaborn
   grids (`sdvplot.matplotlib`); `height` is a fraction of the Axes height at any dpi or figure size.
@@ -56,7 +132,7 @@
 - plottable `logo_column` and `headshot_column` (`sdvplot.plottable`, new `[plottable]` extra).
 - The adapter contract (`sdvplot.testing`) now covers wordmarks, headshots, axis logos and alpha (rules 0-8).
 
-### Added — tables, wave A (marks and team identity)
+#### Tables, wave A (marks and team identity)
 
 - `sdvplot.great_tables`, ported from sdvplotR with `league=` for `sport=`:
   - `gt_sdv_logos`, `gt_sdv_wordmarks` and `gt_sdv_headshots` put marks in body, stub or row-group cells, and
@@ -73,7 +149,7 @@
 - `docs/PARITY_TABLES.md`: how each sdvplotR table function maps to sdvplot.
 - The `[tables]` extra now needs great_tables 1.0 or later.
 
-### Added — table themes
+#### Table themes
 
 - The 18 sdvplotR table themes for great_tables, with sdvplotR's names, arguments and defaults
   (`sdvplot.great_tables`): `gt_theme_almanac`, `gt_theme_athletic`, `gt_theme_booktabs`, `gt_theme_broadsheet`,
@@ -84,7 +160,7 @@
 - `gt_theme_preview()`: the same rows in every theme, as `{theme name: GT}`.
 - Theme fonts load every weight from Google Fonts, over gt's fallback stack.
 
-### Added — tables wave C1 (cell styling and formatting)
+#### Tables wave C1 (cell styling and formatting)
 
 - 17 sdvplotR cell helpers in `sdvplot.great_tables`, with R's names and arguments: `gt_538_caption`,
   `gt_bold_rows`, `gt_border_bars_bottom`, `gt_border_bars_top`, `gt_border_grid`, `gt_color_pills`,
@@ -94,7 +170,7 @@
 - `gt_color_pills` and `gt_color_ranks` record their color scale for `gt_legend_continuous`.
 - `docs/PARITY_TABLES.md` lists where they differ from R.
 
-### Added — tables, wave D (image export and composition)
+#### Tables, wave D (image export and composition)
 
 - `sdvplot.great_tables`: `gt_save_crop`, `gt_social_crop` and `gt_save_batch` save tables as trimmed, padded images
   (great_tables' `GT.gtsave`, headless Chrome); `gt_grid` and `gt_stack_tables` compose several tables into one HTML
@@ -102,7 +178,7 @@
 - `[tables]` names `htmltools` and `nokap`, which great_tables 1.0 already installs. Saving needs Chrome or Chromium
   (set `CHROME_PATH` for a non-standard install); no selenium.
 
-### Added — web family
+#### Web family
 
 - `add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` work on Plotly figures (`sdvplot.plotly`; sdvplot
   pins the axis ranges so `height` is a fraction of the plot area) and Altair charts (`sdvplot.altair`, plus the
@@ -112,7 +188,7 @@
 - `embed=True` inlines the images as data URIs, for HTML that renders offline and for static export.
 - The `[holoviews]` extra now installs Bokeh 3 as well.
 
-### Added — long tail (pygal, Cartopy, gallery compatibility)
+#### Long tail (pygal, Cartopy, gallery compatibility)
 
 - pygal: `add_logos`, `add_wordmarks` and `add_headshots` on XY-family charts (`XY`, `DateTimeLine`, `DateLine`,
   `TimeLine`, `TimeDeltaLine`), drawn in every render; `embed=True` makes SVG and PNG exports work offline;
@@ -127,7 +203,7 @@
   colors, and the test that proves it (`tests/test_compat_*.py`, new `compat` dependency group); a watch item for
   Reflex XY image marks, re-checked at each release.
 
-### Added — tables wave C2 (legends, layout and annotation)
+#### Tables wave C2 (legends, layout and annotation)
 
 - `sdvplot.great_tables` gains sdvplotR's legend, layout and annotation helpers, with sdvplotR's names and arguments
   on pandas or polars data: `gt_legend_continuous`, `gt_legend_discrete`, `gt_marginalia`, `gt_outliers`,
@@ -137,7 +213,62 @@
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
 
-### Fixed — adapter contract follow-ups
+#### Parity extras (court coordinates, images by path, reference lines)
+
+- `sdvplot.court_coords()`: stats.nba.com / stats.wnba.com legacy shot locations (`LOC_X`/`LOC_Y`, `x_legacy`/`y_legacy`)
+  to the court frame sportypy and `surface("nba")` draw, on pandas or polars, the port of sdvplotR's
+  `sdv_court_coords()`; bit-identical to it on real `shotchartdetail` rows.
+- `sdvplot.matplotlib.add_images()` and `sdvplot.plotnine.geom_from_path()`: any image by local path or URL at (x, y),
+  sized like the logo verbs, the port of ggpath's `geom_from_path()`; unreadable images are skipped with one warning.
+- `sdvplot.plotnine.geom_mean_lines()` and `geom_median_lines()`: per-panel reference lines, the ports of ggpath's,
+  matching its values on real data.
+- `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
+  exports the sdvplotR and ggpath oracles the parity tests read.
+
+#### Parity extras (title images, team tiers)
+
+- `title_image()` in `sdvplot.matplotlib` (Axes title or Figure suptitle) and `sdvplot.plotnine` (added with `+`):
+  sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
+  unknown team warns once and keeps the title) or any image by URL or local path (one that cannot be read warns once
+  and keeps the title); `height` is in points, `side` is `"left"` or `"right"`, and the image and title are aligned
+  together as the title is, through later `set_title` calls. A second call on the same title replaces the image.
+- `team_tiers()` in `sdvplot.matplotlib` (a Figure) and `sdvplot.plotnine` (a ggplot): sdvplotR's `sdv_team_tiers()`
+  tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
+  `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
+  (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
+  panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
+
+### Changed
+
+#### Documentation
+
+- An automation example, `examples/automation/sdvplot_social.py`: social game-day graphics from live ESPN data through
+  sportsdataverse-py, for the NFL, college football, NBA, WNBA, MLB and NHL. `leaderboard` makes a season's leaders as
+  a great_tables table with headshots and logos; `gameday` makes final-score cards and a player-of-the-game card in
+  matplotlib. Images are 1080 x 1080 or 1200 x 675, in team colors with readable ink. With no games or leaders yet it
+  falls back to the most recent date or season and says so in the caption. Each run writes a manifest of images, alt
+  text, captions and hashtags; `post` publishes it to Bluesky over plain `requests` (a dry-run unless `--post`),
+  posting only fresh posts and each one once (a posted-ledger), retrying what is safe to retry.
+  With it: a GitHub Actions template to copy (`examples/automation/workflows/sdvplot-social.yml`), a weekly dry-run in
+  sdvplot's CI (`.github/workflows/automation-example.yml`, which never posts), offline tests
+  (`tests/test_automation_example.py`) and the docs page *Social graphics* (`docs/docs/automation/index.md`).
+
+#### Documentation — example notebooks by section, interactive outputs and the gallery
+
+- `tools/render_notebooks.py` renders every notebook under `examples/notebooks/`, its folder picking the section: the
+  top level is "Getting started", then `leagues/` (Tutorials by league), `cookbooks/`, `recipes/` and
+  `leaderboards/`, each a sidebar category, beside the hand-written Automation guide. A notebook's
+  `metadata["sdvplot"]` (`label`, `position`, `description`, optional per-cell `timeout`) replaces the renderer's
+  hard-coded list, and `--only` takes a path such as `leagues/nfl`. A deleted notebook's page and outputs go with it.
+- Interactive outputs (Plotly, Vega-Lite, Altair, great_tables, folium, Bokeh, HoloViews, reactable widgets) render
+  as standalone pages under `docs/static/outputs/`, shown in iframes that a site client module sizes to their content.
+- A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
+  writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
+- The weekly `live-tests-cron` render executes every notebook and publishes every generated path.
+
+### Fixed
+
+#### Adapter contract follow-ups
 
 - plotnine: a faceted plot warns once per render for each reason points are skipped (an unknown team, a missing
   mark), naming the values of every panel, instead of once per panel; `axis_logos` on a faceted plot likewise warns
@@ -161,7 +292,7 @@
   `drawn_axis_marks` now returns `(team_id, tick position, height)`. `check_table_adapter_contract` likewise requires
   no warning for known values and exactly one for all-unknown input.
 
-### Fixed — tables follow-ups
+#### Tables follow-ups
 
 - Muted text (`gt_theme_sdv_team`'s subtitle, the `gt_legend_discrete` subtitle) blends at sdvplotR's exact weights,
   as the table themes already did; a few colors were one step off in a channel.
@@ -195,58 +326,7 @@
 - A translucent table background (`tab_options(table_background_color="#111111CC")`) is read as the color it shows
   over the page when `gt_legend_discrete` and `gt_marginalia` pick their ink, so a near-black one gets light text.
 
-### Added — parity extras (court coordinates, images by path, reference lines)
-
-- `sdvplot.court_coords()`: stats.nba.com / stats.wnba.com legacy shot locations (`LOC_X`/`LOC_Y`, `x_legacy`/`y_legacy`)
-  to the court frame sportypy and `surface("nba")` draw, on pandas or polars, the port of sdvplotR's
-  `sdv_court_coords()`; bit-identical to it on real `shotchartdetail` rows.
-- `sdvplot.matplotlib.add_images()` and `sdvplot.plotnine.geom_from_path()`: any image by local path or URL at (x, y),
-  sized like the logo verbs, the port of ggpath's `geom_from_path()`; unreadable images are skipped with one warning.
-- `sdvplot.plotnine.geom_mean_lines()` and `geom_median_lines()`: per-panel reference lines, the ports of ggpath's,
-  matching its values on real data.
-- `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
-  exports the sdvplotR and ggpath oracles the parity tests read.
-
-### Added — parity extras (title images, team tiers)
-
-- `title_image()` in `sdvplot.matplotlib` (Axes title or Figure suptitle) and `sdvplot.plotnine` (added with `+`):
-  sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
-  unknown team warns once and keeps the title) or any image by URL or local path (one that cannot be read warns once
-  and keeps the title); `height` is in points, `side` is `"left"` or `"right"`, and the image and title are aligned
-  together as the title is, through later `set_title` calls. A second call on the same title replaces the image.
-- `team_tiers()` in `sdvplot.matplotlib` (a Figure) and `sdvplot.plotnine` (a ggplot): sdvplotR's `sdv_team_tiers()`
-  tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
-  `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
-  (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
-  panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
-
-### Documentation
-
-- An automation example, `examples/automation/sdvplot_social.py`: social game-day graphics from live ESPN data through
-  sportsdataverse-py, for the NFL, college football, NBA, WNBA, MLB and NHL. `leaderboard` makes a season's leaders as
-  a great_tables table with headshots and logos; `gameday` makes final-score cards and a player-of-the-game card in
-  matplotlib. Images are 1080 x 1080 or 1200 x 675, in team colors with readable ink. With no games or leaders yet it
-  falls back to the most recent date or season and says so in the caption. Each run writes a manifest of images, alt
-  text, captions and hashtags; `post` publishes it to Bluesky over plain `requests` (a dry-run unless `--post`),
-  posting only fresh posts and each one once (a posted-ledger), retrying what is safe to retry.
-  With it: a GitHub Actions template to copy (`examples/automation/workflows/sdvplot-social.yml`), a weekly dry-run in
-  sdvplot's CI (`.github/workflows/automation-example.yml`, which never posts), offline tests
-  (`tests/test_automation_example.py`) and the docs page *Social graphics* (`docs/docs/automation/index.md`).
-
-### Documentation — example notebooks by section, interactive outputs and the gallery
-
-- `tools/render_notebooks.py` renders every notebook under `examples/notebooks/`, its folder picking the section: the
-  top level is "Getting started", then `leagues/` (Tutorials by league), `cookbooks/`, `recipes/` and
-  `leaderboards/`, each a sidebar category, beside the hand-written Automation guide. A notebook's
-  `metadata["sdvplot"]` (`label`, `position`, `description`, optional per-cell `timeout`) replaces the renderer's
-  hard-coded list, and `--only` takes a path such as `leagues/nfl`. A deleted notebook's page and outputs go with it.
-- Interactive outputs (Plotly, Vega-Lite, Altair, great_tables, folium, Bokeh, HoloViews, reactable widgets) render
-  as standalone pages under `docs/static/outputs/`, shown in iframes that a site client module sizes to their content.
-- A gallery page shows every figure tagged `gallery` in a notebook as a thumbnail linked to its example; each render
-  writes a per-notebook sidecar, so a partial render keeps the gallery whole (`--gallery-only` rebuilds it).
-- The weekly `live-tests-cron` render executes every notebook and publishes every generated path.
-
-### Fixed — content findings (team index, team tiers, surface)
+#### Content findings (team index, team tiers, surface)
 
 - MLB historical codes are season-dated and reach their franchise. A new snapshot, `data-raw/mlbstats_history.csv`
   (the MLB Stats API's teams for every season since 1901; its team ids are franchise ids), dates each abbreviation
@@ -300,3 +380,6 @@
   `gt_cutline`, `gt_group_stripes`, `gt_marginalia`, `gt_snake`, `gt_tiers`, `gt_outliers`, `gt_bold_rows`,
   `gt_color_results`, `gt_highlight_cells`, the team-mark row groups and the themes) is now inline `!important`, through
   one helper.
+
+[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/sportsdataverse/sdvplot/releases/tag/v0.1.0

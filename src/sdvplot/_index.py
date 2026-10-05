@@ -2,35 +2,57 @@
 
 from __future__ import annotations
 
+import datetime
 import functools
 from collections.abc import Callable
 from importlib import resources
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import polars as pl
+from sdvplot._errors import InputError
 
-TEAM_SCHEMA: dict[str, pl.DataType] = {
-    "league": pl.String(),
-    "team_id": pl.String(),
-    "abbr": pl.String(),
-    "name": pl.String(),
-    "short_name": pl.String(),
-    "location": pl.String(),
-    "program": pl.String(),
-    "conference_id": pl.String(),
-    "conference": pl.String(),
-    "color_primary": pl.String(),
-    "color_secondary": pl.String(),
-    "color_source": pl.String(),
-}
-ALIAS_SCHEMA: dict[str, pl.DataType] = {
-    "league": pl.String(),
-    "id_system": pl.String(),
-    "value": pl.String(),
-    "team_id": pl.String(),
-    "valid_from": pl.Int32(),
-    "valid_to": pl.Int32(),
-}
+if TYPE_CHECKING:
+    import polars as pl
+else:
+    from sdvplot._lazy import pl
+
+
+def _team_schema() -> dict[str, pl.DataType]:
+    return {
+        "league": pl.String(),
+        "team_id": pl.String(),
+        "abbr": pl.String(),
+        "name": pl.String(),
+        "short_name": pl.String(),
+        "location": pl.String(),
+        "program": pl.String(),
+        "conference_id": pl.String(),
+        "conference": pl.String(),
+        "color_primary": pl.String(),
+        "color_secondary": pl.String(),
+        "color_source": pl.String(),
+    }
+
+
+def _alias_schema() -> dict[str, pl.DataType]:
+    return {
+        "league": pl.String(),
+        "id_system": pl.String(),
+        "value": pl.String(),
+        "team_id": pl.String(),
+        "valid_from": pl.Int32(),
+        "valid_to": pl.Int32(),
+    }
+
+
+def __getattr__(name: str) -> dict[str, pl.DataType]:
+    # TEAM_SCHEMA / ALIAS_SCHEMA stay importable (tests, tools/build_index.py) but are built on first use
+    if name == "TEAM_SCHEMA":
+        return _team_schema()
+    if name == "ALIAS_SCHEMA":
+        return _alias_schema()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 _RELOAD_HOOKS: list[Callable[[], None]] = []
 
@@ -52,9 +74,47 @@ def _leagues(directory: str) -> frozenset[str]:
 
 def check_league(league: str) -> None:
     """The one unknown-league error every public function raises."""
+    if not isinstance(league, str):  # a list or Series here is a pre-0.1 call: team_colors(teams, league)
+        raise InputError(
+            f"league must be a league key such as 'nfl', got {type(league).__name__}; team_colors and palette take "
+            "the league first: team_colors(league, teams)"
+        )
     known = _leagues(str(data_dir()))
     if league not in known:
-        raise ValueError(f"unknown league {league!r}; known leagues: {sorted(known)}")
+        raise InputError(f"unknown league {league!r}; known leagues: {sorted(known)}")
+
+
+@functools.cache
+def _season_table() -> dict[str | None, tuple[int, int]]:
+    """league -> (first, last) season a season argument may name, and None -> the bounds for any league; built once per
+    index load. The first season is the earliest the aliases date (MLB's 1871 for the index), and a league's own where
+    its aliases close a range (``valid_to``), so its history is dated: the NFL's 1920, the WNBA's 1997, the XFL's 2020.
+    Aliases that only open a range (the NHL's 2026 renames) say nothing about where a league starts, so such a league
+    keeps the index's floor. The last season is the later of the latest one the aliases name and next year, for every
+    league (an older index still takes this season and the next)."""
+    a = alias_table()
+    lo = a.select(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min())).item()
+    hi = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+    if lo is None or hi is None:
+        return {}
+    last = max(int(hi), datetime.date.today().year + 1)
+    out: dict[str | None, tuple[int, int]] = {None: (int(lo), last)}
+    dated = set(a.filter(pl.col("valid_to").is_not_null())["league"].to_list())
+    firsts = (
+        a.filter(pl.col("league").is_in(sorted(dated)))
+        .group_by("league")
+        .agg(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min()).alias("first"))
+    )
+    for league, first in firsts.iter_rows():
+        out[league] = (int(first), last)
+    return out
+
+
+def season_bounds(league: str | None = None) -> tuple[int, int] | None:
+    """The first and last season a season argument may name for ``league`` (None: any league), or None when no alias
+    is dated; see ``_season_table``."""
+    table = _season_table()
+    return table.get(league, table.get(None))
 
 
 def on_reload(fn: Callable[[], None]) -> None:
@@ -66,6 +126,7 @@ def reload_index() -> None:
     """Forget the loaded index and everything derived from it."""
     _read.cache_clear()
     _leagues.cache_clear()
+    _season_table.cache_clear()
     for fn in _RELOAD_HOOKS:
         fn()
 

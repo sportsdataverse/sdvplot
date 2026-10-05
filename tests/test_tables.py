@@ -17,6 +17,24 @@ def test_check_px_rejects_anything_else(bad):
         check_px(bad)
 
 
+@pytest.mark.parametrize("fraction", [0.1, 0.5, 0.999])
+def test_a_fractional_table_height_is_an_error_that_names_the_unit(fraction):
+    # a plot's height is a fraction of the plot; on a table 0.1 would draw a 0.1 px image
+    with pytest.raises(ValueError, match=r"pixels for a table \(such as 30\).*fraction of the plot height"):
+        check_px(fraction)
+
+
+@pytest.mark.parametrize("verb", ["add_logos", "add_wordmarks", "add_headshots"])
+def test_the_front_door_rejects_a_fractional_height_on_a_table(manifest, verb):
+    pl = pytest.importorskip("polars")
+    great_tables = pytest.importorskip("great_tables")
+    import sdvplot
+
+    gt = great_tables.GT(pl.DataFrame({"team": ["LV"]}))
+    with pytest.raises(ValueError, match="pixels for a table"):
+        getattr(sdvplot, verb)(gt, "team", league="nfl", height=0.1)
+
+
 def test_img_tag_escapes_and_marks_the_team():
     tag = img_tag('https://cdn/a.png?x="1"', 24, "Texas A&M", team="245")
     assert tag == (

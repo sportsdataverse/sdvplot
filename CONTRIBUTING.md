@@ -11,6 +11,7 @@
   - [Code standards for new modules](#code-standards-for-new-modules)
   - [Notebooks](#notebooks)
   - [Changelog](#changelog)
+  - [Deprecation policy](#deprecation-policy)
   - [Commits](#commits)
   - [Documentation and the docs site](#documentation-and-the-docs-site)
   - [Release](#release)
@@ -23,6 +24,9 @@
 counterpart to the R package [sdvplotR](https://sdvplotR.sportsdataverse.org/). See the [README](README.md) for an
 overview. This document captures the conventions to follow when changing this repository; it mirrors
 [sdv-py's](https://github.com/sportsdataverse/sportsdataverse-py/blob/main/CONTRIBUTING.md).
+
+Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report a vulnerability privately, as
+[SECURITY.md](SECURITY.md) describes, not in a public issue.
 
 ## Development setup
 
@@ -102,7 +106,10 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
   sections, and link its reference page. The `uv run python tools/gen_docs.py --check` gate enforces the standard
   and fails when the committed reference differs from the docstrings.
 - Warn instead of raising for an unresolved team (`SdvplotWarning`), unless the caller passed `strict=True`.
-- New adapters satisfy the contract in `sdvplot.testing` (`check_adapter_contract`).
+- New adapters satisfy the contract in `sdvplot.testing` (`check_adapter_contract`). The step-by-step checklist, from
+  the module to the changelog entry, is the docs page
+  [Add an adapter](https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter)
+  (`docs/docs/adapters/add-an-adapter.md`).
 
 ## Notebooks
 
@@ -120,8 +127,24 @@ pages come from `tools/render_notebooks.py`.
 
 ## Changelog
 
-Every user-visible change gets an entry under `## Unreleased` in `CHANGELOG.md`, in sdv-py's
-`### Added|Changed|Fixed — <what>` format.
+Every user-visible change gets an entry under `## [Unreleased]` in `CHANGELOG.md`, in
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) form: a `### Added`, `### Changed` or `### Fixed` group, with
+a `####` topic heading when the entry needs one.
+
+## Deprecation policy
+
+From 0.1.0, a public name, argument or behaviour is not removed or renamed without a deprecation first:
+
+- Keep the old form working and have it warn through `sdvplot._deprecate`: `deprecate(old, replacement=...,
+  removal=...)` from inside the old function or branch, or `@deprecated_alias(removal="0.4.0", old="new")` for a renamed
+  keyword argument. Both raise `SdvplotDeprecationWarning`, a `FutureWarning` (shown by default) and a
+  `SdvplotWarning`, at the caller's line, naming the replacement and the release that removes the old form.
+- Warn for at least one minor release before removing: deprecated in 0.3.0, removed no earlier than 0.4.0. From 1.0,
+  removals wait for the next major release.
+- Each deprecation gets a test that the old form still works and warns once, a `### Deprecated` changelog entry when it
+  starts, and a `### Removed` entry when it goes.
+- Before 1.0, a change that cannot keep the old form working (a security fix, say) may break without a deprecation; its
+  changelog entry says how to migrate.
 
 ## Commits
 
@@ -146,7 +169,7 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
    custom glyph, open an issue for a Reflex XY adapter; either way, update the version and date checked there.
 2. Bump `version` in `pyproject.toml`, run `uv lock`, and commit `uv.lock` with it (the `drift` workflow fails on a
    stale lock).
-3. In `CHANGELOG.md`, move the `## Unreleased` entries under a new `## X.Y.Z Release: <date>` heading directly below
-   an emptied `## Unreleased`, which always stays at the top (a test asserts it).
+3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
+   an emptied `## [Unreleased]`, which always stays at the top (a test asserts it).
 4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
 5. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates.

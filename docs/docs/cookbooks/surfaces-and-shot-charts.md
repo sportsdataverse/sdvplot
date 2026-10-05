@@ -15,8 +15,6 @@ basketball (hoopR, wehoop and the stats-API shot files the SportsDataverse publi
 (fastRhockey) and the Premier League (ESPN), all through sportsdataverse-py; nothing calls stats.nba.com.
 
 ```python
-import logging
-
 import matplotlib.pyplot as plt
 import polars as pl
 import sportsdataverse.mbb as mbb
@@ -29,9 +27,6 @@ import sportsdataverse.wnba as wnba
 
 import sdvplot
 
-# sportypy's football fields ask for the Clarendon font; where it is not installed, matplotlib logs one line per
-# yard number and draws them in its default font. Quiet that log.
-logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 NFL_SEASON = 2025  # nflverse names a season by the year it starts
 SEASON = 2026  # the 2026 WNBA season and the 2025-26 NBA, NHL and college basketball season
 ```
@@ -103,7 +98,7 @@ pros, the highest adjusted efficiency margin in college.
 ```python
 def most_wins(box: pl.DataFrame) -> str:
     regular = box.filter(pl.col("season_type") == 2)
-    wins = regular.group_by("team_abbreviation").agg(pl.col("team_winner").sum())
+    wins = regular.group_by("team_abbreviation", maintain_order=True).agg(pl.col("team_winner").sum())
     return wins.sort(["team_winner", "team_abbreviation"], descending=[True, False])["team_abbreviation"][0]
 
 
@@ -151,7 +146,7 @@ fig, ax = plt.subplots(figsize=(7.5, 7))
 sdvplot.surface("nba", "DEN", ax=ax, display_range="defense")
 ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=14, linewidths=0.8, color="#3d3d3d", alpha=0.6,
            zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
-ax.scatter(made["court_x"], made["court_y"], s=18, color=sdvplot.team_colors("DEN", "nba", "secondary"),
+ax.scatter(made["court_x"], made["court_y"], s=18, color=sdvplot.team_colors("nba", "DEN", which="secondary"),
            edgecolors="black", linewidths=0.4, zorder=21, label=f"Made ({made.height})")  # fmt: skip
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
 ax.set_title(f"Nikola Jokic, every field goal attempt, 2025-26 regular season\n"
@@ -186,7 +181,7 @@ clark = sdvplot.court_coords(
         (pl.col("person_id") == 1642286) & pl.col("game_id").str.starts_with("102")  # 102: regular season
     )
 ).with_columns(three=pl.col("shot_value") == 3)
-colors = {"Made": sdvplot.team_colors("IND", "wnba"), "Missed": "#9e9e9e"}
+colors = {"Made": sdvplot.team_colors("wnba", "IND"), "Missed": "#9e9e9e"}
 
 fig, ax = plt.subplots(figsize=(7.5, 7))
 sdvplot.surface("wnba", "IND", ax=ax, display_range="defense")
@@ -224,7 +219,7 @@ fig, ax = plt.subplots(figsize=(7, 7))
 sdvplot.surface("nba", "LAL", ax=ax, rotation=90, display_range="defense")
 ax.scatter(missed["x"], missed["y"], marker="x", s=12, linewidths=0.7, color="#555555", alpha=0.5, zorder=20,
            label=f"Missed ({missed.height})")  # fmt: skip
-ax.scatter(made["x"], made["y"], s=16, color=sdvplot.team_colors("LAL", "nba", "secondary"), edgecolors="black",
+ax.scatter(made["x"], made["y"], s=16, color=sdvplot.team_colors("nba", "LAL", which="secondary"), edgecolors="black",
            linewidths=0.4, zorder=21, label=f"Made ({made.height})")  # fmt: skip
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.0), ncols=2, frameon=False)
 ax.set_title(f"Luka Doncic's {luka.height:,} shots, 2025-26 regular season", loc="left", fontweight="bold")
@@ -261,7 +256,7 @@ fig, ax = plt.subplots(figsize=(7, 7))
 sdvplot.surface("nhl", "COL", ax=ax, display_range="offense")
 for pp, label, marker in [(False, "Even strength and other", "o"), (True, "Power play", "D")]:
     g = goals.filter(pl.col("power_play") == pp)
-    ax.scatter(g["x"], g["y"], marker=marker, s=60, color=sdvplot.team_colors("COL", "nhl"),
+    ax.scatter(g["x"], g["y"], marker=marker, s=60, color=sdvplot.team_colors("nhl", "COL"),
                edgecolors="black", alpha=0.85, zorder=30, label=f"{label} ({g.height})")  # fmt: skip
 ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
 ax.set_title(f"Nathan MacKinnon's {goals.height} goals, 2025-26 regular season", loc="left", fontweight="bold")

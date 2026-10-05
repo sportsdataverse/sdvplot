@@ -45,7 +45,7 @@ def test_logos_sit_at_longitude_latitude_on_a_projected_map(mark_images):
     ax = _map(ccrs.Robinson())
     lons, lats = zip(LAS_VEGAS, LOS_ANGELES, strict=True)
     sdvplot.add_logos(ax, lons, lats, ["LV", "LAR"], league="nfl", height=0.1, transform=ccrs.PlateCarree())
-    assert [m[:3] for m in smpl.drawn_marks(ax)] == [("13", *LAS_VEGAS), ("14", *LOS_ANGELES)]
+    assert [m[:3] for m in smpl._drawn_marks(ax)] == [("13", *LAS_VEGAS), ("14", *LOS_ANGELES)]
     ax.figure.canvas.draw()
     renderer = ax.figure.canvas.get_renderer()
     for box, (lon, lat) in zip(ax.artists, (LAS_VEGAS, LOS_ANGELES), strict=True):
@@ -59,7 +59,7 @@ def test_wordmarks_and_headshots_take_the_transform_too(mark_images, headshot_im
     ax = _map(ccrs.PlateCarree())
     sdvplot.add_wordmarks(ax, [LAS_VEGAS[0]], [LAS_VEGAS[1]], ["LV"], league="nfl", transform=ccrs.PlateCarree())
     sdvplot.add_headshots(ax, [LONDON[0]], [LONDON[1]], ["3139477"], league="nfl", transform=ccrs.PlateCarree())
-    assert [m[0] for m in smpl.drawn_marks(ax)] == ["13", "3139477"]
+    assert [m[0] for m in smpl._drawn_marks(ax)] == ["13", "3139477"]
 
 
 def test_a_geoaxes_without_transform_names_the_fix(mark_images):

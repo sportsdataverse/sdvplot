@@ -81,7 +81,7 @@ games = games.join(opponent, on=["game_id", "opponent_team_id"]).with_columns(
 )
 
 ratings = (
-    games.group_by("team", "team_abbreviation")
+    games.group_by("team", "team_abbreviation", maintain_order=True)
     .agg(
         pace=pl.col("game_poss").mean(),
         ortg=100 * pl.col("team_score").sum() / pl.col("game_poss").sum(),
@@ -154,7 +154,7 @@ labels can be the data's own ESPN abbreviations (`GS`, `NO`, `UTAH`).
 
 ```python
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(ratings["team_abbreviation"], ratings["net"], color=sdvplot.team_colors(ratings["team"], "nba", season=SEASON))
+ax.bar(ratings["team_abbreviation"], ratings["net"], color=sdvplot.team_colors("nba", ratings["team"], season=SEASON))
 ax.axhline(0, color="black", linewidth=0.8)
 ax.margins(x=0.01)
 ax.set_ylabel("Net rating (per 100 possessions)")
@@ -180,14 +180,18 @@ color with its logo at the finish. Ties are broken arbitrarily here, not by the 
 weekly = (
     box.join(teams, left_on="team", right_on="team_id")
     .with_columns(week=pl.col("game_date").dt.truncate("1w"))
-    .group_by("team", "conference", "week")
+    .group_by("team", "conference", "week", maintain_order=True)
     .agg(wins=pl.col("team_winner").sum(), games=pl.len())
 )
-grid = weekly.select("team", "conference").unique().join(weekly.select("week").unique(), how="cross")
+grid = (
+    weekly.select("team", "conference")
+    .unique(maintain_order=True)
+    .join(weekly.select("week").unique(maintain_order=True), how="cross")
+)
 bump = (
     grid.join(weekly, on=["team", "conference", "week"], how="left")
     .fill_null(0)
-    .sort("week")
+    .sort("week", "team")  # ties in a week's win share rank in this order
     .with_columns(pl.col("wins", "games").cum_sum().over("team"), week_no=pl.col("week").rank("dense"))
     .filter(pl.col("week_no") >= 3)  # skip the first two weeks, when records are a game or two
     .with_columns(rank=(pl.col("wins") / pl.col("games")).rank("ordinal", descending=True).over("conference", "week"))
@@ -195,8 +199,8 @@ bump = (
 
 west = bump.filter(pl.col("conference") == "Western Conference")
 fig, ax = plt.subplots(figsize=(10, 6))
-for (team,), line in west.sort("week").group_by("team"):
-    ax.plot(line["week_no"], line["rank"], color=sdvplot.team_colors([team], "nba")[0], linewidth=2.5, alpha=0.85)
+for (team,), line in west.sort("week").group_by("team", maintain_order=True):
+    ax.plot(line["week_no"], line["rank"], color=sdvplot.team_colors("nba", [team])[0], linewidth=2.5, alpha=0.85)
 final = west.filter(pl.col("week_no") == pl.col("week_no").max())
 ax.set_xlim(west["week_no"].min() - 0.5, west["week_no"].max() + 1.5)
 ax.set_ylim(15.8, 0.2)
@@ -225,7 +229,7 @@ All-Star Game stays out.
 players = nba.load_nba_player_boxscore(seasons=[SEASON]).join(box.select("game_id").unique(), on="game_id", how="semi")
 leaders = (
     players.filter(~pl.col("did_not_play"))
-    .group_by("athlete_id", "athlete_display_name")
+    .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -239,7 +243,7 @@ leaders = (
 
 fig, ax = plt.subplots(figsize=(9, 6))
 y = list(range(len(leaders)))
-ax.barh(y, leaders["ppg"], color=sdvplot.team_colors(leaders["team"], "nba", season=SEASON), height=0.7)
+ax.barh(y, leaders["ppg"], color=sdvplot.team_colors("nba", leaders["team"], season=SEASON), height=0.7)
 ax.set_yticks(y, leaders["athlete_display_name"])
 ax.set_xlim(0, leaders["ppg"].max() + 9)
 sdvplot.add_logos(ax, leaders["ppg"] + 1.6, y, leaders["team"], league="nba", season=SEASON, height=0.075)
@@ -295,7 +299,7 @@ ax.scatter(
 ax.scatter(
     made["x"],
     made["y"],
-    color=sdvplot.team_colors([star["team"]], "nba", which="secondary")[0],
+    color=sdvplot.team_colors("nba", [star["team"]], which="secondary")[0],
     edgecolors="black",
     linewidths=0.4,
     s=18,
@@ -328,9 +332,11 @@ points scored for the Eastern Conference, highest median first.
 import seaborn as sns
 
 east = box.join(teams, left_on="team", right_on="team_id").filter(pl.col("conference") == "Eastern Conference")
-order = (east.group_by("team_abbreviation").agg(pl.col("team_score").median()).sort("team_score", descending=True))[
-    "team_abbreviation"
-].to_list()
+order = (
+    east.group_by("team_abbreviation", maintain_order=True)
+    .agg(pl.col("team_score").median())
+    .sort("team_score", descending=True)
+)["team_abbreviation"].to_list()
 
 fig, ax = plt.subplots(figsize=(10, 5))
 sns.boxplot(

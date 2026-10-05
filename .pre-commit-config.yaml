@@ -61,8 +61,8 @@ repos:
       - id: doctoc
         # Docusaurus pages carry YAML frontmatter that must stay first; the
         # CHANGELOG mirror under docs/src/ is a copy of the (already doctoc'd) root file. README.md is the PyPI long
-        # description, which must not carry a TOC block.
-        exclude: ^(docs/(docs|versioned_docs|src)|\.claude)/|^\.github/PULL_REQUEST_TEMPLATE\.md$|^README\.md$
+        # description, which must not carry a TOC block. CODE_OF_CONDUCT.md is a short policy text; a TOC is noise.
+        exclude: ^(docs/(docs|versioned_docs|src)|\.claude)/|^\.github/PULL_REQUEST_TEMPLATE\.md$|^(README|CODE_OF_CONDUCT)\.md$
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.20.0
     hooks:
@@ -101,6 +101,6 @@ repos:
         name: mypy (pre-push)
         entry: uv run --frozen mypy
         language: system
-        files: ^src/sdvplot/.*\.py$
+        files: ^(src/sdvplot/.*|tests/test_types)\.py$
         pass_filenames: false
         stages: [pre-push]

@@ -42,7 +42,9 @@ for w in caught:
 
 box = box.with_columns(team=pl.Series(team_ids, dtype=pl.String)).filter(pl.col("team").is_not_null())
 current = box.filter(pl.col("season") == SEASON)
-current.group_by("team_abbreviation").agg(games=pl.len()).sort("games", descending=True).head(3)
+current.group_by("team_abbreviation", maintain_order=True).agg(games=pl.len()).sort(
+    ["games", "team_abbreviation"], descending=[True, False]
+).head(3)
 ```
 
 <div class="sdv-output">
@@ -53,9 +55,9 @@ current.group_by("team_abbreviation").agg(games=pl.len()).sort("games", descendi
 
 | team_abbreviation | games |
 |-------------------|-------|
-| NY                | 45    |
 | LV                | 45    |
-| SEA               | 44    |
+| NY                | 45    |
+| ATL               | 44    |
 
 </div>
 
@@ -82,8 +84,8 @@ runs = (
 
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.plot([0, 44], [0, 22], color="grey", linewidth=1, linestyle="--")
-for (team, season), run in runs.group_by("team", "season"):
-    color = sdvplot.team_colors([team], "wnba", season=season)[0]
+for (team, season), run in runs.group_by("team", "season", maintain_order=True):
+    color = sdvplot.team_colors("wnba", [team], season=season)[0]
     ax.plot(
         run["game_no"],
         run["wins"],
@@ -92,7 +94,7 @@ for (team, season), run in runs.group_by("team", "season"):
         linestyle="--" if season == 2025 else "-",
         path_effects=[pe.Stroke(linewidth=4.5, foreground="#333333"), pe.Normal()],
     )
-ends = runs.group_by("team", "season").agg(pl.all().last())
+ends = runs.group_by("team", "season", maintain_order=True).agg(pl.all().last())
 sdvplot.add_logos(
     ax, ends["game_no"] + 1.8, ends["wins"], ends["team"], league="wnba", season=ends["season"], height=0.08
 )
@@ -143,7 +145,7 @@ assert games.schema["opponent_team_id"] == opponent.schema["opponent_team_id"]
 ratings = (
     games.join(opponent, on=["game_id", "opponent_team_id"])
     .with_columns(game_poss=(pl.col("poss") + pl.col("opp_poss")) / 2)
-    .group_by("team", "team_abbreviation", "team_display_name")
+    .group_by("team", "team_abbreviation", "team_display_name", maintain_order=True)
     .agg(
         ortg=100 * pl.col("team_score").sum() / pl.col("game_poss").sum(),
         drtg=100 * pl.col("opponent_team_score").sum() / pl.col("game_poss").sum(),
@@ -241,7 +243,7 @@ players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).join(
 )
 leaders = (
     players.filter(~pl.col("did_not_play"))
-    .group_by("athlete_id", "athlete_short_name")
+    .group_by("athlete_id", "athlete_short_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -296,7 +298,7 @@ made = clark.filter(pl.col("scoring_play")).height
 
 fig, ax = plt.subplots(figsize=(7, 6.5))
 sdvplot.surface("wnba", "IND", display_range="defense", ax=ax)
-red = sdvplot.team_colors(["IND"], "wnba", which="secondary")[0]
+red = sdvplot.team_colors("wnba", ["IND"], which="secondary")[0]
 cmap = LinearSegmentedColormap.from_list("indiana", ["#fff4e0", red])
 hexes = ax.hexbin(
     clark["x"],
@@ -393,13 +395,19 @@ gt_cutline(table, after=8, label="Playoff line")
 sorted by average margin; a thin black edge keeps the pale colors (Portland, New York) visible.
 
 ```python
+import numpy as np
 import seaborn as sns
 
 margins = current.with_columns(margin=pl.col("team_score") - pl.col("opponent_team_score"))
-order = margins.group_by("team_abbreviation").agg(pl.col("margin").mean()).sort("margin", descending=True)
+order = (
+    margins.group_by("team_abbreviation", maintain_order=True)
+    .agg(pl.col("margin").mean())
+    .sort("margin", descending=True)
+)
 
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.axhline(0, color="grey", linewidth=0.8)
+np.random.seed(2026)  # seaborn jitters from numpy's global random state: a seed keeps the chart the same
 sns.stripplot(
     margins.to_pandas(),
     x="team_abbreviation",
@@ -447,7 +455,7 @@ running = (
         diff=(pl.col("team_score") - pl.col("opponent_team_score")).cum_sum().over("team"),
     )
 )
-finish = running.group_by("team").agg(pl.all().last())
+finish = running.group_by("team", maintain_order=True).agg(pl.all().last())
 
 (
     ggplot(running.to_pandas(), aes("game_no", "diff", color="team_abbreviation"))
@@ -498,7 +506,7 @@ ax.scatter(split["road"], y, color="white", edgecolors="grey", s=70, zorder=2, l
 ax.scatter(
     split["home"],
     y,
-    color=sdvplot.team_colors(split["team_abbreviation"], "wnba"),
+    color=sdvplot.team_colors("wnba", split["team_abbreviation"]),
     edgecolors="black",
     s=70,
     zorder=3,

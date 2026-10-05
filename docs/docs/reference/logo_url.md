@@ -12,9 +12,10 @@ sidebar_position: 6
 logo_url(
     team: Any,
     league: str,
+    *,
     season: Any = None,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark'] = 'logo',
 ) -> str | None
 ```
 
@@ -34,7 +35,7 @@ authoritative source. Unknown teams return None with one SdvplotWarning.
 | `league` | `str` | The SDV league key, e.g. "nfl", "cfb", "nhl". |
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark']` | "logo" or "wordmark". |
 
 ## Returns
 
@@ -43,7 +44,7 @@ str | None: The archive URL (content-addressed, immutable), or None when no mark
 ## Raises
 
 - `TypeError`: If ``team`` is not a single value.
-- `ValueError`: If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+- `ValueError`: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
 - `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
 
 ## Example

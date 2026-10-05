@@ -64,7 +64,7 @@ games = (
 )
 in_conf = pl.col("conference_game")
 standings = (
-    games.group_by("team_id", "team")
+    games.group_by("team_id", "team", maintain_order=True)
     .agg(
         conf_w=(pl.col("won") & in_conf).sum(),
         conf_l=(~pl.col("won") & in_conf).sum(),
@@ -209,7 +209,7 @@ conference's tiebreaker.
 
 ```python
 indiana = standings.filter(pl.col("team") == "Indiana")
-fill = sdvplot.team_colors(indiana["team_id"][0], "cfb") + "1f"  # the primary color at 12% opacity
+fill = sdvplot.team_colors("cfb", indiana["team_id"][0]) + "1f"  # the primary color at 12% opacity
 
 final = (
     with_marks.tab_header(

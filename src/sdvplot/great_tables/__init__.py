@@ -6,7 +6,7 @@ Heights are pixels: a table has no plot height.
 sdvplot's front door routes a ``GT`` here: ``sdvplot.add_logos(gt, "team", league="nfl")`` is ``gt_sdv_logos``
 (``add_wordmarks`` and ``add_headshots`` likewise), and ``axis_logos`` raises TypeError (a table has no axes).
 
-Test hooks for ``sdvplot.testing.check_table_adapter_contract``: ``rendered_html(gt)`` and ``drawn_cells(gt)``.
+Test hooks for ``sdvplot.testing.check_table_adapter_contract``: ``_rendered_html(gt)`` and ``_drawn_cells(gt)``.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from typing import Any
 
 from great_tables import GT
 
+from sdvplot._errors import UnsupportedTargetError
 from sdvplot.great_tables._cells import (
     gt_538_caption,
     gt_bold_rows,
@@ -89,18 +90,49 @@ from sdvplot.great_tables._themes import (
     pal_midnight,
 )
 
-SUPPORTS_AXIS_LOGOS = False
+_SUPPORTS_AXIS_LOGOS = False
 add_logos = gt_sdv_logos
 add_wordmarks = gt_sdv_wordmarks
 add_headshots = gt_sdv_headshots
 
 
 def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
-    """A table has no axes: always TypeError (use ``gt_sdv_cols_label`` for marks in the column labels)."""
-    raise TypeError("a great_tables table has no axes; use gt_sdv_cols_label() for marks in the column labels")
+    """A table has no axes, so this always raises; ``gt_sdv_cols_label`` puts marks in the column labels instead.
+
+    Args:
+        target: A ``great_tables.GT``.
+        *args: Ignored.
+        **kwargs: Ignored.
+
+    Returns:
+        object: Never returns.
+
+    Raises:
+        UnsupportedTargetError: Always (a ``TypeError``).
+
+    Example:
+        ::
+
+            import polars as pl
+            from great_tables import GT
+            import sdvplot
+
+            gt = GT(pl.DataFrame({"team": ["KC", "BUF"], "wins": [12, 10]}))
+            try:
+                sdvplot.axis_logos(gt, "team", league="nfl")
+            except TypeError:
+                pass   # raised: a table has no axes
+
+    See Also:
+        sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.great_tables.gt_sdv_cols_label: marks in the column labels
+    """
+    raise UnsupportedTargetError(
+        "a great_tables table has no axes; use gt_sdv_cols_label() for marks in the column labels"
+    )
 
 
-def rendered_html(gt: GT) -> str:
+def _rendered_html(gt: GT) -> str:
     """The table as great_tables renders it (``as_raw_html()``)."""
     return gt.as_raw_html()
 
@@ -144,18 +176,22 @@ class _Cells(HTMLParser):
                 self.cells.append((team, self.row, self.columns[self.col], h, src))
 
 
-def drawn_cells(gt: GT) -> list[tuple[str, int, str, float, str]]:
+def _drawn_cells(gt: GT) -> list[tuple[str, int, str, float, str]]:
     """``(team_id, row, column, height_px, src)`` per sdvplot image in the rendered table, in display order.
 
     Body images carry their display row (0-based, group headings not counted) and column name; column-label images
     carry row -1. Images in row-group headings are not listed. Tables with column spanners are not supported.
     """
     parser = _Cells()
-    parser.feed(rendered_html(gt))
+    parser.feed(_rendered_html(gt))
     return parser.cells
 
 
 __all__ = [
+    "add_headshots",
+    "add_logos",
+    "add_wordmarks",
+    "axis_logos",
     "gt_538_caption",
     "gt_bold_rows",
     "gt_border_bars_bottom",
@@ -223,3 +259,7 @@ __all__ = [
     "gt_wrap_labels",
     "pal_midnight",
 ]
+
+
+def __dir__() -> list[str]:  # dir() and tab completion show the public API only
+    return list(__all__)

@@ -1,4 +1,4 @@
-# sdvplot
+# sdvplot <a href='https://sdvplot.sportsdataverse.org/'><img src='https://raw.githubusercontent.com/sportsdataverse/sdvplot/main/docs/static/img/sdvplot-logo.png' align="right" width="25%" min-width="120px" alt="sdvplot hex logo" /></a>
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Docs](https://img.shields.io/badge/docs-sdvplot.sportsdataverse.org-blue)](https://sdvplot.sportsdataverse.org)
@@ -46,10 +46,10 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 ```python
 import sdvplot
 
-sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")      # ['13', '13', '13']
-sdvplot.palette("nfl", teams=["LV", "KC"])                     # {'LV': '#000000', 'KC': '#e31837'}
-sdvplot.logo_url("OAK", "nfl", season=2010)                    # the Oakland-era mark
-img = sdvplot.logo_image("LV", "nfl", size=128)                # a PIL image
+sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")  # ['13', '13', '13']
+sdvplot.palette("nfl", teams=["LV", "KC"])  # {'LV': '#000000', 'KC': '#e31837'}
+sdvplot.logo_url("OAK", "nfl", season=2010)  # the Oakland-era mark
+img = sdvplot.logo_image("LV", "nfl", size=128)  # a PIL image
 ```
 
 Colors work in any library that takes a `{value: color}` mapping, for example seaborn:

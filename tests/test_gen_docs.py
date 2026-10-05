@@ -7,6 +7,9 @@ from typing import Any
 
 import pytest
 
+pytest.importorskip("docstring_parser")  # the docs group; the OS and lowest-direct jobs do not install it
+pytest.importorskip("ruff")  # the static example check runs `python -m ruff`
+
 ROOT = Path(__file__).parents[1]
 spec = importlib.util.spec_from_file_location("gen_docs", ROOT / "tools" / "gen_docs.py")
 gd = importlib.util.module_from_spec(spec)
@@ -239,3 +242,108 @@ def test_check_mode_detects_a_stale_home_data_file(tmp_path):
     assert gd.main(_args(tmp_path)) == 0
     (tmp_path / "data" / "home.json").write_text("{}\n")
     assert gd.main(_args(tmp_path, "--check")) == 1
+
+
+def _scratch(monkeypatch, **fns):
+    """Install ``sdvplot.scratch`` with the given functions as its ``__all__``."""
+    import sys
+    import types
+
+    mod = types.ModuleType("sdvplot.scratch")
+    mod.__all__ = list(fns)
+    for name, fn in fns.items():
+        setattr(mod, name, fn)
+    monkeypatch.setitem(sys.modules, "sdvplot.scratch", mod)
+    monkeypatch.setattr(gd, "SUBMODULES", ["scratch"])
+
+
+def _complete(x: int) -> int:
+    """Double it.
+
+    Args:
+        x: A number.
+
+    Returns:
+        int: Twice ``x``.
+
+    Raises:
+        TypeError: If ``x`` is not a number.
+
+    Example:
+        ::
+
+            total = 2 * 3
+
+    See Also:
+        Python: https://www.python.org/
+    """
+    return 2 * x
+
+
+def _drifted(x: int) -> int:
+    """Double it.
+
+    Args:
+        x: A number.
+
+    Returns:
+        int: Twice ``x``.
+
+    Example:
+        ::
+
+            _complete(undefined_name)
+    """
+    return 2 * x
+
+
+def test_a_complete_submodule_docstring_passes_the_submodule_check(monkeypatch):
+    _scratch(monkeypatch, complete=_complete)
+    assert gd.check_submodules() == []
+
+
+def test_a_drifted_submodule_docstring_is_flagged_for_each_missing_part(monkeypatch):
+    _scratch(monkeypatch, drifted=_drifted)
+    errors = gd.check_submodules()
+    assert errors == [
+        "sdvplot.scratch.drifted: missing Raises:",
+        "sdvplot.scratch.drifted: missing See Also:",
+        "sdvplot.scratch.drifted: Example: Undefined name `_complete` (line 1)",
+        "sdvplot.scratch.drifted: Example: Undefined name `undefined_name` (line 1)",
+    ]
+
+
+@pytest.mark.real_index
+def test_check_mode_fails_on_a_broken_submodule_docstring(monkeypatch, tmp_path, capsys):
+    _scratch(monkeypatch, drifted=_drifted)
+    assert gd.main(_args(tmp_path, "--check")) == 1
+    assert "sdvplot.scratch.drifted: missing See Also:" in capsys.readouterr().err
+
+
+def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
+    def embeds(x: int, embed: bool = False) -> int:
+        """Echo it.
+
+        Args:
+            x: A number.
+            embed: Inline it.
+
+        Returns:
+            int: ``x``.
+
+        Raises:
+            ValueError: If ``x`` is negative.
+
+        Example:
+            ::
+
+                total = 1
+
+        See Also:
+            Python: https://www.python.org/
+        """
+        return x
+
+    _scratch(monkeypatch, embeds=embeds)
+    errors = gd.check_submodules()
+    assert errors == ["sdvplot.scratch.embeds: takes embed= but Raises: does not list OfflineError"]

@@ -48,7 +48,7 @@ const sidebars: SidebarsConfig = {
     },
     ...sections,
     {type: 'doc', id: 'gallery', label: 'Gallery'},
-    {type: 'category', label: 'For adapter authors', items: ['adapters/contract']},
+    {type: 'category', label: 'For adapter authors', items: ['adapters/contract', 'adapters/add-an-adapter']},
   ],
 };
 
