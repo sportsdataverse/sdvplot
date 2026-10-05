@@ -1,26 +1,85 @@
-name: Wrong team or logo
-description: A value resolved to the wrong team, did not resolve, or the wrong logo came back.
+name: Wrong team, logo or color
+description: A value resolved to the wrong team or did not resolve, or the wrong logo, wordmark or colors came back.
 title: "[team/logo]: "
 labels: ["data-quality"]
 body:
-  - type: input
+  - type: dropdown
     id: league
-    attributes: { label: League, description: "SDV league key, e.g. nfl, cfb, nhl, ohl", placeholder: nfl }
+    attributes:
+      label: League
+      description: The league key you passed.
+      options:
+        - aaf
+        - ahl
+        - cfb
+        - cricket
+        - echl
+        - mbb
+        - milb
+        - mlb
+        - nba
+        - nbagl
+        - ncaa_baseball
+        - ncaa_mhockey
+        - ncaa_softball
+        - ncaa_whockey
+        - nfl
+        - nhl
+        - ohl
+        - phf
+        - pwhl
+        - qmjhl
+        - soccer
+        - ufl
+        - usfl
+        - ushl
+        - wbb
+        - whl
+        - wnba
+        - xfl
+    validations: { required: true }
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What is wrong
+      options:
+        - It resolved to the wrong team
+        - It did not resolve (a warning, or None)
+        - The wrong logo or wordmark (team, era or variant)
+        - The wrong colors
     validations: { required: true }
   - type: input
     id: value
-    attributes: { label: Value you passed, placeholder: "OAK" }
+    attributes: { label: Value you passed, description: "The abbreviation, name or id.", placeholder: "OAK" }
+    validations: { required: true }
+  - type: input
+    id: team_id
+    attributes:
+      label: Team id
+      description: 'What `sdvplot.resolve(value, league)` returned, and the `team_id` you expected (from `sdvplot.teams(league)`).'
+      placeholder: "got None, expected 13"
     validations: { required: true }
   - type: input
     id: season
-    attributes: { label: Season (if any), placeholder: "2010" }
+    attributes: { label: Season (if any), description: "The season the call passed: aliases and marks change by season.", placeholder: "2010" }
+  - type: dropdown
+    id: color_source
+    attributes:
+      label: color_source (for wrong colors)
+      description: 'The team''s `color_source` from `sdvplot.teams(league)`: where its colors come from.'
+      options:
+        - not a color problem
+        - nflverse
+        - espn
+        - logo
+        - fallback
   - type: textarea
     id: call
     attributes: { label: The call you made, render: python, placeholder: 'sdvplot.logo_url("OAK", "nfl", season=2010)' }
     validations: { required: true }
   - type: textarea
     id: got
-    attributes: { label: What came back (value, URL, or warning text) }
+    attributes: { label: What came back (value, URL, colors, or warning text) }
     validations: { required: true }
   - type: textarea
     id: expected
