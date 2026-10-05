@@ -1,0 +1,21 @@
+{
+  "section": "tutorials",
+  "stem": "03_logos_and_seasons",
+  "label": "Logos and eras",
+  "position": 3,
+  "page": "tutorials/03_logos_and_seasons.md",
+  "items": [
+    {
+      "title": "Raiders logos by season",
+      "alt": "The Raiders logo in 2010, 2019 and 2024: the Oakland mark for 2010 and 2019, the Las Vegas mark for 2024.",
+      "image": "/img/gallery/tutorials/03_logos_and_seasons_6.png",
+      "anchor": "logos-by-season"
+    },
+    {
+      "title": "Nordiques and Avalanche marks",
+      "alt": "The Quebec Nordiques logo for 1993 and the Colorado Avalanche logo for 2024, rasterized from SVG.",
+      "image": "/img/gallery/tutorials/03_logos_and_seasons_9.png",
+      "anchor": "svg-marks"
+    }
+  ]
+}

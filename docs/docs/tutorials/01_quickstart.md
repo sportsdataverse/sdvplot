@@ -1,7 +1,8 @@
 ---
-title: Quickstart tutorial
-sidebar_label: Quickstart
+title: "Quickstart tutorial"
+sidebar_label: "Quickstart"
 sidebar_position: 1
+description: "Resolve team values, pick a season, and get team colors and logo urls with sdvplot."
 ---
 
 # sdvplot quickstart
