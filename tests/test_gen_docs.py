@@ -219,3 +219,24 @@ def test_the_sidebar_groups_follow_sections_and_list_every_page_once(tmp_path):
         d for i in items if i["type"] == "category" for d in i["items"]
     ]
     assert sorted(ids) == sorted(f"reference/{p.stem}" for p in (tmp_path / "reference").glob("*.md"))
+
+
+@pytest.mark.real_index
+def test_the_home_sample_output_is_computed_from_the_sample():
+    data = gd.home_data()
+    # not on PyPI yet: the git URL is what a visitor can install today
+    assert data["install"] == "pip install git+https://github.com/sportsdataverse/sdvplot"
+    assert data["sample"].splitlines() == ["import sdvplot", "", *gd.HOME_SAMPLE]
+    assert data["output"].splitlines()[0] == "['12', '12', '12']"
+    assert len(data["output"].splitlines()) == len(gd.HOME_SAMPLE)
+    assert [(s["league"], s["team"]) for s in data["swatches"]] == [(lg.upper(), t) for lg, t in gd.HOME_TEAMS]
+    assert len({s["league"] for s in data["swatches"]}) == 3
+    for s in data["swatches"]:
+        assert re.fullmatch(r"#[0-9a-f]{6}", s["primary"]) and re.fullmatch(r"#[0-9a-f]{6}", s["secondary"]), s
+
+
+@pytest.mark.real_index
+def test_check_mode_detects_a_stale_home_data_file(tmp_path):
+    assert gd.main(_args(tmp_path)) == 0
+    (tmp_path / "data" / "home.json").write_text("{}\n")
+    assert gd.main(_args(tmp_path, "--check")) == 1
