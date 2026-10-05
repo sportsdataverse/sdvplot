@@ -83,3 +83,25 @@ def test_the_center_logo_draws_above_every_surface_feature(mark_images):
     (logo,) = [a for a in ax.artists if hasattr(a, "_sdvplot_mark")]
     others = [a.get_zorder() for a in ax.get_children() if a is not logo]
     assert logo.get_zorder() > max(others)
+
+
+@pytest.mark.parametrize("league", sorted(lg for lg, (sport, _) in _surface.SURFACES.items() if sport == "football"))
+def test_football_fields_log_no_missing_font(league, caplog):
+    # sportypy numbers football yard lines in Clarendon-Regular, which it does not ship: matplotlib logged
+    # "findfont: Font family 'Clarendon-Regular' not found" for every number it measured
+    with caplog.at_level("WARNING", logger="matplotlib.font_manager"):
+        sdvplot.surface(league).figure.canvas.draw()
+    assert not [r for r in caplog.records if "Clarendon" in r.getMessage()]
+
+
+def test_a_number_font_the_caller_names_wins(monkeypatch):
+    seen = {}
+    real = importlib.import_module("sportypy.surfaces.football").NFLField
+
+    def spy(**kwargs):
+        seen.update(kwargs)
+        return real(**kwargs)
+
+    monkeypatch.setattr(importlib.import_module("sportypy.surfaces.football"), "NFLField", spy)
+    sdvplot.surface("nfl", field_updates={"number_font": "DejaVu Serif"})
+    assert seen["field_updates"]["number_font"] == "DejaVu Serif"

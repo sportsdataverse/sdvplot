@@ -282,3 +282,8 @@
 - `team_tiers()` (matplotlib and plotnine) takes `theme="dark"` (the default, sdvplotR's) or `theme="light"`: dark
   logos such as Ohio State's, Texas A&M's and Penn State's vanished on the fixed dark background. The light theme's
   labels, lines, subtitle and caption meet WCAG contrast on white; sdvplotR has only the dark theme (`docs/PARITY.md`).
+- `surface()` no longer floods stderr with "findfont: Font family 'Clarendon-Regular' not found". sportypy numbers
+  football fields in Clarendon-Regular, a font it does not ship, so matplotlib logged a warning for every number it
+  measured and drew its default font anyway. When Clarendon is not installed, `surface()` asks sportypy for that
+  default (DejaVu Sans) by name, through `field_updates`, so the numbers look the same and nothing is logged; process
+  logging is untouched, and a `number_font` the caller passes still wins.
