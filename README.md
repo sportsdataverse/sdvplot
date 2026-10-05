@@ -46,10 +46,10 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 ```python
 import sdvplot
 
-sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")      # ['13', '13', '13']
-sdvplot.palette("nfl", teams=["LV", "KC"])                     # {'LV': '#000000', 'KC': '#e31837'}
-sdvplot.logo_url("OAK", "nfl", season=2010)                    # the Oakland-era mark
-img = sdvplot.logo_image("LV", "nfl", size=128)                # a PIL image
+sdvplot.resolve(["LV", "OAK", "Las Vegas Raiders"], "nfl")  # ['13', '13', '13']
+sdvplot.palette("nfl", teams=["LV", "KC"])  # {'LV': '#000000', 'KC': '#e31837'}
+sdvplot.logo_url("OAK", "nfl", season=2010)  # the Oakland-era mark
+img = sdvplot.logo_image("LV", "nfl", size=128)  # a PIL image
 ```
 
 Colors work in any library that takes a `{value: color}` mapping, for example seaborn:

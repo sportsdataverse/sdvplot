@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import typing
 
 import pytest
 
@@ -148,7 +149,9 @@ def test_a_public_submodule_shows_only_its_all(name):
     # what dir(), tab completion and `import *` show: no numpy, no imported helpers, no test hooks
     assert {n for n in dir(mod) if not n.startswith("_")} == set(mod.__all__)
     for n in mod.__all__:
-        assert not n.startswith("_") and inspect.getdoc(getattr(mod, n)), n
+        value = getattr(mod, n)
+        # a Literal alias (sdvplot.typing) cannot carry a docstring; its module docstring documents it
+        assert not n.startswith("_") and (inspect.getdoc(value) or typing.get_origin(value) is typing.Literal), n
     # a function or class the module defines is either exported or private (underscore)
     own = {
         n

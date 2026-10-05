@@ -78,8 +78,19 @@ def __dir__() -> list[str]:
 
 
 def _add(
-    canvas: Any, x: Any, y: Any, teams: Any, *, kind: str, league: str, season: Any, height: float, alpha: float,
-    variant: str, embed: bool, id_system: str,
+    canvas: Any,
+    x: Any,
+    y: Any,
+    teams: Any,
+    *,
+    kind: str,
+    league: str,
+    season: Any,
+    height: float,
+    alpha: float,
+    variant: str,
+    embed: bool,
+    id_system: str,
 ) -> Any:
     if not isinstance(canvas, newlib.Canvas):
         raise UnsupportedTargetError(f"sdvplot.newlib draws on a newlib.Canvas, got {type(canvas).__name__}")
@@ -91,35 +102,93 @@ def _add(
 
 
 def add_logos(
-    canvas: Any, x: Any, y: Any, teams: Any, *, league: str, season: Any = None, height: float = 0.1,
-    alpha: float = 1, variant: str = "default", embed: bool = False, id_system: str = "auto",
+    canvas: Any,
+    x: Any,
+    y: Any,
+    teams: Any,
+    *,
+    league: str,
+    season: Any = None,
+    height: float = 0.1,
+    alpha: float = 1,
+    variant: str = "default",
+    embed: bool = False,
+    id_system: str = "auto",
 ) -> Any:
     """Draw each team's logo at its (x, y) point of a newlib Canvas."""
     return _add(
-        canvas, x, y, teams, kind="logo", league=league, season=season, height=height, alpha=alpha,
-        variant=variant, embed=embed, id_system=id_system,
+        canvas,
+        x,
+        y,
+        teams,
+        kind="logo",
+        league=league,
+        season=season,
+        height=height,
+        alpha=alpha,
+        variant=variant,
+        embed=embed,
+        id_system=id_system,
     )
 
 
 def add_wordmarks(
-    canvas: Any, x: Any, y: Any, teams: Any, *, league: str, season: Any = None, height: float = 0.1,
-    alpha: float = 1, variant: str = "default", embed: bool = False, id_system: str = "auto",
+    canvas: Any,
+    x: Any,
+    y: Any,
+    teams: Any,
+    *,
+    league: str,
+    season: Any = None,
+    height: float = 0.1,
+    alpha: float = 1,
+    variant: str = "default",
+    embed: bool = False,
+    id_system: str = "auto",
 ) -> Any:
     """Draw each team's wordmark at its (x, y) point of a newlib Canvas."""
     return _add(
-        canvas, x, y, teams, kind="wordmark", league=league, season=season, height=height, alpha=alpha,
-        variant=variant, embed=embed, id_system=id_system,
+        canvas,
+        x,
+        y,
+        teams,
+        kind="wordmark",
+        league=league,
+        season=season,
+        height=height,
+        alpha=alpha,
+        variant=variant,
+        embed=embed,
+        id_system=id_system,
     )
 
 
 def add_headshots(
-    canvas: Any, x: Any, y: Any, players: Any, *, league: str, height: float = 0.1, alpha: float = 1,
-    embed: bool = False, id_system: str = "espn",
+    canvas: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = "espn",
 ) -> Any:
     """Draw each player's headshot at its (x, y) point of a newlib Canvas."""
     return _add(
-        canvas, x, y, players, kind="headshot", league=league, season=None, height=height, alpha=alpha,
-        variant="default", embed=embed, id_system=id_system,
+        canvas,
+        x,
+        y,
+        players,
+        kind="headshot",
+        league=league,
+        season=None,
+        height=height,
+        alpha=alpha,
+        variant="default",
+        embed=embed,
+        id_system=id_system,
     )
 
 

@@ -42,6 +42,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - A deprecation helper, `sdvplot._deprecate` (`deprecate()` and `@deprecated_alias`), and its warning,
   `sdvplot.SdvplotDeprecationWarning` (a `FutureWarning` and a `SdvplotWarning`), with a deprecation policy in
   CONTRIBUTING.md: one minor release of warnings before a removal. Nothing is deprecated yet.
+- `sdvplot.typing`: the `Literal` types of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`,
+  `MarkType`), for annotating code that keeps an argument in a variable (`which: Which = "primary"`).
 
 ### Changed
 
