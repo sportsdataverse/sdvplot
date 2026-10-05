@@ -261,9 +261,15 @@ def fetch_games(league: str, day: dt.date) -> tuple[dt.date, pl.DataFrame, str |
 
 
 def num(stats: dict[str, str], key: str, part: int = 0) -> float:
-    """A box-score number; ``part`` picks one side of a pair such as "7-15" (made-attempted)."""
-    found = re.findall(r"\d+(?:\.\d+)?", stats.get(key, ""))
-    return float(found[part]) if len(found) > part else 0.0
+    """A box-score number; ``part`` picks one side of a pair such as "7-15" or "20/30" (made-attempted).
+
+    A minus after a digit splits a pair; a leading minus is a negative number ("-5" rushing yards). Missing or
+    non-numeric values ("--", "") are 0.
+    """
+    try:
+        return float(re.split(r"(?<=\d)[-/]", stats.get(key, ""))[part])
+    except (ValueError, IndexError):
+        return 0.0
 
 
 def basketball(s: dict[str, str]) -> tuple[float, list[str]]:

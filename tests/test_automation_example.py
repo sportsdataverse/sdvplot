@@ -323,7 +323,6 @@ def test_the_player_of_the_game_rules():
     pitcher = {"pitching.fullInnings.partInnings": "6.2", "pitching.strikeouts": "8", "pitching.earnedRuns": "1",
                "pitching.hits": "4", "pitching.walks": "2"}  # fmt: skip
     assert social.baseball(pitcher)[0] == pytest.approx(20 / 2 + 4 - 1.5 - 3)  # 6.2 innings is 20 outs
-    assert social.num({"x": "7-15"}, "x", 1) == 15 and social.num({}, "x") == 0
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -493,3 +492,27 @@ def test_an_image_over_bluesky_s_limit_is_sent_as_jpeg(tmp_path, monkeypatch):
     monkeypatch.setattr(social, "MAX_BLOB", 100)
     with pytest.raises(ValueError, match="over 1 MB even as a JPEG"):
         social.image_bytes(path)
+
+
+def test_num_keeps_minus_signs_and_reads_pairs():
+    s = {
+        "pair": "7-15",
+        "slash": "20/30",
+        "loss": "-5",
+        "none": "--",
+        "plus": "+2",
+        "empty": "",
+    }
+    assert (social.num(s, "pair"), social.num(s, "pair", 1)) == (7, 15)
+    assert (social.num(s, "slash"), social.num(s, "slash", 1)) == (20, 30)
+    assert social.num(s, "loss") == -5 and social.num(s, "plus") == 2
+    assert social.num(s, "none") == social.num(s, "empty") == social.num(s, "missing") == social.num(s, "pair", 2) == 0
+    back = {
+        "rushing.rushingAttempts": "1",
+        "rushing.rushingYards": "-5",
+        "rushing.rushingTouchdowns": "0",
+    }
+    assert social.football(back) == (
+        pytest.approx(-0.5),
+        ["1 CAR · -5 RUSH YDS"],
+    )  # a loss, not a 5-yard gain
