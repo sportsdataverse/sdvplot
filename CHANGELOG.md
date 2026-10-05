@@ -50,6 +50,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
   the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn, which every cell
   fill shows over, in either order and in the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
+- The great_tables fill helpers warn once (`SdvplotWarning`) on a table with row striping on. great_tables' notebook
+  repr marks its stylesheet `!important`, so on every other row the stripe's colors beat a plain inline style: the
+  text color `gt_color_results`, `gt_bold_rows`, `gt_tiers`, `gt_spotlight`, `gt_outliers`, `gt_highlight_cells` and
+  `gt_highlight_na` pair with their fills, and `gt_color_ranks`' `data_color` fills and text. The warning says to
+  turn striping off with `opt_row_striping(row_striping=False)`. `gt_color_pills`, `gt_indicator_boxes` and
+  `gt_row_accent` draw inside the cell or with `!important`, which the stripes cannot cover, so they do not warn.
 
 ## [0.1.0] - Unreleased
 

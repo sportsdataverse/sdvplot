@@ -28,7 +28,15 @@ from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
-from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id, important
+from sdvplot.great_tables._marks import (
+    _background,
+    _check_gt,
+    _record,
+    _secondary_on,
+    _table_id,
+    _warn_striped,
+    important,
+)
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -828,7 +836,8 @@ def gt_tiers(
             or a color is not hex.
 
     Warns:
-        SdvplotWarning: When a level has no rows in ``tier_column``.
+        SdvplotWarning: When a level has no rows in ``tier_column``, and when the table stripes its rows: in a
+            notebook the stripes cover the tier labels' text color on every other row.
 
     Example:
         ::
@@ -877,6 +886,7 @@ def gt_tiers(
         .sub_missing(missing_text="")
         .cols_label(cases={c: "" for c in data.columns})
     )
+    _warn_striped(gt, "gt_tiers")
     for level, fill in zip(names, fills, strict=True):
         rows = [i for i, t in enumerate(tiers) if t == level]
         if rows:
@@ -933,6 +943,11 @@ def gt_spotlight(
         TypeError: If ``gt`` is not a great_tables ``GT``.
         ValueError: If ``if_none`` is not one of its choices.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows and the function sets a text color (``dim_color`` or
+            ``text_color``): in a notebook the stripes cover it on every other row.
+
     Example:
         ::
 
@@ -957,6 +972,8 @@ def gt_spotlight(
             warnings.warn(msg, SdvplotWarning, stacklevel=2)
         return gt
 
+    if dim_color is not None or text_color is not None:
+        _warn_striped(gt, "gt_spotlight")
     chosen = _columns(gt, columns)
     rendered = _rendered(gt)
     others = [i for i in range(len(_frame(gt))) if i not in set(focus)]
@@ -1127,6 +1144,11 @@ def gt_outliers(
         TypeError: If ``gt`` is not a great_tables ``GT``.
         ValueError: If ``columns`` selects nothing, ``bounds`` is missing for ``"bounds"``, or an option is invalid.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the flagged cells' text color
+            on every other row.
+
     Example:
         ::
 
@@ -1170,6 +1192,8 @@ def gt_outliers(
         ]
         if not hit:
             continue
+        if not flagged:
+            _warn_striped(gt, "gt_outliers")
         flagged = True
         looks: list[Any] = [gst.text(color=color, weight="bold" if bold else None)]
         if fill is not None:

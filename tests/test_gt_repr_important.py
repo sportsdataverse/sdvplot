@@ -68,3 +68,64 @@ def test_every_border_and_fill_style_goes_through_important():
                 if name in {"borders", "fill", "_borders"} and id(node) not in wrapped:
                     bare.append(f"{path.name}:{node.lineno}")
     assert bare == []
+
+
+# --- row striping ------------------------------------------------------------------------------------------------------
+# The repr's stylesheet !important also covers the stripes' background and text color, which then beat a plain inline
+# fill or text color on every other row: data_color's fills (gt_color_ranks), and the ink sdvplot pairs with a fill.
+# An inline !important (sdvplot's fills and borders) and anything drawn inside the cell (pills, boxes) are not covered.
+
+from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot.great_tables import (  # noqa: E402
+    gt_bold_rows,
+    gt_color_pills,
+    gt_color_ranks,
+    gt_color_results,
+    gt_highlight_cells,
+    gt_highlight_na,
+    gt_indicator_boxes,
+    gt_outliers,
+    gt_tiers,
+)
+
+
+def _games():
+    return pl.DataFrame(
+        {
+            "team": ["LV", "KC", "BUF", "LAR"],
+            "res": ["W", "L", "W", "L"],
+            "rk": [1, 2, 3, 4],
+            "tier": ["S", "A", "S", "A"],
+        }
+    )
+
+
+COVERED = {
+    "gt_color_results": lambda gt: gt_color_results(gt, "res"),
+    "gt_color_ranks": lambda gt: gt_color_ranks(gt, "rk"),
+    "gt_bold_rows": lambda gt: gt_bold_rows(gt, rows=[0], highlight_color="#002244"),
+    "gt_highlight_cells": lambda gt: gt_highlight_cells(gt, "rk", lambda s: s > 1, text_color="white"),
+    "gt_highlight_na": lambda gt: gt_highlight_na(gt, "rk", na_strings=["2"], fill="#002244", text_color="white"),
+    "gt_spotlight": lambda gt: gt_spotlight(gt, rows=[0], fill="#002244", text_color="white"),
+    "gt_outliers": lambda gt: gt_outliers(gt, "rk", method="bounds", bounds=(2, 3), fill="#002244"),
+    "gt_tiers": lambda gt: gt_tiers(gt, {"S": "#C84630", "A": "#5DA271"}, image_columns=[]),
+}
+UNCOVERED = {
+    "gt_color_pills": lambda gt: gt_color_pills(gt, "rk", domain=[1, 4]),  # the fill is the pill's own element
+    "gt_indicator_boxes": lambda gt: gt_indicator_boxes(gt, "rk"),
+    "gt_row_accent": lambda gt: gt_row_accent(gt, "res", palette={"W": "#003366", "L": "#B8232F"}),  # a border
+    "gt_highlight_cells": lambda gt: gt_highlight_cells(gt, "rk", lambda s: s > 1),  # an !important fill, no ink
+}
+
+
+@pytest.mark.parametrize("helper", sorted(COVERED))
+def test_a_fill_helper_warns_once_when_the_stripes_would_cover_it(helper):
+    with pytest.warns(SdvplotWarning, match=r"row striping is on.*opt_row_striping\(row_striping=False\)") as seen:
+        COVERED[helper](GT(_games()).opt_row_striping())
+    assert len([w for w in seen if issubclass(w.category, SdvplotWarning)]) == 1
+    COVERED[helper](GT(_games()))  # no striping, no warning (SdvplotWarning is an error here)
+
+
+@pytest.mark.parametrize("helper", sorted(UNCOVERED))
+def test_a_helper_the_stripes_cannot_cover_does_not_warn(helper):
+    UNCOVERED[helper](GT(_games()).opt_row_striping())

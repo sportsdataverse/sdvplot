@@ -116,3 +116,32 @@ def test_render_kenpom_bands_rows_and_leaves_a_fill_on_top(tmp_path, all_importa
     with Image.open(nokap.from_html(html, tmp_path / "kp.png", selector="#kp table")) as im:
         colors = {c for _, c in im.convert("RGB").getcolors(1 << 20)}
     assert {MAGENTA, (0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)} <= colors  # the fill and both bands
+
+
+@pytest.mark.render
+@pytest.mark.parametrize(
+    ("helper", "covered"),
+    [
+        (lambda gt: sgt.gt_color_ranks(gt, "rk", palette=["#FF00FF", "#FF00FF"]), True),  # data_color: plain fills
+        (lambda gt: sgt.gt_color_results(gt, "res", win_color="#FF00FF", loss_color="#FF00FF"), False),  # !important
+        (lambda gt: sgt.gt_color_pills(gt, "rk", palette=["#FF00FF", "#FF00FF"], domain=[1, 4]), False),  # own span
+    ],
+    ids=["gt_color_ranks", "gt_color_results", "gt_color_pills"],
+)
+def test_render_notebook_stripes_cover_only_plain_fills(tmp_path, helper, covered):
+    # great_tables' notebook repr marks its stylesheet !important, so a stripe beats a plain inline fill
+    import warnings
+
+    import nokap
+
+    df = pl.DataFrame({"team": ["LV", "LAR", "LAC", "KC"], "res": ["W", "L", "W", "L"], "rk": [1, 2, 3, 4]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # the striping warning, tested offline
+        gt = helper(GT(df, id="st").opt_row_striping())
+    shot = nokap.from_html(gt.as_raw_html(make_page=True, all_important=True), tmp_path / "s.png", selector="#st table")
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    bands = [rgb.crop((0, rgb.height * k // 5, rgb.width, rgb.height * (k + 1) // 5)) for k in range(1, 5)]
+    magenta = [sum(n for n, c in band.getcolors(1 << 20) if c == MAGENTA) for band in bands]
+    filled = [n > max(magenta) / 2 for n in magenta]  # a covered row keeps a sliver of its neighbor's fill
+    assert filled == ([True, False, True, False] if covered else [True] * 4)

@@ -29,7 +29,7 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id, important
+from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id, _warn_striped, important
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -116,6 +116,11 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     Raises:
         TypeError: ``gt`` is not a ``GT``.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the text color on every other
+            row.
+
     Example:
         ::
 
@@ -135,6 +140,7 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     styles: list[Any] = [style.text(color=text_color, weight="bold")]
     if highlight_color is not None:
         styles.insert(0, important(style.fill(color=highlight_color)))
+    _warn_striped(gt, "gt_bold_rows")
     return gt.tab_style(style=styles, locations=loc.body(rows=idx))
 
 
@@ -171,6 +177,11 @@ def gt_color_results(
         TypeError: ``gt`` is not a ``GT``.
         ValueError: ``result_column`` does not select exactly one column, or ``result_type`` is unknown.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the text color on every other
+            row.
+
     Example:
         ::
 
@@ -187,6 +198,7 @@ def gt_color_results(
         raise ValueError(f"result_column must select exactly one column; it selected {len(cols)}")
     col = _values(gt, cols[0])
     win, loss = (1, 0) if result_type == "binary" else ("W", "L")
+    _warn_striped(gt, "gt_color_results")
     out = gt
     passes = [(win, win_color, wins_text_color), (loss, loss_color, loss_text_color)]
     if tie_color is not None:
@@ -234,6 +246,11 @@ def gt_highlight_cells(
         ValueError: ``columns`` matches nothing, the mask has the wrong number of columns, or ``condition`` fails
             on a column or does not return one value per row.
 
+
+    Warns:
+        SdvplotWarning: When ``text_color`` is set and the table stripes its rows: in a notebook the stripes cover the
+            text color on every other row.
+
     Example:
         ::
 
@@ -255,6 +272,8 @@ def gt_highlight_cells(
     styles: list[Any] = [important(style.fill(color=fill))]
     if text_args:
         styles.append(style.text(**text_args))
+    if "color" in text_args:
+        _warn_striped(gt, "gt_highlight_cells")
     out = gt
     for c in cols:
         rows = [i for i, hit in enumerate(masks[c]) if hit]
@@ -330,6 +349,11 @@ def gt_highlight_na(
     Raises:
         TypeError: ``gt`` is not a ``GT``.
 
+
+    Warns:
+        SdvplotWarning: When ``text_color`` is set and the table stripes its rows: in a notebook the stripes cover the
+            text color on every other row.
+
     Example:
         ::
 
@@ -363,6 +387,8 @@ def gt_highlight_na(
         styles.append(important(style.fill(color=fill)))
     if text_args:
         styles.append(style.text(**text_args))
+    if "color" in text_args:
+        _warn_striped(gt, "gt_highlight_na")
 
     out = gt
     for col in _columns(gt, columns):
@@ -1150,6 +1176,11 @@ def gt_color_ranks(
         ValueError: ``columns`` matches nothing, the palette is not a list of hex colors, or there is no
             ``domain`` and no numeric value to derive one from.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows: in a notebook the stripes cover the fills and text color on
+            every other row.
+
     Example:
         ::
 
@@ -1167,6 +1198,7 @@ def gt_color_ranks(
     if keep is None:
         return gt
     lo, hi = _domain({c: [_number(v) for v in _values(gt, c)] for c in cols}, domain)
+    _warn_striped(gt, "gt_color_ranks", "fills and text color")
     out = gt.data_color(
         columns=cols,
         rows=keep,

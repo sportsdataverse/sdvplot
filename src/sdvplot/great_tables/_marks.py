@@ -417,6 +417,20 @@ def important(*styles: Any) -> Any:
     return style.css(rule=" ".join(f"{d.strip()} !important;" for d in rule.split(";") if d.strip()))
 
 
+def _warn_striped(gt: GT, helper: str, covered: str = "text color") -> None:
+    """One SdvplotWarning when ``gt`` stripes its body rows. The notebook repr marks the stripes' background and text
+    color ``!important`` too, so on every other row they beat what a helper draws as a plain inline style: the ink it
+    pairs with an ``important`` fill, or ``data_color``'s fills. ``as_raw_html()`` and saved images are unaffected."""
+    if gt._options.row_striping_include_table_body.value:
+        warnings.warn(
+            f"{helper}: row striping is on, and in a notebook great_tables marks the stripes !important, so every "
+            f"other row shows the stripe's colors instead of the {covered} this draws; turn striping off with "
+            "opt_row_striping(row_striping=False)",
+            SdvplotWarning,
+            stacklevel=3,
+        )
+
+
 def _table_id(gt: GT) -> tuple[GT, str]:
     """The table's id, so CSS can be scoped to ``#id``, assigning a random one when it has none or an empty one
     (sdvplotR's ``.table_id``; ``"#"`` alone would scope nothing)."""
