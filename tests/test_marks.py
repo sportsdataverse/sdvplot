@@ -33,8 +33,14 @@ def test_variant_and_mark_type():
     assert _marks.logo_url("LV", "nfl", mark_type="wordmark") == "https://cdn/4444.png"
 
 
-def test_a_missing_variant_falls_back_to_default():
-    assert _marks.logo_url("LV", "nfl", variant="does-not-exist") == "https://cdn/1111.png"
+def test_a_variant_the_team_lacks_falls_back_to_default():
+    # "alt" is a Royals (mlb) variant: in the archive, so not a typo, but no Raiders mark has it
+    assert _marks.logo_url("LV", "nfl", variant="alt") == "https://cdn/1111.png"
+
+
+def test_a_variant_no_mark_has_is_an_error():
+    with pytest.raises(ValueError, match="unknown variant 'does-not-exist'"):
+        _marks.logo_url("LV", "nfl", variant="does-not-exist")
 
 
 def test_espn_outranks_a_newer_wayback_copy():

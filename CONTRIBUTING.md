@@ -11,6 +11,7 @@
   - [Code standards for new modules](#code-standards-for-new-modules)
   - [Notebooks](#notebooks)
   - [Changelog](#changelog)
+  - [Deprecation policy](#deprecation-policy)
   - [Commits](#commits)
   - [Documentation and the docs site](#documentation-and-the-docs-site)
   - [Release](#release)
@@ -129,6 +130,21 @@ pages come from `tools/render_notebooks.py`.
 Every user-visible change gets an entry under `## [Unreleased]` in `CHANGELOG.md`, in
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) form: a `### Added`, `### Changed` or `### Fixed` group, with
 a `####` topic heading when the entry needs one.
+
+## Deprecation policy
+
+From 0.1.0, a public name, argument or behaviour is not removed or renamed without a deprecation first:
+
+- Keep the old form working and have it warn through `sdvplot._deprecate`: `deprecate(old, replacement=...,
+  removal=...)` from inside the old function or branch, or `@deprecated_alias(removal="0.4.0", old="new")` for a renamed
+  keyword argument. Both raise `SdvplotDeprecationWarning`, a `FutureWarning` (shown by default) and a
+  `SdvplotWarning`, at the caller's line, naming the replacement and the release that removes the old form.
+- Warn for at least one minor release before removing: deprecated in 0.3.0, removed no earlier than 0.4.0. From 1.0,
+  removals wait for the next major release.
+- Each deprecation gets a test that the old form still works and warns once, a `### Deprecated` changelog entry when it
+  starts, and a `### Removed` entry when it goes.
+- Before 1.0, a change that cannot keep the old form working (a security fix, say) may break without a deprecation; its
+  changelog entry says how to migrate.
 
 ## Commits
 

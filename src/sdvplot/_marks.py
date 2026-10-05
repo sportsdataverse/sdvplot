@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import warnings
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
-from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
+from sdvplot._errors import InputError, UnresolvedTeamError, warn
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
 from sdvplot._resolve import _covers, one_team, resolve
@@ -41,6 +40,24 @@ MARK_TYPES = ("logo", "wordmark")
 def _check_mark_type(mark_type: str) -> None:
     if mark_type not in MARK_TYPES:
         raise InputError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
+
+
+# (the manifest frame, every variant it holds): rebuilt when a refreshed manifest is a new object, as _RANKED is
+_VARIANTS: list[tuple[pl.DataFrame, frozenset[str]]] = []
+
+
+def _check_variant(variant: str, league: str) -> None:
+    """A variant no mark in the archive has is a typo, not one this team lacks (that falls back): ValueError listing
+    the league's variants. "default" and "dark" are always valid."""
+    if variant in ("default", "dark"):
+        return
+    manifest = load_manifest()
+    if not _VARIANTS or _VARIANTS[0][0] is not manifest:
+        _VARIANTS[:] = [(manifest, frozenset(manifest["variant"].drop_nulls().to_list()))]
+    if not isinstance(variant, str) or variant not in _VARIANTS[0][1]:  # a list would be unhashable in the set
+        _index.check_league(league)
+        known = sorted({"default", "dark", *_ranked(league)["variant"].drop_nulls().to_list()})
+        raise InputError(f"unknown variant {variant!r}: no mark in the archive has it; {league} marks come in {known}")
 
 
 def _union(col: str, bound: pl.Expr) -> pl.Expr:
@@ -160,6 +177,7 @@ def select_mark(
     sources and current marks first. An unknown or ambiguous team gives None with the resolver's warning."""
     _check_mark_type(mark_type)
     s = norm_season(season)
+    _check_variant(variant, league)
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
@@ -212,7 +230,8 @@ def logo_url(
 
     Raises:
         TypeError: If ``team`` is not a single value.
-        ValueError: If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+        ValueError: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in
+            the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
         OfflineError: If the logo manifest cannot be downloaded and no cached copy exists.
 
     Example:
@@ -227,11 +246,12 @@ def logo_url(
         sdv-py: https://py.sportsdataverse.org/
     """
     _check_mark_type(mark_type)
+    _check_variant(variant, league)
     team_id = resolve(one_team(team, "logo_url"), league, season=season)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
-        warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
+        warn(f"no {mark_type} archived for {team!r} ({league})")
         return None
     return str(row["archive_url"])

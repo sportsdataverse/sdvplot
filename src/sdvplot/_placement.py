@@ -9,11 +9,10 @@ from __future__ import annotations
 import math
 import numbers
 import os
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, cast
 
-from sdvplot._errors import InputError, SdvplotWarning
+from sdvplot._errors import InputError, warn
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
 from sdvplot._normalize import norm_value
@@ -64,7 +63,7 @@ def _missing(value: Any) -> bool:
 def _warn_skipped(reason: str, values: list[Any]) -> None:
     if values:
         shown = ", ".join(repr(v) for v in values[:10]) + (f" and {len(values) - 10} more" if len(values) > 10 else "")
-        warnings.warn(f"skipped {len(values)} point(s) {reason}: {shown}", SdvplotWarning, stacklevel=3)
+        warn(f"skipped {len(values)} point(s) {reason}: {shown}")
 
 
 def place(

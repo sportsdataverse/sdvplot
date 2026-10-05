@@ -334,6 +334,7 @@ _NEEDS_AT_IMPORT = {  # module -> a path it reads while importing
     "test_build_index.py": "tools",
     "test_fetch_sources.py": "tools",
     "test_gen_docs.py": "tools",
+    "test_submodule_examples.py": "tools",
     "test_home_figures.py": "tools",
     "test_notebooks.py": "tools",
 }

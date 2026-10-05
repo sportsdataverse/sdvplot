@@ -222,3 +222,11 @@ def test_categories_of_url_data_need_an_explicit_sort(mark_images):
     listed = chart.encode(x=alt.X("team:N", sort=["LV", "LAR"]))
     marks = salt._drawn_axis_marks(sdvplot.axis_logos(listed, "x", league="nfl"), "x")
     assert [m[:2] for m in marks] == [("13", 0.0), ("14", 1.0)]
+
+
+@pytest.mark.parametrize("x", [alt.X("team", sort=None), "team", alt.X("team"), alt.X("team:N", sort=None)])
+def test_axis_logos_reads_an_untyped_channel_shorthand(mark_images, x):
+    df = pd.DataFrame({"team": ["LV", "LAR"], "v": [1, 2]})
+    chart = alt.Chart(df).mark_bar().encode(x=x, y="v:Q").properties(height=200)
+    out = sdvplot.axis_logos(chart, "x", league="nfl", height=0.1)
+    assert sorted(m[0] for m in salt._drawn_axis_marks(out, "x")) == ["13", "14"]

@@ -148,6 +148,7 @@ def add_logos(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart (Bar, Line and Pie place values by category or angle).
         ValueError: If ``height`` or ``alpha`` is out of range, or ``x``/``y``/``teams`` differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::
@@ -208,6 +209,7 @@ def add_wordmarks(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart.
         ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::
@@ -262,6 +264,7 @@ def add_headshots(
     Raises:
         TypeError: If ``chart`` is not an XY-family chart.
         ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
 
     Example:
         ::

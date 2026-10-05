@@ -8,6 +8,9 @@ import re
 import unicodedata
 from typing import Any
 
+from sdvplot import _index
+from sdvplot._errors import InputError
+
 _FLOAT_ID = re.compile(r"-?\d+\.0+")
 # typographic punctuation providers write inconsistently (sdvplotR fold_accents): curly apostrophes, en/em dashes
 _PUNCT = str.maketrans({"\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-"})
@@ -40,16 +43,40 @@ def norm_value(value: Any) -> str | None:
     return s or None
 
 
-def norm_season(value: Any) -> int | None:
-    """A season as an int year. Accepts 2020, 2020.0, "2020"; None/NaN mean no season; anything else is an error."""
+_SPLIT_SEASON = re.compile(r"\s*(\d{4})\s*[-/]\s*(\d{2}|\d{4})\s*")
+
+
+def check_season(year: int, league: str | None = None) -> None:
+    """InputError unless ``year`` is a season sdvplot knows for ``league`` (any league when None): the bounds come from
+    the bundled index (``_index.season_bounds``)."""
+    bounds = _index.season_bounds(league)
+    if bounds is not None and not bounds[0] <= year <= bounds[1]:
+        scope = "" if league is None else f" for {league}"
+        raise InputError(
+            f"season {year} is outside the seasons sdvplot knows{scope} ({bounds[0]} to {bounds[1]}); pass a year such "
+            "as 2020"
+        )
+
+
+def norm_season(value: Any, league: str | None = None) -> int | None:
+    """A season as an int year. Accepts 2020, 2020.0, "2020"; None/NaN mean no season; anything else is an error, and
+    so is a year outside the seasons the bundled index holds for ``league`` (any league when None)."""
     if _is_na(value):
         return None
+    year = None
     if isinstance(value, numbers.Real) and not isinstance(value, bool):
         f = float(value)
         if math.isnan(f):
             return None
         if f.is_integer():
-            return int(f)
-    if isinstance(value, str) and value.strip().isdigit():
-        return int(value.strip())
-    raise ValueError(f"season must be a year such as 2020, got {value!r}")
+            year = int(f)
+    elif isinstance(value, str) and value.strip().isdigit():
+        year = int(value.strip())
+    if year is None:
+        hint = ""
+        if isinstance(value, str) and (m := _SPLIT_SEASON.fullmatch(value)):
+            end = int(m.group(1)) + 1
+            hint = f"; for a split season pass its ending year ({end} for {value.strip()!r})"
+        raise ValueError(f"season must be a year such as 2020, got {value!r}{hint}")
+    check_season(year, league)
+    return year
