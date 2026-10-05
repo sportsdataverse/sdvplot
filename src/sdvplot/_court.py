@@ -26,8 +26,10 @@ def _tenths(frame: Any, name: str) -> Any:
         if _missing(v):
             values.append(None)
             continue
-        try:  # float() reads strings and numbers; a bool is a number to Python but not a coordinate
-            f = math.nan if isinstance(v, bool) else float(v)
+        if type(v).__name__ in ("bool", "bool_"):  # Python and numpy booleans, which float() reads as 1.0 / 0.0
+            raise TypeError(f"column {name!r} must be numeric or strings of numbers, not booleans")
+        try:  # float() reads strings and numbers; R's as.numeric() reads no "_" digit separators, so neither do we
+            f = math.nan if isinstance(v, str) and "_" in v else float(v)
         except (TypeError, ValueError):
             f = math.nan
         if math.isnan(f):
@@ -64,9 +66,9 @@ def court_coords(data: Any, x: str = "x_legacy", y: str = "y_legacy") -> Any:
 
     Raises:
         TypeError: If ``data`` is not a pandas/polars DataFrame, ``x``/``y`` is not a string, or a coordinate column
-            is boolean, categorical or another non-numeric type.
+            is boolean (or holds booleans), categorical or another non-numeric type.
         ValueError: If ``x`` and ``y`` name the same column, a column is missing, or a string is not a number (such
-            as ``""`` or ``"NA"``).
+            as ``""``, ``"NA"`` or ``"1_0"``).
 
     Example:
         ::

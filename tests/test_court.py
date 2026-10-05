@@ -3,6 +3,7 @@
 import math
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
@@ -191,3 +192,16 @@ def test_an_all_null_boolean_column_gives_null_coordinates(df):
     out = pl.from_pandas(out) if isinstance(out, pd.DataFrame) else out
     assert out.schema["court_y"] == pl.Float64 and out["court_y"].null_count() == 2
     assert out["court_x"].to_list() == [-41.75 + 3.9, -41.75 + 2.9]
+
+
+@pytest.mark.parametrize("values", [[True, None], [np.True_, "240"]], ids=["bool", "numpy bool"])
+def test_booleans_in_an_object_column_are_type_errors(values):
+    df = pd.DataFrame({"x_legacy": pd.Series(values, dtype=object), "y_legacy": [39, 29]})
+    with pytest.raises(TypeError, match="column 'x_legacy' must be numeric or strings of numbers, not booleans"):
+        sdvplot.court_coords(df)
+
+
+def test_a_string_with_an_underscore_is_not_a_number():
+    # Python's float() reads "1_0" as 10; R's as.numeric("1_0") is NA, so sdvplotR names it as not a number
+    with pytest.raises(ValueError, match=r"column 'x_legacy' has values that are not numbers: \['1_0'\]"):
+        sdvplot.court_coords(pl.DataFrame({"x_legacy": ["1_0", "240"], "y_legacy": ["39", "29"]}))

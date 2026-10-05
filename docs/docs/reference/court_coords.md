@@ -34,8 +34,8 @@ are already in feet on a center-court frame.
 
 ## Raises
 
-- `TypeError`: If ``data`` is not a pandas/polars DataFrame, ``x``/``y`` is not a string, or a coordinate column is boolean, categorical or another non-numeric type.
-- `ValueError`: If ``x`` and ``y`` name the same column, a column is missing, or a string is not a number (such as ``""`` or ``"NA"``).
+- `TypeError`: If ``data`` is not a pandas/polars DataFrame, ``x``/``y`` is not a string, or a coordinate column is boolean (or holds booleans), categorical or another non-numeric type.
+- `ValueError`: If ``x`` and ``y`` name the same column, a column is missing, or a string is not a number (such as ``""``, ``"NA"`` or ``"1_0"``).
 
 ## Example
 
