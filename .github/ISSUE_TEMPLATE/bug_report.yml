@@ -9,6 +9,7 @@ body:
         Thanks for filing a bug. Please fill in the fields below — they help us
         reproduce and prioritize the issue. If you're not sure whether it's a
         bug or a usage question, file it anyway: usage questions are welcome here.
+        A team that resolves wrongly, or a wrong logo or color, has its own template.
 
   - type: textarea
     id: summary
@@ -16,7 +17,7 @@ body:
       label: What happened?
       description: A clear description of the unexpected behavior.
       placeholder: |
-        Calling `sdvplot.logo_url("KC", "nfl")` raises X, but I expected Y.
+        Calling `sdvplot.add_logos(ax, df["x"], df["y"], df["team"], league="nfl")` raises X, but I expected Y.
     validations:
       required: true
 
@@ -24,7 +25,7 @@ body:
     id: reproducer
     attributes:
       label: Minimal reproducer
-      description: Smallest code snippet that triggers the bug. Include any required env vars or config.
+      description: Smallest code snippet that triggers the bug. Include any required env vars (SDVPLOT_CACHE_DIR, SDVPLOT_CACHE_TTL).
       render: python
       placeholder: |
         import sdvplot
@@ -43,15 +44,77 @@ body:
   - type: textarea
     id: traceback
     attributes:
-      label: Full traceback (if applicable)
-      description: Paste the COMPLETE error output. Don't truncate.
+      label: Full traceback or warning (if applicable)
+      description: Paste the COMPLETE error or SdvplotWarning output. Don't truncate.
       render: text
 
-  - type: input
+  - type: dropdown
+    id: library
+    attributes:
+      label: Plotting or table library
+      description: The library the call draws on (the adapter, or the column helpers).
+      multiple: true
+      options:
+        - none (core functions only)
+        - matplotlib
+        - seaborn
+        - plotnine
+        - plotly
+        - altair
+        - bokeh
+        - holoviews
+        - folium
+        - pygal
+        - great_tables
+        - reactable
+        - plottable
+        - sportypy (surface)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: league
+    attributes:
+      label: League
+      description: The league key the call passed, if any.
+      options:
+        - not league-specific
+        - aaf
+        - ahl
+        - cfb
+        - cricket
+        - echl
+        - mbb
+        - milb
+        - mlb
+        - nba
+        - nbagl
+        - ncaa_baseball
+        - ncaa_mhockey
+        - ncaa_softball
+        - ncaa_whockey
+        - nfl
+        - nhl
+        - ohl
+        - phf
+        - pwhl
+        - qmjhl
+        - soccer
+        - ufl
+        - usfl
+        - ushl
+        - wbb
+        - whl
+        - wnba
+        - xfl
+
+  - type: textarea
     id: sdv_version
     attributes:
-      label: sdvplot version
-      description: Output of `sdvplot.versions()`
+      label: sdvplot versions
+      description: Output of `import sdvplot; print(sdvplot.versions())` (the package, bundled index and logo manifest versions).
+      render: python
+      placeholder: "{'sdvplot': '0.1.0', 'index': '...', 'manifest_last_modified': '...'}"
     validations:
       required: true
 
