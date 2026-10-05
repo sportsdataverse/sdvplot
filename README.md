@@ -39,6 +39,7 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 | `[svg]` | resvg-py, for SVG marks |
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
+| `[pygal]` | pygal |
 | `[all]` | everything above |
 
 ## Get started

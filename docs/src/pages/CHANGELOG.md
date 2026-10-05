@@ -49,6 +49,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- Release: a release run refuses a README that still installs from GitHub (it becomes the version's PyPI page), a
+  CHANGELOG without a dated heading for the tag, or entries left under `[Unreleased]`
+  (`tests/test_repo_files.py::test_the_tagged_release_is_ready`). The dist is built in its own job from a fresh
+  checkout after the tests pass, with no uv cache from other workflows, a pinned uv and no persisted credentials; the
+  docs deploy (which holds `contents: write`) pins its actions by commit SHA.
+- CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
+  submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
+  and `--strict-config`. Python 3.14 is a declared classifier.
 
 ### Fixed
 
