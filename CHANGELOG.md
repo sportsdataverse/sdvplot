@@ -44,6 +44,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
   with a CSS rule), and the college softball World Series table turns row striping off after `gt_theme_ncaa`, so the
   `gt_color_results` rows keep their white text in a notebook.
+- The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
+  (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
+  name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
+  III and NAIA players on teams the index does not hold, and score cards keep games between two of its teams.
 
 ### Fixed
 

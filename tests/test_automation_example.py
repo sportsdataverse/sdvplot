@@ -282,15 +282,7 @@ def test_fetch_games_gives_up_with_no_data(monkeypatch):
 
 
 def test_fetch_leaders_falls_back_a_season_and_says_so(monkeypatch):
-    try:
-        from sportsdataverse.errors import NoDataError
-    except (ImportError, OSError) as e:  # not installed (examples group), or a native library fails to load
-        pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
-    except Exception as e:
-        if type(e).__name__ != "XGBoostError":  # xgboost without libomp (macOS runners); anything else is a real break
-            raise
-        pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
-
+    NoDataError = _sdv_or_skip()  # noqa: N806
     ref = "http://x/seasons/{y}/{kind}/{i}?lang=en"
 
     def leaders(season, season_type, return_parsed):
@@ -323,6 +315,118 @@ def test_fetch_leaders_falls_back_a_season_and_says_so(monkeypatch):
     assert meta["note"] == "No 2026-27 regular-season leaders yet, so these are 2025-26."
     with pytest.raises(social.NoData, match="categories: pointsPerGame"):
         social.fetch_leaders("nba", "goals")
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# College basketball: NCAA Division I only (ESPN's group 50)
+
+GROUP_REF = "http://sports.core.api.espn.com/v2/sports/basketball/leagues/{slug}/seasons/{y}/types/2/groups/50?lang=en"
+SLUGS = {"mbb": "mens-college-basketball", "wbb": "womens-college-basketball"}
+
+
+def _sdv_or_skip():
+    try:
+        from sportsdataverse.errors import NoDataError
+    except (ImportError, OSError) as e:  # not installed (examples group), or a native library fails to load
+        pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
+    except Exception as e:
+        if type(e).__name__ != "XGBoostError":  # xgboost without libomp (macOS runners); anything else is a real break
+            raise
+        pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
+    return NoDataError
+
+
+def _group(league, name="NCAA Division I"):
+    def season_group(season, season_type, group_id, return_parsed):
+        assert (season_type, str(group_id), return_parsed) == (2, "50", False)
+        return {"$ref": GROUP_REF.format(slug=SLUGS[league], y=season), "id": "50", "name": name}
+
+    return season_group
+
+
+class _Resp:
+    def __init__(self, payload, status=200):
+        self.payload, self.status_code = payload, status
+
+    def json(self):
+        return self.payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise requests.HTTPError(str(self.status_code))
+
+
+@pytest.mark.parametrize("league", ["mbb", "wbb"])
+def test_college_leagues_are_listed_and_take_the_season_by_the_year_it_ends(league):
+    assert league in social.LEAGUES and social.LEAGUES[league][0] == "basketball"
+    assert social.season_label(league, 2026) == "2025-26"
+    assert social.parse_args(["leaderboard", "--league", league]).league == league
+
+
+@pytest.mark.parametrize("league", ["mbb", "wbb"])
+def test_college_leaders_are_espn_s_division_one_group_s(league, monkeypatch):
+    # ESPN's league-wide college leaders span every division: most of the top scorers play below Division I, on teams
+    # the index does not hold. The Division I group's own leaders sit under the group's path.
+    _sdv_or_skip()
+    ref = "http://x/seasons/2026/{kind}/{i}?lang=en"
+    asked = []
+
+    def get(url, timeout):
+        asked.append(url)
+        if "/2027/" in url:
+            return _Resp({}, 404)
+        rows = [{"value": 25.0, "displayValue": "25.0", "athlete": {"$ref": ref.format(kind="athletes", i="7")},
+                 "team": {"$ref": ref.format(kind="teams", i="2509")}}]  # fmt: skip
+        return _Resp({"categories": [{"name": "pointsPerGame", "displayName": "Points Per Game", "leaders": rows}]})
+
+    def league_wide(**kwargs):
+        raise AssertionError("college leaders must come from the Division I group")
+
+    fns = {
+        "season_group": _group(league),
+        "season_type_leaders": league_wide,
+        "player_core": lambda athlete_id, return_parsed: {"displayName": "Braden Smith"},
+    }
+    monkeypatch.setattr(social, "espn", lambda lg, name: fns[name])
+    monkeypatch.setattr(social, "current_season", lambda lg: (2027, False))
+    monkeypatch.setattr(social.requests, "get", get)
+    social.d1_group.cache_clear()
+    frame, meta = social.fetch_leaders(league, "pointsPerGame", top=1)
+    base = f"https://sports.core.api.espn.com/v2/sports/basketball/leagues/{SLUGS[league]}/seasons"
+    assert asked == [f"{base}/2027/types/2/groups/50/leaders", f"{base}/2026/types/2/groups/50/leaders"]
+    assert frame["team_id"].to_list() == ["2509"] and meta["season"] == 2026
+    assert meta["note"] == "No 2026-27 regular-season leaders yet, so these are 2025-26."
+
+
+def test_a_group_50_that_is_not_division_one_is_an_error_not_a_guess(monkeypatch):
+    _sdv_or_skip()
+    monkeypatch.setattr(social, "espn", lambda lg, name: {"season_group": _group("wbb", "NCAA Division II")}[name])
+    monkeypatch.setattr(social, "current_season", lambda lg: (2026, True))
+    social.d1_group.cache_clear()
+    with pytest.raises(social.NoData, match="ESPN group 50 is 'NCAA Division II' for wbb 2026, not NCAA Division I"):
+        social.fetch_leaders("wbb", "pointsPerGame")
+
+
+def test_college_score_cards_keep_games_between_two_division_one_teams(monkeypatch):
+    raw = _scoreboard([_event("1"), _event("2")])
+    raw["leagues"][0]["season"]["year"] = 2026
+    raw["events"][1]["competitions"][0]["competitors"][0]["team"]["id"] = "112358"  # a Division II visitor
+    teams = {"items": [{"$ref": f"http://x/seasons/2026/teams/{t}?lang=en"} for t in ("13", "14")], "count": 2}
+    seen = []
+
+    def group_teams(season, season_type, group_id, limit, return_parsed):
+        seen.append((season, season_type, str(group_id), limit))
+        return teams
+
+    monkeypatch.setattr(social, "scoreboard", lambda league, day: raw)
+    fns = {"season_group": _group("wbb"), "season_group_teams": group_teams}
+    monkeypatch.setattr(social, "espn", lambda lg, name: fns[name])
+    social.d1_group.cache_clear()
+    social.d1_teams.cache_clear()
+    day, games, note = social.fetch_games("wbb", DAY)
+    assert games["game_id"].to_list() == ["1"] and seen == [(2026, 2, "50", 1000)] and note is None
+    _, games, _ = social.fetch_games("nba", DAY)  # every other league keeps every final
+    assert games["game_id"].to_list() == ["1", "2"]
 
 
 # ---------------------------------------------------------------------------------------------------------------------
