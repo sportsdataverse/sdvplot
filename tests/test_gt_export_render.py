@@ -187,3 +187,26 @@ def test_render_vscode_stripes_leave_the_text_color_paired_with_a_fill(tmp_path,
         for top, bottom in rows
     ]
     assert inked == [True] * 4, rows
+
+
+@pytest.mark.render
+def test_render_kenpom_bands_alternate_over_data_rows_around_summary_rows(tmp_path):
+    # a group's summary row is a <tr> in the body: counted as a data row, it shifted the bands of the next group
+    import nokap
+
+    df = pl.DataFrame({"team": ["LV", "KC", "BUF", "MIA"], "conf": ["W", "W", "E", "E"], "w": [1, 2, 3, 4]})
+    gt = GT(df, groupname_col="conf", rowname_col="team", id="kps").summary_rows(fns={"Sum": pl.col("w").sum()})
+    shot = nokap.from_html(
+        sgt.gt_theme_kenpom(gt).as_raw_html(make_page=True), tmp_path / "k.png", selector="#kps table"
+    )
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    x = rgb.width - 4  # inside the last body column, clear of its text
+    runs = []  # the band color of each data row, top to bottom
+    for y in range(rgb.height):
+        c = rgb.getpixel((x, y))
+        if c in ((0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)) and (not runs or runs[-1][1] != y - 1 or runs[-1][0] != c):
+            runs.append([c, y])
+        elif runs and runs[-1][0] == c and runs[-1][1] == y - 1:
+            runs[-1][1] = y
+    assert [c for c, _ in runs] == [(0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)] * 2

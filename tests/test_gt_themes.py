@@ -397,7 +397,10 @@ def test_kenpom_bands_rows_and_hides_its_spanner_row():
     assert f"#tid {KENPOM_ROWS.format('odd')} {{ background-color: #F2FAFD; }}" in one
 
 
-KENPOM_ROWS = ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row)) > td.gt_row:not(.gt_summary_row, .gt_grand_summary_row)"
+KENPOM_ROWS = (
+    ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row, :has(> .gt_summary_row, > .gt_grand_summary_row)))"
+    " > td.gt_row"
+)
 
 
 @pytest.mark.parametrize("order", ["fill, then theme", "theme, then fill"])

@@ -1498,10 +1498,11 @@ def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT
     return _scale_output(table, density).tab_options(**options)
 
 
-# a body cell of a data row, the rows counted as drawn: row group headings skipped, summary cells left alone
+# a body cell of a data row, the rows counted as drawn: row group headings and summary rows (whose cells, not rows,
+# carry the class) are neither counted nor painted
 _KENPOM_ROWS = (
-    ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row)) > td.gt_row:not(.gt_summary_row, "
-    ".gt_grand_summary_row)"
+    ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row, :has(> .gt_summary_row, > .gt_grand_summary_row)))"
+    " > td.gt_row"
 )
 
 
