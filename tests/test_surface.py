@@ -105,3 +105,72 @@ def test_a_number_font_the_caller_names_wins(monkeypatch):
     monkeypatch.setattr(importlib.import_module("sportypy.surfaces.football"), "NFLField", spy)
     sdvplot.surface("nfl", field_updates={"number_font": "DejaVu Serif"})
     assert seen["field_updates"]["number_font"] == "DejaVu Serif"
+
+
+@pytest.mark.parametrize("league", ["nhl", "nba"])
+def test_a_rink_or_court_does_not_walk_every_polygon_segment(league, monkeypatch):
+    # sportypy draws its circles and arcs as 10,000-point polygons and matplotlib's add_patch walked every segment as a
+    # Bezier curve to find the data limits: ~1.3 M segments, 16-19 s per rink or court
+    from matplotlib.path import Path
+
+    walked = 0
+    walk = Path.iter_bezier
+
+    def counting(self, **kwargs):
+        nonlocal walked
+        for segment in walk(self, **kwargs):
+            walked += 1
+            yield segment
+
+    monkeypatch.setattr(Path, "iter_bezier", counting)
+    sdvplot.surface(league)
+    assert walked < 1_000
+
+
+def test_polygon_limits_are_matplotlibs_own():
+    import contextlib
+
+    import numpy as np
+    from matplotlib.patches import Circle, Polygon
+    from matplotlib.transforms import Affine2D
+
+    theta = np.linspace(0, 2 * np.pi, 500)
+    xy = np.column_stack([3 + 2 * np.cos(theta), -1 + np.sin(theta)])
+    bounds = []
+    for fast in (False, True):
+        _, ax = plt.subplots()
+        with _surface._polygon_limits(ax) if fast else contextlib.nullcontext():
+            ax.add_patch(Polygon(xy, closed=True))
+            ax.add_patch(Polygon(xy * 2, closed=False, transform=Affine2D().rotate_deg(30) + ax.transData))
+            ax.add_patch(Polygon(xy[:1] + 50))  # one vertex: no segment, so no limits
+            ax.add_patch(Circle((10, 10), 1))  # Bezier curves: matplotlib's own walk
+        assert "_update_patch_limits" not in vars(ax)
+        bounds.append(ax.dataLim.bounds)
+    assert bounds[0] == bounds[1]
+
+
+def test_polygon_limits_send_an_empty_coded_path_to_matplotlib():
+    # an empty StepPatch has a codes array with nothing in it; reading codes[0] raised IndexError
+    from matplotlib.patches import StepPatch
+
+    _, ax = plt.subplots()
+    with _surface._polygon_limits(ax):
+        ax.add_patch(StepPatch([], [0]))
+
+
+def test_polygon_limits_restore_an_updater_the_axes_already_had():
+    _, ax = plt.subplots()
+    seen = []
+
+    def own(patch):
+        seen.append(patch)
+
+    ax._update_patch_limits = own
+    with _surface._polygon_limits(ax), _surface._polygon_limits(ax):  # nested: the outer override survives too
+        pass
+    assert vars(ax)["_update_patch_limits"] is own
+    with _surface._polygon_limits(ax):
+        from matplotlib.patches import Circle
+
+        ax.add_patch(Circle((0, 0), 1))  # not a polygon: the Axes' own updater gets it
+    assert len(seen) == 1

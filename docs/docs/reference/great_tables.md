@@ -3512,6 +3512,10 @@ gt_theme_kenpom(
 
 KenPom's table look: blue-banded rows, a pale-blue label band with blue labels, black row rules.
 
+The bands are a stylesheet rule, so a cell fill (``data_color``, ``tab_style(style.fill(...))``,
+``gt_color_results``, ...) shows over them whether it is applied before or after the theme. They alternate over
+the data rows as drawn, so a grouped table bands by display order (sdvplotR bands by data row).
+
 ### Arguments
 
 | Name | Type | Description |

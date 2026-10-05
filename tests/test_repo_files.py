@@ -136,3 +136,25 @@ def test_the_tagged_release_is_ready():
         pytest.skip("not a release run (release.yml sets SDVPLOT_RELEASE_VERSION)")
     readme, changelog = ((ROOT / f).read_text(encoding="utf-8") for f in ("README.md", "CHANGELOG.md"))
     assert release_blockers(version, readme, changelog) == []
+
+
+def test_the_release_workflow_keeps_its_hardening():
+    """release.yml's guards, which nothing else exercises before release day: dropping one would let an unready README
+    or a poisoned cache reach PyPI with every check green."""
+    path = ROOT / ".github" / "workflows" / "release.yml"
+    if not path.exists():  # an unpacked sdist ships no .github
+        pytest.skip("not a checkout")
+    jobs = yaml.safe_load(path.read_text(encoding="utf-8"))["jobs"]
+    steps = {name: job["steps"] for name, job in jobs.items()}
+    run_tests = next(st for st in steps["test"] if st.get("name") == "Run tests")
+    assert "github.ref_name" in run_tests["env"]["SDVPLOT_RELEASE_VERSION"]
+    for name in ("test", "build"):
+        uv = next(st for st in steps[name] if "setup-uv" in st.get("uses", ""))
+        assert uv["with"]["enable-cache"] is False and uv["with"]["version"] != "latest", name
+        checkout = next(st for st in steps[name] if "actions/checkout" in st.get("uses", ""))
+        assert checkout["with"]["persist-credentials"] is False, name
+    assert jobs["build"]["needs"] == "test" and jobs["publish-pypi"]["needs"] == "build"
+    assert jobs["publish-pypi"]["permissions"] == {"id-token": "write"}
+    assert jobs["publish-pypi"]["environment"]["name"] == "pypi"
+    assert all("@" in st["uses"] and len(st["uses"].split("@")[1]) == 40 for j in jobs.values() for st in j["steps"]
+               if "uses" in st)  # fmt: skip

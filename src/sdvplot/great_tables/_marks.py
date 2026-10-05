@@ -501,6 +501,21 @@ def important(*styles: Any) -> Any:
     return style.css(rule=" ".join(f"{d.strip()} !important;" for d in rule.split(";") if d.strip()))
 
 
+def _warn_striped(gt: GT, helper: str, covered: str) -> None:
+    """One SdvplotWarning when ``gt`` stripes its body rows and great_tables' repr here marks its stylesheet
+    ``!important`` (VS Code and Positron; not Jupyter, Quarto, Databricks or saved files). The stripes' background and
+    text color then beat a plain inline style on every other row, such as ``data_color``'s fills, which sdvplot cannot
+    wrap in ``important()``."""
+    from great_tables._render import infer_render_env_defaults
+
+    if gt._options.row_striping_include_table_body.value and infer_render_env_defaults()["all_important"]:
+        warn(
+            f"{helper}: row striping is on, and in VS Code and Positron notebooks great_tables marks the stripes "
+            f"!important, so every other row shows the stripe's colors instead of the {covered} this draws; turn "
+            "striping off with opt_row_striping(row_striping=False)"
+        )
+
+
 def _table_id(gt: GT) -> tuple[GT, str]:
     """The table's id, so CSS can be scoped to ``#id``, assigning a random one when it has none or an empty one
     (sdvplotR's ``.table_id``; ``"#"`` alone would scope nothing)."""

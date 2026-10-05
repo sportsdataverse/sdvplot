@@ -371,6 +371,7 @@ fig = team_tiers(
     subtitle="Opponent-adjusted goals per game, from college_hockey_ratings",
     caption="Data: ESPN via sportsdataverse-py",
     tier_desc={1: "1-4", 2: "5-10", 3: "11-16", 4: "17-24", 5: "25-32"},
+    theme="light",
     height=0.085,
 )
 fig.set_size_inches(10, 6)

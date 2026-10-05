@@ -1498,8 +1498,20 @@ def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT
     return _scale_output(table, density).tab_options(**options)
 
 
+# a body cell of a data row, the rows counted as drawn: row group headings and summary rows (whose cells, not rows,
+# carry the class) are neither counted nor painted
+_KENPOM_ROWS = (
+    ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row, :has(> .gt_summary_row, > .gt_grand_summary_row)))"
+    " > td.gt_row"
+)
+
+
 def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     """KenPom's table look: blue-banded rows, a pale-blue label band with blue labels, black row rules.
+
+    The bands are a stylesheet rule, so a cell fill (``data_color``, ``tab_style(style.fill(...))``,
+    ``gt_color_results``, ...) shows over them whether it is applied before or after the theme. They alternate over
+    the data rows as drawn, so a grouped table bands by display order (sdvplotR bands by data row).
 
     Args:
         gt: The great_tables ``GT`` to theme.
@@ -1536,14 +1548,10 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     """
     _density(density)
     gt, tid = _table_id(_check_gt(gt))
-    n = _shape(gt)[1]
     helvetica = _font("Helvetica Neue")
     band = [_text(font=helvetica, weight=650, size=px(14), color="#02b"), important(style.fill(color="#c3d9ff"))]
     table = (
         _table_font(gt, _font("Helvetica Neue"), weight=500)
-        # R's odd and even rows (1-based), banded
-        .tab_style(important(style.fill(color="#F2FAFD")), loc.body(rows=list(range(0, n, 2))))
-        .tab_style(important(style.fill(color="#e5ecf9")), loc.body(rows=list(range(1, n, 2))))
         .tab_style(band, loc.column_labels())
         .tab_style(_text(font=helvetica, weight=650, size=px(18), align="left"), loc.title())
         .tab_style(_text(font=helvetica, weight=500, size=px(14), align="left"), loc.subtitle())
@@ -1578,6 +1586,11 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
             "\n".join(
                 [
                     _last_row_border(tid, "#FFFFFF"),
+                    # R's odd and even rows (1-based), banded by a stylesheet rule: a cell's own fill is an inline
+                    # style, so it shows whichever was applied first, and table CSS is not made !important in the
+                    # notebook repr
+                    _css(tid, _KENPOM_ROWS.format("odd"), "background-color: #F2FAFD;"),
+                    _css(tid, _KENPOM_ROWS.format("even"), "background-color: #e5ecf9;"),
                     _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),
                     _css(tid, ".gt_subtitle", "padding-top: 0px !important; padding-bottom: 4px !important;"),
                     _css(tid, ".gt_heading", "padding-bottom: 0px; padding-top: 6px;"),

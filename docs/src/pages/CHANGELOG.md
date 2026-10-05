@@ -57,6 +57,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- `sdvplot.plotnine.scale_color_sdv` / `scale_fill_sdv` take `which`, `season` and `na_value` by keyword only (as
+  `palette()` and `team_colors()` do), and they and `sdvplot.pygal.team_style` take `id_system` and `strict`:
+  `scale_color_sdv("nhl", id_system="nhl_id")` reads NHL stats ids, which `"auto"` reads as ESPN ids and colored as
+  other teams without a word. A season before the league's first is reported with the league's own range in the first
+  error (`season 1850 ... for nfl (1920 to ...)`), not the index's and then the league's on a retry.
+
 - Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
   leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
   ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in
@@ -78,6 +84,19 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `gt_color_pills(gt, "pts", palette=...)`, `gt_save_batch(df, "conf", build, "{group}.png", dir="out")`.
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- Documentation: the MBB, WBB and college-hockey tutorials draw their tier lists on `team_tiers(theme="light")`, where
+  dark logos (Iowa, West Virginia, Penn State) no longer vanish into the dark background.
+- Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
+  with a CSS rule) and that stripes cover plain fills only in VS Code and Positron notebooks, and the college softball
+  World Series table turns row striping off after `gt_theme_ncaa` (`gt_color_results` fills every row).
+- The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
+  (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
+  name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
+  III and NAIA players on teams the index does not hold, and score cards keep games between two of its teams.
+- Documentation: "The adapter contract" page follows `sdvplot.testing` again: rules 0 to 8 (exactly one warning per
+  skip reason, `height` and `alpha` checked on every verb when called, drawn heights measured within 1%), the axis
+  hooks `_drawn_axis_marks` (`(team_id, tick, height)`) and `_visible_axis_labels`, the table harness's rules T0 to T6,
+  and a minimal adapter that passes the current harness.
 - API reference: one page per public submodule (`sdvplot.matplotlib`, `sdvplot.plotnine`, `sdvplot.plotly`,
   `sdvplot.altair`, `sdvplot.bokeh`, `sdvplot.holoviews`, `sdvplot.folium`, `sdvplot.pygal`, `sdvplot.great_tables`,
   `sdvplot.reactable`, `sdvplot.plottable`, `sdvplot.testing`, `sdvplot.typing`), with a section per public name in the
@@ -112,6 +131,22 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- `surface()` draws a rink or court in well under a second instead of 16-19 s: matplotlib's `add_patch` walked every
+  segment of sportypy's 10,000-point circle polygons as a Bezier curve to find the data limits (~1.3 M segments per
+  rink); for a polygon those limits are its vertices, so they now come from the vertices in one call. The drawn PNG
+  and the Axes' data limits are byte-for-byte the same.
+- `gt_theme_kenpom` no longer wipes cell fills. Its row bands were `!important` cell fills, so theming a table after
+  `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
+  the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn (row group
+  headings and summary rows are neither counted nor painted), which every cell fill shows over, in either order and in
+  the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
+- Row striping no longer covers the text color sdvplot's fill helpers draw in VS Code and Positron notebooks. There,
+  great_tables' repr marks its whole stylesheet `!important` (Jupyter, Quarto, Databricks and saved files do not), and
+  on every other row the stripe's text color beat the plain inline ink that `gt_color_results`, `gt_bold_rows`,
+  `gt_tiers`, `gt_spotlight`, `gt_outliers`, `gt_highlight_cells` and `gt_highlight_na` pair with their `!important`
+  fills: white text on a dark fill turned the stripe's dark gray. That ink is now `!important` too. `gt_color_ranks`
+  fills through great_tables' `data_color`, whose plain fills sdvplot cannot mark, so on a striped table in VS Code or
+  Positron it warns once (`SdvplotWarning`) and says to turn striping off with `opt_row_striping(row_striping=False)`.
 - A failed logo download raises sdvplot's own errors, never a `requests` exception or a bare `OSError`: an HTTP error
   status (4xx or 5xx) with no cached copy is the new `sdvplot.DownloadError` (an `OfflineError` and an `OSError`), and
   a download whose sha256 does not match the manifest, or an archived file that is not an image, is the new

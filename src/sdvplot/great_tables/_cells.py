@@ -28,7 +28,15 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color, solid
 from sdvplot._errors import warn
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _background, _check_columns, _check_gt, _constant, _table_id, important
+from sdvplot.great_tables._marks import (
+    _background,
+    _check_columns,
+    _check_gt,
+    _constant,
+    _table_id,
+    _warn_striped,
+    important,
+)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -117,6 +125,8 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     Raises:
         TypeError: ``gt`` is not a ``GT``.
 
+
+
     Example:
         ::
 
@@ -138,7 +148,7 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     idx = _kept_rows(gt, rows)
     if idx is None:
         return gt
-    styles: list[Any] = [style.text(color=text_color, weight="bold")]
+    styles: list[Any] = [important(style.text(color=text_color, weight="bold"))]
     if highlight_color is not None:
         styles.insert(0, important(style.fill(color=highlight_color)))
     return gt.tab_style(style=styles, locations=loc.body(rows=idx))
@@ -178,6 +188,8 @@ def gt_color_results(
         TypeError: ``gt`` is not a ``GT``.
         ValueError: ``result_column`` does not select exactly one column, or ``result_type`` is unknown.
 
+
+
     Example:
         ::
 
@@ -208,7 +220,8 @@ def gt_color_results(
         rows = [i for i, v in enumerate(col) if not _is_na(v) and v == value]
         if rows:
             out = out.tab_style(
-                style=[important(style.fill(color=fill)), style.text(color=ink)], locations=loc.body(rows=rows)
+                style=[important(style.fill(color=fill)), important(style.text(color=ink))],
+                locations=loc.body(rows=rows),
             )
     return out
 
@@ -248,6 +261,8 @@ def gt_highlight_cells(
         ValueError: ``columns`` matches nothing, the mask has the wrong number of columns, or ``condition`` fails
             on a column or does not return one value per row.
 
+
+
     Example:
         ::
 
@@ -274,7 +289,7 @@ def gt_highlight_cells(
         text_args["weight"] = "bold"
     styles: list[Any] = [important(style.fill(color=fill))]
     if text_args:
-        styles.append(style.text(**text_args))
+        styles.append(important(style.text(**text_args)))
     out = gt
     for c in cols:
         rows = [i for i, hit in enumerate(masks[c]) if hit]
@@ -351,6 +366,8 @@ def gt_highlight_na(
     Raises:
         TypeError: ``gt`` is not a ``GT``.
 
+
+
     Example:
         ::
 
@@ -389,7 +406,7 @@ def gt_highlight_na(
     if fill is not None:
         styles.append(important(style.fill(color=fill)))
     if text_args:
-        styles.append(style.text(**text_args))
+        styles.append(important(style.text(**text_args)))
 
     out = gt
     for col in _columns(gt, columns):
@@ -1254,6 +1271,11 @@ def gt_color_ranks(
         ValueError: ``columns`` matches nothing, the palette is not a list of hex colors, or there is no
             ``domain`` and no numeric value to derive one from.
 
+
+    Warns:
+        SdvplotWarning: When the table stripes its rows in a VS Code or Positron notebook, where great_tables makes
+            the stripes ``!important`` and they cover ``data_color``'s fills and text color on every other row.
+
     Example:
         ::
 
@@ -1277,6 +1299,7 @@ def gt_color_ranks(
     if keep is None:
         return gt
     lo, hi = _domain({c: [_number(v) for v in _values(gt, c)] for c in cols}, domain)
+    _warn_striped(gt, "gt_color_ranks", "fills and text color")
     out = gt.data_color(
         columns=cols,
         rows=keep,

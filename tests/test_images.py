@@ -73,6 +73,14 @@ def test_png_without_size_keeps_its_pixels(cache, monkeypatch):
     assert _images.logo_image("LV", "nfl").size == (500, 250)
 
 
+@pytest.mark.parametrize("size", [0, -5, 2.5, True, "64", 4097])
+def test_a_bad_size_is_an_input_error_for_a_raster_mark_too(cache, monkeypatch, size):
+    # the SVG path has its own bound; without logo_image's check a PNG at size=0 was a ZeroDivisionError
+    _manifest_with(monkeypatch, _png(500, 250), "png")
+    with pytest.raises(InputError, match="size is the longest side"):
+        _images.logo_image("LV", "nfl", size=size)
+
+
 def test_svg_is_rasterized_at_the_requested_longest_side(cache, monkeypatch):
     pytest.importorskip("resvg_py")
     _manifest_with(monkeypatch, SVG, "svg")

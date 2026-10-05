@@ -16,8 +16,9 @@
 - **Final-score cards**: one per game, with both logos on their team colors.
 - **A player-of-the-game card**: the headshot on the team's color.
 
-It covers the NFL, college football, the NBA, the WNBA, MLB and the NHL. The data comes from ESPN through
-sportsdataverse-py; nothing needs a key. Images are 1080 x 1080 or 1200 x 675.
+It covers the NFL, college football, the NBA, the WNBA, MLB, the NHL and Division I men's and women's college
+basketball. The data comes from ESPN through sportsdataverse-py; nothing needs a key. Images are 1080 x 1080 or
+1200 x 675.
 
 The walk-through, with sample images, is the [Social graphics](https://sdvplot.sportsdataverse.org/docs/automation)
 page of the docs.
