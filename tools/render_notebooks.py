@@ -19,7 +19,10 @@ Determinism / safety:
 * ``JUPYTER_CONFIG_DIR`` is pointed at a throwaway dir so a polluted global
   jupyter/nbconvert config can't inject preprocessors.
 * Pages are emitted as ``.md`` (CommonMark via Docusaurus ``format: detect``) so
-  bare ``{`` / ``<`` in DataFrame reprs don't trip the MDX parser.
+  bare ``{`` / ``<`` in outputs don't trip the MDX parser. CommonMark still carries
+  raw HTML blocks, which is how each cell's outputs get the theme's ``sdv-output`` wrapper.
+* Polars frames print as markdown tables (a hidden first cell sets ``pl.Config``), so
+  they render as tables rather than box-drawing text.
 * The source ``.ipynb`` files are never modified -- execution happens on an
   in-memory copy.
 """
@@ -27,8 +30,10 @@ Determinism / safety:
 from __future__ import annotations
 
 import argparse
+import base64
 import os
 import re
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -40,6 +45,18 @@ os.environ["JUPYTER_CONFIG_DIR"] = tempfile.mkdtemp(prefix="sdvplot-nbrender-")
 ROOT = Path(__file__).resolve().parents[1]
 NB_DIR = ROOT / "examples" / "notebooks"
 OUT_DIR = ROOT / "docs" / "docs" / "tutorials"
+STATIC_NB = ROOT / "docs" / "static" / "notebooks"  # byte-for-byte copies, served for download
+GITHUB_NB = "https://github.com/sportsdataverse/sdvplot/blob/main/examples/notebooks"
+# Run before the notebook's own cells, then dropped from the page: frames print as markdown tables.
+SETUP = (
+    "import polars as pl\n"
+    'pl.Config.set_tbl_formatting("MARKDOWN")\n'
+    "pl.Config.set_tbl_hide_column_data_types(True)\n"
+    "pl.Config.set_tbl_hide_dataframe_shape(True)\n"
+    "pl.Config.set_tbl_cols(-1)\n"
+    "pl.Config.set_fmt_str_lengths(200)\n"
+    "pl.Config.set_tbl_width_chars(10000)\n"
+)
 
 # (stem, sidebar label, sidebar_position).
 TUTORIALS: list[tuple[str, str, int]] = [
@@ -51,31 +68,59 @@ TUTORIALS: list[tuple[str, str, int]] = [
 
 
 def _execute(nb):
-    """Execute a notebook in-memory; raise on the first failing cell."""
+    """Execute a notebook in-memory behind the SETUP cell, then drop that cell; raise on the first failing cell."""
+    import nbformat
     from nbclient import NotebookClient
 
-    NotebookClient(nb, timeout=180, kernel_name="python3", allow_errors=False).execute()
+    nb.cells.insert(0, nbformat.v4.new_code_cell(SETUP, id="sdvplot-render-setup"))
+    try:
+        NotebookClient(nb, timeout=180, kernel_name="python3", allow_errors=False).execute()
+    finally:
+        nb.cells.pop(0)
+
+
+def _fence(text: str, lang: str) -> str:
+    """A fenced block one backtick longer than the longest backtick run inside it."""
+    ticks = "`" * max(3, max((len(m) for m in re.findall(r"`+", text)), default=0) + 1)
+    return f"{ticks}{lang}\n{text.rstrip(chr(10))}\n{ticks}"
+
+
+def _output(out, stem: str, cell_index: int, index: int) -> str | None:
+    """One cell output as markdown: images to <stem>_files/, markdown (frames) as is, text in a fence."""
+    data = out.get("data", {})
+    if out.get("output_type") == "stream":
+        text = out.get("text", "")
+        return _fence(text, "text") if text.strip() else None  # a bare print() draws no empty block
+    if "image/png" in data:
+        name = f"{stem}_files/{stem}_{cell_index}_{index}.png"
+        dest = OUT_DIR / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(base64.b64decode(data["image/png"]))
+        return f"![png]({name})"
+    if "text/markdown" in data:
+        return data["text/markdown"].strip("\n")
+    if "text/plain" in data:
+        return _fence(data["text/plain"], "text")
+    return None
 
 
 def _to_markdown(nb, stem: str) -> str:
-    """Render an (executed) notebook node to a markdown body string."""
-    from nbconvert import MarkdownExporter
-    from traitlets.config import Config
+    """Render an (executed) notebook node to a markdown body string.
 
-    cfg = Config()
-    # MarkdownExporter already runs ExtractOutputPreprocessor; listing it again extracts every image twice and
-    # nbconvert rejects the duplicate filenames. Image outputs land in <stem>_files/ alongside the page.
-    cfg.ExtractOutputPreprocessor.output_filename_template = (
-        f"{stem}_files/{{unique_key}}_{{cell_index}}_{{index}}{{extension}}"
-    )
-    exporter = MarkdownExporter(config=cfg)
-    body, resources = exporter.from_notebook_node(nb, resources={"unique_key": stem})
-    # Persist any extracted image outputs.
-    for fname, data in (resources.get("outputs") or {}).items():
-        dest = OUT_DIR / fname
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(data)
-    return body
+    Markdown cells are copied, code cells become ```python fences, and each code cell's outputs sit in one
+    ``<div class="sdv-output">`` (styled by the shared theme) so output never reads as more input. The blank lines
+    around the fences are what let CommonMark parse markdown inside the HTML block."""
+    shutil.rmtree(OUT_DIR / f"{stem}_files", ignore_errors=True)  # no orphaned figures when cells move
+    parts: list[str] = []
+    for ci, cell in enumerate(nb.cells):
+        if cell.get("cell_type") == "markdown":
+            parts.append(cell.source)
+        elif cell.get("cell_type") == "code":
+            parts.append(_fence(cell.source, "python"))
+            outs = [md for oi, o in enumerate(cell.get("outputs", [])) if (md := _output(o, stem, ci, oi))]
+            if outs:
+                parts.append('<div class="sdv-output">\n\n' + "\n\n".join(outs) + "\n\n</div>")
+    return "\n\n".join(parts) + "\n"
 
 
 def _clean_outputs(nb) -> None:
@@ -83,10 +128,10 @@ def _clean_outputs(nb) -> None:
 
     * Drop ``stderr`` stream outputs (warning noise -- e.g. env-specific version
       warnings -- that isn't pedagogically useful in a rendered tutorial).
-    * Prefer the plain-text repr over the styled HTML one for DataFrames: polars /
-      pandas ``text/html`` carries a scoped ``<style>`` block that can clash with
-      the Docusaurus theme, whereas the ``text/plain`` box-drawing table renders as
-      a clean monospace code block. Image outputs (``image/*``) are kept.
+    * Prefer the plain-text repr over the styled HTML one: polars / pandas ``text/html``
+      carries a scoped ``<style>`` block that can clash with the Docusaurus theme. A
+      polars frame's plain text is a markdown table (``SETUP``), so it moves to
+      ``text/markdown`` and renders as a table. Image outputs (``image/*``) are kept.
     """
     for cell in nb.cells:
         if cell.get("cell_type") != "code":
@@ -100,6 +145,8 @@ def _clean_outputs(nb) -> None:
                 data = o.get("data", {})
                 if "text/html" in data and "text/plain" in data:
                     data.pop("text/html", None)
+                    if data["text/plain"].startswith("|"):
+                        data["text/markdown"] = data.pop("text/plain")
             kept.append(o)
         cell["outputs"] = kept
 
@@ -114,6 +161,16 @@ def _fix_links(body: str) -> str:
     """
     body = re.sub(r"\]\([^)]*?(\d\d_[a-z0-9_]+)\.ipynb\)", r"](\1.md)", body)
     return body
+
+
+def _notebook_links(body: str, stem: str) -> str:
+    """A closing section: a download of the notebook (a copy served from docs/static/notebooks/; ``pathname://``
+    keeps Docusaurus from treating the file as a page) and the notebook on GitHub."""
+    return body.rstrip("\n") + (
+        "\n\n## Run it yourself\n\n"
+        f'<a href="pathname:///notebooks/{stem}.ipynb" download>Download the notebook</a> (outputs cleared) '
+        f"or [open it on GitHub]({GITHUB_NB}/{stem}.ipynb).\n"
+    )
 
 
 def _normalize_md(text: str) -> str:
@@ -141,6 +198,7 @@ def main() -> int:
     import nbformat
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    STATIC_NB.mkdir(parents=True, exist_ok=True)
 
     tutorials = [t for t in TUTORIALS if not args.only or t[0] in args.only]
     failures = []
@@ -160,7 +218,8 @@ def main() -> int:
                 failures.append(stem)
                 continue
         _clean_outputs(nb)
-        body = _fix_links(_to_markdown(nb, stem))
+        body = _notebook_links(_fix_links(_to_markdown(nb, stem)), stem)
+        shutil.copyfile(src, STATIC_NB / f"{stem}.ipynb")
         (OUT_DIR / f"{stem}.md").write_text(
             _normalize_md(_frontmatter(label, position) + body), encoding="utf-8", newline="\n"
         )
