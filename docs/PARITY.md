@@ -17,8 +17,8 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | # | sdvplotR / ggpath export | sdvplot | Decision |
 | --- | --- | --- | --- |
 | X1 | `sdv_court_coords()` | `sdvplot.court_coords(data, x="x_legacy", y="y_legacy")` | ported (below) |
-| X2 | `ggtitle_image()` + `theme_title_image()` | `sdvplot.matplotlib.title_image()`, `sdvplot.plotnine.title_image()` | ported in its own change |
-| X3 | `sdv_team_tiers()` | `sdvplot.matplotlib.team_tiers()`, `sdvplot.plotnine.team_tiers()` | ported in its own change |
+| X2 | `ggtitle_image()` + `theme_title_image()` | `sdvplot.matplotlib.title_image()`, `sdvplot.plotnine.title_image()` | ported (below) |
+| X3 | `sdv_team_tiers()` | `sdvplot.matplotlib.team_tiers()`, `sdvplot.plotnine.team_tiers()` | ported (below) |
 | X4 | ggpath `geom_from_path()` | `sdvplot.plotnine.geom_from_path()`, `sdvplot.matplotlib.add_images()` | ported (below) |
 | X5 | ggpath `geom_mean_lines()`, `geom_median_lines()` | `sdvplot.plotnine.geom_mean_lines()`, `geom_median_lines()` | ported (below) |
 | X6 | ggpath `element_path()`, `element_raster()` | recipe | not ported: `axis_logos` covers team marks |
@@ -33,6 +33,28 @@ same validation, on a pandas or polars frame (the same type comes back). Checked
 `sdv_court_coords()` on 40 real `shotchartdetail` rows (`tests/fixtures/sdvplotr_court_coords.csv`). Differences:
 a non-string `x`/`y` and a non-frame `data` raise `TypeError` (R raises one error class for everything); the
 arguments are `x`/`y`, not `x_column`/`y_column`.
+
+**X2 `title_image`.** One call per adapter instead of `ggtitle_image()` plus a markdown title theme: matplotlib sets
+the Axes title (or a Figure's suptitle) and anchors the image to that title text, plotnine is added with `+`. A team
+(with `league=`) or any image by URL or path; `height` is in points (sdvplotR: pixels in the `<img>` tag). sdvplotR
+puts the image inside the title, so the pair is aligned as one; sdvplot shifts the title text by the image's width at
+each draw to match (a centred title centres the pair, a left-aligned one starts with the image), through later
+`set_title` calls. A second call on the same title replaces the image. Differences: an image taller than the title
+line does not make the line taller (give it room with `pad=` or `y=` in matplotlib, a `plot_title` margin in
+plotnine); an image by URL or path that cannot be read warns once and the title is drawn without it, while a team
+logo that cannot be downloaded raises `OfflineError`, as in `add_logos`; in plotnine the image is loaded (and an
+unknown team warned about) when `title_image()` is built.
+
+**X3 `team_tiers`.** sdvplotR's arguments, look and dark theme, with `height` (a fraction of the panel height) for
+`width`; matplotlib returns a Figure, plotnine a ggplot, both drawn from one preparation (`sdvplot._tiers`). As in
+sdvplotR, teams are ranked before they are resolved, so an unknown team warns once and leaves its slot empty;
+`presort=True` sorts a missing team last; tier labels wrap as `strwrap(label, 15)` does; `devel=True` draws the
+resolved abbreviation. The default `height`, 0.1, is the largest two-decimal height at which 32 logos in 5 tiers (7,
+7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in figure (about sdvplotR's
+`width = 0.075` npc). Differences: a tier with no `tier_desc` entry gets no label (sdvplotR shows "NA"); a null
+`tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and
+subtitle sit over the panel (sdvplotR: `plot.title.position = "plot"`, which the plotnine version keeps); there is
+no `season`.
 
 **X4 `geom_from_path` / `add_images`.** Images are sized like sdvplot's logo verbs: `height` is a fraction of the
 panel (Axes) height, default 0.1, and the image keeps its aspect ratio. ggpath's `width`, `angle`, `hjust`, `vjust` and
