@@ -474,6 +474,53 @@ def test_a_drip_fed_body_hits_the_deadline_on_time(server, monkeypatch):
     assert time.monotonic() - start < 1.5 + 1
 
 
+def test_drip_fed_headers_hit_the_deadline_on_time(server, monkeypatch):
+    """Only the body loop checked the deadline: a header byte every 0.2 s held the call open while the server dripped."""
+    import time
+
+    base, handler = server
+
+    def drip(h):
+        try:
+            h.wfile.write(b"HTTP/1.1 200 OK\r\nX-Drip: ")
+            for _ in range(40):  # 8 s, far past the deadline
+                h.wfile.write(b"x")
+                h.wfile.flush()
+                time.sleep(0.2)
+            h.wfile.write(b"\r\nContent-Length: 2\r\n\r\nok")
+        except OSError:
+            pass
+
+    handler(drip)
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 1.5)
+    monkeypatch.setattr(_cache, "_check_https", lambda url: None)  # the local server speaks http
+    start = time.monotonic()
+    with pytest.raises(UnsafeDownloadError, match="exceeded"):
+        _cache._download(base + "/", None, 1000)
+    assert time.monotonic() - start < 1.5 + 1
+
+
+def test_a_stalled_tls_handshake_hits_the_deadline_on_time(monkeypatch):
+    """A server that accepts and never answers the ClientHello: the handshake waited for the 5 s connect timeout."""
+    import socket
+    import threading
+    import time
+
+    srv = socket.create_server(("127.0.0.1", 0))
+    accepted = []
+    threading.Thread(target=lambda: accepted.append(srv.accept()[0]), daemon=True).start()
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 1.5)
+    start = time.monotonic()
+    try:
+        with pytest.raises(UnsafeDownloadError, match="exceeded"):
+            _cache._download(f"https://127.0.0.1:{srv.getsockname()[1]}/", None, 1000)
+        assert time.monotonic() - start < 1.5 + 1
+    finally:
+        srv.close()
+        for conn in accepted:
+            conn.close()
+
+
 def test_a_real_redirect_hop_is_checked_before_it_is_requested(server, monkeypatch):
     base, handler = server
     hits = []

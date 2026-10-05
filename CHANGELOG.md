@@ -84,6 +84,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `urllib3>=2.6` is a dependency. `requests>=2.33` still allowed urllib3 1.26 and 2.0 to 2.5, which decompress a
   whole received chunk at once: a 275-byte gzip body cost 4 GB of memory before the download byte cap saw it
   (CVE-2025-66471). The download loop's fallback for urllib3 below 2 is removed.
+- A download's 120 s deadline covers the TLS handshake and the response headers, not only the body: a watchdog shuts
+  the connection's socket down at the deadline, across every redirect hop. Each read has a 60 s timeout, so a server
+  sending a header byte every 59 s used to hold the call open almost indefinitely. Through a proxy the deadline still
+  covers the body only.
 
 ## [0.1.0] - Unreleased
 
