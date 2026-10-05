@@ -214,7 +214,8 @@ def test_reference_lines_average_on_the_scale_like_ggplot2():
 def test_a_mean_line_over_team_bars():
     df = pd.DataFrame({"team": ["LV", "LAR", "LAC"], "epa": [0.1, 0.2, 0.6]})
     fig = (ggplot(df, aes("team", "epa", y0="epa")) + geom_col() + sp9.geom_mean_lines()).draw()
-    assert _ref_lines(fig) == [([], [pytest.approx(0.3)])]
+    # the discrete x makes each team a group, so ggpath 1.1.1 draws 3 identical segments (one per group) at the mean
+    assert _ref_lines(fig) == [([], [pytest.approx(0.3)] * 3)]
 
 
 @pytest.mark.parametrize(("na_rm", "expected"), [(True, [([5.0], [])]), (False, [([], [])])])
@@ -230,3 +231,18 @@ def test_reference_lines_drop_values_outside_the_scale_limits_like_ggplot2(na_rm
     with pytest.warns(PlotnineWarning):  # geom_point drops the point outside the limits, as ggplot2 does
         fig = p.draw()
     assert _ref_lines(fig) == expected
+
+
+def test_reference_lines_draw_one_segment_per_distinct_aesthetics_like_ggplot2():
+    from matplotlib.collections import LineCollection
+
+    # R 4.6.1 / ggpath 1.1.1: GeomVline de-duplicates its rows, so aes(colour = g) draws one segment per group, all at
+    # the panel's mean (5), each in its group's colour (#F8766D, #00BFC4: the points' colours); unmapped, one segment
+    df = pd.DataFrame({"x": [1.0, 2, 3, 7, 8, 9], "y": [1.0, 2, 3, 4, 5, 6], "g": list("aaabbb")})
+    fig = (ggplot(df, aes("x", "y", x0="x", color="g")) + geom_point() + sp9.geom_mean_lines()).draw()
+    assert _ref_lines(fig) == [([5.0, 5.0], [])]
+    ax = fig.axes[0]
+    line_colors = [tuple(c.get_edgecolor()[0]) for c in ax.collections if isinstance(c, LineCollection)]
+    point_colors = list(dict.fromkeys(tuple(c) for c in ax.collections[0].get_facecolors()))
+    assert line_colors == point_colors and len(set(line_colors)) == 2
+    assert _ref_lines((ggplot(df, aes("x", "y", x0="x")) + sp9.geom_mean_lines()).draw()) == [([5.0], [])]

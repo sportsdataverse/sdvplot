@@ -155,7 +155,7 @@ class geom_from_path(_geom_sdv_marks):
 
 
 class _geom_ref_lines(geom):
-    """One vertical line at ``_ref(x0)`` and one horizontal line at ``_ref(y0)`` per panel, drawn by plotnine's own
+    """A vertical line at ``_ref(x0)`` and a horizontal line at ``_ref(y0)`` per panel, drawn by plotnine's own
     geom_vline / geom_hline (ggpath draws through GeomVline / GeomHline the same way)."""
 
     _ref: Any = staticmethod(np.mean)
@@ -187,7 +187,9 @@ class _geom_ref_lines(geom):
         name = type(self).__name__
         if "x0" not in data and "y0" not in data:
             raise ValueError(f"{name}() needs an x0 and/or a y0 aesthetic, e.g. aes(x0='epa', y0='success_rate')")
-        first = data.iloc[[0]].reset_index(drop=True)  # one line per panel (ggpath overplots one per row)
+        # ggplot2's GeomHline/GeomVline draw one segment per distinct row of these (ggpath passes them on): one line per
+        # panel, or one per group when a colour (or another line aesthetic) is mapped, all at the panel's value
+        styles = data[[c for c in ("PANEL", "group", "color", "size", "linetype", "alpha") if c in data]]
         lines: tuple[tuple[str, Any, str], ...] = (("y0", geom_hline, "yintercept"), ("x0", geom_vline, "xintercept"))
         for ae, line, column in lines:
             if ae not in data:
@@ -197,7 +199,8 @@ class _geom_ref_lines(geom):
                 values = values[~np.isnan(values)]
             ref = float(self._ref(values)) if len(values) else np.nan  # NaN when a value is missing, as R's mean()
             # ggplot2 drops (and warns about) a line at NA whatever na.rm says; so does plotnine's remove_missing
-            frame = remove_missing(first.assign(**{column: ref}), False, [column], name)
+            frame = styles.assign(**{column: ref}).drop_duplicates().reset_index(drop=True)
+            frame = remove_missing(frame, False, [column], name)
             if len(frame):
                 line.draw_panel(self, frame, panel_params, coord, ax)
 
