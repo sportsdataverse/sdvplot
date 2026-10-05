@@ -65,7 +65,7 @@ uv sync                                     # install with the dev groups
 uv run pytest -q                            # offline tests
 SDVPLOT_LIVE_TESTS=1 uv run pytest -q       # plus network tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy                    # needs every extra (CI syncs --all-extras; so does the pre-push hook)
 uv run pre-commit run --all-files           # `pre-commit install` refuses when core.hooksPath is set
 ```
 

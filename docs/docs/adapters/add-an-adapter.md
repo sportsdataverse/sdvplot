@@ -354,7 +354,7 @@ uv run pytest -q
 uv run python tools/gen_docs.py --check
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy   # mypy needs every extra installed
 uv run pre-commit run --all-files
 ```
 

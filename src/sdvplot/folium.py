@@ -73,13 +73,13 @@ def _add(
     group = _group(m)
     for p, src in zip(placements, image_sources(placements, embed=embed), strict=True):
         w = max(1, round(px * aspect(p)))
-        marker = folium.Marker(
+        marker: Any = folium.Marker(  # Any: it carries the test hook below (a type: ignore is unused without folium)
             location=[p.y, p.x],
             icon=folium.CustomIcon(src, icon_size=(w, px), icon_anchor=(w // 2, px // 2)),
             tooltip=names.get(p.team_id, p.team_id),
             opacity=a,
         )
-        marker._sdvplot_mark = (p.team_id, p.x, p.y, src)  # type: ignore[attr-defined]
+        marker._sdvplot_mark = (p.team_id, p.x, p.y, src)
         marker.add_to(group)
     return m
 
