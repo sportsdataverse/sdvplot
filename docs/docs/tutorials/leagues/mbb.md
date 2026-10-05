@@ -337,7 +337,7 @@ big_ten = (
 
 Box scores are enough for a simple rating: points scored minus allowed per 100 possessions, counting only games
 between two Division I teams. Possessions use the common estimate FGA - OREB + TO + 0.475 x FTA. `team_tiers`
-draws the 32 best in tiers, on the light theme so dark logos such as Iowa's and West Virginia's stay visible.
+draws the 32 best in tiers on its default dark theme, with each school's dark-background logo: Iowa's hawk is gold.
 
 ```python
 from sdvplot.matplotlib import team_tiers
@@ -376,7 +376,6 @@ fig = team_tiers(
     subtitle="Games between two Division I teams only, not adjusted for opponents",
     caption=CAPTION,
     tier_desc={1: "22+", 2: "18 to 22", 3: "15 to 18", 4: "Under 15"},
-    theme="light",
 )
 plt.show()
 ```

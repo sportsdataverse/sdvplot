@@ -416,8 +416,8 @@ plt.show()
 ## 9. Tiers of a ranking you compute
 
 A composite ranking: the average of each team's rank in two systems, cfbfastR's adjusted net EPA and FEI. The top
-32 go into five tiers with `team_tiers`, on its light theme: Ohio State's, Texas A&M's and Penn State's dark logos
-vanish on the default dark one.
+32 go into five tiers with `team_tiers`, on its default dark theme: it draws each school's dark-background logo, so
+Ohio State, Texas A&M and Penn State stay visible.
 
 ```python
 from sdvplot.matplotlib import team_tiers
@@ -438,7 +438,6 @@ fig = team_tiers(
     subtitle="average rank in adjusted net EPA and FEI",
     caption=CAPTION,
     alpha=1,
-    theme="light",
     tier_desc={1: "Elite", 2: "Contenders", 3: "Very good", 4: "Good", 5: "Solid"},
 )
 plt.show()
