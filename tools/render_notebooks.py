@@ -323,7 +323,8 @@ def _stable_ids(html: str, name: str) -> str:
 
     The ids: great_tables' 10-letter table id (reused in its CSS and, on a table with an id, its column ids),
     Altair's ``altair-viz-<hex>``, and the uuid4 and 32-hex ids of Bokeh, Panel, folium and Jupyter widget models.
-    Underscores, not hyphens: folium uses its ids in JavaScript variable names. A token in a URL path or query (after ``/``, ``=`` or ``.``) is not an id and stays."""
+    Underscores, not hyphens: folium uses its ids in JavaScript variable names. A token in a URL path or query
+    (after ``/``, ``=`` or ``.``) is not an id and stays."""
     tables = [i for i in re.findall(r'<div id="([a-z]{10})"', html) if f"#{i}" in html]
     for n, old in enumerate(dict.fromkeys(tables + RANDOM_ID.findall(html))):
         new = f"sdv_{name}_{n}"
