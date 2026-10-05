@@ -29,7 +29,7 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id
+from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id, important
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -134,7 +134,7 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
         return gt
     styles: list[Any] = [style.text(color=text_color, weight="bold")]
     if highlight_color is not None:
-        styles.insert(0, style.fill(color=highlight_color))
+        styles.insert(0, important(style.fill(color=highlight_color)))
     return gt.tab_style(style=styles, locations=loc.body(rows=idx))
 
 
@@ -194,7 +194,9 @@ def gt_color_results(
     for value, fill, ink in passes:
         rows = [i for i, v in enumerate(col) if not _is_na(v) and v == value]
         if rows:
-            out = out.tab_style(style=[style.fill(color=fill), style.text(color=ink)], locations=loc.body(rows=rows))
+            out = out.tab_style(
+                style=[important(style.fill(color=fill)), style.text(color=ink)], locations=loc.body(rows=rows)
+            )
     return out
 
 
@@ -250,7 +252,7 @@ def gt_highlight_cells(
         text_args["color"] = text_color
     if bold:
         text_args["weight"] = "bold"
-    styles: list[Any] = [style.fill(color=fill)]
+    styles: list[Any] = [important(style.fill(color=fill))]
     if text_args:
         styles.append(style.text(**text_args))
     out = gt
@@ -358,7 +360,7 @@ def gt_highlight_na(
     } | text_kwargs
     styles: list[Any] = []
     if fill is not None:
-        styles.append(style.fill(color=fill))
+        styles.append(important(style.fill(color=fill)))
     if text_args:
         styles.append(style.text(**text_args))
 
@@ -413,9 +415,9 @@ def gt_group_stripes(gt: GT, color: str = "#F5F5F5", start: int = 2, include_stu
     rows = sorted(int(i) for group in groups[start - 1 :: 2] for i in group.indices)  # pandas gives numpy ints
     if not rows:
         return gt
-    out = gt.tab_style(style=style.fill(color=color), locations=loc.body(rows=rows))
+    out = gt.tab_style(style=important(style.fill(color=color)), locations=loc.body(rows=rows))
     if include_stub and any(c.type.name == "stub" for c in gt._boxhead):
-        out = out.tab_style(style=style.fill(color=color), locations=loc.stub(rows=rows))
+        out = out.tab_style(style=important(style.fill(color=color)), locations=loc.stub(rows=rows))
     return out
 
 
@@ -698,7 +700,7 @@ def gt_border_grid(gt: GT, color: str = "black", weight: float = 1, include_labe
     visible = [c.var for c in gt._boxhead if c.type.name == "default"]
     out = gt
     if len(visible) > 1:  # every column but the last gets a right border (gt_add_divider(columns = -last_col()))
-        divider = _borders(sides="right", color=color, style="solid", weight=f"{weight}px")
+        divider = important(_borders(sides="right", color=color, style="solid", weight=f"{weight}px"))
         where: list[Any] = [loc.body(columns=visible[:-1])]
         if include_labels:
             where.append(loc.column_labels(columns=visible[:-1]))
@@ -808,7 +810,7 @@ def gt_cutline(
     # the rule is a top border on the row below the cut (0-based row `a` is R's row a + 1)
     out = gt
     for a in afters:
-        rule = _borders(sides="top", weight=f"{weight}px", color=color, style=style)
+        rule = important(_borders(sides="top", weight=f"{weight}px", color=color, style=style))
         out = out.tab_style(style=rule, locations=loc.body(rows=[int(a)]))
 
     below = label_position == "below"

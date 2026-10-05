@@ -408,6 +408,15 @@ SDV_NAVY, SDV_CYAN = "#0B1A33", "#7FE6DC"
 SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
 
 
+def important(*styles: Any) -> Any:
+    """great_tables cell styles as one inline rule with every declaration ``!important``. The notebook repr marks
+    great_tables' own cell rules ``!important`` (``td, th {border-style: none}``, the stub's and row groups'
+    ``background-color``), and a stylesheet ``!important`` beats a plain inline style: without this, a border or fill
+    shows in a saved image and not in Jupyter."""
+    rule = "".join(s._to_html_style() for s in styles)
+    return style.css(rule=" ".join(f"{d.strip()} !important;" for d in rule.split(";") if d.strip()))
+
+
 def _table_id(gt: GT) -> tuple[GT, str]:
     """The table's id, so CSS can be scoped to ``#id``, assigning a random one when it has none or an empty one
     (sdvplotR's ``.table_id``; ``"#"`` alone would scope nothing)."""
@@ -491,7 +500,7 @@ def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[st
         .tab_style(
             [
                 style.text(font=chivo, weight=medium, size=size(13, "group"), color=pal["label"]),
-                style.fill(color=pal["group_bg"]),
+                important(style.fill(color=pal["group_bg"])),
             ],
             loc.row_groups(),
         )

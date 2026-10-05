@@ -291,3 +291,10 @@
   measured and drew its default font anyway. When Clarendon is not installed, `surface()` asks sportypy for that
   default (DejaVu Sans) by name, through `field_updates`, so the numbers look the same and nothing is logged; process
   logging is untouched, and a `number_font` the caller passes still wins.
+- Borders and fills that sdvplot's great_tables helpers draw now show in a notebook too. great_tables' notebook repr
+  marks its own cell rules `!important` (`td, th {border-style: none}`, the stub's and row groups' backgrounds), and
+  a stylesheet `!important` beats a plain inline style, so `gt_row_accent`'s bars, for one, showed in saved images and
+  vanished in Jupyter. Every border and fill the helpers set (`gt_row_accent`, `gt_spotlight`, `gt_border_grid`,
+  `gt_cutline`, `gt_group_stripes`, `gt_marginalia`, `gt_snake`, `gt_tiers`, `gt_outliers`, `gt_bold_rows`,
+  `gt_color_results`, `gt_highlight_cells`, the team-mark row groups and the themes) is now inline `!important`, through
+  one helper.

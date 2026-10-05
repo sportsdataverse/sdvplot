@@ -21,7 +21,7 @@ def source_notes(gt):
 @pytest.mark.parametrize("kind", KINDS)
 def test_marginalia_mutes_italicizes_and_rules_the_notes(kind):
     h = gt_marginalia(GT(frame(kind, DATA)), "note").as_raw_html()
-    style = "color: #737373;font-size: 0.92em;font-style: italic; border-left: 1px solid #d1d1d1;"
+    style = "color: #737373;font-size: 0.92em;font-style: italic; border-left: 1px solid #d1d1d1 !important;"
     assert f'<td style="{style}" class="gt_row gt_left">Lost the QB in week 3</td>' in h
     assert '<col style="width:220px;"/>' in h
     assert 'id="note"></th>' in h  # the label is blanked

@@ -143,7 +143,7 @@ def label_styles(gt):
 def test_border_grid_divides_every_column_but_the_last(lib):
     out = gt_border_grid(GT(frame(lib, {**CARS, "hp": [110, 93, 66, 52, 105]})), color="#BBBBBB", weight=2)
     for row in body_rows(out):
-        assert [s for s, _ in row] == ["border-right: 2px solid #BBBBBB;"] * 2 + [""]
+        assert [s for s, _ in row] == ["border-right: 2px solid #BBBBBB !important;"] * 2 + [""]
     assert label_styles(out) == ["", "", ""]
     assert f"#{out._options.table_id.value} .gt_row {{ border-top-color: #BBBBBB;}}" in css(out)
 
@@ -151,13 +151,13 @@ def test_border_grid_divides_every_column_but_the_last(lib):
 def test_border_grid_includes_the_labels_and_skips_the_stub(lib):
     gt = GT(frame(lib, {**CARS, "hp": [110, 93, 66, 52, 105]}), rowname_col="car")
     out = gt_border_grid(gt, include_labels=True)
-    assert all([s for s, _ in row] == ["border-right: 1px solid black;", ""] for row in body_rows(out))
-    assert label_styles(out) == ["", "border-right: 1px solid black;", ""]  # the stubhead, then mpg and hp
+    assert all([s for s, _ in row] == ["border-right: 1px solid black !important;", ""] for row in body_rows(out))
+    assert label_styles(out) == ["", "border-right: 1px solid black !important;", ""]  # the stubhead, then mpg and hp
 
 
 def test_cutline_draws_a_dashed_rule_after_the_row(lib):
     out = gt_cutline(GT(frame(lib, CARS)), after=2)
-    assert [row[0][0] for row in body_rows(out)] == ["", "", "border-top: 2px dashed #A6081A;", "", ""]
+    assert [row[0][0] for row in body_rows(out)] == ["", "", "border-top: 2px dashed #A6081A !important;", "", ""]
     assert "background-image" not in css(out)
 
 
@@ -190,7 +190,7 @@ def test_cutline_labels_pad_and_clear_the_labeled_row_and_repaint_its_stripe(lib
     assert f"#{table_id} tbody tr:nth-child(2) {{ background-color: #F4F4F4; background-image: url(" in rules
     assert "background-position: left 5px;" in rules
     assert rules.count("background-image") == 1
-    assert [row[0][0] for row in body_rows(out)][1::2] == ["border-top: 2px dashed #A6081A;"] * 2
+    assert [row[0][0] for row in body_rows(out)][1::2] == ["border-top: 2px dashed #A6081A !important;"] * 2
 
 
 def test_cutline_label_above_and_gaps(lib):
@@ -213,7 +213,7 @@ def test_cutline_drops_lines_outside_the_table_with_one_warning(lib):
     gt = GT(frame(lib, CARS))
     with pytest.warns(SdvplotWarning, match=r"dropped 2 cut line\(s\) at \[5, -1\]"):
         out = gt_cutline(gt, after=[5, 2, -1])
-    assert [row[0][0] for row in body_rows(out)].count("border-top: 2px dashed #A6081A;") == 1
+    assert [row[0][0] for row in body_rows(out)].count("border-top: 2px dashed #A6081A !important;") == 1
     with pytest.warns(SdvplotWarning):
         assert gt_cutline(gt, after=7) is gt
     with pytest.raises(ValueError, match="gap"):
@@ -228,7 +228,7 @@ def test_cutline_drops_lines_outside_the_table_with_one_warning(lib):
 
 def test_cutline_takes_numpy_integers_and_rejects_fractional_rows(lib):
     gt = GT(frame(lib, CARS))
-    expected = ["", "", "border-top: 2px dashed #A6081A;", "", ""]
+    expected = ["", "", "border-top: 2px dashed #A6081A !important;", "", ""]
     for after in (np.int64(2), [np.int64(2)], np.array([2]), 2.0):
         assert [row[0][0] for row in body_rows(gt_cutline(gt, after=after))] == expected
     gapped = css(gt_cutline(gt, after=np.int64(2), gap=np.int64(4)))
