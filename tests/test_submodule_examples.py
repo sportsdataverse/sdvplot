@@ -222,7 +222,11 @@ def test_a_timeout_cannot_be_swallowed_by_the_example(tmp_path, monkeypatch):
     if not hasattr(signal, "setitimer"):
         pytest.skip("no setitimer on this platform")
     exc = _run(
-        "while True:\n    try:\n        pass\n    except Exception:\n        pass", tmp_path, monkeypatch, timeout=1
+        # a call in the loop: CPython 3.10 does not run signal handlers in a loop that makes no calls
+        "import time\nwhile True:\n    try:\n        time.sleep(0.01)\n    except Exception:\n        pass",
+        tmp_path,
+        monkeypatch,
+        timeout=1,
     )
     assert isinstance(exc, ExampleTimeout)
 
