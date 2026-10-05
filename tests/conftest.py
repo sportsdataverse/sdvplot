@@ -1,6 +1,8 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
+import functools
 import hashlib
+import threading
 from pathlib import Path
 
 import polars as pl
@@ -202,6 +204,21 @@ def pytest_configure(config: pytest.Config) -> None:
     # Not in pyproject's filterwarnings: pytest imports a named category while parsing the ini file, which imported
     # sdvplot before pytest-cov started and left every import-time line unmeasured.
     config.addinivalue_line("filterwarnings", "error::sdvplot._errors.SdvplotWarning")
+    _daemon_pipe_readers()
+
+
+def _daemon_pipe_readers() -> None:
+    """kaleido's browser driver (choreographer) reads Chrome's stderr through logistro's pipe reader, a non-daemon
+    thread that ends only when every write end of the pipe closes. choreographer closes its own copy only after the
+    browser closes, so a Chrome that will not close (a loaded machine) leaves the reader blocked forever and pytest
+    hangs after printing its summary. As daemon threads, the readers can no longer keep the run alive."""
+    # ponytail: patches a third-party module global for the test run only; drop it once choreographer closes the pipe
+    # in a finally (choreographer 1.4.0 browser_async.close / browser_sync.close).
+    try:
+        from logistro import _api
+    except ImportError:  # no kaleido in this environment
+        return
+    _api.Thread = functools.partial(threading.Thread, daemon=True)  # type: ignore[assignment,misc]
 
 
 @pytest.fixture(autouse=True)
