@@ -114,7 +114,7 @@ _visible_axis_labels(target, axis) -> list[str]  # the tick labels still shown a
 
 `sdvplot.testing.check_adapter_contract(adapter, make_target, *, league="nfl", known=("LV", "LAR"),
 known_wordmarks=("LV", "LAC"), players=("3139477", "4241479"), make_axis_target=None)` runs the shared rules against an
-adapter module. `make_target` builds a fresh, empty target; `make_axis_target(categories)` builds a target whose x axis
+adapter module. `make_target` builds a fresh, empty target; `make_axis_target(categories)` builds a target whose x-axis
 shows those categories, in order, and is required when the adapter supports axis logos. Every adapter's test suite
 calls it, and an adapter must pass it to merge. It needs pandas and polars installed. It uses coordinates that are not
 row positions (`x=[10, 20]`, `y=[-3, -7]`), so swapped, shared or positional x/y values fail.
@@ -194,23 +194,26 @@ def _check(height, alpha):
         raise ValueError("alpha is an opacity")
 
 
-def add_logos(target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0, variant="default"):
+def add_logos(target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0, variant="default", id_system="auto"):
     _check(height, alpha)
     # positional values, never index labels; x, y and teams are filtered together
-    ids = sdvplot.resolve(list(teams), league, season=season)
+    ids = sdvplot.resolve(list(teams), league, season=season, id_system=id_system)
     for xi, yi, team_id in zip(list(x), list(y), ids, strict=True):
         if team_id is not None:
             target.append((team_id, xi, yi, height))
     return target
 
 
-def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0):
+def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0, id_system="espn"):
     _check(height, alpha)
-    bad = [p for p in players if not str(p).isdigit()]
-    if bad:  # one warning for the whole call, however many ids it skips
+    # as the real adapters do: a player with no headshot_url (a malformed ESPN id, a gsis id not in the player table)
+    # is skipped, with one warning for the whole call however many ids it skips
+    urls = [sdvplot.headshot_url(p, league, id_system=id_system) for p in players]
+    bad = [p for p, url in zip(players, urls, strict=True) if url is None]
+    if bad:
         warnings.warn(f"no headshot for {bad}", SdvplotWarning, stacklevel=2)
-    for xi, yi, pid in zip(list(x), list(y), list(players), strict=True):
-        if str(pid).isdigit():
+    for xi, yi, pid, url in zip(list(x), list(y), list(players), urls, strict=True):
+        if url is not None:
             target.append((str(pid), xi, yi, height))
     return target
 
