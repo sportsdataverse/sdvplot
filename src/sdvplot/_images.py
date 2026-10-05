@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._errors import InputError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
 from sdvplot._types import MarkType
@@ -23,6 +23,12 @@ if TYPE_CHECKING:
     from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
+# An SVG is rasterized at most MAX_SIZE pixels on its longest side: 4096 x 4096 RGBA is 64 MiB, DECODED_BUDGET // 4,
+# the largest image the decoded cache keeps. resvg allocates the canvas before Pillow's bomb guard sees it, so the
+# size and the aspect ratio are checked before rendering.
+MAX_SIZE = 4096
+MAX_ASPECT = 64  # an SVG more than 64 times longer than it is wide is refused
+_PROBE = 1024  # the box of the probe render that measures an SVG's aspect ratio
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 URL_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
@@ -31,6 +37,8 @@ IMAGE_EXTS = frozenset({"png", "jpg", "jpeg", "svg", "webp", "gif", "bmp"})
 def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     from PIL import Image
 
+    if not 1 <= size <= MAX_SIZE:
+        raise InputError(f"an SVG mark is rasterized at 1 to {MAX_SIZE} pixels, got size={size!r}")
     try:
         import importlib.metadata
 
@@ -61,13 +69,18 @@ def _rasterize(path: Path, sha: str, size: int, ext: str) -> Image.Image:
     except UnicodeDecodeError as e:
         raise ValueError(f"SVG {sha}.{ext}: {e}") from e
 
-    try:
-        png = bytes(resvg_py.svg_to_bytes(svg_string=svg, width=size))
-        probe = Image.open(io.BytesIO(png))
-        if probe.height > size:  # portrait: fit the longest side instead
-            png = bytes(resvg_py.svg_to_bytes(svg_string=svg, height=size))
-    except ValueError as e:
-        raise ValueError(f"SVG {sha}.{ext}: {e}") from e
+    def render(box: int) -> bytes:
+        # given a width and a height, resvg fits the SVG inside that box keeping its aspect ratio: the longest side is
+        # box pixels and nothing larger is allocated, however tall, wide or large the SVG says it is
+        try:
+            return bytes(resvg_py.svg_to_bytes(svg_string=svg, width=box, height=box))
+        except ValueError as e:
+            raise ValueError(f"SVG {sha}.{ext}: {e}") from e
+
+    w, h = Image.open(io.BytesIO(render(_PROBE))).size
+    if max(w, h) > MAX_ASPECT * min(w, h):
+        raise InputError(f"SVG {sha}.{ext} renders {w} x {h}: an aspect ratio beyond 1:{MAX_ASPECT}, not drawn")
+    png = render(size)
 
     with contextlib.suppress(OSError):  # a read-only cache still gets the image, just not cached
         atomic_write(out, png)
@@ -111,7 +124,8 @@ def logo_image(
             (``PIL.UnidentifiedImageError`` subclasses OSError).
         InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
             name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
-        ValueError: If an SVG cannot be parsed.
+        ValueError: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide, or
+            ``size`` is over 4096 for an SVG.
 
     Example:
         ::

@@ -1,12 +1,15 @@
 import hashlib
 import io
+import os
+import subprocess
+import sys
 
 import polars as pl
 import pytest
 from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import InputError, SdvplotWarning
 from tests.conftest import FakeResponse, FakeSession
 
 
@@ -186,3 +189,68 @@ def test_a_read_only_cache_still_returns_the_rasterized_svg(cache, monkeypatch):
     monkeypatch.setattr(type(raster), "unlink", read_only)
     assert _images.logo_image("LV", "nfl", size=200).size == (200, 100)  # corrupt raster, no unlink, no write
     assert _images.logo_image("LV", "nfl", size=100).size == (100, 50)  # a new size, no write
+
+
+# --- bounded SVG rendering -----------------------------------------------------------------------------------------
+
+
+def _svg(w, h):
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><rect width="{w}" height="{h}"/></svg>'.encode()
+    )
+
+
+def _svg_row(monkeypatch, body):
+    _manifest_with(monkeypatch, body, "svg")
+    sha = hashlib.sha256(body).hexdigest()
+    return {"sha256": sha, "ext": "svg", "archive_url": f"https://cdn/{sha}.svg"}
+
+
+@pytest.mark.parametrize(
+    ("shape", "size", "expected"), [((1, 4), 512, (128, 512)), ((4, 1), 64, (64, 16)), ((1, 64), 640, (10, 640))]
+)
+def test_an_svg_is_rendered_with_its_longest_side_at_size(cache, monkeypatch, shape, size, expected):
+    pytest.importorskip("resvg_py")
+    assert _images.load_mark_image(_svg_row(monkeypatch, _svg(*shape)), size).size == expected
+
+
+def test_an_svg_size_over_max_size_is_refused_before_anything_is_rendered(cache, monkeypatch):
+    resvg_py = pytest.importorskip("resvg_py")
+    row = _svg_row(monkeypatch, SVG)
+    rendered = []
+    monkeypatch.setattr(resvg_py, "svg_to_bytes", lambda **kw: rendered.append(kw))
+    with pytest.raises(InputError, match="4096"):
+        _images.load_mark_image(row, _images.MAX_SIZE + 1)
+    assert rendered == []
+
+
+def test_an_svg_beyond_1_to_64_is_refused(cache, monkeypatch):
+    pytest.importorskip("resvg_py")
+    with pytest.raises(InputError, match="aspect ratio"):
+        _images.load_mark_image(_svg_row(monkeypatch, _svg(1, 100)))
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="RLIMIT_AS is enforced on Linux")
+def test_the_svgs_that_used_to_abort_the_process_raise_under_a_memory_limit(tmp_path):
+    """These renders asked resvg for 100 GB and 6.4 GB: the process died with SIGABRT (Rust's allocation failure)."""
+    pytest.importorskip("resvg_py")
+    script = (
+        "import resource, sys\n"
+        "resource.setrlimit(resource.RLIMIT_AS, (1 << 30, 1 << 30))\n"
+        "from pathlib import Path\n"
+        "from sdvplot import _images\n"
+        "from sdvplot._errors import InputError\n"
+        "for name, size in [('tall', 512), ('square', 40000), ('square', 512)]:\n"
+        "    try:\n"
+        "        print('ok', _images._rasterize(Path(sys.argv[1]) / f'{name}.svg', name[0] * 64, size, 'svg').size)\n"
+        "    except InputError:\n"
+        "        print('InputError')\n"
+    )
+    (tmp_path / "tall.svg").write_bytes(_svg(1, 100000))
+    (tmp_path / "square.svg").write_bytes(_svg(10, 10))
+    env = {**os.environ, "SDVPLOT_CACHE_DIR": str(tmp_path / "cache")}
+    r = subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path)], capture_output=True, text=True, env=env, timeout=120
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert r.stdout.splitlines() == ["InputError", "InputError", "ok (512, 512)"]

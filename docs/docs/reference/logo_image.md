@@ -49,7 +49,7 @@ PIL.Image.Image | None: The image, or None when the team does not resolve or has
 - `requests.HTTPError`: If the CDN refuses the file (a 4xx response).
 - `OSError`: If the download does not match the manifest's sha256, or is not an image PIL can decode (``PIL.UnidentifiedImageError`` subclasses OSError).
 - `InputError`: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
-- `ValueError`: If an SVG cannot be parsed.
+- `ValueError`: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide, or ``size`` is over 4096 for an SVG.
 
 ## Example
 

@@ -77,6 +77,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   headshot when nflverse has their ESPN id), each with one `SdvplotWarning`. Such a URL used to reach the web adapters
   unchanged, and Altair's HTML export wrote it into a `<script>` block unescaped, so a poisoned manifest or player table
   could run script in an exported page. The web adapters also percent-encode any such character left in an image URL.
+- SVG rendering is bounded. An SVG mark is rendered inside a `size` x `size` box (its longest side `size` pixels, at
+  most `sdvplot._images.MAX_SIZE`, 4096) after a small probe render measures its aspect ratio. An SVG more than 64 times
+  longer than it is wide, or a `size` over 4096, is an `InputError` before anything is rendered. resvg used to render
+  at `width=size` first, so a tall SVG or a large `size` asked for gigabytes and could abort the Python process.
 
 ## [0.1.0] - Unreleased
 
