@@ -15,8 +15,9 @@ BASKET_X = -47 + 5.25  # sportypy's NBA/WNBA/NCAA courts: center-court origin, b
 def _tenths(frame: Any, name: str) -> Any:
     """Column ``name`` (tenths of a foot) as a Float64 Series; strings of numbers are coerced."""
     s = frame[name]
-    if s.dtype.is_numeric():
-        return s.cast(nw.Float64)
+    if s.dtype.is_numeric():  # rebuilt like the coerced columns, so both outputs share one dtype (pandas nullable too)
+        floats = [None if _missing(v) else v for v in s.cast(nw.Float64).to_list()]
+        return nw.new_series(name, floats, nw.Float64(), backend=nw.get_native_namespace(frame))
     all_null_bool = s.dtype == nw.Boolean and s.null_count() == len(s)  # R/arrow write an all-NA column as logical
     if s.dtype not in (nw.String, nw.Object, nw.Unknown) and not all_null_bool:  # Unknown: a polars Null column
         raise TypeError(f"column {name!r} must be numeric or strings of numbers, not {s.dtype}")

@@ -205,3 +205,10 @@ def test_a_string_with_an_underscore_is_not_a_number():
     # Python's float() reads "1_0" as 10; R's as.numeric("1_0") is NA, so sdvplotR names it as not a number
     with pytest.raises(ValueError, match=r"column 'x_legacy' has values that are not numbers: \['1_0'\]"):
         sdvplot.court_coords(pl.DataFrame({"x_legacy": ["1_0", "240"], "y_legacy": ["39", "29"]}))
+
+
+def test_pandas_output_columns_share_one_dtype():
+    df = pd.DataFrame({"x_legacy": pd.array([-224, None], dtype="Int64"), "y_legacy": [39, 29]})
+    out = sdvplot.court_coords(df)
+    assert out["court_x"].dtype == out["court_y"].dtype == np.float64
+    assert out["court_y"].iloc[0] == -22.4 and np.isnan(out["court_y"].iloc[1])
