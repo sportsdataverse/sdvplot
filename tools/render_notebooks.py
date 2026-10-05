@@ -99,6 +99,12 @@ LOADERS = ("application/vnd.bokehjs_load.v0+json", "application/vnd.holoviews_lo
 # ... and what else they print: Bokeh's banner, HoloViews' module shim and logo, and Panel's comm document (a
 # BrowserInfo + CommManager document with no plot, the extension's last output when logo=False).
 EXTENSION_HTML = re.compile(r'bk-notebook-logo|class="logo-block"|type="esms-options"|panel\.models\.comm_manager\.')
+# Random per-render ids (_stable_ids): Altair's chart div, uuid4s, and 32-hex ids not inside a URL or a longer hex run.
+RANDOM_ID = re.compile(
+    r"altair-viz-[0-9a-f]{32}"
+    r"|(?<![\w/=.-])[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\w-])"
+    r"|(?<![0-9a-f/=.])[0-9a-f]{32}(?![0-9a-f])"
+)
 
 # Each framed page reports its height to the docs page around it, on load, on resize and when asked
 # (docs/src/clientModules/sdvFrames.ts); the html and body boxes cover margins and overflow.
@@ -307,11 +313,26 @@ def _bokeh_head(panel: bool) -> str:
     return "".join(f'<script src="{u}" crossorigin="anonymous"></script>\n' for u in urls)
 
 
+def _stable_ids(html: str, name: str) -> str:
+    """Rename the ids a library draws at random on every render to ``sdv_<name>_<n>``, by first appearance and every
+    reuse included, so an unchanged output renders byte-identical and the weekly refresh opens no PR for it.
+
+    The ids: great_tables' 10-letter table id (reused in its CSS), Altair's ``altair-viz-<hex>``, and the uuid4 and
+    32-hex ids of Bokeh, Panel, folium and Jupyter widget models. Underscores, not hyphens: folium uses its ids in
+    JavaScript variable names. A token in a URL path or query (after ``/``, ``=`` or ``.``) is not an id and stays."""
+    tables = [i for i in re.findall(r'<div id="([a-z]{10})"', html) if f"#{i}" in html]
+    for n, old in enumerate(dict.fromkeys(tables + RANDOM_ID.findall(html))):
+        new = f"sdv_{name}_{n}"
+        around = (r"(?<![\w-])", r"(?![\w-])") if old in tables else (r"(?<![/=.])", r"(?![0-9a-f])")
+        html = re.sub(around[0] + re.escape(old) + around[1], new, html)
+    return html
+
+
 def _frame(book: Notebook, name: str, html: str, title: str) -> str:
     """Write one output's standalone page and return the iframe that shows it."""
     dest = book.outputs_dir / f"{name}.html"
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(_normalize(html), encoding="utf-8", newline="\n")
+    dest.write_text(_normalize(_stable_ids(html, name)), encoding="utf-8", newline="\n")
     src = "/" + dest.relative_to(STATIC).as_posix()
     return f'<iframe class="sdv-frame" src="{src}" title="{title}" height="{FRAME_HEIGHT}" loading="lazy"></iframe>'
 

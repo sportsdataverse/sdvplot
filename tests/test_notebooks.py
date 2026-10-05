@@ -424,6 +424,51 @@ def test_moving_a_cell_leaves_no_stale_framed_page(site):
     assert sorted(p.name for p in book.outputs_dir.iterdir()) == ["1_0.html"]
 
 
+def _great_table():
+    from great_tables import GT
+
+    return GT(pl.DataFrame({"team": ["KC", "BUF"], "epa": [0.1, 0.2]}))._repr_html_()
+
+
+def _altair_chart():
+    import altair as alt
+
+    chart = alt.Chart(pl.DataFrame({"x": [1, 2], "y": [3, 4]})).mark_point().encode(x="x", y="y")
+    return chart._repr_mimebundle_()["text/html"]
+
+
+def _folium_map():
+    import folium
+
+    return folium.Map(location=[40, -75], zoom_start=4)._repr_html_()
+
+
+@pytest.mark.parametrize("make", [_great_table, _altair_chart, _folium_map])
+def test_a_frame_is_byte_identical_from_one_render_to_the_next(site, make):
+    # each library ids its output at random on every render; without stable ids the weekly refresh would open a PR
+    # every week for unchanged charts
+    def frame():
+        return _framed(site, new_output("execute_result", data={"text/html": make(), "text/plain": "x"}))[1]["1_0.html"]
+
+    first, second = frame(), frame()
+    assert first == second
+    assert "sdv_1_0_0" in first
+
+
+def test_stable_ids_rename_every_reuse_and_leave_urls_alone():
+    uuid, hexid, sha = "f54c579a-ad49-465a-9d76-dfa08bfce6bf", "9a0b" * 8, "25" * 32
+    html = (
+        f'<div id="tkrbkqnbqy"><style>#tkrbkqnbqy table {{}}</style></div><div id="{uuid}"></div>'
+        f'<script>var map_{hexid} = L.map("map_{hexid}"); embed("{uuid}");</script>'
+        f'<img src="https://cdn.example/sha256/{sha}.png"><img src="https://cdn.example/a/{hexid}.png?v={hexid}">'
+    )
+    assert rn._stable_ids(html, "3_1") == (
+        '<div id="sdv_3_1_0"><style>#sdv_3_1_0 table {}</style></div><div id="sdv_3_1_1"></div>'
+        '<script>var map_sdv_3_1_2 = L.map("map_sdv_3_1_2"); embed("sdv_3_1_1");</script>'
+        f'<img src="https://cdn.example/sha256/{sha}.png"><img src="https://cdn.example/a/{hexid}.png?v={hexid}">'
+    )
+
+
 def test_the_setup_cell_prints_polars_frames_as_markdown_tables_and_embeds_altair_as_svg():
     import altair as alt
 
