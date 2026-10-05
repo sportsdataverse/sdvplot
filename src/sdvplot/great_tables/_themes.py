@@ -264,6 +264,15 @@ def gt_theme_almanac(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_theme_almanac
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_almanac(GT(df), stripe=None, accent="#1F3A5F")
 
@@ -358,6 +367,18 @@ def gt_theme_booktabs(gt: GT, accent: str = "#111111", density: str = "comfortab
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_booktabs
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_booktabs(GT(df), density="compact")
 
     See Also:
@@ -450,6 +471,18 @@ def gt_theme_broadsheet(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_broadsheet
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_broadsheet(GT(df), paper="salmon")
 
@@ -557,6 +590,18 @@ def gt_theme_swiss(gt: GT, accent: str = "#111111", density: str = "comfortable"
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_swiss
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_swiss(GT(df), accent="#E30613")
 
     See Also:
@@ -644,6 +689,18 @@ def gt_theme_tufte(gt: GT, accent: str = "#111111", density: str = "comfortable"
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_tufte
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_tufte(GT(df), accent="#A0522D")
 
     See Also:
@@ -728,6 +785,18 @@ def gt_theme_brutalist(gt: GT, accent: str = "#FF3B00", density: str = "comforta
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_brutalist
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_brutalist(GT(df), accent="#0047FF")
 
@@ -834,6 +903,18 @@ def gt_theme_drench(gt: GT, color: str = "#123F5E", density: str = "comfortable"
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_drench
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_drench(GT(df), color="#E31837")
 
     See Also:
@@ -933,6 +1014,18 @@ def gt_theme_midnight(gt: GT, accent: str = "#5B8DEF", density: str = "comfortab
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_midnight
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_midnight(GT(df), accent="#3FBF87")
 
     See Also:
@@ -1031,6 +1124,18 @@ def gt_theme_scoreboard(gt: GT, accent: str = "#0E1621", density: str = "compact
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_scoreboard
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_scoreboard(GT(df), accent="#FFC20E")
 
     See Also:
@@ -1123,6 +1228,18 @@ def gt_theme_terminal(gt: GT, accent: str = "#FFB86C", density: str = "compact",
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_terminal
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_terminal(GT(df), accent="#7EE787")
 
@@ -1219,6 +1336,18 @@ def gt_theme_athletic(gt: GT, density: str = "comfortable", **options: Any) -> G
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_athletic
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_athletic(GT(df), density="compact")
 
     See Also:
@@ -1294,6 +1423,18 @@ def gt_theme_gtutils(gt: GT, density: str = "comfortable", **options: Any) -> GT
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_gtutils
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_gtutils(GT(df))
 
@@ -1376,6 +1517,18 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_kenpom
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_kenpom(GT(df))
 
     See Also:
@@ -1454,6 +1607,18 @@ def gt_theme_ncaa(gt: GT, density: str = "comfortable", **options: Any) -> GT:
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_ncaa
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_ncaa(GT(df))
 
@@ -1541,6 +1706,18 @@ def gt_theme_pl(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_pl(GT(df))
 
     See Also:
@@ -1620,6 +1797,18 @@ def gt_theme_savant(gt: GT, density: str = "comfortable", **options: Any) -> GT:
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_savant
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_theme_savant(GT(df))
 
     See Also:
@@ -1695,6 +1884,18 @@ def gt_theme_sofa(gt: GT, style: str = "light", density: str = "comfortable", **
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_sofa
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_sofa(GT(df), style="dark")
 
@@ -1773,6 +1974,18 @@ def gt_theme_tier(gt: GT, style: str = "dark", density: str = "comfortable", **o
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_tier
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_tier(GT(df), style="light")
 
@@ -1857,6 +2070,16 @@ def gt_theme_preview(
         ::
 
             from sdvplot.great_tables import gt_theme_preview
+            import polars as pl
+            from sdvplot.great_tables import gt_theme_kenpom, gt_theme_athletic
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             tables = gt_theme_preview(df, themes=["gt_theme_kenpom", "gt_theme_athletic"])
             tables["gt_theme_kenpom"]

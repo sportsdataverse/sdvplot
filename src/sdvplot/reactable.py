@@ -102,6 +102,15 @@ def reactable_sdv_logos(
 
             from reactable import Reactable
             from sdvplot.reactable import reactable_sdv_logos
+            import pandas as pd
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             Reactable(df, columns=[reactable_sdv_logos(league="nfl", id="team", name="")])
 
@@ -143,6 +152,18 @@ def reactable_sdv_wordmarks(
     Example:
         ::
 
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_wordmarks
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             Reactable(df, columns=[reactable_sdv_wordmarks(league="nfl", id="team")])
 
     See Also:
@@ -178,6 +199,18 @@ def reactable_sdv_headshots(
 
     Example:
         ::
+
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_headshots
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             Reactable(df, columns=[reactable_sdv_headshots(league="nfl", id="espn_id", name="")])
 
@@ -222,6 +255,18 @@ def reactable_sdv_cols_label(
 
     Example:
         ::
+
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_cols_label
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             Reactable(df, columns=reactable_sdv_cols_label(df, league="nfl"))
 
@@ -279,6 +324,18 @@ def reactable_sdv_team_color_bar(
     Example:
         ::
 
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_team_color_bar
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             Reactable(df, columns=[reactable_sdv_team_color_bar(df, "team", league="nfl", id="wins")])
 
     See Also:
@@ -334,6 +391,18 @@ def reactable_sdv_team_color_bg(
 
     Example:
         ::
+
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_team_color_bg
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             Reactable(df, columns=[reactable_sdv_team_color_bg(df, "team", league="nfl", id="team")])
 
