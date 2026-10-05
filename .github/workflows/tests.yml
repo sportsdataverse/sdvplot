@@ -26,6 +26,7 @@ permissions:
 jobs:
   offline:
     name: pytest (offline, py${{ matrix.python }})
+    timeout-minutes: 30  # a run takes ~5 min; a hung one used to hold the runner for 6 h
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -55,6 +56,7 @@ jobs:
   # Render tests and image baselines stay on Linux (they need Chrome and the baselines' font stack).
   os-matrix:
     name: pytest (${{ matrix.os }}, py${{ matrix.python }})
+    timeout-minutes: 30  # a run takes ~5 min; a hung one used to hold the runner for 6 h
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -74,6 +76,7 @@ jobs:
   # Every declared floor must work: resolve each direct dependency to its lowest allowed version and run the suite.
   lowest-direct:
     name: pytest (lowest direct versions, py3.10)
+    timeout-minutes: 30  # a run takes ~5 min; a hung one used to hold the runner for 6 h
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -89,6 +92,7 @@ jobs:
   # added to the skip table in tests/conftest.py).
   sdist:
     name: pytest (from the sdist, py3.13)
+    timeout-minutes: 30  # a run takes ~5 min; a hung one used to hold the runner for 6 h
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -119,6 +123,7 @@ jobs:
   # Python the classifiers claim.
   wheel:
     name: wheel (no extras, then [all]; py${{ matrix.python }})
+    timeout-minutes: 30  # a run takes ~5 min; a hung one used to hold the runner for 6 h
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -145,6 +150,7 @@ jobs:
 
   live:
     name: pytest (live, py3.13)
+    timeout-minutes: 45
     # Live endpoints are third-party and flaky: an outage must not turn main red. Manual runs only here; the weekly
     # live-tests-cron workflow runs them on a schedule and opens the refresh PR.
     if: github.event_name == 'workflow_dispatch'

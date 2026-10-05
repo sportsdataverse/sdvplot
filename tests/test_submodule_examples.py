@@ -8,11 +8,13 @@ does not depend on the developer's warm cache. Anything that still cannot run of
 reason; an unlisted skip, or a tolerated example that raises AssertionError, NameError or SyntaxError, fails.
 """
 
+import ast
 import contextlib
 import hashlib
 import importlib.util
 import inspect
 import json
+import re
 import signal
 import socket
 import sys
@@ -194,6 +196,40 @@ def test_contract_examples_pass_on_fixture_marks(key, tmp_path, monkeypatch, man
 
 def test_every_tolerated_entry_names_a_real_example():
     assert set(TOLERATED) <= set(EXAMPLES)
+
+
+# The hand-written docs pages run the same way: each page's ```python blocks in order, as one program. An expression
+# whose same-line comment is a Python literal must equal it, so a page cannot show a stale output.
+DOCS = ROOT / "docs" / "docs"
+DOC_PAGES = {p.relative_to(DOCS).as_posix(): p for p in [DOCS / "intro.md", *sorted((DOCS / "concepts").glob("*.md"))]}
+UNPINNED = {"sdvplot.versions()"}  # its index hash and manifest date move with every data refresh
+
+
+def page_program(text: str) -> str:
+    """The page's python blocks as one program, each expression with a literal comment followed by its assert."""
+    out = []
+    for block in re.findall(r"^```python\n(.*?)^```", text, re.S | re.M):
+        lines = block.splitlines()
+        for node in ast.parse(block).body:
+            src = ast.get_source_segment(block, node)
+            out.append(src)
+            comment = lines[node.end_lineno - 1].partition("  # ")[2]
+            if isinstance(node, ast.Expr) and comment and src not in UNPINNED:
+                with contextlib.suppress(ValueError, SyntaxError):  # prose, not a value
+                    out.append(f"assert ({src}) == {ast.literal_eval(comment)!r}, {src!r}")
+    return "\n".join(out)
+
+
+@pytest.mark.real_index
+@pytest.mark.parametrize("page", sorted(DOC_PAGES))
+def test_the_docs_page_snippets_run_offline_and_match_their_comments(page, monkeypatch, seeded_cache):
+    exc = run_example(page_program(DOC_PAGES[page].read_text(encoding="utf-8")), seeded_cache.parent, monkeypatch)
+    assert exc is None, f"{page}: {type(exc).__name__}: {exc}"
+
+
+def test_a_literal_comment_becomes_an_assert_and_prose_does_not():
+    page = "```python\nx = 1\nx + 1  # 3\nx  # the one\nsdvplot.versions()  # {}\n```\n"
+    assert page_program(page) == "x = 1\nx + 1\nassert (x + 1) == 3, 'x + 1'\nx\nsdvplot.versions()"
 
 
 # the runner and the classification, on small examples

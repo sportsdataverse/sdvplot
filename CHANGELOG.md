@@ -89,6 +89,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
   with a CSS rule) and that stripes cover plain fills only in VS Code and Positron notebooks, and the college softball
   World Series table turns row striping off after `gt_theme_ncaa` (`gt_color_results` fills every row).
+- Documentation: every example notebook is re-rendered against the 0.1.0 API. The pages that called a league's
+  colors fallbacks (the colors tutorial and cookbook; cricket, MLB, NBA, PWHL, soccer, spring football, college
+  hockey; the rank bump chart) now say where the index's colors come from (`color_source` `espn` or `logo`); the WNBA
+  tier list ranks teams within each tier, so its logos no longer overlap; the cache page lists `urlimages/` and the
+  current `versions()` output. The docs pages' Python examples run offline in the test suite, which checks every
+  output their comments show. The social-graphics workflow template pins a current sdvplot commit.
 - The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
   (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
   name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,

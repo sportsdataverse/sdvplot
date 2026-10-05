@@ -102,6 +102,9 @@ minversion = "8.0"
 testpaths = ["tests"]
 # -ra lists every skip with its reason; an unregistered marker or a misspelled ini key is an error, not a no-op
 addopts = ["-ra", "--strict-markers", "--strict-config"]
+# a test still running after 5 min is hung (the full suite takes ~7): dump every thread's stack so the CI log shows
+# where (an intermittent macOS hang inside kaleido's Chrome driver left no trace); timeout-minutes ends the job
+faulthandler_timeout = 300
 filterwarnings = [
   "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
   "ignore:datetime.datetime.utcfromtimestamp:DeprecationWarning",  # pygal 3.1 labels DateTimeLine axes with it
