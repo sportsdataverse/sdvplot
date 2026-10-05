@@ -206,3 +206,38 @@ def test_espn_team_endpoint_abbreviations_never_name_another_team():
             got = sdvplot.resolve(rows["abbreviation"], league)
         for r, g in zip(rows.iter_rows(named=True), got, strict=True):
             assert g in (r["team_id"], holder.get(r["abbreviation"].upper()), None), (league, r, g)
+
+
+@pytest.mark.parametrize(
+    ("league", "code", "season", "team"),
+    [
+        ("ufl", "BIR", 2024, "126073"),  # the 2024-25 codes, from ESPN's scoreboards (its teams list is 2026's)
+        ("ufl", "ARL", 2025, "112647"),
+        ("ufl", "MEM", 2024, "129043"),
+        ("ufl", "MIC", 2025, "125957"),
+        ("ufl", "SA", 2024, "126746"),
+        ("ufl", "HOU", 2024, "126075"),
+        ("ufl", "Houston Roughnecks", 2025, "126075"),
+        ("xfl", "DC", 2020, "112646"),
+        ("xfl", "DAL", 2020, "112647"),
+        ("xfl", "ARL", 2023, "112647"),
+        ("xfl", "HOU", 2023, "112648"),
+        ("xfl", "LA", 2020, "112649"),
+        ("xfl", "NY", 2020, "112650"),
+        ("xfl", "STL", 2023, "112651"),
+        ("xfl", "SEA", 2020, "112652"),
+        ("xfl", "TB", 2020, "112653"),
+        ("xfl", "SA", 2023, "126746"),
+        ("xfl", "VGS", 2023, "126747"),
+        ("xfl", "ORL", 2023, "126748"),
+    ],
+)
+def test_ufl_and_xfl_season_codes(league, code, season, team):
+    assert sdvplot.resolve(code, league, season=season) == team
+
+
+def test_ufl_season_codes_carry_their_seasons():
+    a = _index.alias_table().filter(
+        (pl.col("league") == "ufl") & (pl.col("id_system") == "espn_abbr") & (pl.col("value") == "ARL")
+    )
+    assert a.select("team_id", "valid_from", "valid_to").rows() == [("112647", 2024, 2025)]

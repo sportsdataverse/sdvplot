@@ -269,3 +269,22 @@ def test_espn_team_abbr_rows_skip_placeholders():
         "valid_to": "",
     }
     assert fs.espn_team_abbr_row("ncaa_baseball", {"team": {"id": "1153", "displayName": "TBD"}}) is None
+
+
+def test_espn_season_abbr_rows_keep_each_code_with_its_seasons():
+    def board(*teams):
+        competitors = [{"team": {"id": i, "abbreviation": a, "displayName": n}} for i, a, n in teams]
+        return {"events": [{"competitions": [{"competitors": competitors}]}]}
+
+    boards = {
+        2024: board(("112647", "ARL", "Arlington Renegades"), ("126075", "HOU", "Houston Roughnecks")),
+        2025: board(("112647", "ARL", "Arlington Renegades"), ("126075", "HOU", "Houston Roughnecks")),
+        2026: board(("112647", "DAL", "Dallas Renegades"), ("126075", "HOU", "Houston Gamblers")),
+        2027: {"events": []},  # a season not played yet
+    }
+    assert sorted(tuple(r.values()) for r in fs.espn_season_abbr_rows("ufl", boards)) == [
+        ("ufl", "112647", "ARL", "Arlington Renegades", 2024, 2025),
+        ("ufl", "112647", "DAL", "Dallas Renegades", 2026, 2026),
+        ("ufl", "126075", "HOU", "Houston Gamblers", 2026, 2026),
+        ("ufl", "126075", "HOU", "Houston Roughnecks", 2024, 2025),
+    ]

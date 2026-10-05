@@ -263,3 +263,9 @@
   `MIZZ`, while its per-team endpoint, scoreboards and standings use `NCSU`, `MIZ`, `UCR`, `KENN` and about 120 others;
   a new snapshot, `data-raw/espn_abbrs.csv`, keeps the per-team abbreviations. One the list gives another team stays
   with that team (LSU Alexandria's per-team `LSU`), and one ESPN gives two teams (softball's `CEN`) is left out.
+- UFL 2024-25 codes (`BIR`, `ARL`, `MEM`, `MIC`, `SA`, `HOU` for the Roughnecks) and every XFL code (2020, 2023)
+  resolve, dated by the seasons ESPN's scoreboards show them (`data-raw/espn_abbrs.csv`), with the names of those
+  seasons ("Houston Roughnecks", "Arlington Renegades"). Known gap: ESPN id 126075 was the Houston Roughnecks in
+  2024-25, but the archive has only the 2026 Houston Gamblers marks for it, so `logo_url("HOU", "ufl", season=2024)`
+  is the Gamblers logo. The archive's Roughnecks mark is the XFL team's (xfl 112648, 2020-23), another league's
+  entity, and nothing establishes that the UFL team used it, so it is not wired (`docs/PARITY.md`).

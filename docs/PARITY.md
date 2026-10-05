@@ -87,6 +87,14 @@ team is dropped.
   without one, or in another season, it is ambiguous (`None` and one `SdvplotWarning`). Use `WSH` or `WSN` for the
   Nationals.
 
+Known gaps in the archive (recorded, not invented):
+
+- **UFL Houston, 2024-25.** ESPN id 126075 was the Houston Roughnecks in 2024 and 2025 and is the Houston Gamblers
+  from 2026, but the archive holds only the Gamblers marks for it (one undated set, one dated 2026), so any season
+  gets the Gamblers logo. The archive's Roughnecks mark belongs to the XFL Roughnecks (league `xfl`, ESPN id 112648,
+  2020-23); marks are looked up within a league, and nothing establishes that the UFL team used that logo, so it is
+  not wired to the UFL team.
+
 ## Recipes
 
 **X6 images as axis labels** (`element_path` / `element_raster`). Team marks: `sdvplot.axis_logos(target, "x",

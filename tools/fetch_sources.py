@@ -67,6 +67,9 @@ MILB_SPORT_IDS = [11, 12, 13, 14, 16]
 # (college baseball: NCST in the list, NCSU everywhere else): espn_abbrs.csv keeps the per-team ones
 ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
 ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid_from", "valid_to"]
+# Leagues whose earlier seasons' codes the teams list no longer shows (UFL 2024-25's BIR, ARL; the defunct XFL's):
+# (sdv league, ESPN sport, ESPN league, first season, last season or None for the current year)
+ESPN_SEASON_LEAGUES = [("ufl", "football", "ufl", 2024, None), ("xfl", "football", "xfl", 2020, 2023)]
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -107,6 +110,33 @@ def espn_team_abbr_row(league: str, payload: dict) -> dict | None:
         return None
     return {"league": league, "team_id": str(t["id"]), "abbreviation": t["abbreviation"],
             "display_name": t.get("displayName"), "valid_from": "", "valid_to": ""}  # fmt: skip
+
+
+def espn_season_abbr_rows(league: str, scoreboards: dict[int, dict]) -> list[dict]:
+    """The team codes and names in a league's scoreboards, one row per (team, abbreviation, name) with the first and
+    last season it appears in."""
+    seen: dict[tuple, list[int]] = {}
+    for season, payload in scoreboards.items():
+        for event in payload.get("events", []):
+            for c in event["competitions"][0]["competitors"]:
+                t = c["team"]
+                seen.setdefault((str(t["id"]), t.get("abbreviation"), t.get("displayName")), []).append(season)
+    return [
+        dict(zip(ESPN_ABBR_COLUMNS, (league, *key, min(s), max(s)), strict=True)) for key, s in seen.items() if key[1]
+    ]
+
+
+def fetch_espn_season_abbrs(s: requests.Session, host: str) -> list[dict]:
+    """espn_season_abbr_rows for every ESPN_SEASON_LEAGUES league, from each season's scoreboard."""
+    rows = []
+    for league, sport, el, first, last in ESPN_SEASON_LEAGUES:
+        url = f"https://{host}/apis/site/v2/sports/{sport}/{el}/scoreboard?dates={{}}&limit=1000"
+        seasons = range(first, (last or dt.date.today().year) + 1)
+        got = espn_season_abbr_rows(league, {y: _get(s, url.format(y)).json() for y in seasons})
+        if not got:
+            raise RuntimeError(f"espn: no scoreboard teams for {league}")
+        rows += got
+    return rows
 
 
 def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> list[dict]:
@@ -301,7 +331,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
             "alternate_color",
         ],
     )
-    write("espn_abbrs", fetch_espn_team_abbrs(s, hosts[0], espn), ESPN_ABBR_COLUMNS)
+    abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0])
+    write("espn_abbrs", abbrs, ESPN_ABBR_COLUMNS)
 
     nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
     write("nflverse_teams", nfl, ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])
