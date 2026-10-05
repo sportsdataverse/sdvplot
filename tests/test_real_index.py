@@ -263,3 +263,14 @@ def test_live_utah_logo_by_season(tmp_path, monkeypatch):
     for variant in ("default", "dark"):
         assert select_mark("UTA", "nhl", 2025, variant)["entity_id"] == "59"  # the Utah Hockey Club, 2024-25
         assert select_mark("UTA", "nhl", 2026, variant)["entity_id"] == "68"  # the Utah Mammoth, 2025-26 on
+
+
+def test_womens_college_hockey_ids_espn_game_data_uses():  # ESPN scoreboards use ids its teams list lacks
+    assert sdvplot.resolve(["24059", 24059, "2364"], "ncaa_whockey") == ["2364"] * 3  # Minnesota State's second id
+    assert sdvplot.resolve(["48", "DEL", "Delaware Blue Hens"], "ncaa_whockey") == ["48"] * 3
+    delaware = sdvplot.teams("ncaa_whockey").filter(pl.col("team_id") == "48").row(0, named=True)
+    assert (delaware["name"], delaware["abbr"]) == ("Delaware Blue Hens", "DEL")
+    marks = _index.alias_table().filter(
+        (pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "mark") & (pl.col("team_id") == "48")
+    )
+    assert marks.height == 0  # the archive has no Delaware mark, and none is made up

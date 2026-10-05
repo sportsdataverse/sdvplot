@@ -465,3 +465,27 @@ def test_curated_mark_ranges_date_their_key_and_fail_on_an_unknown_one():
     ]
     with pytest.raises(AssertionError, match="nhl:99"):
         bi.curated_mark_ranges(mark, curated.with_columns(pl.lit("nhl:99").alias("mark")))
+
+
+def test_unlisted_espn_teams_are_a_second_id_or_a_new_team(tmp_path):
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "ncaa_whockey,2364,Minnesota State Mavericks,womens")
+    _add(
+        raw,
+        "espn_teams.csv",
+        "ncaa_whockey,2364,MNST,Minnesota State Mavericks,Minnesota State,Minnesota State,Mavericks,,",
+    )
+    (raw / "espn_unlisted_teams.csv").write_text(
+        "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
+        "ncaa_whockey,24059,MNST,Minnesota State Mavericks,Minnesota St,Minnesota State,Mavericks,,\n"
+        "ncaa_whockey,48,DEL,Delaware Blue Hens,Delaware,Delaware,Blue Hens,,\n"
+    )
+    teams, aliases, _ = bi.build(raw)
+    got = teams.filter(pl.col("league") == "ncaa_whockey").select("team_id", "abbr", "name", "program", "color_source")
+    assert sorted(got.rows()) == [
+        ("2364", "MNST", "Minnesota State Mavericks", "womens", "fallback"),
+        ("48", "DEL", "Delaware Blue Hens", "womens", "fallback"),  # identity only: no archive row, no mark
+    ]
+    espn = aliases.filter((pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "espn"))
+    assert sorted(espn.select("value", "team_id").rows()) == [("2364", "2364"), ("24059", "2364"), ("48", "48")]
+    assert aliases.filter((pl.col("id_system") == "mark") & (pl.col("team_id") == "48")).height == 0

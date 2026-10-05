@@ -36,7 +36,7 @@
 - `headshot_url()`: ESPN athlete ids for NFL, NBA, WNBA, MLB, NHL and college football and basketball, plus NFL gsis ids through the nflverse player table.
 - A download cache (`SDVPLOT_CACHE_DIR`, `SDVPLOT_CACHE_TTL`) with `clear_cache()`.
 - The adapter registry and contract harness (`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos`, `sdvplot.testing`).
-- A bundled index of 5,876 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
+- A bundled index of 5,877 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
 - sdvplotR parity: 99.7% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,230 of 4,241 checked; `docs/PARITY.md` lists the deliberate differences).
 
 ### Added — repository standards
@@ -274,3 +274,8 @@
   outranked the Hockey Club's (team 59) one-season marks. A curated range (`data-raw/curated/mark_ranges.csv`, each
   row with its reason) now starts team 68's marks in 2026, and a mark alias's range narrows a manifest row's own range
   instead of only filling an open one (no other archived mark changes).
+- Women's college hockey: ESPN's scoreboards use team ids its teams list lacks. A new snapshot,
+  `data-raw/espn_unlisted_teams.csv`, keeps them: one whose name and abbreviation are a listed team's is that team's
+  second ESPN id (Minnesota State's `24059` resolves to `2364`, not only by name), and any other is a team of its own
+  (Delaware, `48`, `DEL`). The archive has no Delaware mark, so its logo is `None` with a warning and its colors are
+  flagged `color_source="fallback"`; none is made up.

@@ -288,3 +288,11 @@ def test_espn_season_abbr_rows_keep_each_code_with_its_seasons():
         ("ufl", "126075", "HOU", "Houston Gamblers", 2026, 2026),
         ("ufl", "126075", "HOU", "Houston Roughnecks", 2024, 2025),
     ]
+
+
+def test_unlisted_team_ids_are_the_scoreboard_ids_the_list_lacks():
+    def board(*ids):
+        return {"events": [{"competitions": [{"competitors": [{"team": {"id": i}} for i in ids]}]}]}
+
+    boards = [board("2364", "24059"), board("48", "-2"), {"events": []}]
+    assert fs.unlisted_team_ids(boards, {"2364"}) == ["24059", "48"]  # "-2" is ESPN's TBD placeholder
