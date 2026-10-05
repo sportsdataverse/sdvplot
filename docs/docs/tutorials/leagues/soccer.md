@@ -112,7 +112,7 @@ sdvplot.suggest("Arsenal", "soccer")
 ```text
 2,631 clubs in the soccer index
 [None, None, '20232']
-2 value(s) did not resolve to a soccer team: 'Arsenal' (ambiguous), 'Liverpool' (ambiguous). Use sdvplot.suggest() for candidates, or strict=True to raise.
+2 value(s) did not resolve to a soccer team: 'Arsenal' (ambiguous: 19973 Arsenal or 359 Arsenal), 'Liverpool' (ambiguous: 19971 Liverpool or 364 Liverpool or 5492 Liverpool); pass season= for a code reused across eras, or id_system= for the id system of the values. Use sdvplot.suggest() for candidates, or strict=True to raise.
 ```
 
 ```text
@@ -268,10 +268,10 @@ Aston Villa sit eight points above the line on 65 points from a +7 goal differen
 
 ## 5. Form, club by club, in club colors
 
-Points from the last five matches across the season, one panel per club in final-table order. The index has no
-colors for soccer clubs yet (every row is `color_source == "fallback"`, see the next example), so the lines use the
-color ESPN's schedule carried for each club. A few clubs' ESPN color is white; a dark line under each colored one
-keeps them all visible. `geom_sdv_logos` puts the crest in each panel.
+Points from the last five matches across the season, one panel per club in final-table order. The lines use the
+color ESPN's schedule carried for each club, which is also the index's color for all twenty (`color_source ==
+"espn"`, see the next example). A few clubs' ESPN color is white; a dark line under each colored one keeps them all
+visible. `geom_sdv_logos` puts the crest in each panel.
 
 ```python
 from plotnine import (
@@ -341,37 +341,33 @@ and December, and Chelsea lost six in a row in April and May.
 
 ## 6. Club colors for seaborn
 
-`sdvplot.palette` gives seaborn a `{team: color}` dict. For soccer those are the index's fallback colors: a
-colorblind-safe set that tells clubs apart but is not theirs. ESPN's own club colors identify the clubs, but six are
-shades of red and three are white. Both palettes, side by side, on goals scored; `axis_logos` swaps the team ids on
-the y axis for crests.
+`sdvplot.palette` gives seaborn a `{team: color}` dict. The index takes soccer colors from ESPN where ESPN publishes
+them and from the club's logo elsewhere; all twenty Premier League clubs have ESPN's, the colors their schedules
+carry. Seven of them are shades of red and three are white, so each bar gets a grey edge. Goals scored, with
+`axis_logos` swapping the team ids on the y axis for crests.
 
 ```python
 import seaborn as sns
 
-print(sdvplot.teams("soccer")["color_source"].unique(maintain_order=True).to_list())
+clubs = sdvplot.teams("soccer").filter(pl.col("team_id").is_in(table["team_id"].to_list()))
+print(clubs["color_source"].unique(maintain_order=True).to_list())
 scored = table.sort("points_for", descending=True).select("team_id", "points_for").to_pandas()
-fig, axes = plt.subplots(1, 2, figsize=(10, 6), sharex=True)
-palettes = {
-    "sdvplot.palette (fallback)": sdvplot.palette("soccer", teams=table["team_id"]),
-    "ESPN club colors": club_colors,
-}
-for ax, (title, colors) in zip(axes, palettes.items(), strict=True):
-    sns.barplot(
-        scored,
-        x="points_for",
-        y="team_id",
-        hue="team_id",
-        palette=colors,
-        legend=False,
-        ax=ax,
-        edgecolor="#555555",
-        linewidth=0.6,
-    )
-    sdvplot.axis_logos(ax, "y", league="soccer", height=0.04)
-    ax.set(title=title, xlabel="Goals scored", ylabel="")
-    ax.spines[["top", "right"]].set_visible(False)
-fig.suptitle("Premier League 2025-26 goals scored, two palettes", fontweight="bold")
+fig, ax = plt.subplots(figsize=(6, 6))
+sns.barplot(
+    scored,
+    x="points_for",
+    y="team_id",
+    hue="team_id",
+    palette=sdvplot.palette("soccer", teams=table["team_id"]),
+    legend=False,
+    ax=ax,
+    edgecolor="#555555",
+    linewidth=0.6,
+)
+sdvplot.axis_logos(ax, "y", league="soccer", height=0.04)
+ax.set(xlabel="Goals scored", ylabel="")
+ax.spines[["top", "right"]].set_visible(False)
+ax.set_title("Premier League 2025-26 goals scored", loc="left", fontweight="bold")
 fig.text(0.99, 0.01, "Data: ESPN via sportsdataverse-py", ha="right", fontsize=8, color="grey")
 plt.show()
 ```
@@ -379,7 +375,7 @@ plt.show()
 <div class="sdv-output">
 
 ```text
-['fallback']
+['espn']
 ```
 
 ![png](soccer_files/soccer_19_1.png)

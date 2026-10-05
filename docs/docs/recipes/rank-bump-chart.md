@@ -120,8 +120,8 @@ League tables read top down, so the y axis is inverted with a tick for every pos
 light grey for context, and three are drawn in their colors: the champion and the two biggest climbers, measured
 from where they stood after six games to where they finished.
 
-The colors come from the data, not sdvplot: the soccer index has no club colors yet (its `color_source` column says
-`fallback`, a stand-in palette), while ESPN's scoreboard carries each club's own colors. Two red clubs would read as
+The colors come from the data: ESPN's scoreboard carries each club's color and an alternate, and the index's colors
+for these clubs are ESPN's too (its `color_source` column says `espn` for every club). Two red clubs would read as
 one, so a club whose color is too close to one already used switches to its alternate color.
 
 ```python
@@ -168,7 +168,7 @@ climbers.select("team", "start", "position", "climb")
 <div class="sdv-output">
 
 ```text
-['fallback']
+['espn']
 ```
 
 ![png](rank-bump-chart_files/rank-bump-chart_7_1.png)

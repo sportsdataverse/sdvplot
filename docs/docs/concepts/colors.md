@@ -23,9 +23,11 @@ sdvplot.palette("nfl", teams=["Kansas City Chiefs", 12])  # {'Kansas City Chiefs
 ```
 
 ```python
+import pandas as pd
 import seaborn as sns
 
-sns.barplot(data=df, x="team", y="epa", hue="team", palette=sdvplot.palette("nfl", teams=df["team"]))
+df = pd.DataFrame({"team": ["KC", "SF"], "wins": [15, 6]})  # the 2024 regular season
+sns.barplot(data=df, x="team", y="wins", hue="team", palette=sdvplot.palette("nfl", teams=df["team"]))
 ```
 
 **Without `teams`,** you get the whole league, keyed by canonical abbreviation. A team with no abbreviation is keyed by

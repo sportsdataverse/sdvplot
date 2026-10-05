@@ -6,7 +6,7 @@ sidebar_label: The cache
 # The cache
 
 The team index ships inside the package, so `resolve()`, `palette()`, `team_colors()` and `teams()` never touch the
-network. Logos and gsis headshots need downloads, and sdvplot caches those on disk.
+network. Logos, headshot images and gsis headshots need downloads, and sdvplot caches those on disk.
 
 ## What is cached
 
@@ -16,13 +16,14 @@ network. Logos and gsis headshots need downloads, and sdvplot caches those on di
 | `images/` | logo images, by sha256 | never: the content cannot change |
 | `rasters/` | SVG marks rendered to PNG for `logo_image()` | never: one file per sha256, size and resvg-py version |
 | `nflverse/` | nflverse's player table, for `headshot_url(..., id_system="gsis")` | after the TTL, with an ETag check |
+| `urlimages/` | images drawn from a URL that is not content-addressed (headshots, any other https image), by the sha256 of the URL | after the TTL, with an ETag check |
 
 ## Where it lives
 
 | Variable | Meaning | Default |
 |---|---|---|
 | `SDVPLOT_CACHE_DIR` | the cache root | platformdirs' user cache directory for `sdvplot`, such as `~/.cache/sdvplot` on Linux |
-| `SDVPLOT_CACHE_TTL` | how long the manifest and the player table stay fresh, in **days** (fractions allowed) | `7` |
+| `SDVPLOT_CACHE_TTL` | how long the manifest, the player table and URL images stay fresh, in **days** (fractions allowed) | `7` |
 
 ```bash
 export SDVPLOT_CACHE_DIR=/data/sdvplot-cache
@@ -69,9 +70,9 @@ import sdvplot
 sdvplot.clear_cache()
 ```
 
-`clear_cache()` deletes only sdvplot's own subdirectories (`manifest`, `images`, `rasters`, `nflverse`). Anything else
-in the cache root stays, so pointing `SDVPLOT_CACHE_DIR` at a shared directory is safe. The next call that needs a file
-downloads it again. A subdirectory that is a symlink is unlinked in the default cache directory (what it points to
+`clear_cache()` deletes only sdvplot's own subdirectories (`manifest`, `images`, `rasters`, `nflverse`, `urlimages`).
+Anything else in the cache root stays, so pointing `SDVPLOT_CACHE_DIR` at a shared directory is safe. The next call
+that needs a file downloads it again. A subdirectory that is a symlink is unlinked in the default cache directory (what it points to
 is untouched) and left alone with a warning in a directory you chose.
 
 ## `versions()`
@@ -80,7 +81,7 @@ A bug report needs to say what sdvplot was looking at. `versions()` returns:
 
 ```python
 sdvplot.versions()
-# {'sdvplot': '0.1.0', 'index': '1e20bbb90d63', 'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
+# {'sdvplot': '0.1.0', 'index': '88b114b58b3d', 'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
 ```
 
 - `sdvplot` is the package version.
