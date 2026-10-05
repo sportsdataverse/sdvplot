@@ -1,7 +1,8 @@
 ---
-title: Headshots tutorial
-sidebar_label: Headshots
+title: "Headshots tutorial"
+sidebar_label: "Headshots"
 sidebar_position: 4
+description: "Build player headshot urls from ESPN athlete ids and NFL gsis ids, and show one in matplotlib."
 ---
 
 # Headshots
