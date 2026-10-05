@@ -1,0 +1,15 @@
+"shot_zone_basic","ref","x0","y0"
+"Above the Break 3","mean",90,220.66666666666666
+"Backcourt","mean",-22.5,565
+"In The Paint (Non-RA)","mean",17.25,61.25
+"Left Corner 3","mean",-229.75,19.5
+"Mid-Range","mean",-17,165.75
+"Restricted Area","mean",-4.375,6.75
+"Right Corner 3","mean",234,26.25
+"Above the Break 3","median",177,197
+"Backcourt","median",-22.5,565
+"In The Paint (Non-RA)","median",16.5,45.5
+"Left Corner 3","median",-227,12.5
+"Mid-Range","median",1,158
+"Restricted Area","median",0,3
+"Right Corner 3","median",232.5,18

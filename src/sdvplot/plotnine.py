@@ -1,4 +1,4 @@
-"""The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, and team color scales.
+"""The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team color scales and reference lines.
 
 The geoms draw through the matplotlib adapter (sdvplot.matplotlib.draw_placements), so sizing matches it: ``height``
 is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot (plotnine's ``+`` copies).
@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from plotnine import aes, element_text, ggplot, scale_color_manual, scale_fill_manual, theme
+from plotnine._utils import remove_missing
+from plotnine.geoms import geom_hline, geom_vline
 from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
@@ -149,6 +152,110 @@ class geom_from_path(_geom_sdv_marks):
         data = coord.transform(data, panel_params)
         placements = place_images(data["x"].tolist(), data["y"].tolist(), data["path"].tolist())
         draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
+
+
+class _geom_ref_lines(geom):
+    """One vertical line at ``_ref(x0)`` and one horizontal line at ``_ref(y0)`` per panel, drawn by plotnine's own
+    geom_vline / geom_hline (ggpath draws through GeomVline / GeomHline the same way)."""
+
+    _ref: Any = staticmethod(np.mean)
+    # ggpath's GeomRefLines, except alpha: ggplot2's NA (the color's own alpha) is 1 in plotnine, which also keeps
+    # an 8-digit hex color's alpha
+    DEFAULT_AES = {"color": "red", "size": 0.5, "linetype": "dashed", "alpha": 1}
+    REQUIRED_AES: set[str] = set()
+    DEFAULT_PARAMS = {"stat": "identity", "position": "identity", "na_rm": False}
+
+    def __init__(self, mapping: Any = None, data: Any = None, **kwargs: Any) -> None:
+        kwargs.setdefault("show_legend", False)
+        super().__init__(mapping, data, **kwargs)
+
+    def draw_layer(self, data: pd.DataFrame, layout: Any, coord: Any) -> None:
+        # x0/y0 are position aesthetics in ggplot2, so a log scale averages the logs; plotnine does not know them,
+        # so transform them with the position scales here (the data's x scale, also under coord_flip)
+        for ae, scales in (("x0", layout.panel_scales_x), ("y0", layout.panel_scales_y)):
+            if ae in data and scales:
+                data = data.assign(**{ae: scales[0].transform(data[ae])})
+        super().draw_layer(data, layout, coord)
+
+    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
+        name = type(self).__name__
+        if "x0" not in data and "y0" not in data:
+            raise ValueError(f"{name}() needs an x0 and/or a y0 aesthetic, e.g. aes(x0='epa', y0='success_rate')")
+        first = data.iloc[[0]].reset_index(drop=True)  # one line per panel (ggpath overplots one per row)
+        lines: tuple[tuple[str, Any, str], ...] = (("y0", geom_hline, "yintercept"), ("x0", geom_vline, "xintercept"))
+        for ae, line, column in lines:
+            if ae not in data:
+                continue
+            values = data[ae].to_numpy(dtype=float)
+            if self.params["na_rm"]:
+                values = values[~np.isnan(values)]
+            ref = float(self._ref(values)) if len(values) else np.nan  # NaN when a value is missing, as R's mean()
+            # ggplot2 drops (and warns about) a line at NA whatever na.rm says; so does plotnine's remove_missing
+            frame = remove_missing(first.assign(**{column: ref}), False, [column], name)
+            if len(frame):
+                line.draw_panel(self, frame, panel_params, coord, ax)
+
+
+class geom_mean_lines(_geom_ref_lines):
+    """Reference lines at the mean of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's
+    ``geom_mean_lines()``.
+
+    Args:
+        mapping: ``aes(x0=..., y0=...)``, at least one of them (``x0`` alone draws only the vertical line).
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``color`` (default "red"), ``size`` (line width, default 0.5), ``linetype`` (default "dashed"),
+            ``alpha``, ``na_rm`` and plotnine's layer arguments. With ``na_rm=False`` (the default) a panel whose
+            values include a missing one draws no line on that axis, with a PlotnineWarning, as ggpath does;
+            ``na_rm=True`` ignores the missing values.
+
+    Returns:
+        geom: A plotnine layer to add with ``+``; each facet panel gets its own reference value.
+
+    Raises:
+        ValueError: When the plot is drawn, if neither ``x0`` nor ``y0`` is mapped.
+
+    Example:
+        ::
+
+            from plotnine import aes, geom_point, ggplot
+            from sdvplot.plotnine import geom_mean_lines
+
+            p = (ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate"))
+                 + geom_point() + geom_mean_lines(color="grey"))
+
+    See Also:
+        ggpath geom_mean_lines(): https://mrcaseb.github.io/ggpath/ ;
+        geom_median_lines: the same at the median
+    """
+
+
+class geom_median_lines(_geom_ref_lines):
+    """Reference lines at the median of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's
+    ``geom_median_lines()``.
+
+    Args:
+        mapping: ``aes(x0=..., y0=...)``, at least one of them.
+        data: The layer's data (pandas or polars), when not the plot's.
+        **kwargs: ``color`` (default "red"), ``size`` (default 0.5), ``linetype`` (default "dashed"), ``alpha``,
+            ``na_rm`` (as ``geom_mean_lines``) and plotnine's layer arguments.
+
+    Returns:
+        geom: A plotnine layer to add with ``+``; each facet panel gets its own reference value.
+
+    Raises:
+        ValueError: When the plot is drawn, if neither ``x0`` nor ``y0`` is mapped.
+
+    Example:
+        ::
+
+            p = ggplot(df, aes("epa", "success_rate", x0="epa", y0="success_rate")) + geom_point() + geom_median_lines()
+
+    See Also:
+        ggpath geom_median_lines(): https://mrcaseb.github.io/ggpath/ ;
+        geom_mean_lines: the same at the mean
+    """
+
+    _ref = staticmethod(np.median)
 
 
 def _frame(x: Any, y: Any, ids: Any, column: str) -> pd.DataFrame:
