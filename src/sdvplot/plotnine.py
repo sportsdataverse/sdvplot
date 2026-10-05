@@ -411,8 +411,9 @@ def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
         plt.close(fig)
 
 
-def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float]]:
-    """Test hook: draw the plot, then (team_id, tick position) for each axis image on the first panel."""
+def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: draw the plot, then (team_id, tick position, measured height) for each axis image on the first
+    panel."""
     import matplotlib.pyplot as plt
 
     fig = _drawn(target)

@@ -112,7 +112,7 @@ def draw_placements(
             zorder=zorder,
             annotation_clip=True,
         )
-        box._sdvplot_mark = (p.team_id, p.x, p.y, height, p.url)  # type: ignore[attr-defined]
+        box._sdvplot_mark = (p.team_id, p.x, p.y, p.url)  # type: ignore[attr-defined]
         ax.add_artist(box)
         boxes.append(box)
     return boxes
@@ -429,15 +429,31 @@ def axis_logos(
     return target
 
 
+def _drawn_boxes(target: Any, tag: str) -> tuple[Axes, list[Any]]:
+    """The Axes and its sdvplot image boxes tagged ``tag``, after a draw (layout engines move the Axes on draw)."""
+    ax = target_axes(target)
+    ax.figure.canvas.draw()
+    return ax, [a for a in ax.artists if hasattr(a, tag)]
+
+
+def _drawn_height(ax: Axes, box: Any) -> float:
+    """The height the box's image is drawn at, measured from its extent, as a fraction of the Axes height."""
+    return float(box.offsetbox.get_window_extent().height / ax.bbox.height)
+
+
 def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
-    """Test hook: (team_id, x, y, height, url) for each image add_logos/add_wordmarks/add_headshots drew."""
-    return [a._sdvplot_mark for a in target_axes(target).artists if hasattr(a, "_sdvplot_mark")]
+    """Test hook: (team_id, x, y, height, url) for each image add_logos/add_wordmarks/add_headshots drew; height is
+    measured from the drawn image."""
+    ax, boxes = _drawn_boxes(target, "_sdvplot_mark")
+    return [(*b._sdvplot_mark[:3], _drawn_height(ax, b), b._sdvplot_mark[3]) for b in boxes]
 
 
-def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float]]:
-    """Test hook: (team_id, tick position) for each axis image on ``axis``, in tick order."""
-    marks = [a._sdvplot_axis_mark for a in target_axes(target).artists if hasattr(a, "_sdvplot_axis_mark")]
-    return sorted(((team_id, loc) for which, team_id, loc in marks if which == axis), key=lambda m: m[1])
+def drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: (team_id, tick position, height) for each axis image on ``axis``, in tick order; height is measured
+    from the drawn image."""
+    ax, boxes = _drawn_boxes(target, "_sdvplot_axis_mark")
+    marks = [(b._sdvplot_axis_mark, _drawn_height(ax, b)) for b in boxes]
+    return sorted(((team_id, loc, h) for (which, team_id, loc), h in marks if which == axis), key=lambda m: m[1])
 
 
 def visible_axis_labels(target: Any, axis: str) -> list[str]:

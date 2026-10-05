@@ -40,7 +40,7 @@ def test_the_geom_draws_on_every_facet(mark_images):
     df = pd.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0], "team": ["LV", "LAR"], "panel": ["a", "b"]})
     p = ggplot(df, aes("x", "y", team="team")) + sp9.geom_sdv_logos(league="nfl", height=0.2) + facet_wrap("panel")
     marks = sp9.drawn_marks(p)
-    assert sorted(m[0] for m in marks) == ["13", "14"] and all(m[3] == 0.2 for m in marks)
+    assert sorted(m[0] for m in marks) == ["13", "14"] and all(m[3] == pytest.approx(0.2) for m in marks)
 
 
 def _sdv_warnings(rec):

@@ -22,6 +22,7 @@ from sdvplot._web import aspect, image_src
 SUPPORTS_AXIS_LOGOS = False
 SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
+_MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
 
 
 def _check_chart(chart: Any) -> None:
@@ -32,7 +33,7 @@ def _check_chart(chart: Any) -> None:
         )
 
 
-def _filter(chart: Any, marks: list[tuple[Any, Any, str, float]], height: float, alpha: float) -> Any:
+def _filter(chart: Any, marks: list[tuple[Any, Any, str, float, int]], height: float, alpha: float) -> Any:
     """An xml filter that appends the marks to the plot overlay (pygal's dot layer) of the render in progress."""
 
     def draw(root: Any) -> Any:
@@ -44,7 +45,7 @@ def _filter(chart: Any, marks: list[tuple[Any, Any, str, float]], height: float,
         adapt = getattr(chart, "_adapt", None) or ident  # pygal's value adapters, as applied to its own points
         x_adapt = getattr(chart, "_x_adapt", None) or ident
         h = height * view.height
-        for x, y, src, ratio in marks:
+        for x, y, src, ratio, index in marks:
             cx, cy = view((adapt(x_adapt(x)), adapt(y)))
             if cx is None or cy is None or not (0 <= cx <= view.width and 0 <= cy <= view.height):
                 continue  # outside the plot, like a matplotlib annotation outside the limits
@@ -53,6 +54,7 @@ def _filter(chart: Any, marks: list[tuple[Any, Any, str, float]], height: float,
                 _HREF: src, "x": f"{cx - w / 2:.3f}", "y": f"{cy - h / 2:.3f}", "width": f"{w:.3f}",
                 "height": f"{h:.3f}", "preserveAspectRatio": "xMidYMid meet", "opacity": f"{alpha:g}",
                 "pointer-events": "none",  # hovering still reaches pygal's dot (and its tooltip) underneath
+                _MARK: str(index),  # which add_* call's mark this is: lets drawn_marks measure the rendered image
             }  # fmt: skip
             overlay.append(overlay.makeelement("image", attrs))
         return root
@@ -79,14 +81,14 @@ def _add(
     h, a = check_height(height), check_alpha(alpha)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
     sources: dict[str, str] = {}
+    added = vars(chart).setdefault("_sdvplot_marks", [])  # (team_id, x, y, url) per mark, for drawn_marks
     marks = []
-    for p in placements:
+    for i, p in enumerate(placements, start=len(added)):
         if p.url not in sources:
             sources[p.url] = image_src(p, embed=embed)  # with embed=True this reads the cache now, not at render
-        marks.append((p.x, p.y, sources[p.url], aspect(p)))
+        marks.append((p.x, p.y, sources[p.url], aspect(p), i))
     chart.add_xml_filter(_filter(chart, marks, h, a))
-    drawn = vars(chart).setdefault("_sdvplot_marks", [])
-    drawn.extend((p.team_id, p.x, p.y, h, p.url) for p in placements)
+    added.extend((p.team_id, p.x, p.y, p.url) for p in placements)
     return chart
 
 
@@ -334,5 +336,14 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
 
 
 def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
-    """Test hook: (team_id, x, y, height, url) for each mark add_logos/add_wordmarks/add_headshots placed."""
-    return list(vars(chart).get("_sdvplot_marks", []))
+    """Test hook: render the chart, then (team_id, x, y, height, url) for each mark image in the SVG, in draw order;
+    height = the image's height attribute / the plot area's height."""
+    added = vars(chart).get("_sdvplot_marks", [])
+    root = chart.render_tree()
+    images = [el for el in root.iter() if el.get(_MARK) is not None]
+    if not images:
+        return []
+    plot = next(el for el in root.iter() if el.get("class") == "plot")
+    plot_h = float(next(el for el in plot if el.get("class") == "background").get("height"))
+    return [(*added[int(el.get(_MARK))][:3], float(el.get("height")) / plot_h, added[int(el.get(_MARK))][3])
+            for el in images]  # fmt: skip

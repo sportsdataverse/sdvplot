@@ -132,3 +132,6 @@
 - plotnine: a faceted plot warns once per render for each reason points are skipped (an unknown team, a missing
   mark), naming the values of every panel, instead of once per panel; `axis_logos` on a faceted plot likewise warns
   once.
+- The adapters' test hooks report the height an image was drawn at, not the height they were asked for: matplotlib
+  and plotnine measure each image's extent after a draw, pygal renders the chart and reads the SVG, and the axis-logo
+  hooks of matplotlib, plotnine, Plotly and Altair report each image's height too.
