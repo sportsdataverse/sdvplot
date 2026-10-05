@@ -49,6 +49,16 @@ class OfflineError(SdvplotError, RuntimeError):
     """A download failed and no cached copy exists."""
 
 
+class DownloadError(OfflineError, OSError):
+    """A download got an HTTP error status (a 4xx or 5xx response) and no cached copy exists. Also an OSError, so
+    ``except OSError`` catches it."""
+
+
+class IntegrityError(DownloadError):
+    """A download is not the file the manifest promises: its sha256 differs (it is not cached), or the archived file is
+    not an image PIL can decode."""
+
+
 class OptionalDependencyError(SdvplotError, ImportError):
     """A feature needs an optional extra that is not installed."""
 

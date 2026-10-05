@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from sdvplot import _cache
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeDownloadError
+from sdvplot._errors import DownloadError, IntegrityError, OfflineError, SdvplotWarning, UnsafeDownloadError
 from tests.conftest import FakeResponse, FakeSession
 
 
@@ -84,8 +84,10 @@ def test_immutable_fetch_verifies_the_hash_and_never_refetches(cache, monkeypatc
 
 def test_immutable_fetch_rejects_a_hash_mismatch(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"other")))
-    with pytest.raises(OSError, match="does not match"):
+    with pytest.raises(IntegrityError, match="does not match") as exc:  # M5: sdvplot's error, still an OSError
         _cache.fetch_immutable("https://x/a.png", "images/ab/abc.png", "0" * 64)
+    assert isinstance(exc.value, OSError)
+    assert not (cache / "images/ab/abc.png").exists()
 
 
 def test_write_failure_with_existing_copy_uses_cached_and_warns(cache, monkeypatch):
@@ -182,11 +184,19 @@ def test_clear_cache_only_removes_known_subdirs(cache, monkeypatch):
     assert foreign.exists()
 
 
-def test_immutable_404_raises_httperror_not_offline(cache, monkeypatch):
-    """R18: A 404 on immutable is re-raised as HTTPError, not wrapped as OfflineError."""
-    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
-    with pytest.raises(requests.HTTPError, match="HTTP 404"):
+@pytest.mark.parametrize("status", [404, 503])
+def test_an_immutable_http_error_is_a_download_error_not_a_requests_error(cache, monkeypatch, status):
+    """M5: a 4xx or 5xx raises sdvplot's DownloadError (an OfflineError and an OSError), never requests.HTTPError."""
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(status)))
+    with pytest.raises(DownloadError, match=f"HTTP {status}") as exc:
         _cache.fetch_immutable("https://x/missing.png", "images/ab/cd.png", "0" * 64)
+    assert isinstance(exc.value, (OfflineError, OSError)) and not isinstance(exc.value, requests.RequestException)
+
+
+def test_a_cached_fetch_http_error_with_no_copy_is_a_download_error(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.raises(DownloadError, match="HTTP 404"):
+        _cache.fetch_cached("https://x/m.csv", "m.csv")
 
 
 def test_immutable_connection_error_gives_offline_guidance(cache, monkeypatch):
@@ -215,7 +225,7 @@ def test_fetch_immutable_uses_timeout_5_60(cache, monkeypatch):
 
 
 def test_immutable_5xx_is_offline_not_httperror(cache, monkeypatch):
-    """A server error is transient: OfflineError with the cache guidance, unlike a 4xx (R18)."""
+    """A server error is transient: OfflineError (a DownloadError) with the cache guidance (R18)."""
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(503)))
     with pytest.raises(OfflineError, match="HTTP 503"):
         _cache.fetch_immutable("https://x/a.png", "images/ab/cd.png", "0" * 64)

@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._errors import IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
 from sdvplot._types import MarkType
@@ -102,13 +102,14 @@ def logo_image(
         TypeError: If ``team`` is not a single value.
         OptionalDependencyError: If the mark is an SVG and the ``svg`` extra is not installed.
         OfflineError: If the download fails and no cached copy exists.
+        DownloadError: (an OfflineError and an OSError) If the CDN answers with an error status (a 4xx or 5xx
+            response) and no cached copy exists.
+        IntegrityError: (a DownloadError) If the download does not match the manifest's sha256, or is not an image
+            PIL can decode.
         UnsafeDownloadError: (an OSError) If the download is refused: larger than the byte cap, past the deadline, or
             redirected away from https.
         UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for the mark would put the file
             outside the cache directory.
-        requests.HTTPError: If the CDN refuses the file (a 4xx response).
-        OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
-            (``PIL.UnidentifiedImageError`` subclasses OSError).
         InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
             name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
         ValueError: If an SVG cannot be parsed.
@@ -152,7 +153,10 @@ def _decode_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
     path = mark_file({"sha256": sha, "ext": ext, "archive_url": url})
     if ext == "svg":
         return _rasterize(path, sha, size or DEFAULT_SVG_SIZE, ext)
-    img: Image.Image = Image.open(path)
+    try:
+        img: Image.Image = Image.open(path)
+    except Image.UnidentifiedImageError as e:  # the archive's own file, sha-checked: the archive is wrong
+        raise IntegrityError(f"{url}: not an image PIL can decode ({e})") from e
     img.load()
     if size is not None:
         img = img.copy()

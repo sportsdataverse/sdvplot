@@ -46,6 +46,8 @@ ERRORS = [
     "InputError",
     "UnresolvedTeamError",
     "OfflineError",
+    "DownloadError",
+    "IntegrityError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
     "UnsafeDownloadError",

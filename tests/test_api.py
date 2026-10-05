@@ -32,6 +32,8 @@ PUBLIC = {
     "InputError",
     "UnresolvedTeamError",
     "OfflineError",
+    "DownloadError",
+    "IntegrityError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
     "UnsafeDownloadError",
@@ -88,6 +90,8 @@ def test_an_unknown_mark_type_is_an_error(fn):  # M2
 ERRORS = {
     sdvplot.UnresolvedTeamError: ValueError,
     sdvplot.OfflineError: RuntimeError,
+    sdvplot.DownloadError: OSError,
+    sdvplot.IntegrityError: OSError,
     sdvplot.OptionalDependencyError: ImportError,
     sdvplot.UnsupportedTargetError: TypeError,
     sdvplot.UnsafeCachePathError: ValueError,

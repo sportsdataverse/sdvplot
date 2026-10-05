@@ -79,6 +79,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- A failed logo download raises sdvplot's own errors, never a `requests` exception or a bare `OSError`: an HTTP error
+  status (4xx or 5xx) with no cached copy is the new `sdvplot.DownloadError` (an `OfflineError` and an `OSError`), and
+  a download whose sha256 does not match the manifest, or an archived file that is not an image, is the new
+  `sdvplot.IntegrityError` (a `DownloadError`). A 404 used to escape as `requests.HTTPError`, which
+  `except sdvplot.SdvplotError` did not catch. `except OSError` still catches both.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the

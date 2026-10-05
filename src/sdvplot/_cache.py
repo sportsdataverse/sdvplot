@@ -15,7 +15,14 @@ from urllib.parse import urljoin, urlsplit
 
 import platformdirs
 
-from sdvplot._errors import OfflineError, UnsafeCachePathError, UnsafeDownloadError, warn
+from sdvplot._errors import (
+    DownloadError,
+    IntegrityError,
+    OfflineError,
+    UnsafeCachePathError,
+    UnsafeDownloadError,
+    warn,
+)
 
 if TYPE_CHECKING:
     import requests
@@ -240,7 +247,8 @@ def fetch_cached(
             return path
         if isinstance(e, UnsafeDownloadError):
             raise
-        raise OfflineError(f"{_offline_message(url)} ({e})") from e
+        error = DownloadError if isinstance(e, requests.HTTPError) else OfflineError
+        raise error(f"{_offline_message(url)} ({e})") from e
     try:
         atomic_write(path, body)
         new_meta = {
@@ -269,15 +277,13 @@ def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMA
     try:
         r, body = _download(url, None, max_bytes)
         r.raise_for_status()
-    except requests.HTTPError as e:
-        if e.response is not None and e.response.status_code < 500:
-            raise
-        raise OfflineError(f"{_offline_message(url)} ({e})") from e
+    except requests.HTTPError as e:  # a 4xx or 5xx: sdvplot's error, still an OSError as requests' was
+        raise DownloadError(f"{_offline_message(url)} ({e})") from e
     except requests.RequestException as e:
         raise OfflineError(f"{_offline_message(url)} ({e})") from e
     digest = hashlib.sha256(body).hexdigest()
     if digest != sha256:
-        raise OSError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
+        raise IntegrityError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
     atomic_write(path, body)
     _intact.add(str(path))
     return path
