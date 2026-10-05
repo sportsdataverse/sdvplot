@@ -176,7 +176,7 @@ def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
     chart = _axis_chart(["LV", "XXX", "LAR"], height=200)
     with pytest.warns(SdvplotWarning):
         out = sdvplot.axis_logos(chart, "x", league="nfl", height=0.1)
-    assert salt.drawn_axis_marks(out, "x") == [("13", 0.0), ("14", 2.0)]
+    assert salt.drawn_axis_marks(out, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
     assert salt.visible_axis_labels(out, "x") == ["XXX"]
     axis = out.layer[0].to_dict()["encoding"]["x"]["axis"]
     assert axis["labelExpr"] == 'indexof(["LV", "LAR"], datum.label) >= 0 ? \'\' : datum.label'
@@ -199,7 +199,7 @@ def test_y_axis_logos(mark_images):
     df = pd.DataFrame({"team": ["LV", "LAR"], "v": [1, 2]})
     chart = alt.Chart(df).mark_bar().encode(y=alt.Y("team:N", sort=None), x="v:Q").properties(height=100)
     out = sdvplot.axis_logos(chart, "y", league="nfl", height=0.2)
-    assert salt.drawn_axis_marks(out, "y") == [("13", 0.0), ("14", 1.0)]
+    assert salt.drawn_axis_marks(out, "y") == [("13", 0.0, pytest.approx(0.2)), ("14", 1.0, pytest.approx(0.2))]
     assert salt.visible_axis_labels(out, "y") == []
     layer = _layer(out, "sdvplot_axis_y")
     assert layer["encoding"]["x"] == {"value": -salt.AXIS_GAP} and layer["mark"]["align"] == "right"
@@ -220,4 +220,5 @@ def test_categories_of_url_data_need_an_explicit_sort(mark_images):
     with pytest.raises(ValueError, match="explicit sort"):
         sdvplot.axis_logos(chart, "x", league="nfl")
     listed = chart.encode(x=alt.X("team:N", sort=["LV", "LAR"]))
-    assert salt.drawn_axis_marks(sdvplot.axis_logos(listed, "x", league="nfl"), "x") == [("13", 0.0), ("14", 1.0)]
+    marks = salt.drawn_axis_marks(sdvplot.axis_logos(listed, "x", league="nfl"), "x")
+    assert [m[:2] for m in marks] == [("13", 0.0), ("14", 1.0)]

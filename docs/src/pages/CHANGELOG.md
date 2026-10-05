@@ -13,6 +13,7 @@
     - [Added — web family](#added--web-family)
     - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
+    - [Fixed — adapter contract follow-ups](#fixed--adapter-contract-follow-ups)
     - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -130,6 +131,30 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Fixed — adapter contract follow-ups
+
+- plotnine: a faceted plot warns once per render for each reason points are skipped (an unknown team, a missing
+  mark), naming the values of every panel, instead of once per panel; `axis_logos` on a faceted plot likewise warns
+  once.
+- plotnine: `add_logos`/`add_wordmarks` with one season per team draw on a faceted plot (each panel's copy of a
+  point keeps its season); the mark geoms take a per-row season as the `season` aesthetic.
+- plotnine: the mark geoms leave missing and out-of-limits x/y to plotnine (`na_rm`, scale limits), so a row
+  plotnine drops itself no longer also warns `skipped ... missing x or y`.
+- plotnine: a point that plotnine copies into every panel (a layer without the facet column) counts once in the
+  warning, not once per panel.
+- plotnine: drawing no longer swaps the interpreter's warning filters (`warnings.catch_warnings`, not thread-safe)
+  to keep the per-panel placement quiet; it uses a private quiet path instead.
+- The adapters' test hooks report the height an image was drawn at, not the height they were asked for: matplotlib
+  and plotnine measure each image's extent after a draw, pygal renders the chart and reads the SVG, and the axis-logo
+  hooks of matplotlib, plotnine, Plotly and Altair report each image's height too.
+- `sdvplot.testing.check_adapter_contract` is stricter: a call that skips nothing must not warn and each reason it
+  skips points for gives exactly one `SdvplotWarning` (rules 1, 2, 6 and 7); `height` (including its out-of-range
+  values) is checked on `add_headshots` and `axis_logos` as well as `add_logos` and `add_wordmarks`, and `alpha` on
+  every verb that takes it; heights are compared within 1% of the requested value, as measured by the hooks.
+  An out-of-range `height` must raise when the verb is called, not only when the marks are rendered.
+  `drawn_axis_marks` now returns `(team_id, tick position, height)`. `check_table_adapter_contract` likewise requires
+  no warning for known values and exactly one for all-unknown input.
 
 ### Fixed — tables follow-ups
 

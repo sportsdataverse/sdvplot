@@ -25,6 +25,7 @@ from sdvplot._web import aspect, image_src
 SUPPORTS_AXIS_LOGOS = False
 SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
+_MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
 
 
 def _check_chart(chart: Any) -> None:
@@ -54,7 +55,7 @@ class _MarksFilter:
         ident = lambda v: v  # noqa: E731
         adapt = getattr(chart, "_adapt", None) or ident  # pygal's value adapters, as applied to its own points
         x_adapt = getattr(chart, "_x_adapt", None) or ident
-        for _, x, y, height, _, src, ratio, alpha in vars(chart).get("_sdvplot_marks", ()):
+        for index, (_, x, y, height, _, src, ratio, alpha) in enumerate(vars(chart).get("_sdvplot_marks", ())):
             cx, cy = view((adapt(x_adapt(x)), adapt(y)))
             if cx is None or cy is None or not (0 <= cx <= view.width and 0 <= cy <= view.height):
                 continue  # outside the plot, like a matplotlib annotation outside the limits
@@ -64,6 +65,7 @@ class _MarksFilter:
                 _HREF: src, "x": f"{cx - w / 2:.3f}", "y": f"{cy - h / 2:.3f}", "width": f"{w:.3f}",
                 "height": f"{h:.3f}", "preserveAspectRatio": "xMidYMid meet", "opacity": f"{alpha:g}",
                 "pointer-events": "none",  # hovering still reaches pygal's dot (and its tooltip) underneath
+                _MARK: str(index),  # which recorded mark this is: lets drawn_marks measure the rendered image
             }  # fmt: skip
             overlay.append(overlay.makeelement("image", attrs))
         return root
@@ -344,5 +346,17 @@ def team_style(teams: Any, *, league: str, which: str = "primary", season: Any =
 
 
 def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
-    """Test hook: (team_id, x, y, height, url) for each mark add_logos/add_wordmarks/add_headshots placed."""
-    return [m[:5] for m in vars(chart).get("_sdvplot_marks", ())]
+    """Test hook: render the chart, then (team_id, x, y, height, url) for each mark image in the SVG, in draw order;
+    height = the image's height attribute / the plot area's height."""
+    recorded = vars(chart).get("_sdvplot_marks", ())
+    root = chart.render_tree()
+    images = [el for el in root.iter() if el.get(_MARK) is not None]
+    if not images:
+        return []
+    plot = next(el for el in root.iter() if el.get("class") == "plot")
+    plot_h = float(next(el for el in plot if el.get("class") == "background").get("height"))
+    out = []
+    for el in images:
+        team_id, x, y, _, url = recorded[int(el.get(_MARK))][:5]
+        out.append((team_id, x, y, float(el.get("height")) / plot_h, url))
+    return out

@@ -219,7 +219,7 @@ def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
     fig.update_layout(height=400, margin={"t": 50, "b": 50})
     with pytest.warns(SdvplotWarning):
         sdvplot.axis_logos(fig, "x", league="nfl", height=0.1)
-    assert splotly.drawn_axis_marks(fig, "x") == [("13", 0.0), ("14", 2.0)]
+    assert splotly.drawn_axis_marks(fig, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
     assert splotly.visible_axis_labels(fig, "x") == ["XXX"]
     assert fig.layout.margin.b == 50 + math.ceil(0.1 * 300 / 1.1)  # the image height in the shrunk plot area
     im = fig.layout.images[0]
@@ -229,7 +229,7 @@ def test_axis_logos_blank_only_resolved_labels_and_make_room(mark_images):
 def test_y_axis_logos(mark_images):
     fig = go.Figure(go.Bar(y=["LV", "LAR"], x=[1, 2], orientation="h"))
     sdvplot.axis_logos(fig, "y", league="nfl", height=0.1)
-    assert splotly.drawn_axis_marks(fig, "y") == [("13", 0.0), ("14", 1.0)]
+    assert splotly.drawn_axis_marks(fig, "y") == [("13", 0.0, pytest.approx(0.1)), ("14", 1.0, pytest.approx(0.1))]
     assert splotly.visible_axis_labels(fig, "y") == []
     assert tuple(fig.layout.yaxis.range) == (-0.5, 1.5)
     assert fig.layout.images[0].sizey == pytest.approx(0.2)  # 0.1 of the two-category span
