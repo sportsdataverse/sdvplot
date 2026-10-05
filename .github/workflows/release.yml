@@ -1,8 +1,7 @@
-# Build on a GitHub Release (or manual dry run) and publish to PyPI with an API
-# token held in the repo secrets PYPI_USERNAME (`__token__`) and PYPI_PASSWORD
-# (the `pypi-...` token). Switching to Trusted Publishing later: register the
-# publisher on PyPI, restore `permissions: id-token: write` on the publish job,
-# and drop the user/password inputs.
+# Build on a GitHub Release (or manual dry run) and publish to PyPI with Trusted Publishing (OIDC): no token is
+# stored. The build job has no OIDC permission; only publish-pypi holds `id-token: write`, behind the `pypi`
+# environment. One-time setup on pypi.org: a pending Trusted Publisher for project `sdvplot` (owner
+# sportsdataverse, repo sdvplot, workflow release.yml, environment pypi).
 name: release
 on:
   release:
@@ -52,7 +51,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/sdvplot
     permissions:
-      contents: read
+      id-token: write
     steps:
       - name: Download build artifacts from the build job
         uses: actions/download-artifact@v8
@@ -60,10 +59,9 @@ jobs:
           name: dist
           path: dist
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        # v1.14.2, pinned by commit SHA
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33
         with:
           packages-dir: dist
-          user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
           # a re-run after a partial upload skips the files already on PyPI instead of failing on them
           skip-existing: true
