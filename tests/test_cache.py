@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import shutil
 import time
@@ -72,6 +73,17 @@ def test_after_the_ttl_a_304_keeps_the_file_and_sends_if_none_match(cache, monke
     monkeypatch.setattr(_cache, "SESSION", s)
     assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"x"
     assert s.calls[0][1] == {"If-None-Match": '"v1"'}
+
+
+def test_a_304_renews_the_copy_for_another_ttl(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x", {"ETag": '"v1"'})))
+    path = _cache.fetch_cached("https://x/m.csv", "m.csv")
+    meta = _cache._meta_path(path)
+    meta.write_text(json.dumps({**json.loads(meta.read_text()), "fetched_at": 1.0}))  # fetched long ago: stale
+    _cache._fresh.clear()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(304)))
+    _cache.fetch_cached("https://x/m.csv", "m.csv")
+    assert json.loads(meta.read_text())["fetched_at"] > time.time() - 60  # renewed, not left stale (a request a call)
 
 
 def test_a_truncated_download_keeps_the_good_copy_and_writes_nothing_partial(cache, monkeypatch):  # Review Focus 4
@@ -308,7 +320,8 @@ def test_a_manifest_ext_that_climbs_out_of_the_cache_raises_and_writes_nothing(c
     assert not list(tmp_path.rglob("escaped*")) and not (cache / "images").exists()
 
 
-@pytest.mark.parametrize("sha", ["../" * 3 + "x", "A" * 64, "ab" * 31, "g" * 64])
+# "0" * 64 + a suffix: 64 hex characters then a path, which a prefix match (re.match) would let through
+@pytest.mark.parametrize("sha", ["../" * 3 + "x", "A" * 64, "ab" * 31, "g" * 64, "0" * 64 + "/../x"])
 def test_a_malformed_manifest_sha_is_refused(cache, monkeypatch, sha):
     from sdvplot import _images
     from sdvplot._errors import UnsafeCachePathError
