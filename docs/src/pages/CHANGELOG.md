@@ -4,6 +4,7 @@
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
     - [Changed](#changed)
+    - [Fixed](#fixed)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
@@ -22,7 +23,7 @@
     - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
-    - [Fixed](#fixed)
+    - [Fixed](#fixed-1)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
       - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
@@ -39,6 +40,36 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- Documentation: the MBB, WBB and college-hockey tutorials draw their tier lists on `team_tiers(theme="light")`, where
+  dark logos (Iowa, West Virginia, Penn State) no longer vanish into the dark background.
+- Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
+  with a CSS rule), and the college softball World Series table turns row striping off after `gt_theme_ncaa`, so the
+  `gt_color_results` rows keep their white text in a notebook.
+- The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
+  (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
+  name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
+  III and NAIA players on teams the index does not hold, and score cards keep games between two of its teams.
+- Documentation: "The adapter contract" page follows `sdvplot.testing` again: rules 0 to 8 (exactly one warning per
+  skip reason, `height` and `alpha` checked on every verb when called, drawn heights measured within 1%), the axis
+  hooks `_drawn_axis_marks` (`(team_id, tick, height)`) and `_visible_axis_labels`, the table harness's rules T0 to T6,
+  and a minimal adapter that passes the current harness.
+
+### Fixed
+
+- `surface()` draws a rink or court in well under a second instead of 16-19 s: matplotlib's `add_patch` walked every
+  segment of sportypy's 10,000-point circle polygons as a Bezier curve to find the data limits (~1.3 M segments per
+  rink); for a polygon those limits are its vertices, so they now come from the vertices in one call. The drawn PNG
+  and the Axes' data limits are byte-for-byte the same.
+- `gt_theme_kenpom` no longer wipes cell fills. Its row bands were `!important` cell fills, so theming a table after
+  `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
+  the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn, which every cell
+  fill shows over, in either order and in the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
+- The great_tables fill helpers warn once (`SdvplotWarning`) on a table with row striping on. great_tables' notebook
+  repr marks its stylesheet `!important`, so on every other row the stripe's colors beat a plain inline style: the
+  text color `gt_color_results`, `gt_bold_rows`, `gt_tiers`, `gt_spotlight`, `gt_outliers`, `gt_highlight_cells` and
+  `gt_highlight_na` pair with their fills, and `gt_color_ranks`' `data_color` fills and text. The warning says to
+  turn striping off with `opt_row_striping(row_striping=False)`. `gt_color_pills`, `gt_indicator_boxes` and
+  `gt_row_accent` draw inside the cell or with `!important`, which the stripes cannot cover, so they do not warn.
 
 ## [0.1.0] - Unreleased
 
