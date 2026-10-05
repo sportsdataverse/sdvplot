@@ -25,7 +25,7 @@ with requires_extra("mpl"):
     from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
+from sdvplot._images import MAX_SIZE, load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -86,8 +86,9 @@ def _target_axes(target: Any) -> Axes:
 def _image(p: Placement) -> np.ndarray:
     if p.mark is None:
         return _rgba_array(load_url_image(p.url))
-    # decoded no bigger than drawn: half the archive is 4096 px (64 MiB each decoded); a wide mark keeps its full height
-    size = round(_MAX_IMAGE_HEIGHT * max(1.0, p.aspect or 1.0))
+    # decoded no bigger than drawn: half the archive is 4096 px (64 MiB each decoded); a wide mark keeps its full
+    # height, up to the longest side sdvplot renders (a mark wider than 8:1 is drawn from a 4096 px decode)
+    size = min(MAX_SIZE, round(_MAX_IMAGE_HEIGHT * max(1.0, p.aspect or 1.0)))
     return _rgba_array(load_mark_image(p.mark, size))
 
 

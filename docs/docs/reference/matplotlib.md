@@ -64,6 +64,8 @@ Draw each player's headshot centred on its (x, y) point of a matplotlib or seabo
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -125,6 +127,7 @@ as they are. PNG, JPEG, GIF, WebP and the other formats Pillow reads work; SVG d
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
 
 ### Example
 
@@ -194,6 +197,8 @@ Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plo
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -268,6 +273,8 @@ Draw each team's wordmark centred on its (x, y) point of a matplotlib or seaborn
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -328,6 +335,8 @@ not teams stay as text, with one SdvplotWarning.
 ### Raises
 
 - `ValueError`: If ``axis`` is not "x"/"y", ``height`` is out of range, or the target has several Axes.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -461,7 +470,8 @@ pair, a left-aligned one starts with the image.
 
 ### Raises
 
-- `ValueError`: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several Axes.
+- `InputError`: (a ValueError) If ``height`` is not a number of points of at least 1.
+- `ValueError`: If ``side`` is not "left"/"right", or the target has several Axes.
 - `OfflineError`: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
 ### Example

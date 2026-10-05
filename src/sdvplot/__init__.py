@@ -35,10 +35,10 @@ except _PackageNotFoundError:  # running from a source tree without installation
     __version__ = "0.0.0"
 
 __all__ = [
-    "InputError",
-    "OfflineError",
     "DownloadError",
+    "InputError",
     "IntegrityError",
+    "OfflineError",
     "OptionalDependencyError",
     "SdvplotDeprecationWarning",
     "SdvplotError",

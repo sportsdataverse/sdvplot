@@ -274,7 +274,7 @@ team_style(
     teams: Any,
     *,
     league: str,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
     **style_kwargs: Any,
 ) -> pygal.style.Style
@@ -293,7 +293,7 @@ other series keep theirs.
 |---|---|---|
 | `teams` | `Any` | One team per series, in series order (or one team, for one series), in any id system ``resolve()`` understands. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary". |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team. |
 | `**style_kwargs` | `Any` | Any other ``pygal.style.Style`` option (``background``, ``font_family``, ...). |
 

@@ -118,7 +118,7 @@ A copy of the plot with each team's logo at its (x, y); the front door's plotnin
 | `y` | `Any` | The points' y positions, the same length as ``x``. |
 | `teams` | `Any` | The team for each point, in any id system ``resolve()`` understands. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `season` | `Any` | One season for every point. |
+| `season` | `Any` | One season, or one per point, to pick each team's mark for that era. |
 | `height` | `float` | The logo height as a fraction of the panel height, in (0, 1]. |
 | `alpha` | `float` | Opacity, 0 to 1. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
@@ -182,7 +182,7 @@ A copy of the plot with each team's wordmark at its (x, y).
 | `y` | `Any` | The points' y positions, the same length as ``x``. |
 | `teams` | `Any` | The team for each point. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `season` | `Any` | One season for every point. |
+| `season` | `Any` | One season, or one per point, to pick each team's wordmark for that era. |
 | `height` | `float` | The wordmark height as a fraction of the panel height, in (0, 1]. |
 | `alpha` | `float` | Opacity, 0 to 1. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
@@ -581,7 +581,7 @@ p = ggplot(df, aes("epa", "sr", team="team")) + geom_sdv_wordmarks(league="nfl",
 ```python
 scale_color_sdv(
     league: str,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
     na_value: str = 'grey',
     **kwargs: Any,
@@ -597,7 +597,7 @@ A discrete color scale that maps each team value (any id system) to its team col
 | Name | Type | Description |
 |---|---|---|
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary". |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
 | `na_value` | `str` | The color of values that are not teams. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
@@ -633,7 +633,7 @@ p = ggplot(df, aes("epa", "sr", color="team")) + geom_point() + scale_color_sdv(
 ```python
 scale_fill_sdv(
     league: str,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
     na_value: str = 'grey',
     **kwargs: Any,
@@ -649,7 +649,7 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 | Name | Type | Description |
 |---|---|---|
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary". |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
 | `na_value` | `str` | The color of values that are not teams. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_fill_manual``. |
@@ -791,7 +791,8 @@ lone title and left-aligns one with a subtitle.
 
 ### Raises
 
-- `ValueError`: If ``side`` is not "left"/"right" or ``height`` is not a positive number.
+- `InputError`: (a ValueError) If ``height`` is not a number of points of at least 1.
+- `ValueError`: If ``side`` is not "left"/"right".
 - `OfflineError`: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
 ### Example
