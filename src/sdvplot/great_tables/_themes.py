@@ -20,8 +20,8 @@ import narwhals as nw
 from great_tables import GT, html, loc, px, random_id, style
 from great_tables._helpers import GoogleFont
 
-from sdvplot._contrast import contrast, hex6, mix, on_color
-from sdvplot.great_tables._marks import DENSITY
+from sdvplot._contrast import hex6, on_color
+from sdvplot.great_tables._marks import DENSITY, _secondary_on
 
 # gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
 R_FONTS = (
@@ -264,15 +264,6 @@ def _adjust_luminance(color: str, steps: float) -> str:
         gamma((0.055648 * xx - 0.204043 * yy + 1.057311 * zz) / 100),
     ]
     return "#" + "".join(f"{min(255, max(0, int(255 * t + 0.5))):02x}" for t in out)
-
-
-def _secondary_on(background: str, ink: str, target: float = 4.5) -> str:
-    """sdvplotR's ``.theme_secondary_on()``: blend the ink into the ground until it clears ``target`` contrast."""
-    for i in range(12):
-        candidate = mix(background, ink, 0.45 + i * 0.05)
-        if contrast(candidate, background) >= target:
-            return candidate
-    return ink
 
 
 def gt_theme_almanac(

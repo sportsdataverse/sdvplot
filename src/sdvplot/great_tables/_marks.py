@@ -369,9 +369,12 @@ def _dark_palette() -> dict[str, str]:
 
 
 def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
-    """Muted but legible: ``fg`` blended toward ``bg`` as far as still clears ``target`` contrast (sdvplotR)."""
-    for i in range(12):  # weights 0.45, 0.50, ..., 1.00 of fg
-        cand = mix(bg, fg, round(0.45 + 0.05 * i, 2))
+    """sdvplotR's ``.theme_secondary_on()``: muted but legible, ``fg`` blended toward ``bg`` as far as still clears
+    ``target`` contrast."""
+    for i in range(12):
+        # R's seq(0.45, 1, by = 0.05) is 0.45 + i * 0.05 unrounded (0.6000000000000001, ...): rounding the weight
+        # flips a channel's rounding for some colors
+        cand = mix(bg, fg, 0.45 + i * 0.05)
         if contrast(cand, bg) >= target:
             return cand
     return fg

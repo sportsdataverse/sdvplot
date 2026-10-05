@@ -10,7 +10,7 @@ import great_tables  # noqa: E402
 from great_tables import GT  # noqa: E402
 
 import sdvplot.great_tables as sgt  # noqa: E402
-from sdvplot.great_tables import _themes  # noqa: E402
+from sdvplot.great_tables import _layout, _marks, _themes  # noqa: E402
 
 ROWS = {"conf": ["AFC West", "AFC West", "NFC West"], "team": ["LV", "KC", "LAR"], "w": [8, 15, 10], "l": [9, 2, 7]}
 # wave A's two themes are tested there; these are this module's
@@ -88,6 +88,17 @@ def test_adjust_luminance_keeps_white_where_r_returns_na():
 def test_secondary_on_matches_r(ground, ink, r):
     # sdvplotR .theme_secondary_on(); the last never clears 4.5:1, so it falls back to the ink
     assert _themes._secondary_on(ground, ink) == r.lower()
+
+
+@pytest.mark.parametrize("module", [_marks, _layout, _themes], ids=lambda m: m.__name__)
+@pytest.mark.parametrize(
+    ("ground", "ink", "r"),
+    # sdvplotR .theme_secondary_on() (R/utils-theme.R at f1c8efe, R 4.6.1), 2026-10-04. R's seq(0.45, 1, by = 0.05)
+    # weighs 0.6000000000000001 and 0.8500000000000001, not 0.6 and 0.85, and that rounds one channel the other way
+    [("#2587BE", "#000000", "#06141C"), ("#0A8F8E", "#000000", "#011515"), ("#EA410A", "#000000", "#230A01")],
+)
+def test_every_table_module_blends_muted_text_at_r_weights(module, ground, ink, r):
+    assert module._secondary_on(ground, ink) == r.lower()
 
 
 def test_scale_output_rescales_text_sizes_and_size_options():

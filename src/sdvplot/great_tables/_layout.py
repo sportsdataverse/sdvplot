@@ -29,6 +29,7 @@ from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _STYLE_KEYS, _css_len, _fonts, _style_css
+from sdvplot.great_tables._marks import _secondary_on
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -114,15 +115,6 @@ def _background(gt: GT) -> str:
         return hex6(str(gt._options.table_background_color.value))
     except ValueError:
         return "#ffffff"
-
-
-def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
-    """Muted but legible text: ``fg`` blended into ``bg`` until it clears ``target`` contrast."""
-    for step in range(12):
-        candidate = mix(bg, fg, (45 + 5 * step) / 100)
-        if contrast(candidate, bg) >= target:
-            return candidate
-    return fg
 
 
 def _text(value: Any) -> str | None:

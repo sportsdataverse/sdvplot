@@ -129,3 +129,8 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Fixed — tables follow-ups
+
+- Muted text (`gt_theme_sdv_team`'s subtitle, the `gt_legend_discrete` subtitle) blends at sdvplotR's exact weights,
+  as the table themes already did; a few colors were one step off in a channel.
