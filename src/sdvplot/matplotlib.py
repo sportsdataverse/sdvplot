@@ -209,13 +209,11 @@ def add_logos(
             ax.set_ylim(-10, 0)
             sdvplot.add_logos(ax, [10, 20], [-3, -7], ["KC", "BUF"], league="nfl", height=0.15)
 
-        On a Cartopy map, at longitude/latitude::
-
-            import cartopy.crs as ccrs
-
-            ax = plt.axes(projection=ccrs.Robinson())
-            ax.set_global()
-            sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
+            # On a Cartopy map, at longitude/latitude:
+            #   import cartopy.crs as ccrs
+            #   ax = plt.axes(projection=ccrs.Robinson())
+            #   ax.set_global()
+            #   sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
 
     See Also:
         sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
@@ -700,8 +698,7 @@ def title_image(
             ax.plot([1, 2, 3], [3, 1, 2])
             title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
 
-        A Figure's suptitle, the image on the right::
-
+            # A Figure's suptitle, the image on the right:
             title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
 
     See Also:
@@ -775,12 +772,10 @@ def team_tiers(
             df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
             fig = team_tiers(df, "nfl")
 
-        Draft it as text first, then add logos::
-
+            # Draft it as text first, then add logos:
             fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
-        Dark logos on a white background::
-
+            # Dark logos on a white background:
             fig = team_tiers(df, "cfb", theme="light")
 
     See Also:

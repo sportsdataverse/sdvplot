@@ -220,6 +220,15 @@ def gt_save_crop(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_save_crop
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_save_crop(GT(df), "table.png", bg="#FBFAF7", width=900)
 
@@ -274,6 +283,15 @@ def gt_social_crop(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_social_crop
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_social_crop(GT(df), "post.png", aspect_ratio="4:5", bg="#0C0D10")
 
@@ -348,6 +366,9 @@ def gt_save_batch(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_save_batch
+            import polars as pl
+
+            cars = pl.DataFrame({"cyl": [4, 4, 6], "mpg": [22.8, 24.4, 21.0]})
 
             def build(df, value):
                 return GT(df).tab_header(title=f"{value} cylinders")
@@ -660,6 +681,12 @@ def gt_grid(
         ::
 
             from sdvplot.great_tables import gt_grid
+            import polars as pl
+
+            east = pl.DataFrame({"team": ["BUF", "MIA"], "wins": [11, 9]})
+            west = pl.DataFrame({"team": ["KC", "LV"], "wins": [12, 8]})
+            north = pl.DataFrame({"team": ["BAL", "CIN"], "wins": [10, 9]})
+            south = pl.DataFrame({"team": ["HOU", "IND"], "wins": [10, 8]})
 
             gt_grid([east, west, north, south], ncol=2, title="Division leaders", caption="Data: ESPN")
             gt_grid([east, west], file="divisions.png", bg="#FBFAF7")
@@ -776,6 +803,10 @@ def gt_stack_tables(
         ::
 
             from sdvplot.great_tables import gt_stack_tables
+            import polars as pl
+
+            offense = pl.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15]})
+            defense = pl.DataFrame({"team": ["BAL", "SF"], "epa": [-0.1, -0.08]})
 
             gt_stack_tables([offense, defense], title="Two tables", title_style={"font": "Oswald", "size": 30})
 

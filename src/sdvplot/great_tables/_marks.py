@@ -124,6 +124,15 @@ def gt_sdv_logos(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_sdv_logos
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_sdv_logos(GT(df), "team", league="nfl", height=24)
 
@@ -163,6 +172,15 @@ def gt_sdv_wordmarks(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_sdv_wordmarks
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_sdv_wordmarks(GT(df), "team", league="nfl")
 
@@ -199,6 +217,15 @@ def gt_sdv_headshots(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_sdv_headshots
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_sdv_headshots(GT(df), "espn_id", league="nfl", height=40)
 
@@ -243,6 +270,9 @@ def gt_sdv_cols_label(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_sdv_cols_label
+            import polars as pl
+
+            df = pl.DataFrame({"KC": [12], "BUF": [10], "SF": [9]})
 
             gt_sdv_cols_label(GT(df), ["KC", "BUF", "SF"], league="nfl")
 
@@ -310,6 +340,9 @@ def gt_merge_stack_team_color(
 
             from great_tables import GT
             from sdvplot.great_tables import gt_merge_stack_team_color
+            import polars as pl
+
+            df = pl.DataFrame({"team": ["KC", "BUF"], "mascot": ["Chiefs", "Bills"]})
 
             gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl")
 
@@ -579,6 +612,15 @@ def gt_theme_sdv(gt: GT, style: str = "light", density: str = "comfortable", **t
 
             from great_tables import GT
             from sdvplot.great_tables import gt_sdv_logos, gt_theme_sdv
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_sdv(gt_sdv_logos(GT(df), "team", league="nfl").tab_header("AFC West"))
             gt_theme_sdv(GT(df), style="dark", density="social")
@@ -621,6 +663,15 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
 
             from great_tables import GT
             from sdvplot.great_tables import gt_theme_sdv_team
+            import polars as pl
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_theme_sdv_team(GT(df).tab_header("Chiefs leaders"), "KC", league="nfl")
 

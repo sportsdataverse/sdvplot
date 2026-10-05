@@ -111,7 +111,9 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 ## Docstring standard
 
 Google-style (napoleon) with `Args`, `Returns`, `Raises`, `Example` and `See Also`, linking the reference page.
-`uv run python tools/gen_docs.py --check` enforces it. Polars 1.x API only; ruff line length 120.
+`uv run python tools/gen_docs.py --check` enforces it for the top level and for every public submodule's `__all__`
+functions, and runs each submodule Example offline (an example that needs the network or a browser is skipped, listed in
+`TOLERATED`; a `NameError` always fails). Polars 1.x API only; ruff line length 120.
 
 ## Commits
 

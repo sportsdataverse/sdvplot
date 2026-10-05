@@ -123,6 +123,11 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
             from great_tables import GT
             from sdvplot.great_tables import gt_bold_rows
 
+            df = pl.DataFrame(
+                {"car": ["Mazda", "Datsun", "Hornet"], "mpg": [21.0, 22.8, 18.7], "hp": [110, 93, 175],
+                 "disp": [160.0, 108.0, 360.0]}
+            )
+
             gt_bold_rows(GT(df), rows=pl.col("mpg") > 20, highlight_color="#FFF3B0")
 
     See Also:
@@ -173,6 +178,12 @@ def gt_color_results(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_color_results
+
+            games = pl.DataFrame({"opp": ["BUF", "BAL", "SF"], "result": ["W", "L", "W"]})
 
             gt_color_results(GT(games), result_column="result")
 
@@ -236,6 +247,12 @@ def gt_highlight_cells(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_highlight_cells
+
+            cor_df = pl.DataFrame({"var": ["mpg", "hp"], "mpg": [1.0, -0.78], "hp": [-0.78, 1.0]})
 
             gt_highlight_cells(GT(cor_df, rowname_col="var"), ["mpg", "hp"], lambda s: s > 0.7, fill="#FFD1A9")
 
@@ -333,6 +350,12 @@ def gt_highlight_na(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_highlight_na
+
+            df = pl.DataFrame({"day": [1, 2, 3], "ozone": [41.0, None, 28.0], "solar": [190.0, 118.0, None]})
+
             gt_highlight_na(GT(df), ["ozone", "solar"], missing_text="not recorded", italic=True)
 
     See Also:
@@ -400,6 +423,12 @@ def gt_group_stripes(gt: GT, color: str = "#F5F5F5", start: int = 2, include_stu
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_group_stripes
+
+            df = pl.DataFrame({"conference": ["AFC", "AFC", "NFC", "NFC"], "team": ["KC", "BUF", "SF", "DAL"]})
+
             gt_group_stripes(GT(df, groupname_col="conference"), color="#FBF3E4", start=1)
 
     See Also:
@@ -466,6 +495,15 @@ def gt_538_caption(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_538_caption
+
+            df = pl.DataFrame(
+                {"car": ["Mazda", "Datsun", "Hornet"], "mpg": [21.0, 22.8, 18.7], "hp": [110, 93, 175],
+                 "disp": [160.0, 108.0, 360.0]}
+            )
 
             gt_538_caption(GT(df), top_caption="Fuel economy and power", bottom_caption="Source: *Motor Trend*")
 
@@ -590,6 +628,18 @@ def gt_border_bars_top(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_border_bars_top
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_border_bars_top(GT(df).tab_header("Standings"), ["#1B7837", "#FFFFFF", "#B2182B"])
 
     See Also:
@@ -659,6 +709,18 @@ def gt_border_bars_bottom(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_border_bars_bottom
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             gt_border_bars_bottom(GT(df), "#22223B", text="Source: ESPN", bar_height=28)
 
     See Also:
@@ -689,6 +751,18 @@ def gt_border_grid(gt: GT, color: str = "black", weight: float = 1, include_labe
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_border_grid
+
+            df = pl.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             gt_border_grid(GT(df), color="#BBBBBB", weight=2, include_labels=True)
 
@@ -764,6 +838,17 @@ def gt_cutline(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_cutline
+
+            standings = pl.DataFrame(
+                {
+                    "team": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+                    "wins": [14, 13, 12, 11, 10, 9, 8, 7],
+                }
+            )
 
             gt_cutline(GT(standings), after=6, label="Playoff line")
 
@@ -1045,6 +1130,15 @@ def gt_color_pills(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_color_pills
+
+            df = pl.DataFrame(
+                {"car": ["Mazda", "Datsun", "Hornet"], "mpg": [21.0, 22.8, 18.7], "hp": [110, 93, 175],
+                 "disp": [160.0, 108.0, 360.0]}
+            )
+
             gt_color_pills(GT(df), ["disp", "hp"], domain=(50, 500))
             gt_color_pills(GT(df), "hp", fill_type="rank", domain=(1, 6), digits=0)
 
@@ -1153,6 +1247,12 @@ def gt_color_ranks(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_color_ranks
+
+            ranked = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "off_rank": [1, 3, 2], "def_rank": [5, 2, 1]})
+
             gt_color_ranks(GT(ranked), ["off_rank", "def_rank"])
 
     See Also:
@@ -1256,6 +1356,12 @@ def gt_indicator_boxes(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_indicator_boxes
+
+            roster = pl.DataFrame({"player": ["A", "B", "C"], "starter": [True, False, True]})
+
             gt_indicator_boxes(GT(roster), key_columns="player", show_text=True, border_color="#333333")
 
     See Also:
@@ -1351,6 +1457,12 @@ def gt_fmt_rank(gt: GT, columns: Any, superscript: bool = True, suffix_size: str
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_fmt_rank
+
+            standings = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "place": [1, 2, 3]})
+
             gt_fmt_rank(GT(standings), "place", superscript=False)
 
     See Also:
@@ -1410,6 +1522,13 @@ def gt_fmt_tally(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_fmt_tally
+
+            suites = pl.DataFrame({"suite": ["unit", "live"], "passed": [142, 30], "failed": [8, 2]})
+            league = pl.DataFrame({"team": ["KC", "BUF"], "w": [12, 10], "d": [0, 1], "l": [5, 6]})
 
             gt_fmt_tally(GT(suites), ["passed", "failed"], share=True)          # "142-8 (94.7%)"
             gt_fmt_tally(GT(league), ["w", "d", "l"], label="W-D-L")
@@ -1522,6 +1641,12 @@ def gt_delta(
     Example:
         ::
 
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_delta
+
+            revenue = pl.DataFrame({"team": ["KC", "BUF"], "q1": [100.0, 80.0], "q2": [120.0, 70.0]})
+
             gt_delta(GT(revenue), "q1", "q2")
             gt_delta(GT(revenue), "q1", "q2", percent=True, arrows=True)
 
@@ -1620,6 +1745,15 @@ def gt_column_subheaders(
 
     Example:
         ::
+
+            from great_tables import GT
+            import polars as pl
+            from sdvplot.great_tables import gt_column_subheaders
+
+            df = pl.DataFrame(
+                {"car": ["Mazda", "Datsun", "Hornet"], "mpg": [21.0, 22.8, 18.7], "hp": [110, 93, 175],
+                 "disp": [160.0, 108.0, 360.0]}
+            )
 
             gt_column_subheaders(GT(df), hp={"heading": "Horsepower", "subtitle": "HP"}, heading_color="blue")
 

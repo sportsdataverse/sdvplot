@@ -54,11 +54,24 @@ def logo_column(
         plottable.ColumnDefinition: The column definition; an unknown team leaves its cell blank, with an
         SdvplotWarning.
 
+    Raises:
+        InputError: When the table is drawn, if ``mark_type`` is not "logo" or "wordmark" (the column definition itself
+            is built without checking it).
+
     Example:
         ::
 
             from plottable import Table
             from sdvplot.plottable import logo_column
+            import pandas as pd
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
 
             Table(df, column_definitions=[logo_column("team", league="nfl", title="")])
 
@@ -83,10 +96,31 @@ def headshot_column(
     Returns:
         plottable.ColumnDefinition: The column definition; an unknown id leaves its cell blank, with an SdvplotWarning.
 
+    Raises:
+        InputError: When the table is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+        OfflineError: When the table is drawn, if ``id_system`` is "gsis" and the nflverse player table is neither
+            cached nor downloadable.
+
     Example:
         ::
 
+            import pandas as pd
+            from plottable import Table
+            from sdvplot.plottable import headshot_column
+
+            df = pd.DataFrame(
+                {
+                    "team": ["KC", "BUF", "BAL"],
+                    "espn_id": ["3139477", "3918298", "3916387"],
+                    "wins": [12, 10, 9],
+                }
+            )
+
             Table(df, column_definitions=[headshot_column("espn_id", league="nfl", title="")])
+
+    See Also:
+        sdvplotR geom_nfl_headshots(): https://sdvplotR.sportsdataverse.org/ ;
+        sdvplot.plottable.logo_column: the same with team logos
     """
     draw = _cell("headshot", league, None, "default", id_system)
     return ColumnDefinition(name=name, plot_fn=draw, **column_definition_kwargs)

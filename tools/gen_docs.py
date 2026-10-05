@@ -4,18 +4,26 @@
 Usage: uv run python tools/gen_docs.py [--out DIR] [--data-out DIR] [--check]
 
 Pages are generated, never hand-edited. --check renders to a temp dir and byte-compares (exit 1 on drift). Both modes
-fail when a public function's docstring misses the standard sections (summary, Args, Returns, Example)."""
+fail when a public function's docstring misses the standard sections (summary, Args, Returns, Example), and when a
+public submodule's `__all__` function misses any of Args, Returns, Raises, Example or See Also, or its Example raises
+(offline, so an example that needs the network or an image download is skipped, and counted)."""
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import filecmp
+import importlib
 import inspect
+import io
 import json
+import os
 import re
+import socket
 import sys
 import tempfile
 import textwrap
+import warnings
 from pathlib import Path
 
 import docstring_parser
@@ -46,6 +54,10 @@ ERRORS = [
     "UnsafeDownloadError",
     "UnsafeCachePathError",
 ]
+SUBMODULES = [
+    "plotnine", "matplotlib", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal",
+    "great_tables", "reactable", "plottable", "testing",
+]  # fmt: skip
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
 # never typed), and two-color swatches for six teams in three leagues, from palette().
@@ -241,6 +253,97 @@ def _write_json(path: Path, obj: object) -> None:
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
 
+# Examples that need something CI and many machines lack. They still run, and a NameError or SyntaxError still fails,
+# but any other error is a skip with this reason.
+TOLERATED = {
+    "gt_save_crop": "renders through a headless browser",
+    "gt_social_crop": "renders through a headless browser",
+    "gt_save_batch": "renders through a headless browser",
+    "gt_grid": "renders through a headless browser",
+    "gt_stack_tables": "renders through a headless browser",
+    "check_adapter_contract": "draws real marks, which need the network",
+    "check_table_adapter_contract": "draws real marks, which need the network",
+}
+
+
+def _no_network(*_a: object, **_k: object) -> None:
+    raise OSError("network disabled while checking docstring examples")
+
+
+def _run_example(code: str, *, tolerate: str = "") -> str | None:
+    """Run a docstring example with the network off. Returns None when it runs clean, a skip reason when it needs the
+    network (OfflineError, or an OSError from the blocked socket), or ``Type: message`` for a real failure. It runs in a
+    scratch directory, so an example that writes a file leaves nothing behind."""
+    ns: dict[str, object] = {"__name__": "__example__"}
+    saved = (socket.socket.connect, socket.getaddrinfo)
+    socket.socket.connect, socket.getaddrinfo = _no_network, _no_network  # type: ignore[assignment,method-assign]
+    try:
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            contextlib.chdir(tmp),
+            contextlib.redirect_stdout(io.StringIO()),
+            warnings.catch_warnings(),
+        ):
+            warnings.simplefilter("ignore")
+            exec(compile(code, "<example>", "exec"), ns)  # noqa: S102
+    except (sdvplot.OfflineError, OSError) as e:
+        return f"skip: needs network ({type(e).__name__})"
+    except Exception as e:  # noqa: BLE001  any other error is a broken example
+        if tolerate and not isinstance(e, (NameError, SyntaxError)):
+            return f"skip: {tolerate} ({type(e).__name__})"
+        return f"{type(e).__name__}: {e}"
+    finally:
+        socket.socket.connect, socket.getaddrinfo = saved  # type: ignore[assignment,method-assign]
+    return None
+
+
+def check_submodules(submodules: list[str] | None = None) -> tuple[list[str], list[str]]:
+    """Check each public submodule's ``__all__`` functions: sections present, OfflineError listed when ``embed`` is
+    taken, Example runs. Returns (errors, skips)."""
+    os.environ.setdefault("MPLBACKEND", "Agg")
+    errors: list[str] = []
+    skips: list[str] = []
+    ran = 0
+    for sub in SUBMODULES if submodules is None else submodules:
+        mod = importlib.import_module(f"sdvplot.{sub}")
+        for n in getattr(mod, "__all__", ()):
+            fn = getattr(mod, n)
+            if not callable(fn):
+                continue
+            label = f"sdvplot.{sub}.{n}"
+            raw = inspect.getdoc(fn) or ""
+            doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
+            try:
+                params = inspect.signature(fn).parameters
+            except (TypeError, ValueError):
+                params = {}  # type: ignore[assignment]
+            if not doc.short_description:
+                errors.append(f"{label}: missing summary line")
+            if params and not doc.params:
+                errors.append(f"{label}: missing Args:")
+            if not doc.returns:
+                errors.append(f"{label}: missing Returns:")
+            if params and _section(raw, "Raises") is None:
+                errors.append(f"{label}: missing Raises:")
+            elif "embed" in params and "OfflineError" not in (_section(raw, "Raises") or ""):
+                errors.append(f"{label}: takes embed= but Raises: does not list OfflineError")
+            if not _see_also(raw):
+                errors.append(f"{label}: missing See Also:")
+            example = _example(raw)
+            if example is None:
+                errors.append(f"{label}: missing Example:")
+                continue
+            result = _run_example(example, tolerate=TOLERATED.get(n, ""))
+            if result is None:
+                ran += 1
+            elif result.startswith("skip: "):
+                skips.append(f"{label}: {result[6:]}")
+            else:
+                errors.append(f"{label}: Example fails: {result}")
+    print(f"submodule examples: {ran} ran clean, {len(skips)} skipped", file=sys.stderr)
+    return errors, skips
+
+
 def render(out_dir: Path, data_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -259,6 +362,8 @@ def render(out_dir: Path, data_dir: Path) -> list[str]:
         n for n in sdvplot.__all__ if callable(getattr(sdvplot, n)) and n not in listed and n not in ERRORS
     )
     errors += [f"{n}: public but not placed in a SECTIONS group" for n in missing]
+    sub_errors, _skips = check_submodules()
+    errors += sub_errors
     for title, names in SECTIONS:
         index.append(f"## {title}\n")
         index.append("| Function | What it does |\n|---|---|")

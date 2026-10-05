@@ -242,3 +242,138 @@ def test_check_mode_detects_a_stale_home_data_file(tmp_path):
     assert gd.main(_args(tmp_path)) == 0
     (tmp_path / "data" / "home.json").write_text("{}\n")
     assert gd.main(_args(tmp_path, "--check")) == 1
+
+
+def _scratch(monkeypatch, **fns):
+    """Install ``sdvplot.scratch`` with the given functions as its ``__all__``."""
+    import sys
+    import types
+
+    mod = types.ModuleType("sdvplot.scratch")
+    mod.__all__ = list(fns)
+    for name, fn in fns.items():
+        setattr(mod, name, fn)
+    monkeypatch.setitem(sys.modules, "sdvplot.scratch", mod)
+    monkeypatch.setattr(gd, "SUBMODULES", ["scratch"])
+
+
+def _complete(x: int) -> int:
+    """Double it.
+
+    Args:
+        x: A number.
+
+    Returns:
+        int: Twice ``x``.
+
+    Raises:
+        TypeError: If ``x`` is not a number.
+
+    Example:
+        ::
+
+            total = 2 * 3
+
+    See Also:
+        Python: https://www.python.org/
+    """
+    return 2 * x
+
+
+def _drifted(x: int) -> int:
+    """Double it.
+
+    Args:
+        x: A number.
+
+    Returns:
+        int: Twice ``x``.
+
+    Example:
+        ::
+
+            _complete(undefined_name)
+    """
+    return 2 * x
+
+
+def test_a_complete_submodule_docstring_passes_the_submodule_check(monkeypatch):
+    _scratch(monkeypatch, complete=_complete)
+    errors, skips = gd.check_submodules()
+    assert errors == [] and skips == []
+
+
+def test_a_drifted_submodule_docstring_is_flagged_for_each_missing_part(monkeypatch):
+    _scratch(monkeypatch, drifted=_drifted)
+    errors, _ = gd.check_submodules()
+    assert errors == [
+        "sdvplot.scratch.drifted: missing Raises:",
+        "sdvplot.scratch.drifted: missing See Also:",
+        "sdvplot.scratch.drifted: Example fails: NameError: name '_complete' is not defined",
+    ]
+
+
+@pytest.mark.real_index
+def test_check_mode_fails_on_a_broken_submodule_docstring(monkeypatch, tmp_path, capsys):
+    _scratch(monkeypatch, drifted=_drifted)
+    assert gd.main(_args(tmp_path, "--check")) == 1
+    assert "sdvplot.scratch.drifted: missing See Also:" in capsys.readouterr().err
+
+
+def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
+    def embeds(x: int, embed: bool = False) -> int:
+        """Echo it.
+
+        Args:
+            x: A number.
+            embed: Inline it.
+
+        Returns:
+            int: ``x``.
+
+        Raises:
+            ValueError: If ``x`` is negative.
+
+        Example:
+            ::
+
+                total = 1
+
+        See Also:
+            Python: https://www.python.org/
+        """
+        return x
+
+    _scratch(monkeypatch, embeds=embeds)
+    errors, _ = gd.check_submodules()
+    assert errors == ["sdvplot.scratch.embeds: takes embed= but Raises: does not list OfflineError"]
+
+
+def test_an_example_that_needs_the_network_is_skipped_not_failed(monkeypatch):
+    def fetches(x: int) -> int:
+        """Fetch it.
+
+        Args:
+            x: A number.
+
+        Returns:
+            int: ``x``.
+
+        Raises:
+            OfflineError: If the network is down.
+
+        Example:
+            ::
+
+                import socket
+
+                socket.create_connection(("example.com", 80))
+
+        See Also:
+            Python: https://www.python.org/
+        """
+        return x
+
+    _scratch(monkeypatch, fetches=fetches)
+    errors, skips = gd.check_submodules()
+    assert errors == [] and len(skips) == 1 and "needs network" in skips[0]
