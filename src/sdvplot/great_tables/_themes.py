@@ -21,7 +21,7 @@ from great_tables import GT, html, loc, px, style
 from great_tables._helpers import GoogleFont
 
 from sdvplot._contrast import hex6, on_color
-from sdvplot.great_tables._marks import DENSITY, _secondary_on, _table_id
+from sdvplot.great_tables._marks import DENSITY, _check_gt, _density, _secondary_on, _table_id
 
 # gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
 R_FONTS = (
@@ -86,19 +86,6 @@ def _font(name: str) -> GoogleFont:
 def _text(**kwargs: Any) -> Any:
     """``style.text`` taking sdvplotR's numeric weights (typed as keywords in great_tables; any weight renders)."""
     return style.text(**kwargs)
-
-
-def _check_gt(gt: Any) -> GT:
-    if isinstance(gt, GT):
-        return gt
-    hint = "It looks like raw data: wrap it in great_tables.GT() first." if hasattr(gt, "columns") else ""
-    raise TypeError(f"gt must be a great_tables GT, not {type(gt).__name__}. {hint}".strip())
-
-
-def _density(density: str) -> dict[str, int]:
-    if density not in DENSITY:
-        raise ValueError(f"density must be 'comfortable', 'compact' or 'social', not {density!r}")
-    return DENSITY[density]
 
 
 def _color(value: str, arg: str) -> str:

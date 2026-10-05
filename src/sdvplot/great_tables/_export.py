@@ -28,6 +28,7 @@ from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
 
 from sdvplot._errors import SdvplotWarning
+from sdvplot.great_tables._marks import _check_gt
 
 _GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
 _JPEG_QUALITY = 92  # magick's default; Pillow's own (75) blurs table text
@@ -129,11 +130,6 @@ def _ratio(aspect_ratio: str | float) -> float:
 # Argument checks: all run before anything renders, so a typo never costs a browser start
 
 
-def _check_gt(value: Any, what: str = "data") -> None:
-    if not isinstance(value, GT):
-        raise TypeError(f"{what} must be a great_tables GT, not {type(value).__name__}")
-
-
 def _finite(value: Any) -> bool:
     return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(value)
 
@@ -231,7 +227,7 @@ def gt_save_crop(
         gt_social_crop: the same, padded onto a fixed-ratio canvas.
         Ported from sdvplotR ``gt_save_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_save_crop.html
     """
-    _check_gt(data)
+    _check_gt(data, "data")
     _check_zoom(zoom)
     pad, final = _check_common(bg, whitespace, width, file)
     return _finish(_pad(_trim(_render_gt(data, zoom, expand)), bg, pad), file, final)
@@ -285,7 +281,7 @@ def gt_social_crop(
         gt_save_crop: a plain trimmed save.
         Ported from sdvplotR ``gt_social_crop()``: https://sdvplotR.sportsdataverse.org/reference/gt_social_crop.html
     """
-    _check_gt(data)
+    _check_gt(data, "data")
     ratio = _ratio(aspect_ratio)
     place = _check_gravity(gravity)
     _check_zoom(zoom)
@@ -457,12 +453,13 @@ _STYLE_DEFAULTS: dict[str, dict[str, Any]] = {
 }
 
 
-def _style(kind: str, user: Mapping[str, Any] | None) -> dict[str, Any]:
+def _style(arg: str, user: Mapping[str, Any] | None, default: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """A style dict (sdvplotR's ``*_style`` lists): ``default`` with the caller's keys (argument ``arg``) on top."""
     user = dict(user or {})
     unknown = sorted(set(user) - set(_STYLE_KEYS))
     if unknown:
-        raise ValueError(f"{kind}_style has unknown key(s) {unknown}; recognized: {', '.join(_STYLE_KEYS)}")
-    return {**_STYLE_DEFAULTS[kind], **user}
+        raise ValueError(f"{arg} has unknown key(s) {unknown}; recognized: {', '.join(_STYLE_KEYS)}")
+    return {**(default or {}), **user}
 
 
 def _css_len(value: Any) -> str:
@@ -542,8 +539,10 @@ def _compose(
     more_styles: Sequence[Mapping[str, Any]] = (),
 ) -> htmltools.Tag:
     """The shared heading and footer around a grid or stack, in a shrink-to-fit wrapper (sdvplotR's layout)."""
-    s_title, s_subtitle = _style("title", title_style), _style("subtitle", subtitle_style)
-    s_caption, s_source = _style("caption", caption_style), _style("source_note", source_note_style)
+    s_title = _style("title_style", title_style, _STYLE_DEFAULTS["title"])
+    s_subtitle = _style("subtitle_style", subtitle_style, _STYLE_DEFAULTS["subtitle"])
+    s_caption = _style("caption_style", caption_style, _STYLE_DEFAULTS["caption"])
+    s_source = _style("source_note_style", source_note_style, _STYLE_DEFAULTS["source_note"])
     # with no subtitle the title carries the gap the subtitle would have held
     if subtitle is None and "margin_bottom" not in (title_style or {}):
         s_title["margin_bottom"] = _STYLE_DEFAULTS["subtitle"]["margin_bottom"]
@@ -677,7 +676,7 @@ def gt_grid(
         raise ValueError(f"align must be one of {', '.join(places)}, got {align!r}")
     _pixels("gap", gap)
     _check_zoom(zoom)
-    s_label = _style("label", label_style)
+    s_label = _style("label_style", label_style, _STYLE_DEFAULTS["label"])
     pad = 0 if file is None else _check_common(bg, whitespace, None, file)[0]
     if labels is not None:
         if isinstance(labels, str) or hasattr(labels, "to_html"):

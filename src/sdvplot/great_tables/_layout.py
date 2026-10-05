@@ -28,25 +28,10 @@ from great_tables import style as gst
 from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
-from sdvplot.great_tables._export import _STYLE_KEYS, _css_len, _fonts, _style_css
-from sdvplot.great_tables._marks import _secondary_on, _table_id
+from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
+from sdvplot.great_tables._marks import _check_gt, _secondary_on, _table_id
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
-
-
-def _check_gt(gt: object) -> None:
-    """sdvplotR's ``.check_gt``: every public function takes a GT, never raw data."""
-    if not isinstance(gt, GT):
-        raise TypeError(f"gt must be a great_tables.GT, not {type(gt).__name__}; wrap a data frame with GT(df) first")
-
-
-def _style(default: Mapping[str, Any], user: Mapping[str, Any] | None) -> dict[str, Any]:
-    """A style dict (sdvplotR's ``*_style`` lists): the defaults with the caller's keys on top."""
-    user = dict(user or {})
-    unknown = sorted(set(user) - set(_STYLE_KEYS))
-    if unknown:
-        raise ValueError(f"unknown style key(s) {unknown}; the keys are {', '.join(_STYLE_KEYS)}")
-    return {**default, **user}
 
 
 def _with_fonts(gt: GT, fonts: list[str], location: Any) -> GT:
@@ -192,12 +177,13 @@ def gt_title_header(
     """
     _check_gt(gt)
     s_kicker = _style(
-        {"size": "0.75em", "weight": 700, "color": "#C84630", "transform": "uppercase", "spacing": "0.08em"},
+        "kicker_style",
         kicker_style,
+        {"size": "0.75em", "weight": 700, "color": "#C84630", "transform": "uppercase", "spacing": "0.08em"},
     )
-    s_title = _style({}, title_style)
-    s_subtitle = _style({}, subtitle_style)
-    s_date = _style({"size": "0.85em", "weight": 400, "color": "#8A8A8A"}, date_style)
+    s_title = _style("title_style", title_style)
+    s_subtitle = _style("subtitle_style", subtitle_style)
+    s_date = _style("date_style", date_style, {"size": "0.85em", "weight": 400, "color": "#8A8A8A"})
 
     kicker_html = "" if kicker is None else f'<div style="{_style_css(s_kicker)}margin-bottom:0.15em;">{kicker}</div>'
     title_full = f'{kicker_html}<div style="{_style_css(s_title)}">{title}</div>'
@@ -469,8 +455,8 @@ def gt_legend_continuous(
         raise ValueError(f"domain must be (low, high), got {domain!r}")
     lo, hi = float(domain[0]), float(domain[1])
 
-    s_title = _style({"size": "11px", "color": "#666666"}, title_style)
-    s_labels = _style({"size": "10px", "color": "#666666"}, labels_style)
+    s_title = _style("title_style", title_style, {"size": "11px", "color": "#666666"})
+    s_labels = _style("labels_style", labels_style, {"size": "10px", "color": "#666666"})
 
     if labels is None:
         texts = [f"{v:,.{digits}f}" for v in (lo, hi)]
@@ -627,9 +613,9 @@ def gt_legend_discrete(
 
     bg = _background(gt)
     ink = on_color(bg)
-    s_heading = _style({"size": 16, "weight": 600, "color": ink}, heading_style)
-    s_subtitle = _style({"size": 13, "weight": 400, "color": _secondary_on(bg, ink)}, subtitle_style)
-    s_label = _style({"size": 12, "color": ink}, label_style)
+    s_heading = _style("heading_style", heading_style, {"size": 16, "weight": 600, "color": ink})
+    s_subtitle = _style("subtitle_style", subtitle_style, {"size": 13, "weight": 400, "color": _secondary_on(bg, ink)})
+    s_label = _style("label_style", label_style, {"size": 12, "color": ink})
 
     edges = [mix(c, "#000000", 0.18) if border_color is None else border_color for c in colors]
     rims = [f"border:{border_width:g}px solid {e};" if border else "" for e in edges]

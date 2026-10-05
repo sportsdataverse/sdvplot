@@ -141,7 +141,7 @@ def test_headshot_cells_use_the_espn_headshot(kind):
 
 
 def test_a_data_frame_instead_of_a_gt_is_a_clear_type_error():
-    with pytest.raises(TypeError, match=r"wrap the data in great_tables\.GT\(\)"):
+    with pytest.raises(TypeError, match=r"It looks like raw data: wrap it in great_tables\.GT\(\) first"):
         gt_sdv_logos(pl.DataFrame({"team": ["LV"]}), "team", league="nfl")
 
 
@@ -292,3 +292,39 @@ def test_a_table_with_an_empty_id_gets_a_random_one_for_its_scoped_css(scoped):
     html = scoped(GT(pl.DataFrame({"w": [1]}), id="")).as_raw_html()
     table_id = re.search(r'<div id="([^"]*)"', html).group(1)
     assert table_id and f"#{table_id} " in html
+
+
+RAW = pl.DataFrame({"team": ["LV"], "w": [1]})
+
+
+@pytest.mark.parametrize(
+    ("call", "arg"),
+    [
+        (lambda: gt_sdv_logos(RAW, "team", league="nfl"), "gt"),  # wave A
+        (lambda: sgt.gt_theme_kenpom(RAW), "gt"),  # wave B
+        (lambda: sgt.gt_bold_rows(RAW), "gt"),  # wave C1
+        (lambda: sgt.gt_title_header(RAW, "Week 5"), "gt"),  # wave C2
+        (lambda: sgt.gt_save_crop(RAW), "data"),  # wave D
+    ],
+    ids=["A", "B", "C1", "C2", "D"],
+)
+def test_every_wave_refuses_raw_data_with_one_message(call, arg):
+    want = (
+        f"{arg} must be a great_tables GT, not DataFrame. It looks like raw data: wrap it in great_tables.GT() first."
+    )
+    with pytest.raises(TypeError) as err:
+        call()
+    assert str(err.value) == want
+
+
+def test_every_wave_words_a_bad_density_and_style_key_alike():
+    with pytest.raises(ValueError) as a:
+        gt_theme_sdv(GT(RAW), density="roomy")  # wave A
+    with pytest.raises(ValueError) as b:
+        sgt.gt_theme_kenpom(GT(RAW), density="roomy")  # wave B
+    assert str(a.value) == str(b.value) == "density must be 'comfortable', 'compact' or 'social', not 'roomy'"
+    with pytest.raises(ValueError) as c:
+        sgt.gt_title_header(GT(RAW), "Week 5", title_style={"colour": "red"})  # wave C2
+    with pytest.raises(ValueError) as d:
+        sgt.gt_grid([GT(RAW)], title="T", title_style={"colour": "red"})  # wave D
+    assert str(c.value) == str(d.value) and str(c.value).startswith("title_style has unknown key(s) ['colour']")

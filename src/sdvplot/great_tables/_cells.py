@@ -29,18 +29,10 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _constant, _table_id
+from sdvplot.great_tables._marks import _check_gt, _constant, _table_id
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
-
-
-def _check_gt(gt: Any) -> None:
-    """Raise unless ``gt`` is a great_tables ``GT`` (sdvplotR's ``.check_gt``)."""
-    if isinstance(gt, GT):
-        return
-    hint = "it looks like raw data: wrap it in GT(...) first" if hasattr(gt, "columns") else "build one with GT(data)"
-    raise TypeError(f"gt must be a great_tables.GT, not {type(gt).__name__}; {hint}")
 
 
 def _warn(message: str) -> None:

@@ -19,10 +19,15 @@ from sdvplot._resolve import one_team, resolve
 from sdvplot._tables import check_px, mark_html
 
 
-def _check_gt(gt: Any) -> None:
-    if not isinstance(gt, GT):
-        hint = "wrap the data in great_tables.GT() first" if hasattr(gt, "columns") else "build a table with GT()"
-        raise TypeError(f"gt must be a great_tables GT, not {type(gt).__name__}: {hint}")
+def _check_gt(gt: Any, arg: str = "gt") -> GT:
+    """sdvplotR's ``.check_gt``: every public table function takes a GT, never raw data; returns ``gt``."""
+    if isinstance(gt, GT):
+        return gt
+    if hasattr(gt, "columns"):
+        hint = "It looks like raw data: wrap it in great_tables.GT() first."
+    else:
+        hint = "Build a table with great_tables.GT() and pass that in."
+    raise TypeError(f"{arg} must be a great_tables GT, not {type(gt).__name__}. {hint}")
 
 
 def _cell_texts(gt: GT, locations: Any) -> list[str]:
@@ -320,6 +325,15 @@ DENSITY: dict[str, dict[str, int]] = {  # sdvplotR's .theme_density(): type size
     "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
     "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},
 }
+
+
+def _density(density: str) -> dict[str, int]:
+    """The type and padding scale of ``density``; ValueError for an unknown one."""
+    if density not in DENSITY:
+        raise ValueError(f"density must be 'comfortable', 'compact' or 'social', not {density!r}")
+    return DENSITY[density]
+
+
 # great_tables' default paddings that sdvplotR's density also scales (gt has the same defaults)
 _DEFAULT_PADDING = {
     "row_group_padding": 8,
@@ -383,9 +397,8 @@ def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
 
 def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[str, Any]) -> GT:
     """sdvplotR's .sdv_theme_build(): fonts, styles, options and the scoped CSS, at ``density``."""
-    if density not in DENSITY:
-        raise ValueError(f"density must be one of {list(DENSITY)}, got {density!r}")
-    k = {role: DENSITY[density][role] / DENSITY["comfortable"][role] for role in DENSITY["comfortable"]}
+    d = _density(density)
+    k = {role: d[role] / DENSITY["comfortable"][role] for role in DENSITY["comfortable"]}
 
     def size(n: float, role: str) -> str:
         return f"{round(n * k[role], 1):g}px"

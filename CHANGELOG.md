@@ -136,3 +136,7 @@
   as the table themes already did; a few colors were one step off in a channel.
 - A table whose id is the empty string gets a random id before a theme or cell, border or watermark helper scopes CSS
   to it; only `gt_theme_sdv` did this before, and elsewhere the CSS (`# td`) reached no cell.
+- Every `sdvplot.great_tables` function refuses raw data with one message ("gt must be a great_tables GT, not
+  DataFrame. It looks like raw data: wrap it in great_tables.GT() first."), as sdvplotR's `.check_gt` words it; an
+  unknown `density` and an unknown `*_style` key are worded alike across the table modules too, and the style error
+  names the argument.
