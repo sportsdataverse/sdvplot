@@ -84,7 +84,7 @@ dev = [{ include-group = "test" }, { include-group = "compat" }, { include-group
 default-groups = ["dev"]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27,<2"]  # bounded: a new major could change what the published wheel holds
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
