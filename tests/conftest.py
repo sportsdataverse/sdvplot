@@ -198,6 +198,12 @@ ALIASES = [
 ]
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    # Not in pyproject's filterwarnings: pytest imports a named category while parsing the ini file, which imported
+    # sdvplot before pytest-cov started and left every import-time line unmeasured.
+    config.addinivalue_line("filterwarnings", "error::sdvplot._errors.SdvplotWarning")
+
+
 @pytest.fixture(autouse=True)
 def fixture_index(request, tmp_path, monkeypatch):
     """The fixture index, unless the test is marked real_index (tests/test_real_index.py): then the shipped one."""
