@@ -118,6 +118,7 @@ season is under way, so its data runs through today; a finished season's table i
 | `--max-games` | `gameday` | cards to draw, ranked teams first; default 8 |
 | `--out` | all | the output root; default `out` |
 | `--manifest` | `post` | the manifest to post; default the newest under `--out` |
+| `--network` | `post` | where to post: `bluesky`, the only network so far and the default |
 | `--post` | `post` | really post (otherwise a dry-run) |
 | `--include-stale` | `post` | post stale posts too |
 | `--ledger` | `post` | the posted-ledger; default `<out>/posted.json` |

@@ -25,7 +25,8 @@ sdvplot.logo_url("COL", "nhl", season=1996)  # the first Avalanche mark (1996-19
 ```
 
 A season is a year: `2010`, `2010.0` or `"2010"`. `None` or NaN means no season. Anything else, such as `"2019-20"`,
-raises `ValueError`. Pass one season for every value, or a list with one season per value:
+raises `InputError` (a `ValueError`), and so does a year outside the seasons the index knows for the league (the NFL's
+start at 1920). Pass one season for every value, or a list with one season per value:
 
 ```python
 sdvplot.resolve(["OAK", "LV"], "nfl", season=[2010, 2024])  # ['13', '13']
@@ -34,11 +35,16 @@ sdvplot.resolve(["OAK", "LV"], "nfl", season=[2010, 2024])  # ['13', '13']
 ## Reused codes
 
 Aliases can carry a season range. When you pass a season, `resolve()` first looks only at aliases whose range covers
-it, so a code that two teams used in different eras would go to the team that held it that season. Then it looks at
-every alias, so a code still resolves when the season is outside its range, such as a modern abbreviation on old data.
+it, so a code that two teams used in different eras goes to the team that held it that season. Without a season, a
+reused code means its current holder: `resolve()` reads it in the latest season the league's aliases name. Last, it
+looks at every alias, so a code still resolves when the season is outside its range, such as a modern abbreviation on
+old data.
 
-In the bundled index today, no identifier names different teams in different seasons, so `season` never changes which
-team a value resolves to. For example, nflverse's `"LA"` is always the Rams. Where a season does matter is the logo.
+In the bundled index the reused codes are MLB Stats API abbreviations. `KCA` is the Kansas City Royals, but the
+Athletics in 1955-67. `WAS` is the Washington Nationals, but the Twins' franchise in 1901-60 and the Rangers' in
+1961-71. `SEA` is the Seattle Mariners, but the Brewers' franchise (the Pilots) in 1968-69. `MIL` is the Milwaukee
+Brewers, but the Braves in 1953-65. Elsewhere a season does not change which team a value resolves to (nflverse's
+`"LA"` is always the Rams); where it does matter is the logo.
 
 ## Relocations
 

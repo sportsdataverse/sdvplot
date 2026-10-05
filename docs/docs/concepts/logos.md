@@ -39,7 +39,8 @@ Raiders, the `OAK` rows carry `1960`-`2019`, and the current Las Vegas rows are 
 
 ## How a mark is chosen
 
-`logo_url(team, league, *, season=None, variant="default", mark_type="logo")` and `logo_image()` pick one row:
+`logo_url(team, league, *, season=None, variant="default", mark_type="logo", id_system="auto", strict=False)` and
+`logo_image()` pick one row:
 
 1. **Variant.** sdvplot tries the requested variant first, then a fallback that keeps the background polarity:
    - for `"default"` or any other named variant, `"default"` and then an on-light variant (`"on_light"` or
@@ -67,8 +68,10 @@ sdvplot.logo_url("NYY", "mlb", mark_type="wordmark")  # the on_light wordmark (.
 sdvplot.logo_url("NYY", "mlb", mark_type="wordmark", variant="dark")  # the on_dark wordmark (.svg)
 ```
 
-An unknown team gives `None` with the resolver's `SdvplotWarning`. A known team with no mark of that type also gives
-`None`, and `logo_url()` warns about it. [Seasons and eras](seasons-and-eras.md) shows the season step on relocated franchises.
+An unknown team gives `None` with the resolver's `SdvplotWarning` (or raises `UnresolvedTeamError` with
+`strict=True`). A known team with no mark of that type also gives `None`, and `logo_url()` warns about it. A variant
+that no mark in the archive has is a typo, not a missing mark: it raises `InputError` (a `ValueError`) whose message lists
+the league's variants. [Seasons and eras](seasons-and-eras.md) shows the season step on relocated franchises.
 
 ## The `mark` crosswalk
 
@@ -89,7 +92,8 @@ Some sources publish SVGs: mlbstatic (MLB and MiLB), the NHL, NCAA.com and Shift
 - `logo_image()` returns a decoded PIL image for matplotlib-style libraries. To decode an SVG it needs the `[svg]` extra
   (resvg-py), and without it it raises `OptionalDependencyError` naming `pip install sdvplot[svg]`. SVGs are rendered
   with their longest side at `size` pixels (default 512), and each rendering is cached. Raster images are only ever
-  scaled down to `size`.
+  scaled down to `size`. The matplotlib-family adapters (matplotlib and seaborn, plotnine, plottable, `title_image`,
+  `team_tiers`) decode marks the same way, so an SVG mark there needs the extra too.
 
 ```python
 img = sdvplot.logo_image("LV", "nfl", size=128)  # a 128x128 RGBA PIL image
