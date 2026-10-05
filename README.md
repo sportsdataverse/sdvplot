@@ -13,13 +13,13 @@ holoviews, great_tables, folium and pygal plots, tables and maps. The Python cou
 ## Installation
 
 ```bash
-pip install git+https://github.com/sportsdataverse/sdvplot
+pip install sdvplot
 # or
-uv add git+https://github.com/sportsdataverse/sdvplot
+uv add sdvplot
 ```
 
-sdvplot is not on PyPI yet, so install it from GitHub. Plotting libraries are optional extras, for example
-`pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"`. Each extra adds the libraries for one feature: `[svg]` lets `logo_image()`
+Plotting libraries are optional extras, for example
+`pip install "sdvplot[mpl]"`. Each extra adds the libraries for one feature: `[svg]` lets `logo_image()`
 rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
 `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
 maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()`, and

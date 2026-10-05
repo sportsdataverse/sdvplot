@@ -14,7 +14,7 @@ fetched on demand and cached.
 ## Install
 
 ```bash
-pip install "sdvplot[mpl,svg] @ git+https://github.com/sportsdataverse/sdvplot"
+pip install "sdvplot[mpl,svg]"
 ```
 
 The `mpl` extra installs matplotlib, used here to plot `logo_image` marks (`add_logos()`, `add_wordmarks()` and `add_headshots()` draw the same marks straight onto a matplotlib plot), and the `svg` extra rasterizes SVG marks (many NHL logos are SVG).
@@ -139,7 +139,7 @@ sdvplot.versions()
 
 ```text
 {'sdvplot': '0.1.0',
- 'index': '1e20bbb90d63',
+ 'index': 'f0ca50b65f99',
  'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
 ```
 
