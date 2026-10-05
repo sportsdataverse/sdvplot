@@ -171,8 +171,8 @@ allowed the fewest.
 
 Each team's net rating (adjusted goals for minus against) as a dot colored by its conference, one row per conference
 ordered by its average; the best team in each conference carries its logo. (HE is Hockey East, AHA Atlantic Hockey
-America and IND the independents.) The index has no school colors for college hockey yet (`color_source` is
-`"fallback"`), and conference colors read better here anyway.
+America and IND the independents.) The dots take one color per conference rather than each team's own
+(`team_colors`), so every row reads as one group.
 
 ```python
 from plotnine import (

@@ -551,22 +551,21 @@ plt.show()
 
 </div>
 
-Dotted lines mark equal scoring margins (+6 to -6 per game). Not every G League team has official colors in the index:
-check `color_source` before using a color as the team's own.
+Dotted lines mark equal scoring margins (+6 to -6 per game). ESPN publishes colors for all but three G League teams;
+the index reads those three from their logos (`color_source` is `"logo"`), so check `color_source` before using a
+color as the team's own.
 
 ```python
-sdvplot.teams("nbagl").filter(pl.col("color_source") == "fallback").select(
-    "abbr", "name", "color_primary", "color_source"
-)
+sdvplot.teams("nbagl").filter(pl.col("color_source") != "espn").select("abbr", "name", "color_primary", "color_source")
 ```
 
 <div class="sdv-output">
 
 | abbr   | name            | color_primary | color_source |
 |--------|-----------------|---------------|--------------|
-| GLI    | G League Ignite | #b07aa1       | fallback     |
-| RCITY  | Rip City Remix  | #f28e2b       | fallback     |
-| VALLEY | Valley Suns     | #b07aa1       | fallback     |
+| GLI    | G League Ignite | #9d1d96       | logo         |
+| RCITY  | Rip City Remix  | #972c35       | logo         |
+| VALLEY | Valley Suns     | #3c286e       | logo         |
 
 </div>
 
