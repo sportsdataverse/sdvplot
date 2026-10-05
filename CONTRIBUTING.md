@@ -86,12 +86,12 @@ Generated files are never hand-edited. Change the source, regenerate, and commit
 | --- | --- | --- |
 | `src/sdvplot/data/*` (the bundled index) | `uv run python tools/fetch_sources.py`, then `uv run python tools/build_index.py` | `uv run python tools/build_index.py --check` |
 | `docs/docs/reference/**` (API reference), `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `uv run python tools/gen_docs.py --check` |
-| `docs/docs/tutorials/**`, `docs/static/notebooks/*.ipynb` | `uv run python tools/render_notebooks.py` | `tests/test_notebooks.py` (refreshed weekly by `live-tests-cron`) |
+| `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (`--only leagues/nfl` for one notebook; `--gallery-only` rebuilds `gallery.md` after a merge) | `tests/test_notebooks.py` (refreshed weekly by `live-tests-cron`) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` (refreshed weekly by `live-tests-cron`) |
 | `docs/src/pages/CHANGELOG.md` | the pre-commit hook copies `CHANGELOG.md` | `uv run pre-commit run --all-files` |
 | `data-raw/sdvplotr_*.csv` (sdvplotR export) | `Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index afterwards |
 
-Do not commit a `render_notebooks.py --no-execute` render: it overwrites the rendered tutorials with output-free pages.
+Do not commit a `render_notebooks.py --no-execute` render: it overwrites the rendered pages with output-free ones.
 
 ## Code standards for new modules
 
@@ -107,7 +107,16 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
 ## Notebooks
 
 Commit notebooks under `examples/notebooks/` without outputs. The `nbstripout` pre-commit hook enforces this; the rendered
-tutorials come from `tools/render_notebooks.py`.
+pages come from `tools/render_notebooks.py`.
+
+- The folder picks the docs section: the top level is "Getting started", then `leagues/`, `cookbooks/`, `recipes/` and
+  `leaderboards/`.
+- Each notebook carries `metadata["sdvplot"] = {"label": ..., "position": ..., "description": ...}` (optional
+  `"timeout"`, seconds per cell, default 600): its sidebar label, order and page description.
+- Tag a figure cell `gallery` (`cell.metadata.tags`, optional `cell.metadata.sdvplot_gallery = {"title", "alt"}`) to put
+  its first PNG in the gallery.
+- Interactive outputs (Plotly, Altair, great_tables, folium, Bokeh, HoloViews, reactable) render as framed standalone
+  pages.
 
 ## Changelog
 
@@ -128,7 +137,8 @@ The site is Docusaurus 3 under `docs/` and is published at <https://sdvplot.spor
 cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
 ```
 
-`docs/docs/intro.md`, `concepts/` and `adapters/` are hand-written; `reference/` and `tutorials/` are generated.
+`docs/docs/intro.md`, `concepts/`, `adapters/` and `automation/` are hand-written; `reference/`, `tutorials/`,
+`cookbooks/`, `recipes/`, `leaderboards/` and `gallery.md` are generated.
 
 ## Release
 

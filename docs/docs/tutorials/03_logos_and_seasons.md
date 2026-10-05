@@ -1,7 +1,8 @@
 ---
-title: Logos and eras tutorial
-sidebar_label: Logos and eras
+title: "Logos and eras tutorial"
+sidebar_label: "Logos and eras"
 sidebar_position: 3
+description: "Get the logo a team used in a given season, from the marks table to images in a matplotlib figure."
 ---
 
 # Logos and eras
