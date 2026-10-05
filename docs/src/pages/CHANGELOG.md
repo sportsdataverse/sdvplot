@@ -259,3 +259,7 @@
   `WSA` and the rest now resolve. An ESPN abbreviation another franchise held first starts the season after it (`MIL`
   from 1966, `SEA` from 1970, `WSH` from 1961), so `MIL` in 1960 is the Milwaukee Braves. An sdvplotR key that a dated alias gives another team drops, so `KCA` diverges
   from sdvplotR (Lahman's Royals) and `WAS` without a season is ambiguous (`docs/PARITY.md`).
+- ESPN's college baseball and softball abbreviations resolve. ESPN's teams list gives NC State `NCST` and Missouri
+  `MIZZ`, while its per-team endpoint, scoreboards and standings use `NCSU`, `MIZ`, `UCR`, `KENN` and about 120 others;
+  a new snapshot, `data-raw/espn_abbrs.csv`, keeps the per-team abbreviations. One the list gives another team stays
+  with that team (LSU Alexandria's per-team `LSU`), and one ESPN gives two teams (softball's `CEN`) is left out.

@@ -256,3 +256,16 @@ def test_mlbstats_history_keeps_runs_of_todays_franchises():
         ("133", "KCA", "kc1", "Kansas City Athletics", 1970, 1970),
         ("133", "OAK", "oak", "Oakland Athletics", 1968, 1969),
     ]  # the Monarchs, absent from the latest season, have no ESPN team
+
+
+def test_espn_team_abbr_rows_skip_placeholders():
+    team = {"team": {"id": "95", "abbreviation": "NCSU", "displayName": "NC State Wolfpack"}}
+    assert fs.espn_team_abbr_row("ncaa_baseball", team) == {
+        "league": "ncaa_baseball",
+        "team_id": "95",
+        "abbreviation": "NCSU",
+        "display_name": "NC State Wolfpack",
+        "valid_from": "",
+        "valid_to": "",
+    }
+    assert fs.espn_team_abbr_row("ncaa_baseball", {"team": {"id": "1153", "displayName": "TBD"}}) is None

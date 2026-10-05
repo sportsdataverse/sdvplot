@@ -3,6 +3,7 @@ except the gated live test at the end."""
 
 import os
 import warnings
+from pathlib import Path
 
 import polars as pl
 import pytest
@@ -177,3 +178,31 @@ def test_coyotes_marks_reach_utah_with_their_own_ranges():  # R50
         ("nhl:27", "129764", None, None),
         ("nhl:53", "129764", None, None),
     ]
+
+
+@pytest.mark.parametrize(
+    ("league", "codes", "ids"),
+    [
+        ("ncaa_baseball", ["NCSU", "MIZ", "UCR", "KENN"], ["95", "91", "67", "307"]),
+        ("ncaa_softball", ["AF", "UPST", "WGA", "QUC"], ["567", "807", "129696", "1254"]),
+    ],
+)
+def test_espn_college_abbreviations_from_the_team_endpoint(league, codes, ids):  # the teams list says NCST, MIZZ, ...
+    assert sdvplot.resolve(codes, league) == ids
+
+
+def test_espn_team_endpoint_abbreviations_never_name_another_team():
+    """Every abbreviation of data-raw/espn_abbrs.csv resolves to its team, or to the team ESPN's teams list gives it
+    (the per-team endpoint calls LSU Alexandria "LSU"), or to None where ESPN gives it to several teams."""
+    raw = pl.read_csv(Path(__file__).parents[1] / "data-raw" / "espn_abbrs.csv", infer_schema_length=0)
+    listed = pl.read_csv(Path(__file__).parents[1] / "data-raw" / "espn_teams.csv", infer_schema_length=0)
+    for (league,), rows in raw.group_by("league"):
+        holder = {
+            (r["abbreviation"] or "").upper(): r["team_id"]
+            for r in listed.filter(pl.col("league") == league).iter_rows(named=True)
+        }
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", sdvplot.SdvplotWarning)
+            got = sdvplot.resolve(rows["abbreviation"], league)
+        for r, g in zip(rows.iter_rows(named=True), got, strict=True):
+            assert g in (r["team_id"], holder.get(r["abbreviation"].upper()), None), (league, r, g)

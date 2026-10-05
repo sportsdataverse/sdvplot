@@ -422,3 +422,29 @@ def test_a_current_espn_code_another_team_held_earlier_starts_after_it():
         ("KC", None, None),
         ("MIL", 1966, None),
     ]
+
+
+def test_espn_team_endpoint_abbreviations_add_to_the_list_but_never_take_a_listed_one(tmp_path):
+    raw = _raw(tmp_path)
+    for tid, abbr, name in (("95", "NCST", "NC State Wolfpack"), ("497", "LSU", "LSU Tigers")):
+        _add(raw, "manifest_teams.csv", f"ncaa_baseball,{tid},{name},college")
+        _add(raw, "espn_teams.csv", f"ncaa_baseball,{tid},{abbr},{name},{name},{name},{name},,")
+    _add(raw, "manifest_teams.csv", "ncaa_baseball,890,LSU Alexandria,college")
+    _add(raw, "espn_teams.csv", "ncaa_baseball,890,LSUA,LSU Alexandria,LSU Alexandria,LSU Alexandria,Generals,,")
+    _add(raw, "manifest_teams.csv", "ncaa_baseball,302,Valparaiso Beacons,college")
+    _add(raw, "espn_teams.csv", "ncaa_baseball,302,VALP,Valparaiso Beacons,Valparaiso,Valparaiso,Beacons,,")
+    (raw / "espn_abbrs.csv").write_text(
+        "league,team_id,abbreviation,display_name,valid_from,valid_to\n"
+        "ncaa_baseball,95,NCSU,NC State Wolfpack,,\nncaa_baseball,890,LSU,LSU Alexandria,,\n"
+        "ncaa_baseball,497,LSU,LSU Tigers,,\nncaa_baseball,302,VAL,Valparaiso Beacons,,\n"
+        "ncaa_baseball,851,VAL,Valdosta State Blazers,,\n"  # 851 is not in the index; VAL still names two teams
+    )
+    _, aliases, _ = bi.build(raw)
+    got = aliases.filter((pl.col("league") == "ncaa_baseball") & (pl.col("id_system") == "espn_abbr"))
+    assert sorted(got.select("value", "team_id").rows()) == [
+        ("LSU", "497"),  # the list's LSU; LSU Alexandria's per-team "LSU" is left out
+        ("LSUA", "890"),
+        ("NCST", "95"),
+        ("NCSU", "95"),  # added beside the list's NCST
+        ("VALP", "302"),
+    ]

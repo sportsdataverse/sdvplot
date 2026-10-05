@@ -63,6 +63,10 @@ ESPN_LEAGUES = [
 # team_id_source == "ncaa_org" (0 ESPN rows). Add them once an ncaa_org -> ESPN id mapping exists.
 GROUP_LEAGUES = ["nfl", "nba", "wnba", "mlb", "nhl", "cfb", "mbb", "wbb"]
 MILB_SPORT_IDS = [11, 12, 13, 14, 16]
+# Leagues whose teams list abbreviations differ from the ones ESPN's per-team endpoint, scores and standings use
+# (college baseball: NCST in the list, NCSU everywhere else): espn_abbrs.csv keeps the per-team ones
+ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
+ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid_from", "valid_to"]
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -93,6 +97,28 @@ def espn_rows(league: str, payload: dict) -> list[dict]:
         }
         for t in teams
     ]
+
+
+def espn_team_abbr_row(league: str, payload: dict) -> dict | None:
+    """One per-team endpoint payload as an espn_abbrs.csv row (current: no seasons); None for a placeholder team
+    with no abbreviation (ESPN's "TBD")."""
+    t = payload["team"]
+    if not t.get("abbreviation"):
+        return None
+    return {"league": league, "team_id": str(t["id"]), "abbreviation": t["abbreviation"],
+            "display_name": t.get("displayName"), "valid_from": "", "valid_to": ""}  # fmt: skip
+
+
+def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> list[dict]:
+    """The per-team endpoint's abbreviation of every ESPN_TEAM_ENDPOINT_LEAGUES team in ``espn`` (one request each)."""
+    slugs = {league: (sport, el) for league, sport, el in ESPN_LEAGUES}
+    rows = []
+    for t in espn:
+        if t["league"] in ESPN_TEAM_ENDPOINT_LEAGUES:
+            sport, el = slugs[t["league"]]
+            payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{t['team_id']}").json()
+            rows.append(espn_team_abbr_row(t["league"], payload))
+    return [r for r in rows if r is not None]
 
 
 def publish_staged(stage: Path, out: Path) -> None:
@@ -275,6 +301,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
             "alternate_color",
         ],
     )
+    write("espn_abbrs", fetch_espn_team_abbrs(s, hosts[0], espn), ESPN_ABBR_COLUMNS)
 
     nfl = list(csv.DictReader(io.StringIO(_get(s, NFLVERSE_TEAMS_URL).text)))
     write("nflverse_teams", nfl, ["team_abbr", "team_name", "team_nick", "team_color", "team_color2", "team_logo_espn"])

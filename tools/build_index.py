@@ -339,6 +339,8 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
         *[_alias(espn, pl.col("league"), "name", c) for c in ("display_name", "short_display_name", "location")],
         _alias(_csv(raw, "manifest_teams.csv"), pl.col("league"), "name", "name"),
     ]
+    if (raw / "espn_abbrs.csv").exists():
+        parts.append(espn_extra_aliases(_csv(raw, "espn_abbrs.csv"), espn))
     by_league = {
         "hockeytech": ["pwhl", "ahl", "echl", "ohl", "whl", "qmjhl", "ushl"],
         "mlbstats": ["milb"],
@@ -439,6 +441,41 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     )
     a = pl.concat([a, mark.cast(ALIAS_SCHEMA)])
     return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
+
+
+def espn_extra_aliases(extra: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
+    """ESPN abbreviations and names from outside the teams list (data-raw/espn_abbrs.csv): the per-team endpoint's,
+    which scores and standings use (college baseball's NCSU where the list says NCST), and each season's scoreboard
+    codes, dated. Left out: a code the list gives another team of the league (the list's team keeps it) and one the
+    file gives two teams over overlapping seasons (ESPN's softball CEN is Centre and Central Baptist)."""
+    key = _norm(pl.col("abbreviation")).alias("_key")
+    holders = espn.select("league", key, pl.col("team_id").alias("_other")).drop_nulls("_key")
+    e = extra.with_columns(key, pl.col("valid_from", "valid_to").cast(pl.Int32))
+    other = e.select("league", "_key", pl.col("team_id").alias("_other"), pl.col("valid_from").alias("_from"),
+                     pl.col("valid_to").alias("_to"))  # fmt: skip
+    overlaps = (pl.col("_from").is_null() | pl.col("valid_to").is_null() | (pl.col("_from") <= pl.col("valid_to"))) & (
+        pl.col("_to").is_null() | pl.col("valid_from").is_null() | (pl.col("_to") >= pl.col("valid_from"))
+    )
+    clash = pl.concat(
+        [
+            e.join(holders, on=["league", "_key"]).select("league", "_key", "team_id", "_other"),
+            e.join(other, on=["league", "_key"]).filter(overlaps).select("league", "_key", "team_id", "_other"),
+        ]
+    ).filter(pl.col("_other") != pl.col("team_id"))
+    e = e.join(clash.select("league", "_key", "team_id").unique(), on=["league", "_key", "team_id"], how="anti")
+    return pl.concat(
+        [
+            e.select(
+                "league",
+                pl.lit(system).alias("id_system"),
+                pl.col(col).alias("value"),
+                "team_id",
+                "valid_from",
+                "valid_to",
+            )  # fmt: skip
+            for system, col in (("espn_abbr", "abbreviation"), ("name", "display_name"))
+        ]
+    )
 
 
 def date_reused_codes(a: pl.DataFrame) -> pl.DataFrame:
