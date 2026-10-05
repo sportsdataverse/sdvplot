@@ -34,7 +34,7 @@ def _raw(tmp_path):
         "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
     }
     for name, text in files.items():
-        (raw / name).write_text(text)
+        (raw / name).write_text(text, newline="\n")  # LF on Windows too: the CRLF check below makes its own
     return raw
 
 
