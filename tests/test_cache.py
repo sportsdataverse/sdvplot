@@ -374,11 +374,24 @@ def test_a_declared_content_length_over_the_cap_is_refused_before_reading(cache,
 
 
 def test_a_drip_fed_download_stops_at_the_total_deadline(cache, monkeypatch):
-    clock = iter([0.0] + [10_000.0] * 50)
+    clock = iter([0.0, 0.0] + [10_000.0] * 50)  # the deadline, the first hop's time left, then the body
     monkeypatch.setattr(_cache.time, "monotonic", lambda: next(clock))
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x" * 200000)))
     with pytest.raises(UnsafeDownloadError, match="exceeded"):
         _cache.fetch_immutable("https://x/a.png", "images/ab/a.png", "0" * 64)
+
+
+def test_urllib3_is_floored_where_the_byte_cap_bounds_memory():
+    """Before urllib3 2.6, read1() decompressed a whole received chunk: a 275-byte gzip body cost 4 GB before the cap
+    saw it (CVE-2025-66471). _pieces relies on the floor; it has no fallback for older urllib3."""
+    import importlib.metadata
+
+    from packaging.requirements import Requirement
+    from packaging.version import Version
+
+    (req,) = [r for r in map(Requirement, importlib.metadata.requires("sdvplot")) if r.name == "urllib3"]
+    assert req.marker is None and "2.5.99" not in req.specifier and "2.6.0" in req.specifier
+    assert Version(importlib.metadata.version("urllib3")) >= Version("2.6")
 
 
 def test_a_redirect_off_https_is_refused_without_requesting_the_http_url(cache, monkeypatch):
@@ -389,6 +402,21 @@ def test_a_redirect_off_https_is_refused_without_requesting_the_http_url(cache, 
     assert [c[0] for c in s.calls] == ["https://x/m.csv"]
     with pytest.raises(UnsafeDownloadError):
         _cache._download("http://x/m.csv", None, 10)
+
+
+def _hops(n):
+    return [FakeResponse(302, b"", {"Location": f"/hop{i}"}) for i in range(1, n + 1)]
+
+
+def test_five_redirect_hops_are_followed_and_a_sixth_is_refused(cache, monkeypatch):
+    s = FakeSession(*_hops(5), FakeResponse(200, b"ok"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache._download("https://x/start", None, 100)[1] == b"ok"
+    s = FakeSession(*_hops(6), FakeResponse(200, b"one hop too far"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    with pytest.raises(UnsafeDownloadError, match="more than 5 redirects"):
+        _cache._download("https://x/start", None, 100)
+    assert [c[0] for c in s.calls] == ["https://x/start"] + [f"https://x/hop{i}" for i in range(1, 6)]
 
 
 def test_an_https_redirect_is_followed(cache, monkeypatch):
@@ -512,6 +540,63 @@ def test_a_drip_fed_body_hits_the_deadline_on_time(server, monkeypatch):
     assert time.monotonic() - start < 1.5 + 1
 
 
+def test_no_read_waits_past_the_time_left(cache, monkeypatch):
+    """On Windows a shut socket does not wake a read already waiting, so each read's timeout is capped at the time the
+    download has left (a stalled TLS handshake there ran to the 5 s connect timeout)."""
+    s = FakeSession(FakeResponse(200, b"x"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 2.0)
+    _cache._download("https://x/a", None, 100)
+    assert 0 < max(s.timeouts[0]) <= 2.0
+
+
+def test_drip_fed_headers_hit_the_deadline_on_time(server, monkeypatch):
+    """Only the body loop checked the deadline: a header byte every 0.2 s held the call open while the server dripped."""
+    import time
+
+    base, handler = server
+
+    def drip(h):
+        try:
+            h.wfile.write(b"HTTP/1.1 200 OK\r\nX-Drip: ")
+            for _ in range(40):  # 8 s, far past the deadline
+                h.wfile.write(b"x")
+                h.wfile.flush()
+                time.sleep(0.2)
+            h.wfile.write(b"\r\nContent-Length: 2\r\n\r\nok")
+        except OSError:
+            pass
+
+    handler(drip)
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 1.5)
+    monkeypatch.setattr(_cache, "_check_https", lambda url: None)  # the local server speaks http
+    start = time.monotonic()
+    with pytest.raises(UnsafeDownloadError, match="exceeded"):
+        _cache._download(base + "/", None, 1000)
+    assert time.monotonic() - start < 1.5 + 1
+
+
+def test_a_stalled_tls_handshake_hits_the_deadline_on_time(monkeypatch):
+    """A server that accepts and never answers the ClientHello: the handshake waited for the 5 s connect timeout."""
+    import socket
+    import threading
+    import time
+
+    srv = socket.create_server(("127.0.0.1", 0))
+    accepted = []
+    threading.Thread(target=lambda: accepted.append(srv.accept()[0]), daemon=True).start()
+    monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 1.5)
+    start = time.monotonic()
+    try:
+        with pytest.raises(UnsafeDownloadError, match="exceeded"):
+            _cache._download(f"https://127.0.0.1:{srv.getsockname()[1]}/", None, 1000)
+        assert time.monotonic() - start < 1.5 + 1
+    finally:
+        srv.close()
+        for conn in accepted:
+            conn.close()
+
+
 def test_a_real_redirect_hop_is_checked_before_it_is_requested(server, monkeypatch):
     base, handler = server
     hits = []
@@ -579,6 +664,46 @@ def test_the_default_cache_directory_is_cleared_without_markers(tmp_path, monkey
         (root / sub / "f").write_text("x")
     _cache.clear_cache()
     assert not any((root / sub).exists() for sub in _cache.CACHE_SUBDIRS)
+
+
+def _symlink(link, target):
+    target.mkdir(parents=True, exist_ok=True)
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError as e:  # Windows without the symlink privilege
+        pytest.skip(f"cannot create a symlink here: {e}")
+
+
+def test_a_symlinked_subdirectory_of_the_default_directory_is_unlinked_and_the_rest_cleared(tmp_path, monkeypatch):
+    """shutil.rmtree refuses a symlink: clear_cache raised after manifest/ and left the later subdirectories and the
+    in-memory caches as they were."""
+    import platformdirs
+
+    root, elsewhere = tmp_path / "default", tmp_path / "elsewhere"
+    monkeypatch.delenv("SDVPLOT_CACHE_DIR", raising=False)
+    monkeypatch.setattr(platformdirs, "user_cache_dir", lambda *a, **k: str(root))
+    for sub in _cache.CACHE_SUBDIRS:
+        if sub != "images":
+            (root / sub).mkdir(parents=True)
+            (root / sub / "f").write_text("x")
+    _symlink(root / "images", elsewhere)
+    (elsewhere / "mine.png").write_text("not the cache's")
+    cleared = []
+    monkeypatch.setattr(_cache, "MEMORY_CACHES", [*_cache.MEMORY_CACHES, lambda: cleared.append(True)])
+    _cache.clear_cache()
+    assert not [sub for sub in _cache.CACHE_SUBDIRS if os.path.lexists(root / sub)]
+    assert (elsewhere / "mine.png").exists()  # the link is gone, not what it pointed to
+    assert cleared == [True]
+
+
+def test_a_symlinked_subdirectory_of_a_chosen_directory_is_left_with_a_warning(cache, tmp_path):
+    elsewhere = tmp_path / "elsewhere"
+    cache.mkdir(parents=True)
+    _symlink(cache / "images", elsewhere)
+    (elsewhere / _cache.MARKER).write_bytes(b"")  # even a folder sdvplot marked is not followed through a link
+    with pytest.warns(SdvplotWarning, match="symlink"):
+        _cache.clear_cache()
+    assert (cache / "images").is_symlink() and (elsewhere / _cache.MARKER).exists()
 
 
 def test_the_skip_warning_names_the_path_and_says_to_delete_by_hand(cache):

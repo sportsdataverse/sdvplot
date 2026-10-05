@@ -5976,6 +5976,7 @@ dependencies = [
     { name = "platformdirs" },
     { name = "polars" },
     { name = "requests" },
+    { name = "urllib3" },
 ]
 
 [package.optional-dependencies]
@@ -6169,6 +6170,7 @@ requires-dist = [
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2.5" },
     { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "pygal"], marker = "extra == 'all'" },
     { name = "sportypy", marker = "extra == 'surfaces'", specifier = ">=1.0" },
+    { name = "urllib3", specifier = ">=2.6" },
 ]
 provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "pygal", "all"]
 

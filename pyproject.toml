@@ -27,6 +27,7 @@ dependencies = [
   "Pillow>=12.3",
   "platformdirs>=4",
   "requests>=2.33",
+  "urllib3>=2.6",  # bounded decompression (CVE-2025-66471): the download byte cap is a memory bound only from 2.6
 ]
 
 [project.optional-dependencies]
