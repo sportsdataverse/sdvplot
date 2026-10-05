@@ -138,6 +138,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   does: the cache's `urlimages/` directory, shared downloads and `UnsafeDownloadError` (not an `OfflineError`);
   `id_system` and `strict` on `palette()`, `team_colors()` and `logo_url()`; the MLB Stats API codes whose team a
   season does change (`KCA`, `WAS`, `SEA`, `MIL`), where the page said no code's did; the libraries each extra installs.
+- Issue templates: the bug report asks for the plotting or table library and the league, and takes the whole
+  `sdvplot.versions()` output; the feature request lists every top-level function, the submodule helpers, new
+  adapters and new leagues; the wrong-team template, now also for wrong colors, picks the league from a list and asks
+  for the team id returned and expected, the season and the team's `color_source`. A test keeps those lists equal to
+  the leagues, adapters, functions and color sources sdvplot has. The issue chooser links the docs and private
+  security reporting.
 
 ### Fixed
 

@@ -158,3 +158,27 @@ def test_the_release_workflow_keeps_its_hardening():
     assert jobs["publish-pypi"]["environment"]["name"] == "pypi"
     assert all("@" in st["uses"] and len(st["uses"].split("@")[1]) == 40 for j in jobs.values() for st in j["steps"]
                if "uses" in st)  # fmt: skip
+
+
+def _dropdown(template: str, field: str) -> set[str]:
+    """An issue-template dropdown's options that name something in sdvplot (identifiers; prose options are skipped)."""
+    body = yaml.safe_load((ROOT / ".github" / "ISSUE_TEMPLATE" / template).read_text(encoding="utf-8"))["body"]
+    return {o for o in next(f for f in body if f.get("id") == field)["attributes"]["options"] if o.isidentifier()}
+
+
+@pytest.mark.real_index
+def test_the_issue_templates_offer_what_sdvplot_supports():
+    import inspect
+
+    import sdvplot
+    from sdvplot import _dispatch
+
+    index = sdvplot.teams()
+    assert (
+        _dropdown("bug_report.yml", "league") == set(index["league"]) == _dropdown("wrong_team_or_logo.yml", "league")
+    )
+    assert _dropdown("wrong_team_or_logo.yml", "color_source") == set(index["color_source"])
+    assert _dropdown("bug_report.yml", "library") == set(_dispatch.ADAPTERS) | {"reactable", "plottable"}
+    assert _dropdown("feature_request.yml", "scope") == {
+        n for n in sdvplot.__all__ if inspect.isfunction(getattr(sdvplot, n))
+    }
