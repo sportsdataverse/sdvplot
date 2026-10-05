@@ -28,8 +28,8 @@ page of the docs.
 uv sync --all-extras --all-groups
 uv run python examples/automation/sdvplot_social.py leaderboard --league nfl
 uv run python examples/automation/sdvplot_social.py gameday --league nba
-uv run python examples/automation/sdvplot_social.py post --manifest out/<today>/manifest.json         # dry-run
-uv run python examples/automation/sdvplot_social.py post --manifest out/<today>/manifest.json --post  # posts
+uv run python examples/automation/sdvplot_social.py post         # dry-run of the newest out/<date>/manifest.json
+uv run python examples/automation/sdvplot_social.py post --post  # posts its fresh, not-yet-posted posts
 ```
 
 Posting needs `BSKY_HANDLE` and `BSKY_APP_PASSWORD` (a Bluesky app password, never the account password).
@@ -42,4 +42,4 @@ Posting needs `BSKY_HANDLE` and `BSKY_APP_PASSWORD` (a Bluesky app password, nev
 | `workflows/sdvplot-social.yml` | a GitHub Actions template to copy into your repository (weekly, posts on request) |
 
 `tests/test_automation_example.py` tests the script offline. `.github/workflows/automation-example.yml` runs it weekly
-on live data in dry-run mode. sdvplot itself never posts.
+on live data in dry-run mode; it has no secrets, and the script refuses `--post` in sdvplot's own GitHub Actions.

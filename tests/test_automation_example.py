@@ -11,6 +11,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+import requests
 from PIL import Image
 
 ROOT = Path(__file__).parents[1]
@@ -53,7 +54,7 @@ def test_each_subcommand_parses_with_its_defaults():
         ["leaderboard", "--league", "nfl", "--size", "tall"],
         ["gameday", "--league", "nfl", "--date", "Sunday"],
         ["gameday", "--league", "nfl", "--max-games", "0"],
-        ["post"],
+        ["post", "--ledger"],
         ["post", "--manifest", "m.json", "--network", "x"],
     ],
 )
@@ -100,14 +101,15 @@ def gameday_data(monkeypatch):
 
 
 def _manifest(out):
-    manifest = json.loads((out / TODAY / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == 1 and manifest["date"] == TODAY
+    (path,) = out.glob("*/manifest.json")  # the one dated folder (today, which may roll over during a run)
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    assert manifest["version"] == 1 and manifest["date"] == path.parent.name
     for post in manifest["posts"]:
-        assert set(post) == {"thread", "league", "kind", "caption", "hashtags", "images"}
+        assert set(post) == {"key", "fresh", "thread", "league", "kind", "caption", "hashtags", "images"}
         assert 1 <= len(post["images"]) <= 4 and post["hashtags"] == ["NFL", "sdvplot"]
         for image in post["images"]:
             assert set(image) == {"path", "alt", "width", "height"} and image["alt"]
-            with Image.open(out / TODAY / image["path"]) as im:
+            with Image.open(path.parent / image["path"]) as im:
                 assert im.size == (image["width"], image["height"])
     return manifest
 
@@ -125,6 +127,7 @@ def test_gameday_writes_score_cards_a_player_card_and_the_manifest(
     # the best score on a WINNING team (the loser's 99 does not count), and the offseason note, are in the caption
     assert "Player of the game: Star Passer" in post["caption"] and gameday_data in post["caption"]
     assert "Los Angeles Rams 17, Las Vegas Raiders 24" in post["images"][1]["alt"]
+    assert (post["key"], post["fresh"]) == ("nfl-gameday-2026-09-27-1", False)  # a fallback date is stale
 
 
 def test_a_rerun_replaces_its_thread_and_keeps_the_others(tmp_path, gameday_data, mark_images, headshot_images):
@@ -150,6 +153,8 @@ def test_more_than_four_images_thread_over_several_posts(tmp_path, monkeypatch, 
     assert [len(p["images"]) for p in posts] == [4, 2] and {p["thread"] for p in posts} == {"nfl-20260927"}
     assert posts[1]["caption"] == "More NFL final scores, Sunday, Sep 27, 2026 (2/2)."
     assert posts[0]["caption"].startswith("NFL postseason final scores, Sunday, Sep 27, 2026. Player of")
+    keys = [(p["key"], p["fresh"]) for p in posts]
+    assert keys == [("nfl-gameday-2026-09-27-1", True), ("nfl-gameday-2026-09-27-2", True)]
 
 
 LEADERS = pl.DataFrame(
@@ -180,6 +185,14 @@ def test_leaderboard_manifest_names_the_season_and_the_fallback(tmp_path, monkey
     assert post["caption"].startswith("NFL Passing Yards leaders, 2025 regular season (final): Star Passer leads")
     assert META["note"] in post["caption"]
     assert "1. Star Passer 1,882; 2. Second 999; 2. Tied Second 999" in post["images"][0]["alt"]
+    assert (post["key"], post["fresh"]) == ("nfl-leaderboard-passingyards-landscape-2025", False)  # a final season
+    monkeypatch.setattr(social, "fetch_leaders", lambda *a: (LEADERS, {**META, "season": 2026, "to_date": True}))
+    social.main(["leaderboard", "--league", "nfl", "--out", str(tmp_path)])
+    post = _manifest(tmp_path)["posts"][-1]
+    assert (post["key"], post["fresh"]) == (
+        f"nfl-leaderboard-passingyards-square-2026-{dt.date.today().isoformat()}",
+        True,
+    )
 
 
 @pytest.mark.render
@@ -331,15 +344,18 @@ def test_the_player_of_the_game_rules():
 # post: dry-run, limits and the Bluesky request sequence
 
 
-def _post_manifest(tmp_path, n_images=5, caption="NFL final scores, Sunday, Sep 27, 2026."):
+def _post_manifest(tmp_path, n_images=5, caption="NFL final scores, Sunday, Sep 27, 2026.", fresh=True, day=TODAY):
+    tmp_path = tmp_path / "out" / day  # the posted-ledger goes next to the dated folders, in tmp_path/out
+    tmp_path.mkdir(parents=True, exist_ok=True)
     images = []
     for i in range(n_images):
         Image.new("RGB", (120, 68), (i * 40, 30, 30)).save(tmp_path / f"{i}.png")
         images.append({"path": f"{i}.png", "alt": f"card {i}", "width": 120, "height": 68})
-    posts = [{"thread": "nfl-20260927", "league": "nfl", "kind": "gameday", "caption": caption if i == 0 else "More",
-              "hashtags": ["NFL", "sdvplot"], "images": images[i : i + 4]} for i in range(0, n_images, 4)]  # fmt: skip
+    posts = [{"key": f"nfl-gameday-2026-09-27-{i // 4 + 1}", "fresh": fresh, "thread": "nfl-20260927", "league": "nfl",
+              "kind": "gameday", "caption": caption if i == 0 else "More", "hashtags": ["NFL", "sdvplot"],
+              "images": images[i : i + 4]} for i in range(0, n_images, 4)]  # fmt: skip
     path = tmp_path / "manifest.json"
-    path.write_text(json.dumps({"version": 1, "date": TODAY, "posts": posts}))
+    path.write_text(json.dumps({"version": 1, "date": day, "posts": posts}))
     return path
 
 
@@ -363,7 +379,10 @@ class FakeHTTP:
         method = url.rsplit("/", 1)[1]
         self.calls.append({"method": method, "url": url, "headers": headers, "json": json, "data": data})
         queue = self.queues[method]
-        return queue.pop(0) if len(queue) > 1 else queue[0]
+        nxt = queue.pop(0) if len(queue) > 1 else queue[0]
+        if isinstance(nxt, Exception):
+            raise nxt
+        return nxt
 
 
 def _bluesky_http(**overrides):
@@ -389,9 +408,10 @@ def test_dry_run_prints_the_posts_and_sends_nothing(tmp_path, monkeypatch, capsy
         raise AssertionError("a dry-run must not open a session")
 
     monkeypatch.setattr(social.requests, "Session", no_network)
-    assert social.main(["post", "--manifest", str(_post_manifest(tmp_path))]) == 0
+    manifest = _post_manifest(tmp_path)
+    assert social.main(["post", "--manifest", str(manifest)]) == 0
     out = capsys.readouterr().out
-    assert out.startswith(f"[dry-run] 2 post(s) from {tmp_path / 'manifest.json'}; nothing sent")
+    assert out.startswith(f"[dry-run] 2 post(s) from {manifest}; nothing sent")
     assert "NFL final scores, Sunday, Sep 27, 2026.\n\n#NFL #sdvplot" in out
     assert "  [image] 0.png 120x68" in out and "    alt: card 4" in out
     assert "app-secret" not in out
@@ -399,7 +419,8 @@ def test_dry_run_prints_the_posts_and_sends_nothing(tmp_path, monkeypatch, capsy
 
 def test_bluesky_posts_a_thread_with_alt_text_and_hashtag_facets(tmp_path, capsys, creds):
     http = _bluesky_http()
-    social.run_post(social.parse_args(["post", "--manifest", str(_post_manifest(tmp_path)), "--post"]), session=http)
+    manifest = _post_manifest(tmp_path, caption="NFL · final scores, Sunday, Sep 27, 2026 · é.")
+    social.run_post(social.parse_args(["post", "--manifest", str(manifest), "--post"]), session=http)
     methods = [c["method"].rsplit(".", 1)[1] for c in http.calls]
     assert methods == ["createSession"] + ["uploadBlob"] * 4 + ["createRecord", "uploadBlob", "createRecord"]
     login = http.calls[0]
@@ -408,14 +429,18 @@ def test_bluesky_posts_a_thread_with_alt_text_and_hashtag_facets(tmp_path, capsy
     assert "Authorization" not in login["headers"]
     assert all(c["headers"]["Authorization"] == "Bearer jwt-token" for c in http.calls[1:])
     upload = http.calls[1]
-    assert upload["headers"]["Content-Type"] == "image/png" and upload["data"] == (tmp_path / "0.png").read_bytes()
+    assert (
+        upload["headers"]["Content-Type"] == "image/png" and upload["data"] == (manifest.parent / "0.png").read_bytes()
+    )
     first, second = (c["json"] for c in http.calls if c["method"].endswith("createRecord"))
     assert (first["repo"], first["collection"]) == ("did:plc:me", "app.bsky.feed.post")
     record = first["record"]
-    assert record["text"] == "NFL final scores, Sunday, Sep 27, 2026.\n\n#NFL #sdvplot"
-    start = len(record["text"].encode()) - len("#NFL #sdvplot")
-    assert record["facets"][0] == {"index": {"byteStart": start, "byteEnd": start + 4},
-                                   "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": "NFL"}]}  # fmt: skip
+    assert record["text"] == "NFL · final scores, Sunday, Sep 27, 2026 · é.\n\n#NFL #sdvplot"
+    encoded = record["text"].encode()
+    assert [(encoded[f["index"]["byteStart"] : f["index"]["byteEnd"]], f["features"]) for f in record["facets"]] == [
+        (b"#NFL", [{"$type": "app.bsky.richtext.facet#tag", "tag": "NFL"}]),
+        (b"#sdvplot", [{"$type": "app.bsky.richtext.facet#tag", "tag": "sdvplot"}]),
+    ]  # byte offsets: "·" and "é" are two bytes each, so character offsets would land short
     images = record["embed"]["images"]
     assert record["embed"]["$type"] == "app.bsky.embed.images" and len(images) == 4
     assert images[0] == {"image": {"$type": "blob", "ref": "b"}, "alt": "card 0",
@@ -440,6 +465,7 @@ def test_bluesky_waits_out_a_rate_limit_then_retries(tmp_path, monkeypatch, cred
 
 
 def test_bluesky_errors_name_the_call_but_never_the_credentials(tmp_path, capsys, creds, monkeypatch):
+    monkeypatch.setattr(social.time, "sleep", lambda s: None)  # a 5xx is retried with backoff before it fails
     http = _bluesky_http(**{"com.atproto.server.createSession": [
         FakeResponse(401, {"error": "AuthenticationRequired", "message": "Invalid identifier or password"})]})  # fmt: skip
     monkeypatch.setattr(social.requests, "Session", lambda: http)
@@ -460,7 +486,7 @@ def test_posting_needs_credentials_and_never_runs_in_sdvplots_ci(tmp_path, monke
     monkeypatch.setattr(social.requests, "Session", lambda: pytest.fail("no session may open"))
     monkeypatch.setenv("GITHUB_REPOSITORY", "sportsdataverse/sdvplot")
     assert social.main(["post", "--manifest", manifest, "--post"]) == 1
-    assert "refusing to post from sportsdataverse/sdvplot's own CI" in capsys.readouterr().err
+    assert "refusing to post from sportsdataverse/sdvplot's own GitHub Actions" in capsys.readouterr().err
     monkeypatch.delenv("GITHUB_REPOSITORY")
     monkeypatch.delenv("BSKY_APP_PASSWORD")
     assert social.main(["post", "--manifest", manifest, "--post"]) == 1
@@ -469,6 +495,7 @@ def test_posting_needs_credentials_and_never_runs_in_sdvplots_ci(tmp_path, monke
 
 def test_posts_bluesky_would_refuse_are_caught_before_sending(tmp_path):
     path = _post_manifest(tmp_path, 4)
+    tmp_path = path.parent
     manifest = json.loads(path.read_text())
     post = manifest["posts"][0]
     with pytest.raises(ValueError, match="has 5 images"):
@@ -494,6 +521,10 @@ def test_an_image_over_bluesky_s_limit_is_sent_as_jpeg(tmp_path, monkeypatch):
     monkeypatch.setattr(social, "MAX_BLOB", 100)
     with pytest.raises(ValueError, match="over 1 MB even as a JPEG"):
         social.image_bytes(path)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Review round: box-score numbers, who is player of the game, ties
 
 
 def test_num_keeps_minus_signs_and_reads_pairs():
@@ -568,6 +599,163 @@ def test_a_tie_bolds_neither_score_and_both_teams_can_have_the_player_of_the_gam
     assert "Player of the game: Home Hero" in post["caption"]
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Review round: fresh posts, the posted-ledger, retries, BSKY_SERVICE
+
+
+def _ledger(manifest):
+    path = manifest.parent.parent / "posted.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def _methods(http):
+    return [c["method"].rsplit(".", 1)[1] for c in http.calls]
+
+
+def _run(manifest, *flags, session=None):
+    social.run_post(
+        social.parse_args(["post", "--manifest", str(manifest), "--post", *flags]),
+        session=session,
+    )
+
+
+def test_stale_posts_are_skipped_unless_include_stale(tmp_path, capsys, creds):
+    manifest = _post_manifest(tmp_path, 1, fresh=False)
+    http = _bluesky_http()
+    _run(manifest, session=http)
+    assert http.calls == []  # nothing fresh to post, so no login either
+    assert "skipped: stale (pass --include-stale to post it)" in capsys.readouterr().out
+    _run(manifest, "--include-stale", session=http)
+    assert _methods(http) == ["createSession", "uploadBlob", "createRecord"]
+
+
+def test_each_post_is_recorded_as_it_is_made_and_a_rerun_resumes_the_thread(tmp_path, capsys, creds):
+    manifest = _post_manifest(tmp_path)  # two posts in one thread
+    refused = FakeResponse(400, {"error": "InvalidRequest", "message": "bad record"})
+    http = _bluesky_http(**{"com.atproto.repo.createRecord": [FakeResponse(200, {"uri": "at://me/1", "cid": "c1"}),
+                                                                refused]})  # fmt: skip
+    with pytest.raises(social.PostError, match="createRecord: HTTP 400 InvalidRequest bad record"):
+        _run(manifest, session=http)
+    ledger = _ledger(manifest)
+    assert list(ledger) == ["nfl-gameday-2026-09-27-1"]  # the first post, recorded before the second failed
+    assert (
+        ledger["nfl-gameday-2026-09-27-1"]["uri"],
+        ledger["nfl-gameday-2026-09-27-1"]["cid"],
+    ) == ("at://me/1", "c1")
+    http = _bluesky_http(**{"com.atproto.repo.createRecord": [FakeResponse(200, {"uri": "at://me/2", "cid": "c2"})]})
+    _run(manifest, session=http)
+    (record,) = [c["json"]["record"] for c in http.calls if c["method"].endswith("createRecord")]
+    first = {"uri": "at://me/1", "cid": "c1"}
+    assert record["reply"] == {
+        "root": first,
+        "parent": first,
+    }  # the resumed post still replies to the first
+    assert list(_ledger(manifest)) == [
+        "nfl-gameday-2026-09-27-1",
+        "nfl-gameday-2026-09-27-2",
+    ]
+    http = _bluesky_http()
+    _run(manifest, session=http)
+    assert http.calls == []  # all posted: a re-run sends nothing
+    assert "skipped: already posted (at://me/2)" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("failure", [requests.Timeout("read timed out"), FakeResponse(503, None)])
+def test_create_record_is_not_retried_after_an_ambiguous_failure(tmp_path, capsys, creds, monkeypatch, failure):
+    monkeypatch.setattr(social.time, "sleep", lambda s: None)
+    manifest = _post_manifest(tmp_path, 1)
+    http = _bluesky_http(**{"com.atproto.repo.createRecord": [failure]})
+    with pytest.raises(social.PostError, match="may have been posted"):
+        _run(manifest, session=http)
+    assert _methods(http).count("createRecord") == 1
+    assert _ledger(manifest)["nfl-gameday-2026-09-27-1"]["status"] == "pending"
+    http = _bluesky_http()
+    _run(manifest, session=http)
+    assert http.calls == []  # a pending post is never sent again blindly
+    assert "skipped: pending (an earlier attempt may have posted it" in capsys.readouterr().out
+
+
+def test_login_and_uploads_retry_5xx_and_network_errors_with_backoff(tmp_path, creds, monkeypatch):
+    slept = []
+    monkeypatch.setattr(social.time, "sleep", slept.append)
+    ok = FakeResponse(200, {"accessJwt": "jwt-token", "did": "did:plc:me"})
+    http = _bluesky_http(**{
+        "com.atproto.server.createSession": [requests.ConnectionError("down"), FakeResponse(503, None), ok],
+        "com.atproto.repo.uploadBlob": [requests.Timeout("slow"), FakeResponse(200, {"blob": {"ref": "b"}})],
+    })  # fmt: skip
+    _run(_post_manifest(tmp_path, 1), session=http)
+    assert _methods(http) == ["createSession"] * 3 + ["uploadBlob"] * 2 + ["createRecord"]
+    assert slept == [1, 2, 1]
+    down = _bluesky_http(**{"com.atproto.server.createSession": [requests.ConnectionError("down")]})
+    with pytest.raises(
+        social.PostError,
+        match=r"^com\.atproto\.server\.createSession: ConnectionError after 4 tries",
+    ):
+        _run(_post_manifest(tmp_path / "again", 1), session=down)
+    assert _methods(down) == ["createSession"] * 4  # bounded
+
+
+def test_network_errors_end_with_a_clean_message(monkeypatch, capsys, creds):
+    def boom(*args):
+        raise requests.ConnectionError("HTTPSConnectionPool(host='bsky.social'): password=app-secret-1234")
+
+    monkeypatch.setattr(social, "fetch_games", boom)
+    assert social.main(["gameday", "--league", "nfl"]) == 1
+    assert capsys.readouterr().err == "error: network error (ConnectionError); try again later\n"
+
+
+@pytest.mark.parametrize(
+    ("value", "base"),
+    [
+        ("", "https://bsky.social"),
+        ("https://pds.example.org/", "https://pds.example.org"),
+    ],
+)
+def test_bsky_service_is_used_and_an_empty_value_falls_back(tmp_path, creds, monkeypatch, value, base):
+    monkeypatch.setenv("BSKY_SERVICE", value)
+    http = _bluesky_http()
+    _run(_post_manifest(tmp_path, 1), session=http)
+    assert [c["url"] for c in http.calls][0] == f"{base}/xrpc/com.atproto.server.createSession"
+    assert all(c["url"].startswith(f"{base}/xrpc/") for c in http.calls)
+    assert "BSKY_SERVICE: ${{ vars.BSKY_SERVICE }}" in TEMPLATE.read_text(encoding="utf-8")
+
+
+def test_dry_run_shows_what_would_be_skipped_and_writes_no_ledger(tmp_path, capsys, creds):
+    manifest = _post_manifest(tmp_path)
+    ledger = manifest.parent.parent / "posted.json"
+    ledger.write_text(
+        json.dumps(
+            {
+                "nfl-gameday-2026-09-27-1": {
+                    "status": "posted",
+                    "uri": "at://me/1",
+                    "cid": "c1",
+                }
+            }
+        )
+    )
+    assert social.main(["post", "--manifest", str(manifest)]) == 0
+    out = capsys.readouterr().out
+    assert "--- post 1/2, nfl-gameday-2026-09-27-1: skipped: already posted (at://me/1)" in out
+    assert "--- post 2/2, nfl-gameday-2026-09-27-2: would post" in out
+    assert json.loads(ledger.read_text()) == {"nfl-gameday-2026-09-27-1": {"status": "posted", "uri": "at://me/1",
+                                                                          "cid": "c1"}}  # fmt: skip
+
+
+def test_post_reads_the_newest_manifest_without_manifest(tmp_path, capsys):
+    for day in ("2026-10-01", "2026-10-03"):
+        _post_manifest(tmp_path, 1, day=day)
+    assert social.main(["post", "--out", str(tmp_path / "out")]) == 0
+    newest = tmp_path / "out" / "2026-10-03" / "manifest.json"
+    assert capsys.readouterr().out.startswith(f"[dry-run] 1 post(s) from {newest};")
+    assert social.main(["post", "--out", str(tmp_path / "empty")]) == 1
+    assert "no manifest.json under" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Review round: the example stands on public sdvplot; the docs say what the guard does
+
+
 SCRIPT = ROOT / "examples" / "automation" / "sdvplot_social.py"
 TEMPLATE = ROOT / "examples" / "automation" / "workflows" / "sdvplot-social.yml"
 
@@ -595,3 +783,12 @@ def test_the_example_imports_only_public_sdvplot_and_the_template_pins_it():
     ):
         assert social.contrast(a, b) == pytest.approx(contrast(a, b))
         assert social.on_color(a) == on_color(a) and social.on_color(b) == on_color(b)
+
+
+def test_the_docs_commands_work_on_any_day_and_describe_the_guard_exactly():
+    page = (ROOT / "docs" / "docs" / "automation" / "index.md").read_text(encoding="utf-8")
+    readme = (SCRIPT.parent / "README.md").read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "automation-example.yml").read_text(encoding="utf-8")
+    assert "out/2026-10-04/manifest.json" not in page and "<today>/manifest" not in readme
+    assert "refuses `--post` in sdvplot's own GitHub Actions" in page
+    assert "refuses --post in sdvplot's own GitHub Actions" in ci

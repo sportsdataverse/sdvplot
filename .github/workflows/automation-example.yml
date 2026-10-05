@@ -1,7 +1,7 @@
 # Weekly run of the social automation example (examples/automation/sdvplot_social.py) on live ESPN data, so the
 # example keeps working. It makes the graphics, prints the would-be posts and uploads out/ as an artifact.
-# Nothing is posted: this workflow has no Bluesky secrets, never passes --post, and the script refuses --post in
-# this repository.
+# Nothing is posted: this workflow has no Bluesky secrets and never passes --post, and the script also
+# refuses --post in sdvplot's own GitHub Actions.
 name: automation-example
 on:
   schedule:

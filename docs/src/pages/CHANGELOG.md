@@ -225,7 +225,8 @@
   a great_tables table with headshots and logos; `gameday` makes final-score cards and a player-of-the-game card in
   matplotlib. Images are 1080 x 1080 or 1200 x 675, in team colors with readable ink. With no games or leaders yet it
   falls back to the most recent date or season and says so in the caption. Each run writes a manifest of images, alt
-  text, captions and hashtags; `post` publishes it to Bluesky over plain `requests` (a dry-run unless `--post`).
+  text, captions and hashtags; `post` publishes it to Bluesky over plain `requests` (a dry-run unless `--post`),
+  posting only fresh posts and each one once (a posted-ledger), retrying what is safe to retry.
   With it: a GitHub Actions template to copy (`examples/automation/workflows/sdvplot-social.yml`), a weekly dry-run in
   sdvplot's CI (`.github/workflows/automation-example.yml`, which never posts), offline tests
   (`tests/test_automation_example.py`) and the docs page *Social graphics* (`docs/docs/automation/index.md`).

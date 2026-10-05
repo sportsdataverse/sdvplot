@@ -24,12 +24,14 @@ table is themed in the leading player's team colors (`gt_theme_sdv_team`) and sa
 
 **Final-score cards** (`gameday`) are matplotlib images, 1200 x 675, one per game. Each team sits on its own color
 (`team_colors`), with its logo on a white disc so a logo drawn in the team's own color still shows. The score is
-printed in black or white, whichever reads better on that color. The winner's score is bold.
+printed in black or white, whichever reads better on that color. The winner's score is bold (after a tie, neither
+is).
 
 ![A final-score card: Seattle Seahawks 31, Washington Commanders 33, each team on its color with its logo](/img/automation/score-card.png)
 
 **A player-of-the-game card** (also `gameday`), 1080 x 1080, shows the day's best performance by a player on a
-winning team. It has the headshot (`add_headshots`) on the team's color, the stat line and the result.
+team that did not lose, across all of the day's finals (not only the games that get a card). It has the headshot
+(`add_headshots`) on the team's color, the stat line and the result.
 
 ![A player-of-the-game card: Jahmyr Gibbs's headshot on Detroit Lions blue, with his rushing and receiving line](/img/automation/player-of-the-game.png)
 
@@ -65,14 +67,15 @@ uv sync --all-extras --all-groups
 uv run python examples/automation/sdvplot_social.py leaderboard --league nfl
 uv run python examples/automation/sdvplot_social.py leaderboard --league nba --stat assistsPerGame --size landscape
 uv run python examples/automation/sdvplot_social.py gameday --league nfl --date 2026-09-27
-uv run python examples/automation/sdvplot_social.py post --manifest out/2026-10-04/manifest.json
+uv run python examples/automation/sdvplot_social.py post
 ```
 
 The leaderboard renders in headless Chrome (great_tables' `gtsave`), so Chrome or Chromium must be installed. Set
 `CHROME_PATH` for a non-standard install. The game-day cards need only matplotlib.
 
 Each command writes its PNGs to `out/<today>/` and adds its posts to `out/<today>/manifest.json`. A re-run replaces
-its own posts and keeps the others:
+its own posts and keeps the others. `post` reads the newest `out/<date>/manifest.json` unless you pass
+`--manifest`:
 
 ```json
 {
@@ -80,6 +83,8 @@ its own posts and keeps the others:
   "date": "2026-10-04",
   "posts": [
     {
+      "key": "nfl-gameday-2026-09-27-1",
+      "fresh": true,
       "thread": "nfl-20260927",
       "league": "nfl",
       "kind": "gameday",
@@ -97,6 +102,10 @@ its own posts and keeps the others:
 A Bluesky post holds at most four images. A slate with more games becomes a thread: the first post carries the player
 card and three score cards, and each later post carries four more cards and replies to the first.
 
+Each post has a `key` (league, kind, and the game date or the season) and a `fresh` flag. A game-day post is
+fresh when its games are from the requested date, not an offseason stand-in. A leaderboard is fresh while its
+season is under way, so its data runs through today; a finished season's table is stale.
+
 | Option | Command | Meaning |
 | --- | --- | --- |
 | `--league` | `leaderboard`, `gameday` | `nfl`, `cfb`, `nba`, `wnba`, `mlb` or `nhl` |
@@ -106,13 +115,26 @@ card and three score cards, and each later post carries four more cards and repl
 | `--size` | `leaderboard` | `square` (1080 x 1080) or `landscape` (1200 x 675) |
 | `--date` | `gameday` | `YYYY-MM-DD`; default yesterday |
 | `--max-games` | `gameday` | cards to draw, ranked teams first; default 8 |
-| `--out` | `leaderboard`, `gameday` | the output root; default `out` |
+| `--out` | all | the output root; default `out` |
+| `--manifest` | `post` | the manifest to post; default the newest under `--out` |
+| `--post` | `post` | really post (otherwise a dry-run) |
+| `--include-stale` | `post` | post stale posts too |
+| `--ledger` | `post` | the posted-ledger; default `<out>/posted.json` |
 
 ## Post to Bluesky
 
 `post` is a dry-run unless you pass `--post`. It checks every post the way Bluesky would: one to four images, alt
 text on each, and text of at most 300 graphemes. A long caption is shortened and keeps its hashtags. Then it prints
-each post's text, images and alt text.
+each post's text, images and alt text, and whether it would be posted or skipped.
+
+Two rules keep a schedule from repeating itself:
+
+- **Only fresh posts go out.** Stale ones (an offseason stand-in date, a finished season's leaders) are skipped
+  unless you pass `--include-stale`. From February to August, a weekly NFL run makes the Super Bowl card but does
+  not post it again each week.
+- **Nothing is posted twice.** `post` keeps a ledger, `out/posted.json`, beside the dated folders. Each post's key
+  is recorded as soon as the post is made, so a re-run skips it. A thread that failed partway resumes where it
+  stopped, replying to the posts already made.
 
 To post for real:
 
@@ -123,7 +145,7 @@ To post for real:
    ```bash
    export BSKY_HANDLE=yourname.bsky.social
    export BSKY_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx
-   uv run python examples/automation/sdvplot_social.py post --manifest out/2026-10-04/manifest.json --post
+   uv run python examples/automation/sdvplot_social.py post --post
    ```
 
 The script uses three AT Protocol calls over plain `requests`:
@@ -134,8 +156,11 @@ The script uses three AT Protocol calls over plain `requests`:
    hashtags as tag facets.
 
 If Bluesky answers 429 (rate limited), the script waits until the reset time it gives, at most a minute, and tries
-again up to three times. Errors name the call and Bluesky's error, never the credentials. Set `BSKY_SERVICE` to post
-through another PDS (the default is `https://bsky.social`).
+again, up to four attempts in all. Logging in and uploading also retry a 5xx answer or a dropped or timed-out
+connection, after 1, 2 and 4 seconds. Creating the post is never retried after such a failure, because the post
+may exist. Its ledger entry stays `pending`, and later runs skip it until you check the account and delete the
+entry. Errors name the call and Bluesky's error, never the credentials. Set `BSKY_SERVICE` to post through
+another PDS; unset or empty means `https://bsky.social`.
 
 ## Schedule it with GitHub Actions
 
@@ -147,17 +172,25 @@ through another PDS (the default is `https://bsky.social`).
    Actions**).
 
 Every Monday, and whenever you run it by hand, the workflow installs sdvplot and sportsdataverse, makes the graphics,
-prints the would-be posts and uploads `out/` as an artifact. It posts only when both of these hold:
+prints the would-be posts and uploads `out/` as an artifact. sdvplot is installed from a pinned commit (it has no
+release yet); to upgrade, change the SHA in the install step and copy that commit's script. It posts only when
+both of these hold:
 
 - you start a run by hand with **post** checked, or set the repository variable `SDVPLOT_POST` to `true` to post on
   the schedule;
 - both secrets are set.
 
+To post through another PDS, set the repository variable `BSKY_SERVICE`.
+
+The posted-ledger is kept between runs with `actions/cache`: each run restores the newest copy and saves its own.
+GitHub drops a cache that goes unused for 7 days, so a weekly schedule can lose it. That is harmless, because
+fresh posts are dated and each week's are new. The ledger guards against re-runs and second runs on the same day.
+
 `ubuntu-latest` ships Chrome, so the leaderboard tables render there with no setup.
 
 sdvplot runs the same script in its own CI each week (`.github/workflows/automation-example.yml`) in dry-run mode, so
-the example keeps working. That workflow has no secrets, never passes `--post`, and the script refuses `--post` inside
-the sdvplot repository.
+the example keeps working. That workflow has no secrets and never passes `--post`, and the script also
+refuses `--post` in sdvplot's own GitHub Actions.
 
 ## Adapt it
 

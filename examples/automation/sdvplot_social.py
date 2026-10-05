@@ -66,6 +66,7 @@ BG, INK, MUTED, NEUTRAL = "#0f1115", "#f5f6f7", "#a3a9b1", "#3a3f47"
 CREDIT = "Data: ESPN via sportsdataverse-py  |  Logos, headshots & colors: sdvplot"
 MAX_IMAGES, MAX_GRAPHEMES, MAX_BLOB = 4, 300, 1_000_000  # Bluesky's limits per post / per image
 CALENDAR_TRIES = 14  # scoreboard days tried per season calendar before stepping back a season
+TRIES = 4  # attempts per Bluesky call (429s always; 5xx and network errors except for createRecord)
 GITHUB_REPO = "sportsdataverse/sdvplot"  # this example never posts from sdvplot's own CI
 
 
@@ -612,8 +613,11 @@ def run_leaderboard(args: argparse.Namespace) -> Path:
     top_row = frame.row(0, named=True)
     caption = f"{tag} {meta['stat_label']} leaders, {label} regular season ({when}): {top_row['name']} leads with "
     caption += f"{top_row['display']}." + (f" {meta['note']}" if meta["note"] else "")
-    post = {"thread": name, "league": league, "kind": "leaderboard", "caption": caption,
-            "hashtags": [tag, "sdvplot"], "images": [image]}  # fmt: skip
+    # fresh while the season is under way (a new date each run); a final season is the same table every week
+    key = f"{league}-leaderboard-{slug(meta['stat'])}-{args.size}-{meta['season']}"
+    key += f"-{today.isoformat()}" if meta["to_date"] else ""
+    post = {"key": key, "fresh": bool(meta["to_date"]), "thread": name, "league": league, "kind": "leaderboard",
+            "caption": caption, "hashtags": [tag, "sdvplot"], "images": [image]}  # fmt: skip
     return write_manifest(out, [post])
 
 
@@ -668,6 +672,8 @@ def run_gameday(args: argparse.Namespace) -> Path:
     chunks = [images[i : i + MAX_IMAGES] for i in range(0, len(images), MAX_IMAGES)]
     posts = [
         {
+            "key": f"{league}-gameday-{day.isoformat()}-{i + 1}",
+            "fresh": note is None,  # a substituted date (the offseason) is old news
             "thread": stem,
             "league": league,
             "kind": "gameday",
@@ -706,14 +712,14 @@ def check_post(post: dict[str, Any], base: Path) -> None:
     """Raise ValueError for a post Bluesky would refuse: over 4 images, a missing file or alt text, too long."""
     images = post.get("images") or []
     if not 1 <= len(images) <= MAX_IMAGES:
-        raise ValueError(f"post {post.get('thread')!r} has {len(images)} images; Bluesky takes 1 to {MAX_IMAGES}")
+        raise ValueError(f"post {post.get('key')!r} has {len(images)} images; Bluesky takes 1 to {MAX_IMAGES}")
     for image in images:
         if not (base / image["path"]).is_file():
             raise ValueError(f"image {image['path']!r} is not in {base}")
         if not image.get("alt"):
             raise ValueError(f"image {image['path']!r} has no alt text")
     if graphemes(post_text(post)) > MAX_GRAPHEMES:
-        raise ValueError(f"post {post.get('thread')!r} is over {MAX_GRAPHEMES} graphemes even shortened")
+        raise ValueError(f"post {post.get('key')!r} is over {MAX_GRAPHEMES} graphemes even shortened")
 
 
 def hashtag_facets(text: str) -> list[dict[str, Any]]:
@@ -742,7 +748,14 @@ def image_bytes(path: Path) -> tuple[bytes, str]:
 
 
 class PostError(Exception):
-    """A Bluesky call failed. The message holds the call, status and Bluesky's error, never credentials."""
+    """A Bluesky call failed. The message holds the call, status and Bluesky's error, never credentials.
+
+    ``ambiguous`` is True when a post may have been created anyway (createRecord timed out or got a 5xx answer).
+    """
+
+    def __init__(self, message: str, ambiguous: bool = False) -> None:
+        super().__init__(message)
+        self.ambiguous = ambiguous
 
 
 class Bluesky:
@@ -754,37 +767,72 @@ class Bluesky:
         self.jwt: str | None = None
         self.did: str | None = None
 
-    def call(self, method: str, **kw: Any) -> dict[str, Any]:
-        """POST to an XRPC method, waiting out rate limits (429) up to three times."""
-        headers = {**kw.pop("headers", {}), **({"Authorization": f"Bearer {self.jwt}"} if self.jwt else {})}
-        for attempt in range(4):
-            r = self.http.post(f"{self.service}/xrpc/{method}", headers=headers, timeout=60, **kw)
-            if r.status_code != 429 or attempt == 3:
-                break
-            reset = r.headers.get("ratelimit-reset")
-            wait = float(reset) - time.time() if reset else float(r.headers.get("retry-after", 5))
-            print(f"rate limited by Bluesky; waiting {min(max(wait, 1), 60):.0f} s", file=sys.stderr)
-            time.sleep(min(max(wait, 1), 60))
+    def call(self, method: str, *, retry: bool = True, **kw: Any) -> dict[str, Any]:
+        """POST to an XRPC method, waiting out rate limits (429: the request was refused, so a retry is safe).
+
+        With ``retry``, 5xx answers and dropped or timed-out connections are retried too, after 1, 2 and 4 s. Without
+        it (createRecord), they end the call as ambiguous, since the post may exist: it is never sent twice blindly.
+        """
+        headers = {
+            **kw.pop("headers", {}),
+            **({"Authorization": f"Bearer {self.jwt}"} if self.jwt else {}),
+        }
+        maybe = "; it may have been posted: check the account before posting it again"
+        for attempt in range(TRIES):
+            last = attempt == TRIES - 1
+            try:
+                r = self.http.post(f"{self.service}/xrpc/{method}", headers=headers, timeout=60, **kw)
+            except (requests.ConnectionError, requests.Timeout) as e:
+                if retry and not last:
+                    time.sleep(2**attempt)
+                    continue
+                tail = f" after {TRIES} tries" if retry else maybe
+                raise PostError(f"{method}: {type(e).__name__}{tail}", ambiguous=not retry) from None
+            if r.status_code == 429 and not last:
+                reset = r.headers.get("ratelimit-reset")
+                wait = min(
+                    max(
+                        float(reset) - time.time() if reset else float(r.headers.get("retry-after", 5)),
+                        1,
+                    ),
+                    60,
+                )
+                print(f"rate limited by Bluesky; waiting {wait:.0f} s", file=sys.stderr)
+                time.sleep(wait)
+                continue
+            if r.status_code >= 500 and retry and not last:
+                time.sleep(2**attempt)
+                continue
+            break
         if r.status_code >= 400:
             try:
                 body = r.json()
             except ValueError:
                 body = {}
-            raise PostError(f"{method}: HTTP {r.status_code} {body.get('error', '')} {body.get('message', '')}".strip())
+            message = f"{method}: HTTP {r.status_code} {body.get('error', '')} {body.get('message', '')}".strip()
+            ambiguous = r.status_code >= 500 and not retry
+            raise PostError(message + (maybe if ambiguous else ""), ambiguous=ambiguous)
         return dict(r.json())
 
     def login(self, handle: str, app_password: str) -> None:
-        out = self.call("com.atproto.server.createSession", json={"identifier": handle, "password": app_password})
+        out = self.call(
+            "com.atproto.server.createSession",
+            json={"identifier": handle, "password": app_password},
+        )
         self.jwt, self.did = out["accessJwt"], out["did"]
 
-    def send(self, text: str, images: list[dict[str, Any]], base: Path, reply: Any = None) -> dict[str, str]:
-        """One post with up to four images (alt text and aspect ratio on each); ``reply`` = (root, parent) refs."""
+    def upload(self, images: list[dict[str, Any]], base: Path) -> list[dict[str, Any]]:
+        """Upload a post's images; their embeds carry the alt text and aspect ratio."""
         embeds = []
         for image in images:
             data, mime = image_bytes(base / image["path"])
             blob = self.call("com.atproto.repo.uploadBlob", data=data, headers={"Content-Type": mime})["blob"]
             embeds.append({"image": blob, "alt": image["alt"],
                            "aspectRatio": {"width": image["width"], "height": image["height"]}})  # fmt: skip
+        return embeds
+
+    def create(self, text: str, embeds: list[dict[str, Any]], reply: Any = None) -> dict[str, str]:
+        """Create the post; ``reply`` = (root, parent) refs. Never retried after an ambiguous failure."""
         record: dict[str, Any] = {
             "$type": "app.bsky.feed.post",
             "text": text,
@@ -797,41 +845,126 @@ class Bluesky:
             record["reply"] = {"root": reply[0], "parent": reply[1]}
         out = self.call(
             "com.atproto.repo.createRecord",
-            json={"repo": self.did, "collection": "app.bsky.feed.post", "record": record},
+            retry=False,
+            json={
+                "repo": self.did,
+                "collection": "app.bsky.feed.post",
+                "record": record,
+            },
         )
         return {"uri": out["uri"], "cid": out["cid"]}
 
 
+def newest_manifest(out: Path) -> Path:
+    """The newest ``<out>/<date>/manifest.json`` (the dates sort as text)."""
+    found = sorted(out.glob("*/manifest.json"))
+    if not found:
+        raise PostError(f"no manifest.json under {out}; run leaderboard or gameday first")
+    return found[-1]
+
+
+def skip_reasons(posts: list[dict[str, Any]], ledger: dict[str, Any], include_stale: bool) -> list[str | None]:
+    """Why each post is skipped, or None to post it. A thread with a post left out stops there."""
+    reasons: list[str | None] = []
+    broken: set[str] = set()
+    for post in posts:
+        entry = ledger.get(post["key"]) or {}
+        reason = None
+        if entry.get("status") == "posted":
+            reason = f"already posted ({entry.get('uri')})"
+        elif entry:
+            reason = (
+                f"pending (an earlier attempt may have posted it; check the account, then delete {post['key']!r} "
+                "from the ledger to try again)"
+            )
+        elif post["thread"] in broken:
+            reason = "an earlier post of its thread was not posted"
+        elif not post["fresh"] and not include_stale:
+            reason = "stale (pass --include-stale to post it)"
+        if reason and entry.get("status") != "posted":
+            broken.add(post["thread"])
+        reasons.append(reason)
+    return reasons
+
+
+def write_ledger(path: Path, ledger: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+
+
 def run_post(args: argparse.Namespace, session: Any = None) -> None:
-    manifest_path = Path(args.manifest)
+    manifest_path = Path(args.manifest) if args.manifest else newest_manifest(Path(args.out))
     base = manifest_path.parent
+    ledger_path = Path(args.ledger) if args.ledger else base.parent / "posted.json"
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else {}
     posts = json.loads(manifest_path.read_text(encoding="utf-8"))["posts"]
     for post in posts:
         check_post(post, base)
+    reasons = skip_reasons(posts, ledger, args.include_stale)
     if not args.post:
         print(f"[dry-run] {len(posts)} post(s) from {manifest_path}; nothing sent (add --post to publish)")
-        for i, post in enumerate(posts, 1):
-            text = post_text(post)
-            print(f"\n--- post {i}/{len(posts)}, thread {post['thread']} ({graphemes(text)}/{MAX_GRAPHEMES} graphemes)")
+        for i, (post, reason) in enumerate(zip(posts, reasons, strict=True), 1):
+            text, status = (
+                post_text(post),
+                f"skipped: {reason}" if reason else "would post",
+            )
+            print(f"\n--- post {i}/{len(posts)}, {post['key']}: {status} ({graphemes(text)}/{MAX_GRAPHEMES} graphemes)")
             print(text)
             for image in post["images"]:
                 kb = (base / image["path"]).stat().st_size / 1000
                 print(f"  [image] {image['path']} {image['width']}x{image['height']} {kb:.0f} KB")
                 print(f"    alt: {image['alt']}")
         return
+    for post, reason in zip(posts, reasons, strict=True):
+        if reason:
+            print(f"{post['key']}: skipped: {reason}")
+    if all(reasons):
+        return  # nothing to post: no login
     if os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPO:
-        raise PostError(f"refusing to post from {GITHUB_REPO}'s own CI; copy the workflow template to your repo")
-    handle, password = os.environ.get("BSKY_HANDLE"), os.environ.get("BSKY_APP_PASSWORD")
+        raise PostError(f"refusing to post from {GITHUB_REPO}'s own GitHub Actions; copy the template to your repo")
+    handle, password = (
+        os.environ.get("BSKY_HANDLE"),
+        os.environ.get("BSKY_APP_PASSWORD"),
+    )
     if not (handle and password):
         raise PostError("set BSKY_HANDLE and BSKY_APP_PASSWORD (a Bluesky app password) to post")
-    client = Bluesky(session, os.environ.get("BSKY_SERVICE", "https://bsky.social"))
+    client = Bluesky(session, os.environ.get("BSKY_SERVICE") or "https://bsky.social")
     client.login(handle, password)
-    threads: dict[str, tuple[dict[str, str], dict[str, str]]] = {}
-    for post in posts:
-        reply = threads.get(post["thread"])  # later posts of a thread reply to the first and the previous
-        ref = client.send(post_text(post), post["images"], base, reply)
-        threads[post["thread"]] = (reply[0] if reply else ref, ref)
-        print(f"posted {ref['uri']}")
+    threads: dict[str, tuple[dict[str, str], dict[str, str]]] = {}  # thread -> (root, latest) refs
+    for post, reason in zip(posts, reasons, strict=True):
+        key, thread = post["key"], post["thread"]
+        if reason:
+            entry = ledger[key] if ledger.get(key, {}).get("status") == "posted" else None
+            if entry:  # a later post of this thread replies to it
+                ref = {"uri": entry["uri"], "cid": entry["cid"]}
+                threads[thread] = (
+                    threads[thread][0] if thread in threads else ref,
+                    ref,
+                )
+            continue
+        embeds = client.upload(post["images"], base)
+        now = dt.datetime.now(dt.timezone.utc).isoformat()
+        ledger[key] = {
+            "status": "pending",
+            "at": now,
+        }  # recorded first, so an unclear failure is never re-sent
+        write_ledger(ledger_path, ledger)
+        try:
+            ref = client.create(post_text(post), embeds, threads.get(thread))
+        except PostError as e:
+            if not e.ambiguous:  # Bluesky refused it: nothing was posted, so a re-run may try again
+                del ledger[key]
+                write_ledger(ledger_path, ledger)
+            raise
+        ledger[key] = {
+            "status": "posted",
+            "uri": ref["uri"],
+            "cid": ref["cid"],
+            "at": now,
+        }
+        write_ledger(ledger_path, ledger)  # after every post, so a thread that fails partway resumes there
+        threads[thread] = (threads[thread][0] if thread in threads else ref, ref)
+        print(f"{key}: posted {ref['uri']}")
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -843,21 +976,50 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     sub = parser.add_subparsers(dest="command", required=True)
     lb = sub.add_parser("leaderboard", help="a season leaders table")
     lb.add_argument("--league", required=True, choices=sorted(LEAGUES))
-    lb.add_argument("--season", type=int, help="the season (the year it ends for NBA/NHL); default: the current one")
-    lb.add_argument("--stat", help="an ESPN leaders category, e.g. rushingYards, assistsPerGame, ERA, goals")
+    lb.add_argument(
+        "--season",
+        type=int,
+        help="the season (the year it ends for NBA/NHL); default: the current one",
+    )
+    lb.add_argument(
+        "--stat",
+        help="an ESPN leaders category, e.g. rushingYards, assistsPerGame, ERA, goals",
+    )
     lb.add_argument("--top", type=int, help="rows (default 10 square, 5 landscape)")
     lb.add_argument("--size", choices=sorted(SIZES), default="square")
     gd = sub.add_parser("gameday", help="final-score cards and a player-of-the-game card")
     gd.add_argument("--league", required=True, choices=sorted(LEAGUES))
     gd.add_argument("--date", type=dt.date.fromisoformat, default=dt.date.today() - dt.timedelta(days=1),
                     help="YYYY-MM-DD (default: yesterday)")  # fmt: skip
-    gd.add_argument("--max-games", type=int, default=8, help="cards to draw, ranked teams first (default 8)")
-    for p in (lb, gd):
-        p.add_argument("--out", default="out", help="output root; files go to <out>/<today>/ (default out)")
+    gd.add_argument(
+        "--max-games",
+        type=int,
+        default=8,
+        help="cards to draw, ranked teams first (default 8)",
+    )
     po = sub.add_parser("post", help="post a manifest's images (dry-run unless --post)")
-    po.add_argument("--manifest", required=True)
+    po.add_argument("--manifest", help="default: the newest <out>/<date>/manifest.json")
+    po.add_argument(
+        "--ledger",
+        help="the posted-ledger (default: posted.json beside the dated folders)",
+    )
     po.add_argument("--network", choices=["bluesky"], default="bluesky")
-    po.add_argument("--post", action="store_true", help="really post (needs BSKY_HANDLE and BSKY_APP_PASSWORD)")
+    po.add_argument(
+        "--post",
+        action="store_true",
+        help="really post (needs BSKY_HANDLE and BSKY_APP_PASSWORD)",
+    )
+    po.add_argument(
+        "--include-stale",
+        action="store_true",
+        help="also post stale posts (old games, final seasons)",
+    )
+    for p in (lb, gd, po):
+        p.add_argument(
+            "--out",
+            default="out",
+            help="output root; files go to <out>/<today>/ (default out)",
+        )
     args = parser.parse_args(argv)
     for name in ("top", "max_games"):
         if getattr(args, name, None) is not None and getattr(args, name) < 1:
@@ -875,6 +1037,12 @@ def main(argv: list[str] | None = None) -> int:
         manifest = run_leaderboard(args) if args.command == "leaderboard" else run_gameday(args)
     except (NoData, PostError, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
+        return 1
+    except requests.RequestException as e:  # the message would name hosts and URLs; the type is enough
+        print(
+            f"error: network error ({type(e).__name__}); try again later",
+            file=sys.stderr,
+        )
         return 1
     print(f"wrote {manifest} ({time.perf_counter() - t0:.1f} s)")
     return 0

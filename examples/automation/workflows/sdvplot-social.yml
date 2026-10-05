@@ -1,10 +1,11 @@
 # A template: copy it to .github/workflows/sdvplot-social.yml in YOUR repository, and sdvplot_social.py to
-# scripts/sdvplot_social.py. It is not a workflow of the sdvplot repository (which never posts).
+# scripts/sdvplot_social.py. It is not a workflow of the sdvplot repository (whose own CI never posts).
 #
 # Every Monday, and whenever you run it by hand, it makes the graphics, prints the would-be posts and uploads the
 # images as an artifact. It posts to Bluesky only when you ask it to (the `post` input of a manual run, or the
 # repository variable SDVPLOT_POST=true for the schedule) and the BSKY_HANDLE and BSKY_APP_PASSWORD secrets are set.
 # Use a Bluesky app password (Settings > Privacy and security > App passwords), never the account password.
+# Only fresh posts go out (yesterday's games, a season in progress); `--include-stale` on the post line overrides.
 name: sdvplot-social
 
 on:
@@ -54,6 +55,15 @@ jobs:
           "$PY" "$SCRIPT" leaderboard --league nfl
           "$PY" "$SCRIPT" leaderboard --league nfl --stat rushingYards --size landscape
           "$PY" "$SCRIPT" gameday --league nfl
+      - name: Restore the posted-ledger
+        # out/posted.json records what was posted, so a re-run never posts it twice. Each run saves a new cache entry
+        # (entries cannot be overwritten) and restores the newest. GitHub drops caches unused for 7 days; losing the
+        # ledger is harmless across weeks, since a fresh post is dated and each week's are new.
+        uses: actions/cache/restore@v4
+        with:
+          path: out/posted.json
+          key: sdvplot-social-posted-${{ github.run_id }}
+          restore-keys: sdvplot-social-posted-
       - name: Show the posts (dry-run)
         run: |
           for manifest in out/*/manifest.json; do "$PY" "$SCRIPT" post --manifest "$manifest"; done
@@ -70,9 +80,16 @@ jobs:
         env:
           BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
           BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
+          BSKY_SERVICE: ${{ vars.BSKY_SERVICE }} # optional: another PDS; empty means https://bsky.social
         run: |
           if [ -z "$BSKY_HANDLE" ] || [ -z "$BSKY_APP_PASSWORD" ]; then
             echo "::warning::The BSKY_HANDLE and BSKY_APP_PASSWORD secrets are not set, so nothing was posted."
             exit 0
           fi
           for manifest in out/*/manifest.json; do "$PY" "$SCRIPT" post --manifest "$manifest" --post; done
+      - name: Save the posted-ledger
+        if: ${{ always() && hashFiles('out/posted.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: out/posted.json
+          key: sdvplot-social-posted-${{ github.run_id }}
