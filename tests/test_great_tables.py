@@ -388,7 +388,7 @@ def test_translucent_fills_go_to_css_as_given_and_the_ink_is_read_on_what_shows(
     ).as_raw_html()
     assert boxes.count(f"background-color: {TRANSLUCENT}; color: #000000;") == 3
     outliers = sgt.gt_outliers(GT(pl.DataFrame({"v": [1, 2, 2, 3, 100]})), "v", fill=TRANSLUCENT).as_raw_html()
-    assert re.search(rf"color: #B3261E;[^\"]*background-color: {TRANSLUCENT}", outliers, re.IGNORECASE)
+    assert re.search(rf"color: #B3261E !important;[^\"]*background-color: {TRANSLUCENT}", outliers, re.IGNORECASE)
 
 
 def test_a_translucent_table_background_is_read_as_it_shows_not_as_white():
