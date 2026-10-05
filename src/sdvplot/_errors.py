@@ -19,3 +19,7 @@ class OptionalDependencyError(ImportError):
 
 class UnsupportedTargetError(TypeError):
     """sdvplot has no adapter for this kind of plot or table object."""
+
+
+class UnsafeCachePathError(ValueError):
+    """A manifest value (sha256, ext) or cache path would reach outside the sdvplot cache directory."""

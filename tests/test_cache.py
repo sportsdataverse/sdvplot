@@ -131,7 +131,8 @@ def test_file_mode_is_world_readable(cache, monkeypatch):
     assert actual_mode == expected_mode
 
 
-def test_atomic_write_never_touches_the_process_umask(tmp_path, monkeypatch):
+def test_atomic_write_never_touches_the_process_umask(cache, monkeypatch):
+    tmp_path = cache
     """F4: os.umask(0) + restore races between threads and can leave the process umask at 0."""
     before = os.umask(0o022)
     os.umask(before)
@@ -240,3 +241,62 @@ def test_a_gzip_body_longer_than_its_content_length_is_not_truncated(cache, monk
     headers = {"Content-Length": "40", "Content-Encoding": "gzip"}
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body, headers)))
     assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == body
+
+
+def test_a_manifest_ext_that_climbs_out_of_the_cache_raises_and_writes_nothing(cache, monkeypatch, tmp_path):
+    from sdvplot import _images
+    from sdvplot._errors import UnsafeCachePathError
+
+    body = b"payload"
+    sha = hashlib.sha256(body).hexdigest()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    row = {"sha256": sha, "ext": "/../../../escaped.txt", "archive_url": "https://x/a"}
+    with pytest.raises(UnsafeCachePathError):
+        _images.mark_file(row)
+    assert not list(tmp_path.rglob("escaped*")) and not (cache / "images").exists()
+
+
+@pytest.mark.parametrize("sha", ["../" * 3 + "x", "A" * 64, "ab" * 31, "g" * 64])
+def test_a_malformed_manifest_sha_is_refused(cache, monkeypatch, sha):
+    from sdvplot import _images
+    from sdvplot._errors import UnsafeCachePathError
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession())
+    with pytest.raises(UnsafeCachePathError):
+        _images.mark_file({"sha256": sha, "ext": "png", "archive_url": "https://x/a"})
+
+
+def test_cache_path_refuses_a_relpath_outside_the_cache(cache):
+    from sdvplot._errors import UnsafeCachePathError
+
+    with pytest.raises(UnsafeCachePathError):
+        _cache.cache_path("../outside")
+    with pytest.raises(UnsafeCachePathError):
+        _cache.fetch_immutable("https://x/a", "images/../../outside.png", "0" * 64)
+    assert _cache.cache_path("images/ab/x.png").is_relative_to(cache.resolve())
+
+
+def test_cache_path_refuses_the_cache_root_itself(cache):
+    from sdvplot._errors import UnsafeCachePathError
+
+    for rel in ("", ".", "images/.."):
+        with pytest.raises(UnsafeCachePathError):
+            _cache.cache_path(rel)
+
+
+def test_atomic_write_refuses_a_target_outside_the_cache(cache, tmp_path):
+    from sdvplot._errors import UnsafeCachePathError
+
+    with pytest.raises(UnsafeCachePathError):
+        _cache.atomic_write(tmp_path / "outside.txt", b"x")
+    assert not (tmp_path / "outside.txt").exists()
+
+
+def test_a_bmp_manifest_row_is_accepted(cache, monkeypatch):
+    from sdvplot import _images
+
+    body = b"BM fake bitmap"
+    sha = hashlib.sha256(body).hexdigest()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    path = _images.mark_file({"sha256": sha, "ext": "bmp", "archive_url": "https://x/a"})
+    assert path.name == f"{sha}.bmp" and path.read_bytes() == body

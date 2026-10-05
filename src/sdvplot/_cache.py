@@ -14,7 +14,7 @@ from pathlib import Path
 import platformdirs
 import requests
 
-from sdvplot._errors import OfflineError, SdvplotWarning
+from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeCachePathError
 
 CACHE_ENV = "SDVPLOT_CACHE_DIR"
 TTL_ENV = "SDVPLOT_CACHE_TTL"
@@ -29,6 +29,19 @@ def cache_dir() -> Path:
     return Path(os.environ.get(CACHE_ENV) or platformdirs.user_cache_dir("sdvplot"))
 
 
+def cache_path(relpath: str) -> Path:
+    """cache_dir() / relpath, refusing any relpath whose resolved location is outside the cache directory."""
+    path = (cache_dir().resolve() / relpath).resolve()
+    _check_contained(path, relpath)
+    return path
+
+
+def _check_contained(path: Path, label: object) -> None:
+    root = cache_dir().resolve()
+    if path == root or not path.is_relative_to(root):
+        raise UnsafeCachePathError(f"cache path {label!r} is not inside the cache directory")
+
+
 def ttl_seconds() -> float:
     raw = os.environ.get(TTL_ENV)
     return (float(raw) if raw else DEFAULT_TTL_DAYS) * 86400
@@ -39,7 +52,7 @@ def _meta_path(path: Path) -> Path:
 
 
 def read_meta(relpath: str) -> dict | None:
-    meta = _meta_path(cache_dir() / relpath)
+    meta = _meta_path(cache_path(relpath))
     if not meta.exists():
         return None
     try:
@@ -50,6 +63,7 @@ def read_meta(relpath: str) -> dict | None:
 
 def atomic_write(path: Path, data: bytes) -> None:
     """Write to a temp file beside the target, then rename: a reader never sees a partial file."""
+    _check_contained(path.resolve(), str(path))
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.urandom(8).hex()}.part")
     # mode 0o666 with the kernel applying the umask: world-readable like any file, and the process umask is never
@@ -80,7 +94,7 @@ def _offline_message(url: str) -> str:
 def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
     truncation, a validate() rejection) the previous copy is kept and used with one warning."""
-    path = cache_dir() / relpath
+    path = cache_path(relpath)
     meta = read_meta(relpath) or {}
     if path.exists() and time.time() - meta.get("fetched_at", 0) < ttl_seconds():
         return path
@@ -130,7 +144,7 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] 
 
 def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
     """A content-addressed file: downloaded once, checked against its sha256, never refreshed."""
-    path = cache_dir() / relpath
+    path = cache_path(relpath)
     if path.exists():
         return path
     try:
