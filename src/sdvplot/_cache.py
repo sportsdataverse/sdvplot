@@ -9,7 +9,7 @@ import os
 import shutil
 import time
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -23,7 +23,7 @@ TTL_ENV = "SDVPLOT_CACHE_TTL"
 DEFAULT_TTL_DAYS = 7.0
 CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse", "urlimages")
 MARKER = ".sdvplot-cache"  # written into a subdirectory sdvplot created; clear_cache only deletes marked ones
-MAX_BYTES = 50 * 1024 * 1024  # default body cap (the nflverse players parquet is the largest download)
+MAX_BYTES = 200 * 1024 * 1024  # default body cap, for the tables (the logo manifest is ~18 MB and grows)
 IMAGE_MAX_BYTES = 25 * 1024 * 1024
 DEADLINE_SECONDS = 120.0  # total wall-clock budget for one download (the (5, 60) timeout is per socket read)
 MAX_REDIRECTS = 5
@@ -114,13 +114,28 @@ def _offline_message(url: str) -> str:
     )
 
 
+def _check_https(url: str) -> None:
+    if urlsplit(url).scheme != "https":
+        raise UnsafeDownloadError(f"refusing to download {url}: not https")
+
+
+def _pieces(r: requests.Response) -> Iterator[bytes]:
+    """Body pieces as they arrive, so the cap and the deadline are checked on every receive (not per full chunk: a
+    server dripping a byte at a time would otherwise stall a 64 KiB read for hours)."""
+    read1 = getattr(getattr(r, "raw", None), "read1", None)  # urllib3 >= 2; returns whatever is available
+    if read1 is None:
+        yield from r.iter_content(8192)
+        return
+    while chunk := read1(65536, decode_content=True):
+        yield chunk
+
+
 def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.Response, bytes]:
     """GET url with a byte cap, a total deadline and https-only redirects (followed by hand, so a hop to http is never
     requested). Raises UnsafeDownloadError when refused; requests errors propagate."""
     deadline = time.monotonic() + DEADLINE_SECONDS
     for _ in range(MAX_REDIRECTS + 1):
-        if urlsplit(url).scheme != "https":
-            raise UnsafeDownloadError(f"refusing to download {url}: not https")
+        _check_https(url)
         r = SESSION.get(url, headers=headers, timeout=(5, 60), stream=True, allow_redirects=False)
         try:
             if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("Location"):
@@ -132,7 +147,7 @@ def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.
             if r.status_code >= 400 or r.status_code == 304:
                 return r, b""
             chunks, size = [], 0
-            for chunk in r.iter_content(65536):
+            for chunk in _pieces(r):
                 size += len(chunk)
                 if size > max_bytes:
                     raise UnsafeDownloadError(f"{url}: body exceeds the {max_bytes} byte limit")
@@ -150,18 +165,17 @@ def _heal(path: Path, validate: Callable[[bytes], object] | None, sha256: str | 
     key = str(path)
     if key in _intact:
         return True
+    data = path.read_bytes()  # a read error (permissions, a transient fault) is not corruption: it propagates
     try:
-        data = path.read_bytes()
         if not data:
             raise ValueError("empty file")
         if sha256 is not None and hashlib.sha256(data).hexdigest() != sha256:
             raise ValueError("sha256 mismatch")
         if validate is not None:
             validate(data)
-    except Exception:  # any read or validator error means the cached copy cannot be trusted
-        with contextlib.suppress(OSError):
-            path.unlink()
-            _meta_path(path).unlink(missing_ok=True)
+    except Exception:  # a failed integrity check (sha, parse, empty): the cached copy cannot be trusted
+        path.unlink()  # if this fails the error propagates: never hand back the corrupt file
+        _meta_path(path).unlink(missing_ok=True)
         return False
     _intact.add(key)
     return True
@@ -204,6 +218,8 @@ def fetch_cached(
         if path.exists():
             _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
             return path
+        if isinstance(e, UnsafeDownloadError):
+            raise
         raise OfflineError(f"{_offline_message(url)} ({e})") from e
     try:
         atomic_write(path, body)
@@ -248,9 +264,10 @@ def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMA
 def clear_cache() -> None:
     """Delete everything sdvplot has cached (manifest, images, rasters, nflverse, URL images such as headshots).
 
-    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set. Only
-    subdirectories sdvplot created (they hold a ``.sdvplot-cache`` marker) are removed; a folder of your own with the
-    same name, or a cache from before the marker existed, is left alone with a warning.
+    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set. In the
+    default cache directory every subdirectory above is removed. In a directory you chose with ``SDVPLOT_CACHE_DIR``
+    only subdirectories sdvplot created (they hold a ``.sdvplot-cache`` marker) are removed; a folder of your own with
+    the same name is left alone with a warning that names it.
 
     Returns:
         None: Nothing; the cache subdirectories are removed.
@@ -267,13 +284,18 @@ def clear_cache() -> None:
         sdv-py: https://py.sportsdataverse.org/
     """
     root = cache_dir()
+    owned = not os.environ.get(CACHE_ENV)  # the default directory is sdvplot's own; a custom one may hold other things
     for subdir in CACHE_SUBDIRS:
         path = root / subdir
         if not path.exists():
             continue
-        if (path / MARKER).exists():
+        if owned or (path / MARKER).exists():
             shutil.rmtree(path)
         else:
-            warnings.warn(f"{path} was not created by sdvplot; left in place", SdvplotWarning, stacklevel=2)
+            warnings.warn(
+                f"{path} was not created by sdvplot, so it was left in place; delete it by hand if it is a cache",
+                SdvplotWarning,
+                stacklevel=2,
+            )
     _warned.clear()
     _intact.clear()

@@ -247,6 +247,7 @@ class FakeSession:
         self.headers = {}
 
     def get(self, url, headers=None, timeout=None, stream=False, allow_redirects=True):
+        assert allow_redirects is False, "sdvplot must follow redirects itself (https-only)"
         self.calls.append((url, headers or {}))
         self.timeouts.append(timeout)
         nxt = self.responses.pop(0)
