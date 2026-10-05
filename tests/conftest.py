@@ -1,6 +1,9 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
 import hashlib
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import polars as pl
@@ -260,6 +263,29 @@ class FakeSession:
         if isinstance(nxt, Exception):
             raise nxt
         return nxt
+
+
+def slow_download(bodies, calls):
+    """A _download that takes 0.05 s and records each URL, so threads that all miss the cache overlap."""
+
+    def fake(url, headers, max_bytes):
+        calls.append(url)
+        time.sleep(0.05)
+        return FakeResponse(200, bodies[url]), bodies[url]
+
+    return fake
+
+
+def in_threads(fn, n=8):
+    """fn() in n threads released together; re-raises the first exception (an SdvplotWarning is one in tests)."""
+    barrier = threading.Barrier(n)
+
+    def run(_):
+        barrier.wait()
+        return fn()
+
+    with ThreadPoolExecutor(n) as ex:
+        return list(ex.map(run, range(n)))
 
 
 @pytest.fixture

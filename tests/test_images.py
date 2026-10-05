@@ -7,7 +7,7 @@ from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
 from sdvplot._errors import SdvplotWarning
-from tests.conftest import FakeResponse, FakeSession
+from tests.conftest import FakeResponse, FakeSession, in_threads, slow_download
 
 
 def _png(w, h):
@@ -186,3 +186,17 @@ def test_a_read_only_cache_still_returns_the_rasterized_svg(cache, monkeypatch):
     monkeypatch.setattr(type(raster), "unlink", read_only)
     assert _images.logo_image("LV", "nfl", size=200).size == (200, 100)  # corrupt raster, no unlink, no write
     assert _images.logo_image("LV", "nfl", size=100).size == (100, 50)  # a new size, no write
+
+
+def test_threads_asking_for_one_uncached_logo_download_and_decode_it_once(cache, monkeypatch):
+    body = _png(500, 250)
+    _manifest_with(monkeypatch, body, "png")
+    downloads, decodes = [], []
+    monkeypatch.setattr(
+        _cache, "_download", slow_download({f"https://cdn/{hashlib.sha256(body).hexdigest()}.png": body}, downloads)
+    )
+    decode = _images._decode_mark
+    monkeypatch.setattr(_images, "_decode_mark", lambda *key: decodes.append(key) or decode(*key))
+    imgs = in_threads(lambda: _images.logo_image("LV", "nfl", size=64))  # raised PermissionError on Windows
+    assert len(downloads) == 1 and len(decodes) == 1
+    assert len({(im.size, im.tobytes()) for im in imgs}) == 1 and imgs[0].size == (64, 32)
