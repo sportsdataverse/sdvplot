@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import DownloadError, IntegrityError, SdvplotError, SdvplotWarning
 from tests.conftest import FakeResponse, FakeSession
 
 
@@ -49,6 +49,20 @@ def test_png_logo_is_decoded_and_scaled_down(cache, monkeypatch):
     _manifest_with(monkeypatch, _png(500, 250), "png")
     img = _images.logo_image("LV", "nfl", size=100)
     assert img.size == (100, 50)
+
+
+def test_a_refused_logo_download_is_an_sdvplot_error(cache, monkeypatch):  # M5: never requests.HTTPError
+    _manifest_with(monkeypatch, _png(10, 10), "png")
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.raises(DownloadError, match="HTTP 404") as exc:
+        _images.logo_image("LV", "nfl")
+    assert isinstance(exc.value, SdvplotError) and isinstance(exc.value, OSError)
+
+
+def test_an_archived_file_that_is_not_an_image_is_an_integrity_error(cache, monkeypatch):  # M5: not a bare OSError
+    _manifest_with(monkeypatch, b"not an image", "png")
+    with pytest.raises(IntegrityError, match="not an image PIL can decode"):
+        _images.logo_image("LV", "nfl")
 
 
 def test_png_without_size_keeps_its_pixels(cache, monkeypatch):

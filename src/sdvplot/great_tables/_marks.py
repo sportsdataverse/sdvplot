@@ -14,10 +14,11 @@ from great_tables._tbl_data import get_column_names
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import contrast, mix, on_color, solid
-from sdvplot._errors import warn
+from sdvplot._errors import InputError, warn
 from sdvplot._placement import KINDS, _missing
 from sdvplot._resolve import one_team, resolve
 from sdvplot._tables import check_px, mark_html
+from sdvplot._types import HeadshotIdSystem, IdSystem
 
 
 def _check_gt(gt: Any, arg: str = "gt") -> GT:
@@ -64,6 +65,7 @@ def _image_cells(
     season: Any = None,
     include_name: bool = False,
     id_system: str = "auto",
+    strict: bool = False,
 ) -> GT:
     """Cells at ``locations`` (default: the body of ``columns``) whose text resolves become their mark's <img>.
 
@@ -91,7 +93,7 @@ def _image_cells(
             )
     texts = _cell_texts(gt, locs)
     imgs = mark_html([html.unescape(t) for t in texts], league=league, kind=kind, height=h, season=season,
-                     include_name=include_name, id_system=id_system)  # fmt: skip
+                     include_name=include_name, id_system=id_system, strict=strict)  # fmt: skip
     lookup = {t: img + (t if include_name else "") for t, img in zip(texts, imgs, strict=True) if img is not None}
     return gt.text_transform(locs, lambda text: lookup.get(text, text))
 
@@ -105,6 +107,8 @@ def gt_sdv_logos(
     locations: Any = None,
     include_name: bool = False,
     season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> GT:
     """Show each cell's team as its logo in a great_tables table.
 
@@ -124,14 +128,18 @@ def gt_sdv_logos(
         include_name: Keep the cell's text after the logo.
         season: One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for
             today's.
+        id_system: The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids
+            need "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when a value does not resolve.
 
     Returns:
         GT: A new table; ``gt`` is unchanged.
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns``
-            names a column the table lacks, or ``locations`` holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system``
+            is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+        UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
         ::
@@ -155,11 +163,19 @@ def gt_sdv_logos(
         great_tables: https://posit-dev.github.io/great-tables/
     """
     return _image_cells(gt, columns, locations, kind="logo", league=league, height=height, season=season,
-                        include_name=include_name)  # fmt: skip
+                        include_name=include_name, id_system=id_system, strict=strict)  # fmt: skip
 
 
 def gt_sdv_wordmarks(
-    gt: GT, columns: Any, *, league: str, height: Any = 30, locations: Any = None, season: Any = None
+    gt: GT,
+    columns: Any,
+    *,
+    league: str,
+    height: Any = 30,
+    locations: Any = None,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> GT:
     """Show each cell's team as its wordmark in a great_tables table.
 
@@ -172,14 +188,18 @@ def gt_sdv_wordmarks(
             list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
             use ``gt_sdv_cols_label``.
         season: One season whose marks every cell shows; None for today's.
+        id_system: The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids
+            need "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when a value does not resolve.
 
     Returns:
         GT: A new table; unknown values keep their text, with one SdvplotWarning now.
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns``
-            names a column the table lacks, or ``locations`` holds another location.
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system``
+            is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+        UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
         ::
@@ -201,7 +221,8 @@ def gt_sdv_wordmarks(
     See Also:
         Ported from sdvplotR ``gt_sdv_wordmarks()``: https://sdvplotR.sportsdataverse.org/reference/gt_sdv_wordmarks.html
     """
-    return _image_cells(gt, columns, locations, kind="wordmark", league=league, height=height, season=season)
+    return _image_cells(gt, columns, locations, kind="wordmark", league=league, height=height, season=season,
+                        id_system=id_system, strict=strict)  # fmt: skip
 
 
 def gt_sdv_headshots(
@@ -258,7 +279,8 @@ def gt_sdv_cols_label(
     height: Any = 30,
     season: Any = None,
     mark_type: str = "logo",
-    id_system: str = "espn",
+    id_system: IdSystem | HeadshotIdSystem | None = None,
+    strict: bool = False,
 ) -> GT:
     """Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...) with their marks.
 
@@ -270,15 +292,20 @@ def gt_sdv_cols_label(
         height: The image height in pixels.
         season: One season whose marks to show; None for today's.
         mark_type: "logo", "wordmark", or "headshot" (the column names are player ids).
-        id_system: For ``mark_type="headshot"``: "espn" or "gsis", as in ``headshot_url``.
+        id_system: The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means
+            "auto"; NHL stats ids need "nhl_id"), for headshots "espn" or "gsis" as in ``headshot_url`` (None means
+            "espn").
+        strict: Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team.
 
     Returns:
         GT: A new table; columns whose names do not resolve keep their labels, with one SdvplotWarning now.
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``mark_type`` is unknown, or ``season``
+        InputError: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot".
+        ValueError: If ``height`` is not a number of pixels of at least 1, ``id_system`` is unknown, or ``season``
             is not one year.
+        UnresolvedTeamError: If ``strict=True`` and a column name does not resolve.
 
     Example:
         ::
@@ -297,7 +324,9 @@ def gt_sdv_cols_label(
     _check_gt(gt)
     h = check_px(height)
     if mark_type not in KINDS:
-        raise ValueError(f"mark_type must be one of {KINDS}, got {mark_type!r}")
+        raise InputError(f"mark_type must be one of {list(KINDS)}, got {mark_type!r}")
+    if id_system is None:
+        id_system = "espn" if mark_type == "headshot" else "auto"
     names: list[str] = []
 
     def record(name: str) -> str:
@@ -305,8 +334,8 @@ def gt_sdv_cols_label(
         return name
 
     gt.cols_label_with(columns=columns, fn=record)  # great_tables' own column selection; the result is discarded
-    imgs = mark_html(names, league=league, kind=mark_type, height=h, season=season,
-                     id_system=id_system if mark_type == "headshot" else "auto")  # fmt: skip
+    imgs = mark_html(names, league=league, kind=mark_type, height=h, season=season, id_system=id_system,
+                     strict=strict)  # fmt: skip
     cases: dict[str, Any] = {n: gt_html(img) for n, img in zip(names, imgs, strict=True) if img is not None}
     return gt.cols_label(cases=cases) if cases else gt
 
@@ -330,6 +359,8 @@ def gt_merge_stack_team_color(
     font_size_top: float = 14,
     font_size_bottom: float = 12,
     color: str = "black",
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> GT:
     """Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's primary color.
 
@@ -342,13 +373,18 @@ def gt_merge_stack_team_color(
         font_size_top: The top line's font size in pixels.
         font_size_bottom: The bottom line's font size in pixels.
         color: The top line's CSS color.
+        id_system: The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
 
     Returns:
         GT: A new table. A team that does not resolve, or has no color, gets grey, with one SdvplotWarning.
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``id_system`` is
+            unknown.
+        UnresolvedTeamError: If ``strict=True`` and a team does not resolve.
 
     Example:
         ::
@@ -370,7 +406,7 @@ def gt_merge_stack_team_color(
     for name in (col1, col2, team_col):
         if name not in frame.columns:
             raise ValueError(f"{name!r} is not a column of the table's data; columns are {frame.columns}")
-    colors = team_colors(league, frame[team_col].to_list())
+    colors = team_colors(league, frame[team_col].to_list(), id_system=id_system, strict=strict)
     top_style = f"font-weight:bold;font-variant:small-caps;color:{color};font-size:{font_size_top}px"
     for row, (top, bottom, team_color) in enumerate(
         zip(frame[col1].to_list(), frame[col2].to_list(), colors, strict=True)
@@ -650,7 +686,15 @@ def gt_theme_sdv(gt: GT, style: str = "light", density: str = "comfortable", **t
     return _build_theme(gt, pal, density, tab_options)
 
 
-def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "comfortable", **tab_options: Any) -> GT:
+def gt_theme_sdv_team(
+    gt: GT,
+    team: Any = None,
+    *,
+    league: str,
+    density: str = "comfortable",
+    id_system: IdSystem = "auto",
+    **tab_options: Any,
+) -> GT:
     """``gt_theme_sdv`` in one team's colors: a title block in the primary color, the line in the secondary.
 
     Ink on the title block is black or white, whichever reads better, and the subtitle is blended toward it while it
@@ -662,6 +706,8 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
         team: One team (an abbreviation, name or provider id); None for the SportsDataverse navy and cyan.
         league: The SDV league key, e.g. "nfl".
         density: "comfortable", "compact" or "social", as in ``gt_theme_sdv``.
+        id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
         **tab_options: Passed to ``GT.tab_options`` last, so they override the theme.
 
     Returns:
@@ -671,7 +717,7 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
     Raises:
         TypeError: If ``gt`` is not a great_tables GT, or ``team`` is not one value.
         UnresolvedTeamError: If ``team`` does not resolve to one team of ``league``.
-        ValueError: If ``density`` is unknown.
+        ValueError: If ``density`` or ``id_system`` is unknown.
 
     Example:
         ::
@@ -697,7 +743,7 @@ def gt_theme_sdv_team(gt: GT, team: Any = None, *, league: str, density: str = "
     _check_gt(gt)
     primary, secondary = SDV_NAVY, SDV_CYAN
     if team is not None:
-        team_id = resolve(one_team(team, "gt_theme_sdv_team"), league, strict=True)
+        team_id = resolve(one_team(team, "gt_theme_sdv_team"), league, id_system=id_system, strict=True)
         p, s = team_colors(league, team_id, which="primary"), team_colors(league, team_id, which="secondary")
         if p:
             primary, secondary = p, s or p

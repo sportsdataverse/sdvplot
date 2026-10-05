@@ -230,7 +230,14 @@ def select_mark(
 
 
 def logo_url(
-    team: Any, league: str, *, season: Any = None, variant: str = "default", mark_type: MarkType = "logo"
+    team: Any,
+    league: str,
+    *,
+    season: Any = None,
+    variant: str = "default",
+    mark_type: MarkType = "logo",
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> str | None:
     """The CDN URL of a team's logo or wordmark, chosen for the season.
 
@@ -244,14 +251,19 @@ def logo_url(
         season: A season year; None picks the current mark.
         variant: "default", "dark", or a named variant from ``marks()``.
         mark_type: "logo" or "wordmark".
+        id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when the team does not resolve.
 
     Returns:
         str | None: The archive URL (content-addressed, immutable), or None when no mark exists.
 
     Raises:
         TypeError: If ``team`` is not a single value.
-        ValueError: If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in
-            the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
+        ValueError: If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
+            name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is out of
+            range.
+        UnresolvedTeamError: If ``strict=True`` and the team does not resolve.
         OfflineError: If the logo manifest cannot be downloaded and no cached copy exists.
 
     Example:
@@ -267,7 +279,7 @@ def logo_url(
     """
     _check_mark_type(mark_type)
     _check_variant(variant, league)
-    team_id = resolve(one_team(team, "logo_url"), league, season=season)
+    team_id = resolve(one_team(team, "logo_url"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)

@@ -356,3 +356,12 @@ def test_logo_colors_agree_with_published_ones_where_both_exist():
                     for r in both.iter_rows(named=True)])  # fmt: skip
     big = both["league"].is_in(["nfl", "nba", "mlb", "nhl", "wnba"])
     assert both.height >= 4200 and ok.mean() >= 0.67 and ok.filter(big).mean() >= 0.94
+
+
+def test_team_colors_and_palette_read_nhl_stats_ids_when_named():  # S11: once wrong colors, silently
+    devils_bruins_leafs = sdvplot.team_colors("nhl", ["NJD", "BOS", "TOR"])
+    assert sdvplot.team_colors("nhl", [1, 6, 10], id_system="nhl_id") == devils_bruins_leafs
+    assert sdvplot.palette("nhl", [1, 6, 10], id_system="nhl_id") == dict(
+        zip([1, 6, 10], devils_bruins_leafs, strict=True)
+    )
+    assert sdvplot.team_colors("nhl", [1, 6, 10]) != devils_bruins_leafs  # "auto" reads them as ESPN ids
