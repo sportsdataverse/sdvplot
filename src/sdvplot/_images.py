@@ -110,7 +110,8 @@ def logo_image(
         variant: "default", "dark", or a named variant from ``marks()``.
         mark_type: "logo" or "wordmark".
         size: The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at
-            it (default 512).
+            it (default 512). Without it a raster comes at the archive's size, up to 4096 px (64 MiB decoded): pass
+            ``size`` when the image is for a plot.
         id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
             "nhl_id".
         strict: Raise UnresolvedTeamError instead of warning when the team does not resolve.

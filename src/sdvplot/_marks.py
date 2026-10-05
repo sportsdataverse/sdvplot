@@ -195,7 +195,7 @@ def select_mark(
     season-covering rows first (explicit ranges before open-ended ones), else any row; within a set, official
     sources and current marks first. An unknown or ambiguous team gives None with the resolver's warning."""
     _check_mark_type(mark_type)
-    s = norm_season(season)
+    s = norm_season(season, league)
     _check_variant(variant, league)
     team_id = resolve(one_team(team, "select_mark"), league, season=s)
     if team_id is None:

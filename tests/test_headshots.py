@@ -27,9 +27,10 @@ def test_espn_ids_return_none_for_null_and_empty(player_id):
     assert result is None
 
 
-@pytest.mark.parametrize("player_id", ["abc", "1.5", 1.5, True])
+# "\u0663\u0661\u0663\u0669\u0664\u0667\u0667": Arabic-Indic digits, which str.isdigit() accepts; an ESPN id is ASCII
+@pytest.mark.parametrize("player_id", ["abc", "1.5", 1.5, True, "\u0663\u0661\u0663\u0669\u0664\u0667\u0667"])
 def test_espn_ids_return_none_for_invalid_shapes(player_id):
-    """Non-numeric ids (letters, decimals, bools) return None, matching sdvplotR."""
+    """Non-numeric ids (letters, decimals, bools, non-ASCII digits) return None, matching sdvplotR."""
     result = _headshots.headshot_url(player_id, "nfl")
     assert result is None
 

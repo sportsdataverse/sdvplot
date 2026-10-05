@@ -57,6 +57,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- `sdvplot.plotnine.scale_color_sdv` / `scale_fill_sdv` take `which`, `season` and `na_value` by keyword only (as
+  `palette()` and `team_colors()` do), and they and `sdvplot.pygal.team_style` take `id_system` and `strict`:
+  `scale_color_sdv("nhl", id_system="nhl_id")` reads NHL stats ids, which `"auto"` reads as ESPN ids and colored as
+  other teams without a word. A season before the league's first is reported with the league's own range in the first
+  error (`season 1850 ... for nfl (1920 to ...)`), not the index's and then the league's on a retry.
+
 - Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
   leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
   ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in
@@ -108,7 +114,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   docs deploy (which holds `contents: write`) pins its actions by commit SHA.
 - CI: the built wheel is installed with no extras and its core is exercised (3.10 and 3.14), then every public
   submodule is imported with `[all]`; the offline suite runs on 3.10 through 3.13; pytest runs with `--strict-markers`
-  and `--strict-config`. Python 3.14 is a declared classifier.
+  and `--strict-config`. Python 3.14 is a declared classifier. A run on `main` is never cancelled by a later push (only
+  a PR's is), and the live network tests run on manual dispatch and weekly in `live-tests-cron`, not on every push.
 - Repeated lookups are faster: with everything cached, `logo_url` takes about 0.1 ms per call instead of 2.5 ms, and
   `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
   its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's

@@ -49,6 +49,8 @@ def test_a_leagues_own_first_season_comes_from_its_dated_aliases():
         (lambda: sdvplot.resolve("LVA", "wnba", season=1950), r"season 1950 .* for wnba \(1997 to \d{4}\)"),
         (lambda: sdvplot.resolve("DAL", "xfl", season=1950), r"season 1950 .* for xfl \(2020 to \d{4}\)"),
         (lambda: sdvplot.team_colors("nba", ["BOS"], season=[1871]), r"season 1871 .* for nba \(1947 to \d{4}\)"),
+        # below every league's first season (MLB's 1871): still the NFL's own range, not the index's
+        (lambda: sdvplot.resolve("KC", "nfl", season=1850), r"season 1850 .* for nfl \(1920 to \d{4}\)"),
     ],
 )
 def test_a_season_before_the_leagues_first_is_an_error(call, message):
@@ -81,9 +83,10 @@ def test_the_bounds_are_built_once_per_index_load(monkeypatch):
 
 @pytest.mark.parametrize("season", [-1, 0, 20, 1850, 1981, 3000, [2010, 20]])
 def test_a_season_outside_the_index_is_an_error_naming_the_bounds(season):
-    lo, hi = _index.season_bounds()
+    # the league's own bounds, in the first error: not the index's, then the league's on a retry
+    lo, hi = _index.season_bounds("nfl")
     with pytest.raises(
-        sdvplot.InputError, match=rf"season -?\d+ is outside the seasons sdvplot knows \({lo} to {hi}\)"
+        sdvplot.InputError, match=rf"season -?\d+ is outside the seasons sdvplot knows for nfl \({lo} to {hi}\)"
     ):
         sdvplot.resolve(["LV", "LAR"], "nfl", season=season)
 
