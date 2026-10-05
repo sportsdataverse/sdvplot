@@ -17,7 +17,7 @@ import altair as alt
 
 from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._web import aspect, image_sources
+from sdvplot._web import aspect, axis_letter, image_sources
 
 _SUPPORTS_AXIS_LOGOS = True
 _VEGA_LITE_DEFAULT_HEIGHT = 300  # px: Vega-Lite's continuous view height when neither chart nor theme sets one
@@ -433,12 +433,6 @@ def add_headshots(
     )  # fmt: skip
 
 
-def _letter(axis: str) -> str:
-    if axis not in ("x", "y"):
-        raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
-    return axis
-
-
 def _categories(spec: dict[str, Any], unit: dict[str, Any], enc: dict[str, Any]) -> list[Any]:
     """A discrete axis' categories in display order, from its explicit domain or sort list, or the inline data."""
     domain = enc.get("scale", {}).get("domain")
@@ -526,7 +520,7 @@ def axis_logos(
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     h = check_height(height)
     _check_chart(chart)
     spec = chart.to_dict()
@@ -597,7 +591,7 @@ def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
 def _drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: (team_id, category position, height) for each image on ``axis``, in tick order; height = image px /
     chart px."""
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     spec = chart.to_dict()
     unit, enc = _unit(spec, letter)
     cats = _categories(spec, unit, enc)
@@ -611,7 +605,7 @@ def _drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
 
 def _visible_axis_labels(chart: Any, axis: str) -> list[str]:
     """Test hook: the labels on ``axis`` the axis' labelExpr still shows as text."""
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     spec = chart.to_dict()
     unit, enc = _unit(spec, letter)
     found = _BLANKED.match(enc.get("axis", {}).get("labelExpr", ""))

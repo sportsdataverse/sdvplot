@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 
 from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._web import aspect, image_sources
+from sdvplot._web import aspect, axis_letter, image_sources
 
 _SUPPORTS_AXIS_LOGOS = True
 _PLOTLY_DEFAULT_WIDTH, _PLOTLY_DEFAULT_HEIGHT = 700, 450  # plotly.js's figure size when layout.width/height are unset
@@ -444,12 +444,6 @@ def add_headshots(
     )  # fmt: skip
 
 
-def _letter(axis: str) -> str:
-    if axis not in ("x", "y"):
-        raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
-    return axis
-
-
 def axis_logos(
     target: Any,
     axis: str,
@@ -499,7 +493,7 @@ def axis_logos(
     See Also:
         sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
     """
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     h = check_height(height)
     fig = _figure(target)
     if _axis_type(fig, letter, letter, []) != "category":
@@ -559,7 +553,7 @@ def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
 
 def _drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
     """Test hook: (team_id, category index, height) for each image on ``axis``, in tick order."""
-    letter = _letter(axis)
+    letter = axis_letter(axis)
     marks = []
     for im in _figure(target).layout.images:
         parts = (im.name or "").split(":", 3)
@@ -570,4 +564,4 @@ def _drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
 
 def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     """Test hook: the tick labels on ``axis`` still shown as text."""
-    return [t for t in (_figure(target).layout[_key(_letter(axis), axis)].ticktext or ()) if t]
+    return [t for t in (_figure(target).layout[_key(axis_letter(axis), axis)].ticktext or ()) if t]

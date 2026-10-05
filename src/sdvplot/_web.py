@@ -1,4 +1,4 @@
-"""What the web adapters (Plotly, Altair, Bokeh, HoloViews, Folium; pygal later) share: image sources and aspect ratios.
+"""What the web adapters (Plotly, Altair, Bokeh, HoloViews, Folium, pygal) share: image sources and aspect ratios.
 
 Browsers load images themselves, so a web adapter hands over the mark's ``archive_url`` (immutable, content-addressed),
 or with ``embed=True`` a ``data:`` URI of the cached bytes, for HTML that renders offline and for static export.
@@ -21,6 +21,13 @@ HEADSHOT_ASPECT = 600 / 436
 def aspect(p: Placement) -> float:
     """Width / height of the placement's image: the manifest's, or HEADSHOT_ASPECT for a headshot."""
     return p.aspect if p.aspect is not None else HEADSHOT_ASPECT
+
+
+def axis_letter(axis: str) -> str:
+    """``axis`` if it is "x" or "y", else a ValueError (the check every web adapter's axis verb starts with)."""
+    if axis not in ("x", "y"):
+        raise ValueError(f"axis must be 'x' or 'y', got {axis!r}")
+    return axis
 
 
 def image_src(p: Placement, *, embed: bool = False) -> str:
