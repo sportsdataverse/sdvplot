@@ -6,8 +6,10 @@
 Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
 resolves team abbreviations, names and provider ids across 28 leagues and picks the right era's mark for a season. Colors
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
-`add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib, plotnine, plotly, altair, bokeh,
-holoviews, great_tables, folium and pygal plots, tables and maps. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
+`add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
+altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
+sdvplotR's table themes, cell styling, legends and image export, and `surface()` draws a league's field, court or rink
+in a team's colors. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/). See
 [CHANGELOG](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.md).
 
 ## Installation
@@ -56,8 +58,9 @@ img = sdvplot.logo_image("LV", "nfl", size=128)  # a PIL image
 Colors work in any library that takes a `{value: color}` mapping, for example seaborn:
 `sns.barplot(data=df, x="team", y="epa", hue="team", palette=sdvplot.palette("nfl", teams=df["team"]))`.
 
-Colors marked `color_source="logo"` are derived from the team's archived logo where no source publishes its colors;
-`color_source="fallback"` ones are placeholders, not team colors.
+`teams()` records where each team's colors come from in `color_source`: `nflverse` or `espn` when that source
+publishes them, `logo` when they are derived from the team's archived logo because no source does, and `fallback` for
+a placeholder that is not the team's colors.
 
 ## Environment variables
 
@@ -77,7 +80,8 @@ Team names, logos, wordmarks and player headshots are trademarks or copyrighted 
 teams, schools and other rights holders. sdvplot is not affiliated with, sponsored by or endorsed by any of them, and
 using sdvplot to draw a mark grants no right to use it. The package ships no logo files: the wheel carries only an
 index of team names, ids and colors, and marks are fetched at runtime from the
-[SportsDataverse logo archive](https://github.com/sportsdataverse/sdv-assets). Use of any mark in your own work is
+[SportsDataverse logo archive](https://github.com/sportsdataverse/sdv-assets), headshots from ESPN (or, for NFL gsis
+ids, the URLs in nflverse's player table). Use of any mark in your own work is
 governed by that owner's terms, and following them is your responsibility. The [MIT license](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)
 covers the sdvplot code only; team data belongs to its respective owners and sources.
 

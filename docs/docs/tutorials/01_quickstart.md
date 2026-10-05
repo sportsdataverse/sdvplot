@@ -139,7 +139,7 @@ sdvplot.versions()
 
 ```text
 {'sdvplot': '0.1.0',
- 'index': 'f0ca50b65f99',
+ 'index': '88b114b58b3d',
  'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
 ```
 

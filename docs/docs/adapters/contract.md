@@ -36,8 +36,10 @@ adapter (great_tables) takes `(table, columns, *, league, height=30, ...)` inste
 - `league` and `season` mean what they mean in `resolve()`. `variant` means what it means in `logo_url()`.
 - **`height` is a fraction of the plot height**, the same as sdvplotR's `height`. So `0.1` means a tenth of the plot,
   whatever the library or the data range. Every verb raises `ValueError` for `0` and for values above `1`, when it is
-  called, not later when the marks are rendered.
-- `alpha` is the opacity. Every verb that takes it raises `ValueError` for a value outside 0 to 1.
+  called, not later when the marks are rendered. sdvplot's own adapters raise `InputError`, a `ValueError`, through
+  `sdvplot._placement.check_height`.
+- `alpha` is the opacity. Every verb that takes it raises `ValueError` for a value outside 0 to 1 (`InputError` from
+  `check_alpha` in sdvplot's own adapters).
 - `axis_logos` puts images in place of an axis' tick labels, like sdvplotR's `element_sdv_logo`.
 
 Users call the front door, `sdvplot.add_logos(target, ...)` and its siblings. It finds the adapter for `target`'s
@@ -48,7 +50,7 @@ library, passes every argument through, and returns what the adapter returns.
 `add_logos` (and the other verbs) **return the object that was drawn on**:
 
 - the target itself, when the library mutates in place (matplotlib);
-- the new object, when the library builds one (plotnine, Altair, great_tables).
+- the new object, when the library builds one (plotnine, Altair, HoloViews, great_tables).
 
 The harness reads the test hooks from the returned object when it is not `None`, and from the target otherwise.
 

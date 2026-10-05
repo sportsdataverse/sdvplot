@@ -64,9 +64,11 @@ Draw each player's headshot centred on its (x, y) point of a Plotly figure.
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or an axis is not supported (see ``add_logos``).
-- `TypeError`: If the target is not a Plotly ``Figure``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league`` has no ESPN headshots, or ``id_system`` is not valid for ``league``.
+- `ValueError`: If the inputs differ in length, or an axis is not supported (see ``add_logos``).
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a Plotly ``Figure``.
+- `OfflineError`: If the nflverse player table (``id_system="gsis"``), or with ``embed=True`` a headshot, is neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -140,9 +142,12 @@ and category axes are supported (a category is placed at its index).
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, an axis is a log or date axis, or the range must be worked out from a trace type other than scatter or bar, stacked scatter traces (``stackgroup``), or bars with a ``base``, ``barnorm`` or stacked ``offsetgroup`` (set the range first).
-- `TypeError`: If the target is not a Plotly ``Figure``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length, ``xref``/``yref`` does not name an x/y axis, an axis is a log or date axis, or the range must be worked out from a trace type other than scatter or bar, stacked scatter traces (``stackgroup``), or bars with a ``base``, ``barnorm`` or stacked ``offsetgroup`` (set the range first).
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a Plotly ``Figure``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -212,9 +217,12 @@ Draw each team's wordmark centred on its (x, y) point of a Plotly figure.
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or an axis is not supported (see ``add_logos``).
-- `TypeError`: If the target is not a Plotly ``Figure``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length, or an axis is not supported (see ``add_logos``).
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a Plotly ``Figure``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -277,9 +285,12 @@ to make room. Call it after adding the traces, so the axis has its categories.
 
 ### Raises
 
-- `ValueError`: If ``axis`` is not "x"/"y", ``height`` is out of range, or the axis is not a category axis.
-- `TypeError`: If the target is not a Plotly ``Figure``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``axis`` is not "x"/"y", or the axis is not a category axis.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a Plotly ``Figure``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 

@@ -225,8 +225,8 @@ Gujarat Titans conceded 8.76 runs an over, almost half a run better than any oth
 
 ## 5. Net run rate in team colors
 
-The index's cricket colors are fallback colors (`color_source == "fallback"`), so the bars use the colors ESPN's
-scoreboard carried for each team. `axis_logos` swaps the x-axis team ids for logos.
+No source publishes cricket colors, so the index's are read from each team's logo (`color_source == "logo"`); the
+bars use the colors ESPN's scoreboard carried for each team instead. `axis_logos` swaps the x-axis team ids for logos.
 
 ```python
 nrr = table.sort("netrr", descending=True)

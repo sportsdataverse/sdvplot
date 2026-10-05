@@ -119,7 +119,10 @@ Show each cell's player id as the player's headshot in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` has no ESPN headshots, or ``id_system`` is not valid for ``league``.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `OfflineError`: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -191,8 +194,11 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -259,8 +265,11 @@ Show each cell's team as its wordmark in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -1497,6 +1506,7 @@ by default).
 ### Raises
 
 - `TypeError`: ``gt`` is not a ``GT``.
+- `ValueError`: ``columns`` names a column the table lacks.
 
 ### Example
 
@@ -1886,8 +1896,9 @@ Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown.
+- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -2362,9 +2373,10 @@ Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `InputError`: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot".
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``id_system`` is unknown, or ``season`` is not one year.
-- `UnresolvedTeamError`: If ``strict=True`` and a column name does not resolve.
+- `InputError`: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot", ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is unknown (for headshots: ``league`` has no ESPN headshots, or ``id_system`` is not valid for it), or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a column name does not resolve.
+- `OfflineError`: If the logo manifest (logos and wordmarks), or for "gsis" headshots the nflverse player table, cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) If that download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -2420,7 +2432,10 @@ Show each cell's player id as the player's headshot in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` has no ESPN headshots, or ``id_system`` is not valid for ``league``.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `OfflineError`: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -2492,8 +2507,11 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -2560,8 +2578,11 @@ Show each cell's team as its wordmark in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -3996,8 +4017,9 @@ primary too light to read on white gives way to the SportsDataverse navy for the
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT, or ``team`` is not one value.
-- `UnresolvedTeamError`: If ``team`` does not resolve to one team of ``league``.
-- `ValueError`: If ``density`` or ``id_system`` is unknown.
+- `InputError`: (a ValueError) If ``team`` is given and ``league`` or ``id_system`` is unknown.
+- `UnresolvedTeamError`: (a ValueError) If ``team`` does not resolve to one team of ``league``.
+- `ValueError`: If ``density`` is unknown.
 
 ### Example
 
@@ -4530,6 +4552,7 @@ A one-word label, or one already shorter than ``width``, is left alone; a single
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables ``GT``.
+- `ValueError`: If ``columns`` names a column the table lacks.
 
 ### Example
 

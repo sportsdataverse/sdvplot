@@ -91,8 +91,8 @@ plt.show()
 A great_tables table grouped by division, with `gt_sdv_logos` turning the abbreviation column into logos and the
 Baseball Savant look from `gt_theme_savant`. The theme goes on first and the run-differential fill after it, so the
 theme's styling cannot replace the fill. The theme's row stripes are also switched off (extra keywords go to
-`tab_options`): in notebook output great_tables marks its CSS `!important`, so stripes would cover the fill on every
-other row.
+`tab_options`): in a VS Code or Positron notebook great_tables marks its CSS `!important`, so stripes would cover the
+fill on every other row.
 
 ```python
 from great_tables import GT
@@ -439,7 +439,8 @@ plt.show()
 ## 9. One organization's minor-league affiliates
 
 `mlb_team_affiliates` lists a club's farm system. The affiliates carry Stats API ids, which the `milb` league
-(286 teams) resolves directly. MiLB teams have no official colors in the index: `color_source` is `"fallback"`.
+(286 teams) resolves directly. No source publishes MiLB colors, so the index reads them from each team's logo:
+`color_source` is `"logo"`.
 
 ```python
 ORG = "PHI"
@@ -458,12 +459,12 @@ farm.join(sdvplot.teams("milb").select(pl.col("team_id").alias("id"), "program",
 
 | id   | name                   | level    | circuit                 | program  | color_source |
 |------|------------------------|----------|-------------------------|----------|--------------|
-| 1410 | Lehigh Valley IronPigs | Triple-A | International League    | aaa      | fallback     |
-| 522  | Reading Fightin Phils  | Double-A | Eastern League          | aa       | fallback     |
-| 427  | Jersey Shore BlueClaws | High-A   | South Atlantic League   | high_a   | fallback     |
-| 566  | Clearwater Threshers   | Single-A | Florida State League    | single_a | fallback     |
-| 623  | DSL Phillies           | Rookie   | Dominican Summer League | rookie   | fallback     |
-| 469  | FCL Phillies           | Rookie   | Florida Complex League  | rookie   | fallback     |
+| 1410 | Lehigh Valley IronPigs | Triple-A | International League    | aaa      | logo         |
+| 522  | Reading Fightin Phils  | Double-A | Eastern League          | aa       | logo         |
+| 427  | Jersey Shore BlueClaws | High-A   | South Atlantic League   | high_a   | logo         |
+| 566  | Clearwater Threshers   | Single-A | Florida State League    | single_a | logo         |
+| 623  | DSL Phillies           | Rookie   | Dominican Summer League | rookie   | logo         |
+| 469  | FCL Phillies           | Rookie   | Florida Complex League  | rookie   | logo         |
 
 </div>
 

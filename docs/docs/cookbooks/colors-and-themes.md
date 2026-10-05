@@ -9,7 +9,7 @@ description: "Nine color recipes: league palettes, colors per row, readable text
 
 Nine recipes for team colors: a league's palette at a glance, one color per row of your data, readable text
 on team-colored cells, seaborn, colors that clash, a league-wide colormap, PyPalettes colormaps, morethemes
-styles, and the fallback colors to watch for. The data is one season each from the NFL (nflverse), the NBA
+styles, and where a team's colors come from. The data is one season each from the NFL (nflverse), the NBA
 (hoopR and the stats-API shot file the SportsDataverse publishes on GitHub) and the NHL (fastRhockey), all
 through sportsdataverse-py.
 
@@ -346,26 +346,28 @@ with plt.rc_context():
 
 </div>
 
-## 9. Spot fallback colors, and supply your own
+## 9. Check where a color comes from, and supply your own
 
-Not every league has official colors in the index. Where none exist, `color_source` is `"fallback"` and the
-color only keeps teams apart. Check it before you call a color a team's own; for a published chart, override
-the fallbacks with the clubs' real colors in your own dict.
+`color_source` says where a team's colors come from. Most are published, by nflverse or ESPN. A team no source
+publishes colors for gets the two dominant colors of its current logo (`"logo"`), which approximate the team's
+own, and two men's college hockey teams with no archived logo get placeholders (`"fallback"`) that only keep teams
+apart. Check it before you call a color a team's own; for a published chart, put any color you know better in your
+own dict.
 
 ```python
 share = (
     sdvplot.teams()
     .group_by("league", maintain_order=True)
-    .agg(teams=pl.len(), fallback=(pl.col("color_source") == "fallback").mean())
-    .sort("fallback", "league")
+    .agg(teams=pl.len(), derived=pl.col("color_source").is_in(["logo", "fallback"]).mean())
+    .sort("derived", "league")
 )
 fig, ax = plt.subplots(figsize=(9, 6.5))
-ax.barh(share["league"], share["fallback"], color=["#c84630" if f == 1 else "#4a6fa5" for f in share["fallback"]])
+ax.barh(share["league"], share["derived"], color=["#c84630" if f == 1 else "#4a6fa5" for f in share["derived"]])
 ax.xaxis.set_major_formatter(lambda v, _: f"{v:.0%}")
-ax.set_xlabel("Share of the league's teams with fallback colors")
+ax.set_xlabel("Share of the league's teams without published colors (read from the logo, or a placeholder)")
 ax.tick_params(axis="y", labelsize=8)
 ax.spines[["top", "right"]].set_visible(False)
-ax.set_title("Where sdvplot's colors are stand-ins", loc="left", fontweight="bold")
+ax.set_title("Where sdvplot's colors are not published ones", loc="left", fontweight="bold")
 fig.text(0.99, 0.01, f"sdvplot {sdvplot.__version__} team index", ha="right", fontsize=8, color="grey")
 plt.show()
 
@@ -379,7 +381,7 @@ print(sdvplot.palette("soccer", teams=["382"]) | {"382": "#6CABDD"})  # your own
 ![png](colors-and-themes_files/colors-and-themes_19_0.png)
 
 ```text
-('Manchester City', '#59a14f', 'fallback')
+('Manchester City', '#99c5ea', 'espn')
 {'382': '#6CABDD'}
 ```
 

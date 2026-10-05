@@ -198,8 +198,7 @@ from sdvplot.matplotlib import team_tiers
 
 tiers = ratings.with_columns(
     tier_no=pl.col("net").cut([-6, -2, 2, 6], labels=["5", "4", "3", "2", "1"]).cast(pl.String).cast(pl.Int32),
-    tier_rank=pl.col("net").rank("ordinal", descending=True),
-)
+).with_columns(tier_rank=pl.col("net").rank("ordinal", descending=True).over("tier_no"))  # position within the tier
 fig = team_tiers(
     tiers.select("tier_no", "team", "tier_rank"),
     "wnba",

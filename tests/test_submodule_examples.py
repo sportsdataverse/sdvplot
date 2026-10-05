@@ -1,16 +1,20 @@
-"""Run every public submodule Example (the half of the docstring gate that executes code).
+"""Run every public function's Example, top-level and submodule (the half of the docstring gate that executes code).
 
-``tools/gen_docs.py --check`` checks the Examples statically (syntax and undefined names); this runs them. Each runs
+``tools/gen_docs.py --check`` checks the submodule Examples statically (syntax and undefined names); this runs them and
+the top-level functions' Examples. Each runs
 with a cache directory of its own, seeded with the marks, headshots and images the examples draw (seeded_cache), the
 network blocked, a scratch working directory and a time limit, so each example runs to its end offline and the result
 does not depend on the developer's warm cache. Anything that still cannot run offline is listed in TOLERATED with a
 reason; an unlisted skip, or a tolerated example that raises AssertionError, NameError or SyntaxError, fails.
 """
 
+import ast
 import contextlib
 import hashlib
 import importlib.util
+import inspect
 import json
+import re
 import signal
 import socket
 import sys
@@ -60,12 +64,24 @@ TOLERATED: dict[str, tuple[tuple[type[BaseException], ...], str]] = {
 # Both harness examples draw real marks; tests/test_matplotlib.py and tests/test_table_contract.py run the harnesses on
 # the fixture marks, and test_contract_examples_pass_on_fixture_marks below runs these two examples the same way.
 FIXTURE_BACKED = {"testing.check_adapter_contract", "testing.check_table_adapter_contract"}
-EXAMPLES = gd.submodule_examples()
+# "<submodule>.<name>" for a submodule's function; a top-level function's is keyed by its bare name
+TOP_LEVEL = {
+    n: ex
+    for n in sdvplot.__all__
+    if callable(fn := getattr(sdvplot, n))
+    and not isinstance(fn, type)
+    and (ex := gd._example(inspect.getdoc(fn) or ""))
+}
+EXAMPLES = {**gd.submodule_examples(), **TOP_LEVEL}
 # What the examples draw, seeded into each one's cache: a logo and a wordmark for every NFL team of the shipped index,
-# the headshots of these ESPN athlete ids and these URL images. An example that needs more stops at a blocked network
-# call and fails: seed what it needs here.
+# the headshots of these ESPN athlete ids, these URL images and these rows of nflverse's player table (gsis id, ESPN id,
+# headshot; copied from the live table, 2026-10-05). An example that needs more stops at a blocked network call and
+# fails: seed what it needs here.
 SEEDED_LEAGUE = "nfl"
 SEEDED_PLAYERS = ("3139477", "3918298", "3916387")
+SEEDED_PLAYER_ROWS = (
+    ("00-0033873", "3139477", "https://static.www.nfl.com/image/upload/f_auto,q_auto/league/wdckwtob1lybvkmxnf7p"),
+)
 SEEDED_URLS = (
     "https://example.com/banner.png",
     "https://www.python.org/static/img/python-logo.png",
@@ -75,8 +91,8 @@ SEEDED_URLS = (
 
 @pytest.fixture
 def seeded_cache(cache, monkeypatch):
-    """The cache with SEEDED_*: a manifest of made-up marks (served once by a fake session) and every image as a fresh,
-    verified PNG, so no example downloads."""
+    """The cache with SEEDED_*: a manifest of made-up marks (served once by a fake session), every image as a fresh,
+    verified PNG and the player-table rows as a fresh parquet, so no example downloads."""
     rows = []
     for team_id, name, program in sdvplot.teams(SEEDED_LEAGUE).select("team_id", "name", "program").iter_rows():
         for mark_type, w, h in (("logo", 500, 500), ("wordmark", 500, 200)):
@@ -93,6 +109,10 @@ def seeded_cache(cache, monkeypatch):
         m.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body, {"ETag": '"seeded"'})))
         _manifest._read.cache_clear()
         _manifest.load_manifest()
+    players = cache / "nflverse" / "players.parquet"
+    players.parent.mkdir(parents=True, exist_ok=True)
+    pl.DataFrame(SEEDED_PLAYER_ROWS, schema=["gsis_id", "espn_id", "headshot"], orient="row").write_parquet(players)
+    _cache._meta_path(players).write_text(json.dumps({"fetched_at": time.time()}))
     for url in [*(headshot_url(p, SEEDED_LEAGUE) for p in SEEDED_PLAYERS), *SEEDED_URLS]:
         key = hashlib.sha256(url.encode()).hexdigest()
         path = seed_image(cache / "urlimages" / key[:2] / key, size=(150, 109))
@@ -176,6 +196,40 @@ def test_contract_examples_pass_on_fixture_marks(key, tmp_path, monkeypatch, man
 
 def test_every_tolerated_entry_names_a_real_example():
     assert set(TOLERATED) <= set(EXAMPLES)
+
+
+# The hand-written docs pages run the same way: each page's ```python blocks in order, as one program. An expression
+# whose same-line comment is a Python literal must equal it, so a page cannot show a stale output.
+DOCS = ROOT / "docs" / "docs"
+DOC_PAGES = {p.relative_to(DOCS).as_posix(): p for p in [DOCS / "intro.md", *sorted((DOCS / "concepts").glob("*.md"))]}
+UNPINNED = {"sdvplot.versions()"}  # its index hash and manifest date move with every data refresh
+
+
+def page_program(text: str) -> str:
+    """The page's python blocks as one program, each expression with a literal comment followed by its assert."""
+    out = []
+    for block in re.findall(r"^```python\n(.*?)^```", text, re.S | re.M):
+        lines = block.splitlines()
+        for node in ast.parse(block).body:
+            src = ast.get_source_segment(block, node)
+            out.append(src)
+            comment = lines[node.end_lineno - 1].partition("  # ")[2]
+            if isinstance(node, ast.Expr) and comment and src not in UNPINNED:
+                with contextlib.suppress(ValueError, SyntaxError):  # prose, not a value
+                    out.append(f"assert ({src}) == {ast.literal_eval(comment)!r}, {src!r}")
+    return "\n".join(out)
+
+
+@pytest.mark.real_index
+@pytest.mark.parametrize("page", sorted(DOC_PAGES))
+def test_the_docs_page_snippets_run_offline_and_match_their_comments(page, monkeypatch, seeded_cache):
+    exc = run_example(page_program(DOC_PAGES[page].read_text(encoding="utf-8")), seeded_cache.parent, monkeypatch)
+    assert exc is None, f"{page}: {type(exc).__name__}: {exc}"
+
+
+def test_a_literal_comment_becomes_an_assert_and_prose_does_not():
+    page = "```python\nx = 1\nx + 1  # 3\nx  # the one\nsdvplot.versions()  # {}\n```\n"
+    assert page_program(page) == "x = 1\nx + 1\nassert (x + 1) == 3, 'x + 1'\nx\nsdvplot.versions()"
 
 
 # the runner and the classification, on small examples

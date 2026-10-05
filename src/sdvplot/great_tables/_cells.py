@@ -125,8 +125,6 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
     Raises:
         TypeError: ``gt`` is not a ``GT``.
 
-
-
     Example:
         ::
 
@@ -365,8 +363,7 @@ def gt_highlight_na(
 
     Raises:
         TypeError: ``gt`` is not a ``GT``.
-
-
+        ValueError: ``columns`` names a column the table lacks.
 
     Example:
         ::

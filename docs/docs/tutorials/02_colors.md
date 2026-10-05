@@ -103,11 +103,13 @@ alt.Chart(df.to_pandas()).mark_bar().encode(
 )
 ```
 
-## Fallback colors
+## Where a team's colors come from
 
-Not every league has official colors. Where none exist, `color_source` is `"fallback"` and the color is one from a
-colorblind-safe categorical palette that only keeps teams distinguishable. Check `color_source` before treating a color as a team's own.
-Every OHL team below is a fallback; every NFL team has colors from nflverse.
+`color_source` says where each team's colors come from: `nflverse` or `espn` when a source publishes them, `logo` when
+they are the two dominant colors of the team's current logo (an approximation, for a team no source publishes colors
+for), and `fallback` for a placeholder from a colorblind-safe palette that only keeps teams apart. Check
+`color_source` before treating a color as a team's own. No source publishes OHL colors, so the colors below are read
+from each team's logo; every NFL team has colors from nflverse.
 
 ```python
 sdvplot.teams("ohl").select("team_id", "name", "color_primary", "color_source").head()
@@ -117,11 +119,11 @@ sdvplot.teams("ohl").select("team_id", "name", "color_primary", "color_source").
 
 | team_id | name               | color_primary | color_source |
 |---------|--------------------|---------------|--------------|
-| 1       | Brantford Bulldogs | #76b7b2       | fallback     |
-| 10      | Kitchener Rangers  | #b07aa1       | fallback     |
-| 11      | Owen Sound Attack  | #bab0ac       | fallback     |
-| 12      | Sudbury Wolves     | #76b7b2       | fallback     |
-| 13      | Flint Firebirds    | #f28e2b       | fallback     |
+| 1       | Brantford Bulldogs | #ba8748       | logo         |
+| 10      | Kitchener Rangers  | #233e95       | logo         |
+| 11      | Owen Sound Attack  | #eec943       | logo         |
+| 12      | Sudbury Wolves     | #a63039       | logo         |
+| 13      | Flint Firebirds    | #0d1d41       | logo         |
 
 </div>
 

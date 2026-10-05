@@ -328,11 +328,12 @@ fig
 
 </div>
 
-## 7. When sdvplot has only a fallback color
+## 7. When sdvplot's color comes from a logo
 
-Most spring-league colors in the index are fallbacks (`color_source == "fallback"`): colors from a colorblind-safe
-palette that keep teams apart but are not theirs. ESPN's scoreboard ships each team's own color (the `color` column
-loaded above), so this chart of the 2023 XFL takes its colors from the data and its logos from sdvplot.
+Not every spring-league color in the index is published. ESPN's colors cover the UFL and most XFL teams; the USFL,
+the AAF and the other XFL teams take the two dominant colors of their logos (`color_source == "logo"`), which
+approximate a team's own. ESPN's scoreboard ships each team's own color (the `color` column loaded above), so this
+chart of the 2023 XFL takes its colors from the data and its logos from sdvplot.
 
 ```python
 sdvplot.teams("xfl").select("team_id", "name", "color_primary", "color_source").head(4)
@@ -342,10 +343,10 @@ sdvplot.teams("xfl").select("team_id", "name", "color_primary", "color_source").
 
 | team_id | name                 | color_primary | color_source |
 |---------|----------------------|---------------|--------------|
-| 112646  | DC Defenders         | #4e79a7       | fallback     |
-| 112647  | Arlington Renegades  | #b07aa1       | fallback     |
-| 112648  | Houston Roughnecks   | #76b7b2       | fallback     |
-| 112649  | Los Angeles Wildcats | #edc948       | fallback     |
+| 112646  | DC Defenders         | #c8102e       | espn         |
+| 112647  | Arlington Renegades  | #69b3e7       | espn         |
+| 112648  | Houston Roughnecks   | #0c2340       | espn         |
+| 112649  | Los Angeles Wildcats | #c20f2f       | logo         |
 
 </div>
 

@@ -42,9 +42,10 @@ manifest's, narrowed by the mark alias's (an open side takes the alias's).
 ## Raises
 
 - `TypeError`: If ``team`` is not a single value.
-- `ValueError`: If ``league`` or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If the team is null or does not resolve.
-- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `UnresolvedTeamError`: (a ValueError) If the team is null or does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 

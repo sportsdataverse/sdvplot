@@ -46,8 +46,9 @@ A plottable column that shows each row's player as a headshot.
 
 ### Raises
 
-- `InputError`: When the table is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
-- `OfflineError`: When the table is drawn, if ``id_system`` is "gsis" and the nflverse player table is neither cached nor downloadable.
+- `InputError`: (a ValueError) When the table is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+- `OfflineError`: When the table is drawn, if a headshot, or with ``id_system="gsis"`` the nflverse player table, is neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) When the table is drawn, if a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -111,7 +112,11 @@ A plottable column that shows each row's team as its logo (or wordmark).
 
 ### Raises
 
-- `InputError`: When the table is drawn, if ``mark_type`` is not "logo" or "wordmark" (the column definition itself is built without checking it).
+- `InputError`: (a ValueError) When the table is drawn, if ``mark_type`` is not "logo" or "wordmark", ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league (the column definition itself is built without checking them).
+- `OfflineError`: When the table is drawn, if the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+- `UnsafeDownloadError`: (an OSError) When the table is drawn, if a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) When the table is drawn, if the manifest's sha256 or extension for a mark would put the file outside the cache directory.
+- `OptionalDependencyError`: When the table is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
 ### Example
 

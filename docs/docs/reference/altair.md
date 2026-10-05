@@ -59,9 +59,11 @@ Layer each player's headshot, centred on its (x, y) point, onto an Altair chart.
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
-- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league`` has no ESPN headshots, or ``id_system`` is not valid for ``league``.
+- `ValueError`: If the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
+- `UnsupportedTargetError`: (a TypeError) If ``chart`` is not an Altair ``Chart`` or ``LayerChart``.
+- `OfflineError`: If the nflverse player table (``id_system="gsis"``), or with ``embed=True`` a headshot, is neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -130,9 +132,12 @@ axis is not copied: aggregate or bin in the data first.
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the chart is a facet, concat or repeat chart, its height is not a positive number of pixels where it must be, its x or y encoding aggregates or bins, or a discrete axis is sorted in a way Vega-Lite drops once layers share the axis.
-- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length, the chart is a facet, concat or repeat chart, its height is not a positive number of pixels where it must be, its x or y encoding aggregates or bins, or a discrete axis is sorted in a way Vega-Lite drops once layers share the axis.
+- `UnsupportedTargetError`: (a TypeError) If ``chart`` is not an Altair ``Chart`` or ``LayerChart``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -197,9 +202,12 @@ Layer each team's wordmark, centred on its (x, y) point, onto an Altair chart.
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
-- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
+- `UnsupportedTargetError`: (a TypeError) If ``chart`` is not an Altair ``Chart`` or ``LayerChart``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -265,9 +273,12 @@ scale domain or sort list, or the chart's inline data.
 
 ### Raises
 
-- `ValueError`: If ``axis`` is not "x"/"y", ``height`` is out of range, the axis is not discrete or is hidden, the categories cannot be read, or the chart cannot take a layer (see ``add_logos``).
-- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``axis`` is not "x"/"y", the axis is not discrete or is hidden, the categories cannot be read, or the chart cannot take a layer (see ``add_logos``).
+- `UnsupportedTargetError`: (a TypeError) If ``chart`` is not an Altair ``Chart`` or ``LayerChart``.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -339,8 +350,11 @@ wins over the layer's), or use ``add_logos``, which reuses the chart's own field
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, ``chart_height`` is not a positive number of pixels, or the inputs differ in length.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If ``chart_height`` is not a positive number of pixels, or the inputs differ in length.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 

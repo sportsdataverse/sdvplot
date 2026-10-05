@@ -60,14 +60,18 @@ The index holds aliases from these id systems. With the default `id_system="auto
 
 `sdvplotr` sits after every id system, so it only fills gaps. `name` comes last.
 
-Pass `id_system=` to use a single system instead, for example `resolve(values, "mlb", id_system="fangraphs")`.
+Pass `id_system=` to use a single system instead, for example `resolve(values, "mlb", id_system="fangraphs")`. An
+`id_system` or `league` sdvplot does not know raises `InputError` (a `ValueError`), as does a `season` that is not a
+year or is outside the seasons the index knows for the league.
 
 ### How "auto" decides
 
 - The **first system that has a candidate** for the value decides. Later systems are not consulted.
 - Only a **unique** match counts. If that system names more than one team, the value is ambiguous.
-- With a `season`, sdvplot first considers only aliases whose season range covers that season, then falls back to
-  every alias. See [Seasons and eras](seasons-and-eras.md).
+- With a `season`, sdvplot first considers only aliases whose season range covers that season. Then (or first, without
+  a `season`) it reads the value in the latest season the league's aliases name, so a code two franchises used means its
+  current holder. Last, it considers every alias, so a unique code still resolves when no range covers the season. See
+  [Seasons and eras](seasons-and-eras.md).
 
 ## Never guessing
 

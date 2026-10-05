@@ -51,7 +51,8 @@ sdvplot.resolve(teams["team_id"], "pwhl").to_list()
 </div>
 
 The team list already holds the four clubs that join for 2026-27, and every club has a logo. Colors are another
-matter: the index has no official PWHL colors yet (`color_source` is `"fallback"`), so the charts below lean on logos.
+matter: no source publishes PWHL colors, so the index's are read from each club's logo (`color_source` is
+`"logo"`), and the charts below lean on the logos themselves.
 
 ```python
 sdvplot.teams("pwhl").group_by("color_source", maintain_order=True).len()
@@ -61,7 +62,7 @@ sdvplot.teams("pwhl").group_by("color_source", maintain_order=True).len()
 
 | color_source | len |
 |--------------|-----|
-| fallback     | 12  |
+| logo         | 12  |
 
 </div>
 
@@ -425,7 +426,7 @@ sdvplot.suggest("Metropolitan Riveters", "phf")
 <div class="sdv-output">
 
 ```text
-1 value(s) did not resolve to a phf team: 'Metropolitan Riveters' (ambiguous). Use sdvplot.suggest() for candidates, or strict=True to raise.
+1 value(s) did not resolve to a phf team: 'Metropolitan Riveters' (ambiguous: 124984 Metropolitan Riveters or 61636 Metropolitan Riveters); pass season= for a code reused across eras, or id_system= for the id system of the values. Use sdvplot.suggest() for candidates, or strict=True to raise.
 ```
 
 ```text

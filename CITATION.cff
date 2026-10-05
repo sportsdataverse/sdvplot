@@ -5,7 +5,9 @@ type: software
 authors:
   - family-names: Gilani
     given-names: Saiem
+    orcid: "https://orcid.org/0000-0002-7194-9067"
 version: 0.1.0
+date-released: "2026-10-05"
 url: "https://sdvplot.sportsdataverse.org"
 repository-code: "https://github.com/sportsdataverse/sdvplot"
 license: MIT

@@ -58,9 +58,12 @@ Draw each player's headshot centred on its (x, y) point of a HoloViews element (
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
-- `TypeError`: If ``element`` is not a HoloViews object, or the current backend is not Bokeh.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league`` has no ESPN headshots, or ``id_system`` is not valid for ``league``.
+- `ValueError`: If the inputs differ in length; when the plot renders, if its figure has no pixel height (no ``frame_height`` or ``height`` option).
+- `TypeError`: If the current HoloViews backend is not Bokeh.
+- `UnsupportedTargetError`: (a TypeError) If ``element`` is not a HoloViews element or overlay.
+- `OfflineError`: If the nflverse player table (``id_system="gsis"``), or with ``embed=True`` a headshot, is neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -128,9 +131,13 @@ draws no marks).
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
-- `TypeError`: If ``element`` is not a HoloViews object, or the current backend is not Bokeh.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length; when the plot renders, if its figure has no pixel height (no ``frame_height`` or ``height`` option).
+- `TypeError`: If the current HoloViews backend is not Bokeh.
+- `UnsupportedTargetError`: (a TypeError) If ``element`` is not a HoloViews element or overlay.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -195,9 +202,13 @@ Draw each team's wordmark centred on its (x, y) point of a HoloViews element (Bo
 
 ### Raises
 
-- `ValueError`: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
-- `TypeError`: If ``element`` is not a HoloViews object, or the current backend is not Bokeh.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+- `InputError`: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `ValueError`: If the inputs differ in length; when the plot renders, if its figure has no pixel height (no ``frame_height`` or ``height`` option).
+- `TypeError`: If the current HoloViews backend is not Bokeh.
+- `UnsupportedTargetError`: (a TypeError) If ``element`` is not a HoloViews element or overlay.
+- `OfflineError`: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256).
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
+- `UnsafeCachePathError`: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 
 ### Example
 
@@ -240,7 +251,7 @@ Not supported on HoloViews (it draws through Bokeh, which has no axis logos yet)
 
 ### Raises
 
-- `TypeError`: Always. Draw the logos inside the plot with ``add_logos``, or use the matplotlib, Plotly or Altair adapter for axis logos.
+- `UnsupportedTargetError`: (a TypeError) Always. Draw the logos inside the plot with ``add_logos``, or use the matplotlib, Plotly or Altair adapter for axis logos.
 
 ### Example
 

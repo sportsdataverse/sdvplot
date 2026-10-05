@@ -287,6 +287,12 @@ fails loudly, with the message shown:
 - Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
   with a CSS rule) and that stripes cover plain fills only in VS Code and Positron notebooks, and the college softball
   World Series table turns row striping off after `gt_theme_ncaa` (`gt_color_results` fills every row).
+- Documentation: every example notebook is re-rendered against the 0.1.0 API. The pages that called a league's
+  colors fallbacks (the colors tutorial and cookbook; cricket, MLB, NBA, PWHL, soccer, spring football, college
+  hockey; the rank bump chart) now say where the index's colors come from (`color_source` `espn` or `logo`); the WNBA
+  tier list ranks teams within each tier, so its logos no longer overlap; the cache page lists `urlimages/` and the
+  current `versions()` output. The docs pages' Python examples run offline in the test suite, which checks every
+  output their comments show. The social-graphics workflow template pins a current sdvplot commit.
 - The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
   (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
   name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
@@ -326,6 +332,22 @@ fails loudly, with the message shown:
 - Documentation: `sdvplot.matplotlib.add_images` and `title_image`, and `sdvplot.plotnine.geom_from_path` and
   `title_image`, say an image URL must be https. They said "http or https", but an http URL is refused with
   `UnsafeDownloadError`.
+- Documentation: every public function's docstring names the error classes the code can raise since the API freeze:
+  `InputError` for the shared checks (heights, alpha, league, id system, season, variant; it said `ValueError`),
+  `UnsupportedTargetError` for a target an adapter cannot draw on (it said `TypeError`), and each download error a
+  function can meet (`OfflineError`, `DownloadError`, `IntegrityError`, `UnsafeDownloadError`, `UnsafeCachePathError`,
+  and `OptionalDependencyError` for an SVG mark without the `svg` extra), with the ones a plotnine layer, a reactable
+  column or a plottable column raises when it is drawn marked as such. The 17 top-level functions' examples now run
+  offline in `tests/test_submodule_examples.py`, as the submodules' do. The concept and adapter pages say what the code
+  does: the cache's `urlimages/` directory, shared downloads and `UnsafeDownloadError` (not an `OfflineError`);
+  `id_system` and `strict` on `palette()`, `team_colors()` and `logo_url()`; the MLB Stats API codes whose team a
+  season does change (`KCA`, `WAS`, `SEA`, `MIL`), where the page said no code's did; the libraries each extra installs.
+- Issue templates: the bug report asks for the plotting or table library and the league, and takes the whole
+  `sdvplot.versions()` output; the feature request lists every top-level function, the submodule helpers, new
+  adapters and new leagues; the wrong-team template, now also for wrong colors, picks the league from a list and asks
+  for the team id returned and expected, the season and the team's `color_source`. A test keeps those lists equal to
+  the leagues, adapters, functions and color sources sdvplot has. The issue chooser links the docs and private
+  security reporting.
 
 ### Fixed
 
