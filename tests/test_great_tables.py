@@ -275,3 +275,20 @@ def test_the_team_theme_without_a_team_and_its_errors(monkeypatch):
     with pytest.warns(SdvplotWarning, match="no colors on file"):
         html = gt_theme_sdv_team(GT(pl.DataFrame({"w": [1]})), "LV", league="nfl").as_raw_html()
     assert "background: #0B1A33;}" in html
+
+
+@pytest.mark.parametrize(
+    "scoped",
+    [
+        lambda gt: sgt.gt_theme_sdv(gt),  # wave A
+        lambda gt: sgt.gt_theme_almanac(gt),  # wave B
+        lambda gt: sgt.gt_border_grid(gt),  # wave C1
+        lambda gt: sgt.gt_watermark(gt, "DRAFT"),  # wave C2
+    ],
+    ids=["gt_theme_sdv", "gt_theme_almanac", "gt_border_grid", "gt_watermark"],
+)
+def test_a_table_with_an_empty_id_gets_a_random_one_for_its_scoped_css(scoped):
+    """An empty id scopes nothing ("# td" selects no cell), so every helper that scopes CSS assigns one."""
+    html = scoped(GT(pl.DataFrame({"w": [1]}), id="")).as_raw_html()
+    table_id = re.search(r'<div id="([^"]*)"', html).group(1)
+    assert table_id and f"#{table_id} " in html

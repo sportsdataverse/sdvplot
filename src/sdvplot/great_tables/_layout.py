@@ -29,7 +29,7 @@ from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _STYLE_KEYS, _css_len, _fonts, _style_css
-from sdvplot.great_tables._marks import _secondary_on
+from sdvplot.great_tables._marks import _secondary_on, _table_id
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -138,15 +138,6 @@ def _in_header(gt: GT, block: str, fonts: list[str]) -> GT:
 
 _JUSTIFY = {"left": "flex-start", "right": "flex-end", "center": "center"}
 _RANK_PALETTE = ("#3D8B6E", "#9DC5A7", "#EDE0CC", "#DB9070", "#BE4D3A")
-
-
-def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id, assigning a random one when it has none (scoped CSS needs it)."""
-    table_id = gt._options.table_id.value
-    if table_id is None:
-        table_id = "".join(random.choices(string.ascii_lowercase, k=10))
-        gt = gt.with_id(table_id)
-    return gt, table_id
 
 
 def gt_title_header(

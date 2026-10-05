@@ -71,7 +71,7 @@ HTML bytes.
 | all 18 themes | `cells_column_spanners()` | `loc.spanner_labels(ids=<every spanner id>)` (great_tables raises without ids); skipped on a table without spanners | ported |
 | all 18 themes | `tab_options(footnotes.border.bottom.style = "none")` | no such option; great_tables' `.gt_footnotes` is already `border-bottom-style: none` | dropped (no-op) |
 | all 18 themes | `.theme_scale_output()` (density rescales a finished table: `_styles` text sizes and the size/padding options, gt's defaults included) | `_scale_output()` walks `GT._styles` and `GT._options` the same way; sizes match R on athletic, gtutils, kenpom, ncaa, pl, savant, sofa, tier at "compact" and "social" | ported |
-| all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())` | ported |
+| all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())`; an empty id gets a random one too (R keeps `""`, which scopes nothing). Every wave shares this one helper (`_marks._table_id`) | ported (stricter) |
 | all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color raises `ValueError` naming the argument | ported (stricter) |
 | all 18 themes | `...` to `tab_options()`, last | `**options` to `tab_options()`, last (great_tables' snake_case names) | ported |
 

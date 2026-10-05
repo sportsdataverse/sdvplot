@@ -134,3 +134,5 @@
 
 - Muted text (`gt_theme_sdv_team`'s subtitle, the `gt_legend_discrete` subtitle) blends at sdvplotR's exact weights,
   as the table themes already did; a few colors were one step off in a channel.
+- A table whose id is the empty string gets a random id before a theme or cell, border or watermark helper scopes CSS
+  to it; only `gt_theme_sdv` did this before, and elsewhere the CSS (`# td`) reached no cell.

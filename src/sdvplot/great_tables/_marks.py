@@ -332,7 +332,8 @@ SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
 
 
 def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id (the theme's CSS is scoped to it), assigning a random one when it has none."""
+    """The table's id, so CSS can be scoped to ``#id``, assigning a random one when it has none or an empty one
+    (sdvplotR's ``.table_id``; ``"#"`` alone would scope nothing)."""
     table_id = gt._options.table_id.value
     if table_id:
         return gt, str(table_id)

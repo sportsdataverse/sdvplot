@@ -17,11 +17,11 @@ import re
 from typing import Any
 
 import narwhals as nw
-from great_tables import GT, html, loc, px, random_id, style
+from great_tables import GT, html, loc, px, style
 from great_tables._helpers import GoogleFont
 
 from sdvplot._contrast import hex6, on_color
-from sdvplot.great_tables._marks import DENSITY, _secondary_on
+from sdvplot.great_tables._marks import DENSITY, _secondary_on, _table_id
 
 # gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
 R_FONTS = (
@@ -106,15 +106,6 @@ def _color(value: str, arg: str) -> str:
         return hex6(value)
     except ValueError:
         raise ValueError(f"{arg} must be a hex color such as '#8C2F1E', not {value!r}") from None
-
-
-def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id, assigning a random one when it has none, so the theme's CSS reaches this table alone."""
-    table_id = gt._options.table_id.value
-    if table_id is None:
-        table_id = random_id()
-        gt = gt.with_id(table_id)
-    return gt, table_id
 
 
 def _shape(gt: GT) -> tuple[list[str], int]:

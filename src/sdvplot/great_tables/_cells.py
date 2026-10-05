@@ -21,7 +21,7 @@ from typing import Any, cast
 from urllib.parse import quote
 
 import narwhals as nw
-from great_tables import GT, google_font, html, loc, md, random_id, style, vals
+from great_tables import GT, google_font, html, loc, md, style, vals
 from great_tables._gt_data import Body, Boxhead, ColInfo
 from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
@@ -29,7 +29,7 @@ from great_tables._text import _process_text
 from sdvplot._contrast import hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _constant
+from sdvplot.great_tables._marks import _constant, _table_id
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -431,15 +431,6 @@ def gt_group_stripes(gt: GT, color: str = "#F5F5F5", start: int = 2, include_stu
 # borders, bars, rules and captions: scoped CSS keyed on the table id
 
 _borders = style.borders  # gt_cutline's ``style`` argument shadows the great_tables module
-
-
-def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id, assigning a random one when it has none, so CSS can be scoped to ``#id`` (``.table_id``)."""
-    table_id = gt._options.table_id.value
-    if table_id is None:
-        table_id = random_id()
-        gt = gt.with_id(table_id)
-    return gt, table_id
 
 
 def _md(text: str) -> str:
