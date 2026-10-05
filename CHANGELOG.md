@@ -101,8 +101,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   and the Axes' data limits are byte-for-byte the same.
 - `gt_theme_kenpom` no longer wipes cell fills. Its row bands were `!important` cell fills, so theming a table after
   `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
-  the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn, which every cell
-  fill shows over, in either order and in the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
+  the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn (row group
+  headings and summary rows are neither counted nor painted), which every cell fill shows over, in either order and in
+  the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
 - Row striping no longer covers the text color sdvplot's fill helpers draw in VS Code and Positron notebooks. There,
   great_tables' repr marks its whole stylesheet `!important` (Jupyter, Quarto, Databricks and saved files do not), and
   on every other row the stripe's text color beat the plain inline ink that `gt_color_results`, `gt_bold_rows`,
