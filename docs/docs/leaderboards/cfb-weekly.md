@@ -100,20 +100,20 @@ fbs = (
     .agg(pl.col("school", "conference").last(), w=pl.col("win").sum(), l=(~pl.col("win")).sum())
     .with_columns(record=pl.format("{}-{}", "w", "l"))
 )
-fbs.head()
+fbs.sort("school").head()
 ```
 
 <div class="sdv-output">
 
 **Updated 2026-10-05:** the 2026 season through week 5.
 
-| team_id | school           | conference    | w | l | record |
-|---------|------------------|---------------|---|---|--------|
-| 150     | Duke             | ACC           | 4 | 0 | 4-0    |
-| 2711    | Western Michigan | Mid-American  | 3 | 2 | 3-2    |
-| 2005    | Air Force        | Mountain West | 3 | 1 | 3-1    |
-| 62      | Hawai'i          | Mountain West | 1 | 4 | 1-4    |
-| 2026    | App State        | Sun Belt      | 3 | 1 | 3-1    |
+| team_id | school    | conference    | w | l | record |
+|---------|-----------|---------------|---|---|--------|
+| 2005    | Air Force | Mountain West | 3 | 1 | 3-1    |
+| 2006    | Akron     | Mid-American  | 1 | 4 | 1-4    |
+| 333     | Alabama   | SEC           | 5 | 0 | 5-0    |
+| 2026    | App State | Sun Belt      | 3 | 1 | 3-1    |
+| 12      | Arizona   | Big 12        | 4 | 1 | 4-1    |
 
 </div>
 
@@ -140,13 +140,13 @@ assert plays.schema["pos_team_id"] == fbs.schema["team_id"]
 avg = plays["EPA"].mean()
 offense = plays.group_by("pos_team_id").agg(faced_off=pl.col("EPA").mean())  # what each defense faced
 defense = plays.group_by("def_pos_team_id").agg(faced_def=pl.col("EPA").mean())  # what each offense faced
-adjusted = (
-    plays.join(defense, on="def_pos_team_id")
-    .join(offense, on="pos_team_id")
-    .with_columns(
-        adj_off=pl.col("EPA") - (pl.col("faced_def") - avg),
-        adj_def=pl.col("EPA") - (pl.col("faced_off") - avg),
+adjusted = (  # keep the play order, so the means below sum in the same order every week
+    plays.join(defense, on="def_pos_team_id", maintain_order="left").join(
+        offense, on="pos_team_id", maintain_order="left"
     )
+).with_columns(
+    adj_off=pl.col("EPA") - (pl.col("faced_def") - avg),
+    adj_def=pl.col("EPA") - (pl.col("faced_off") - avg),
 )
 ratings = (
     adjusted.group_by(team_id="pos_team_id")
@@ -154,7 +154,7 @@ ratings = (
     .join(adjusted.group_by(team_id="def_pos_team_id").agg(dfn=pl.col("adj_def").mean()), on="team_id")
     .with_columns(net=pl.col("off") - pl.col("dfn"))
     .join(fbs, on="team_id")
-    .sort("net", descending=True)
+    .sort(["net", "team_id"], descending=[True, False])  # a tiebreaker keeps the weekly re-render stable
     .with_row_index("rank", offset=1)
     .with_columns(pl.col("team_id").cast(pl.String))  # sdvplot ids are strings; cast the integer, never a float
 )
@@ -188,7 +188,7 @@ qualitative = [c for i, c in enumerate(plt.get_cmap("tab10").colors) if i != 7] 
 CONF_COLORS = {conf: to_hex(color) for conf, color in zip(conferences, qualitative, strict=False)}  # tab10 minus grey
 
 gt = (
-    GT(top25)
+    GT(top25, id="cfb-top25")  # a fixed id: great_tables otherwise draws a random one each run
     .tab_header(f"College football top 25, {season}", f"Opponent-adjusted EPA per play, {through}")
     .fmt_number(["off", "dfn", "net"], decimals=3, force_sign=True)
     .data_color("conference", palette=[CONF_COLORS[c] for c in conferences], domain=conferences)
@@ -239,11 +239,11 @@ to its highest team.
 
 ```python
 by_conf = ratings.filter(pl.col("conference").is_not_null())
-order = by_conf.group_by("conference").agg(pl.col("net").mean()).sort("net")["conference"].to_list()
+order = by_conf.group_by("conference").agg(pl.col("net").mean()).sort("net", "conference")["conference"].to_list()
 
 fig, ax = plt.subplots(figsize=(10, 7.5))
 for row, conf in enumerate(order):
-    teams = by_conf.filter(pl.col("conference") == conf).sort("net")
+    teams = by_conf.filter(pl.col("conference") == conf).sort("net", "team_id")
     ax.hlines(row, teams["net"].min(), teams["net"].max(), color=CONF_COLORS[conf], lw=7, alpha=0.35, zorder=1)
     ax.plot(teams["net"].mean(), row, marker="|", markersize=26, mew=2.5, color=CONF_COLORS[conf], zorder=2)
     rows = [row + (0.17 if i % 2 else -0.17) for i in range(teams.height)]  # alternate up and down: less overlap

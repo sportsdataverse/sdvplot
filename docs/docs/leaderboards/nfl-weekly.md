@@ -87,6 +87,7 @@ per_game = (
     .join(
         plays.group_by("game_id", team="defteam").agg(dfn=pl.col("epa").sum(), dfn_n=pl.len()), on=["game_id", "team"]
     )
+    .sort("team", "week")  # a fixed row order makes every sum below come out bit-for-bit the same each week
 )
 
 
@@ -101,7 +102,7 @@ def per_play(games):
     )
 
 
-last3 = per_play(per_game.sort("week").group_by("team", maintain_order=True).tail(3)).select("team", last3="net")
+last3 = per_play(per_game.group_by("team", maintain_order=True).tail(3)).select("team", last3="net")
 
 games = schedule.filter(pl.col("game_type") == "REG").join(pbp.select("game_id").unique(), on="game_id", how="semi")
 sides = pl.concat(
@@ -126,7 +127,7 @@ power = (
     .join(last3, on="team")
     .join(record, on="team")
     .join(nicknames, on="team")
-    .sort("net", descending=True)
+    .sort(["net", "team"], descending=[True, False])  # a tiebreaker keeps the weekly re-render stable
     .with_row_index("rank", offset=1)
     .select("rank", "team", "name", "record", "diff", "off_epa", "def_epa", "net", "last3")
 )
@@ -153,7 +154,7 @@ from sdvplot.great_tables import gt_delta, gt_merge_stack_team_color, gt_save_cr
 GOOD_BAD = ["#c84630", "#f7f7f7", "#2e8b57"]
 epa = ["off_epa", "def_epa", "net", "last3"]
 gt = (
-    GT(power)
+    GT(power, id="nfl-power")  # a fixed id: great_tables otherwise draws a random one each run
     .tab_header(f"NFL power table, {season}", f"Ranked by net EPA per play, {through}")
     .fmt_number(epa, decimals=3, force_sign=True)
     .fmt_number("diff", decimals=0, force_sign=True)
@@ -239,7 +240,7 @@ qbs = (
     dropbacks.group_by("id")
     .agg(name=pl.col("name").first(), team=pl.col("posteam").last(), n=pl.len(), epa=pl.col("qb_epa").mean())
     .filter(pl.col("n") >= 15 * week)
-    .sort("epa", descending=True)
+    .sort(["epa", "id"], descending=[True, False])
     .head(12)
     .reverse()
 )

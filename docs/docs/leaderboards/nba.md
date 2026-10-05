@@ -121,7 +121,7 @@ ratings = (
     )
     .with_columns(pct=pl.col("w") / (pl.col("w") + pl.col("l")), net=pl.col("ortg") - pl.col("drtg"))
     .join(teams, on="team")
-    .sort("pct", "net", descending=True)
+    .sort(["pct", "net", "team"], descending=[True, True, False])  # a tiebreaker keeps re-renders stable
 )
 ratings.head()
 ```
@@ -155,7 +155,7 @@ table = ratings.with_columns(
 ).sort("conference", "seed")
 table = table.select("conference", "seed", "abbr", "name", "record", "pct", "last10", "ortg", "drtg", "net")
 gt = (
-    GT(table, groupname_col="conference")
+    GT(table, groupname_col="conference", id="nba-standings")  # fixed id: no random one each run
     .tab_header(f"NBA standings and ratings, {label(season)}", subtitle)
     .fmt_number("pct", decimals=3)
     .cols_align("left", "name")
@@ -195,7 +195,7 @@ gt_save_crop(gt, width=900)
 The same net ratings as bars in team colors; `axis_logos` swaps the abbreviations on the x axis for logos.
 
 ```python
-by_net = ratings.sort("net", descending=True)
+by_net = ratings.sort(["net", "team"], descending=[True, False])
 fig, ax = plt.subplots(figsize=(10, 5.5))
 ax.bar(by_net["abbr"], by_net["net"], color=sdvplot.team_colors(by_net["team"].to_list(), "nba"))
 ax.axhline(0, color="#222222", lw=0.8)
@@ -236,7 +236,7 @@ leaders = (
         ppg=pl.col("points").mean(),
     )
     .filter(pl.col("gp") >= games_played / 2)
-    .sort("ppg", descending=True)
+    .sort(["ppg", "athlete_id"], descending=[True, False])
     .head(12)
     .reverse()
 )

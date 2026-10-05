@@ -112,7 +112,7 @@ ratings = (
     )
     .with_columns(pct=pl.col("w") / (pl.col("w") + pl.col("l")), net=pl.col("ortg") - pl.col("drtg"))
     .join(teams, on="team")
-    .sort("pct", "net", descending=True)
+    .sort(["pct", "net", "team"], descending=[True, True, False])  # a tiebreaker keeps re-renders stable
 )
 ratings.head()
 ```
@@ -145,7 +145,7 @@ table = ratings.with_columns(
 ).sort("conference", "seed")
 table = table.select("conference", "seed", "abbr", "name", "record", "pct", "last10", "ortg", "drtg", "net")
 gt = (
-    GT(table, groupname_col="conference")
+    GT(table, groupname_col="conference", id="wnba-standings")  # fixed id: no random one each run
     .tab_header(f"WNBA standings and ratings, {label(season)}", subtitle)
     .fmt_number("pct", decimals=3)
     .cols_align("left", "name")
@@ -240,13 +240,13 @@ leaders = (
         apg=pl.col("assists").mean(),
     )
     .filter(pl.col("gp") >= games_played / 2)
-    .sort("ppg", descending=True)
+    .sort(["ppg", "athlete_id"], descending=[True, False])
     .head(10)
     .with_row_index("rank", offset=1)
     .select("rank", "athlete_id", "name", "team", "gp", "ppg", "rpg", "apg")
 )
 leaders_gt = (
-    GT(leaders)
+    GT(leaders, id="wnba-leaders")
     .tab_header(f"WNBA scoring leaders, {label(season)}", f"{subtitle}; minimum {games_played / 2:.0f} games")
     .fmt_number(["rpg", "apg"], decimals=1)
     .cols_label(rank="", athlete_id="", name="Player", team="", gp="GP", ppg="PPG", rpg="RPG", apg="APG")

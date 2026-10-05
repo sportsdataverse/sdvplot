@@ -83,7 +83,7 @@ standings = standings.join(clubs, on="team_id").select(
     diff="run_differential",
     strk="streak_streak_code",
 )
-standings.head()
+standings.sort("division", "rank").head()
 ```
 
 <div class="sdv-output">
@@ -92,11 +92,11 @@ standings.head()
 
 | abbreviation | team_name | division                | rank | w  | l  | pct  | gb   | rs  | ra  | diff | strk |
 |--------------|-----------|-------------------------|------|----|----|------|------|-----|-----|------|------|
-| ATH          | Athletics | American League West    | 4    | 64 | 98 | .395 | 17.0 | 699 | 937 | -238 | L2   |
-| PIT          | Pirates   | National League Central | 3    | 82 | 80 | .506 | 21.0 | 767 | 739 | 28   | W1   |
-| SD           | Padres    | National League West    | 2    | 91 | 71 | .562 | 9.0  | 722 | 681 | 41   | W2   |
-| SEA          | Mariners  | American League West    | 3    | 76 | 86 | .469 | 5.0  | 664 | 722 | -58  | W2   |
-| SF           | Giants    | National League West    | 4    | 65 | 97 | .401 | 35.0 | 669 | 760 | -91  | L5   |
+| CLE          | Guardians | American League Central | 1    | 85 | 77 | .525 | -    | 678 | 667 | 11   | L1   |
+| CWS          | White Sox | American League Central | 2    | 84 | 78 | .519 | 1.0  | 776 | 720 | 56   | W1   |
+| MIN          | Twins     | American League Central | 3    | 77 | 85 | .475 | 8.0  | 739 | 797 | -58  | W1   |
+| DET          | Tigers    | American League Central | 4    | 76 | 86 | .469 | 9.0  | 723 | 652 | 71   | L1   |
+| KC           | Royals    | American League Central | 5    | 69 | 93 | .426 | 16.0 | 690 | 810 | -120 | W1   |
 
 </div>
 
@@ -115,7 +115,7 @@ table = standings.sort("division", "rank").select(
 )
 reach = max(abs(table["diff"].min()), table["diff"].max())
 gt = (
-    GT(table, groupname_col="division")
+    GT(table, groupname_col="division", id="mlb-standings")  # fixed id: no random one each run
     .tab_header(f"MLB standings, {season}", f"By division, {through}")
     .cols_label(
         abbreviation="",
@@ -159,7 +159,7 @@ gt_save_crop(gt, width=900)
 Every club's run differential as a bar in its colors, best at the top, the logo at the end of each bar.
 
 ```python
-rd = standings.sort("diff")
+rd = standings.sort("diff", "abbreviation")  # ties broken by name, so each re-render matches
 fig, ax = plt.subplots(figsize=(9, 8))
 y = list(range(rd.height))
 ax.barh(y, rd["diff"], color=sdvplot.team_colors(rd["abbreviation"].to_list(), "mlb"), height=0.72)
@@ -221,7 +221,7 @@ for name, group, stat, order, fmt in CATEGORIES:
 leaders = pl.DataFrame(rows)
 
 leaders_gt = (
-    GT(leaders, groupname_col="category")
+    GT(leaders, groupname_col="category", id="mlb-leaders")
     .tab_header(f"MLB leaders, {season}", f"Top three, {through}")
     .cols_label(rank="", espn_id="", player="Player", team="", value="")
     .cols_align("right", "value")

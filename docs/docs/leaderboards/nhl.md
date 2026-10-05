@@ -118,7 +118,7 @@ table = standings.sort("division_name", "division_sequence").select(
     strk=pl.format("{}{}", "streak_code", "streak_count"),
 )
 gt = (
-    GT(table, groupname_col="division")
+    GT(table, groupname_col="division", id="nhl-standings")  # fixed id: no random one each run
     .tab_header(f"NHL standings, {label(season)}", through[:1].upper() + through[1:])
     .fmt_number("pts_pct", decimals=3)
     .fmt_number("diff", decimals=0, force_sign=True)
@@ -168,7 +168,7 @@ Goals for minus goals against, all 32 teams, in team colors; `axis_logos` swaps 
 logos.
 
 ```python
-gd = standings.sort("goal_differential", descending=True)
+gd = standings.sort(["goal_differential", "team_abbrev_default"], descending=[True, False])  # ties: by code
 fig, ax = plt.subplots(figsize=(10, 5.5))
 ax.bar(
     gd["team_abbrev_default"],
@@ -214,7 +214,7 @@ for a in raw["athletes"]:
             "points": stats["points"],
         }
     )
-leaders = pl.DataFrame(rows).sort("points").tail(10)
+leaders = pl.DataFrame(rows).sort("points", descending=True, maintain_order=True).head(10).reverse()  # ties: ESPN order
 
 top = leaders["points"].max()
 fig, ax = plt.subplots(figsize=(9, 6.5))
