@@ -29,7 +29,7 @@ takes ``columns`` and a ``height`` in pixels, with no ``alpha`` or ``variant`` (
 |---|---|
 | `target` | The plot or table object. Its type picks the adapter. |
 | `*args` | Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and ``teams`` (the team values to draw), in that order. For a table: ``columns`` (the columns whose cells become marks). |
-| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key) and ``season`` (one season or one per team). For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30). |
+| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key) and ``season`` (for a plot one season or one per team, for a table one season). For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30). |
 
 ## Returns
 
@@ -37,10 +37,14 @@ takes ``columns`` and a ``height`` in pixels, with no ``alpha`` or ``variant`` (
 
 ## Raises
 
-- `UnsupportedTargetError`: If no adapter is registered for ``target``'s library.
-- `OptionalDependencyError`: If the adapter's optional extra is not installed.
+- `UnsupportedTargetError`: (a TypeError) If no adapter is registered for ``target``'s library, or the adapter cannot draw on this kind of ``target`` (a pygal Bar chart, a folium FeatureGroup).
+- `OptionalDependencyError`: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a raster adapter draws is an SVG and the ``svg`` extra is not installed.
 - `TypeError`: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
-- `ValueError`: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's).
+- `InputError`: (a ValueError) If a value is out of range: a plot ``height`` outside (0, 1] or ``alpha`` outside [0, 1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's); or ``league``, ``id_system``, ``variant`` or ``season`` is not one sdvplot knows.
+- `ValueError`: If the adapter's own checks fail (inputs of different lengths, an axis it cannot place on); its page lists them.
+- `UnresolvedTeamError`: (a ValueError) If a table adapter is given ``strict=True`` and a value does not resolve.
+- `OfflineError`: If a download the adapter needs (the logo manifest, a mark's image, a headshot) fails and no cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 

@@ -158,7 +158,7 @@ def teams(league: str | None = None) -> pl.DataFrame:
         publishes any) or "fallback" (a placeholder).
 
     Raises:
-        ValueError: If ``league`` is given and unknown.
+        InputError: (a ValueError) If ``league`` is given and is not a known league key.
 
     Example:
         ::

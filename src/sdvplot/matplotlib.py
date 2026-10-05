@@ -201,11 +201,19 @@ def add_logos(
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target
-            has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant``
+            is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+        ValueError: If ``x``/``y``/``teams`` differ in length, the target has several Axes, or the target is a Cartopy
+            GeoAxes and ``transform`` is None.
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
-            the CDN refuses it or sends the wrong file).
+        OfflineError: If the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also
+            an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not
+            match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for a mark would put the file outside
+            the cache directory.
+        OptionalDependencyError: If a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -271,11 +279,19 @@ def add_wordmarks(
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
-            several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant``
+            is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+        ValueError: If the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and
+            ``transform`` is None.
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
-            the CDN refuses it or sends the wrong file).
+        OfflineError: If the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also
+            an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not
+            match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for a mark would put the file outside
+            the cache directory.
+        OptionalDependencyError: If a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -328,11 +344,15 @@ def add_headshots(
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
-            several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league`` has no ESPN headshots, or
+            ``id_system`` is not valid for ``league``.
+        ValueError: If the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and
+            ``transform`` is None.
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
-            the CDN refuses it or sends the wrong file).
+        OfflineError: If a headshot, or with ``id_system="gsis"`` the nflverse player table, is neither cached nor
+            downloadable (a DownloadError, also an OSError, for an HTTP error status).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -421,8 +441,10 @@ def add_images(
         an image, a failed download) or whose x or y is missing are skipped, with one SdvplotWarning per reason.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target
-            has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range.
+        ValueError: If ``x``/``y``/``paths`` differ in length, the target has several Axes, or the target is a Cartopy
+            GeoAxes and ``transform`` is None. (An image that cannot be read or downloaded is skipped with a warning,
+            not raised.)
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
 
     Example:
@@ -496,10 +518,18 @@ def axis_logos(
         object: ``target`` itself, drawn on.
 
     Raises:
-        ValueError: If ``axis`` is not "x"/"y", ``height`` is out of range, or the target has several Axes.
+        InputError: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or
+            ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+        ValueError: If ``axis`` is not "x"/"y", or the target has several Axes.
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
-            the CDN refuses it or sends the wrong file).
+        OfflineError: If the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also
+            an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not
+            match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for a mark would put the file outside
+            the cache directory.
+        OptionalDependencyError: If a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -704,9 +734,20 @@ def title_image(
         path that cannot be read gives one SdvplotWarning and the title without it.
 
     Raises:
-        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        TypeError: If ``league`` is given and ``image`` is not one team.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1, or ``league`` is given and it
+            is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
         ValueError: If ``side`` is not "left"/"right", or the target has several Axes.
-        OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If ``league`` is given and the team's logo (or the logo manifest) is neither cached nor
+            downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError
+            when it sends a file that does not match the manifest's sha256, or one PIL cannot decode). An image by URL
+            or path that cannot be read is skipped with a warning instead.
+        UnsafeDownloadError: (an OSError) If ``league`` is given and a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) If ``league`` is given and the manifest's sha256 or extension for the logo
+            would put the file outside the cache directory.
+        OptionalDependencyError: If ``league`` is given, the logo is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -780,8 +821,17 @@ def team_tiers(
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, ``height``/``alpha`` is
-            out of range, or ``theme`` is not "dark" or "light".
+        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``theme`` is not "dark" or
+            "light".
+        OfflineError: Unless ``devel=True``, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) Unless ``devel=True``, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) Unless ``devel=True``, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: Unless ``devel=True``, if a logo is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::

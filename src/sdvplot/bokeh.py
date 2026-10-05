@@ -122,10 +122,18 @@ def add_logos(
         object: ``target`` itself, with one ``image_url`` renderer named ``sdvplot_logo`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
-            pixel height (neither ``frame_height`` nor ``height`` is set).
-        TypeError: If ``target`` is not a Bokeh figure.
-        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant``
+            is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+        ValueError: If the inputs differ in length, or the figure has no pixel height (neither ``frame_height`` nor
+            ``height`` is set).
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a Bokeh figure.
+        OfflineError: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a
+            DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a
+            file that does not match the manifest's sha256).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would
+            put the file outside the cache directory.
 
     Example:
         ::
@@ -180,10 +188,18 @@ def add_wordmarks(
         object: ``target`` itself, with one renderer named ``sdvplot_wordmark`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
-            pixel height (neither ``frame_height`` nor ``height`` is set).
-        TypeError: If ``target`` is not a Bokeh figure.
-        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league``, ``id_system`` or ``variant``
+            is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+        ValueError: If the inputs differ in length, or the figure has no pixel height (neither ``frame_height`` nor
+            ``height`` is set).
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a Bokeh figure.
+        OfflineError: If the logo manifest, or with ``embed=True`` a mark's image, is neither cached nor downloadable (a
+            DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a
+            file that does not match the manifest's sha256).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
+        UnsafeCachePathError: (a ValueError) If ``embed=True`` and the manifest's sha256 or extension for a mark would
+            put the file outside the cache directory.
 
     Example:
         ::
@@ -233,10 +249,15 @@ def add_headshots(
         object: ``target`` itself, with one renderer named ``sdvplot_headshot`` added.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no
-            pixel height (neither ``frame_height`` nor ``height`` is set).
-        TypeError: If ``target`` is not a Bokeh figure.
-        OfflineError: If ``embed=True`` and an image is neither cached nor downloadable.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, ``league`` has no ESPN headshots, or
+            ``id_system`` is not valid for ``league``.
+        ValueError: If the inputs differ in length, or the figure has no pixel height (neither ``frame_height`` nor
+            ``height`` is set).
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a Bokeh figure.
+        OfflineError: If the nflverse player table (``id_system="gsis"``), or with ``embed=True`` a headshot, is neither
+            cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -268,8 +289,8 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
         object: Never returns.
 
     Raises:
-        TypeError: Always. Draw the logos inside the plot with ``add_logos`` at a y below the bars, or use the
-            matplotlib, Plotly or Altair adapter for axis logos.
+        UnsupportedTargetError: (a TypeError) Always. Draw the logos inside the plot with ``add_logos`` at a y below the
+            bars, or use the matplotlib, Plotly or Altair adapter for axis logos.
 
     Example:
         ::

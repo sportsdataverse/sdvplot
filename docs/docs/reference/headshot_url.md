@@ -35,8 +35,9 @@ str | None: The image URL, or None when the id is missing, malformed, or not in 
 
 ## Raises
 
-- `ValueError`: If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
-- `OfflineError`: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists.
+- `InputError`: (a ValueError) If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
+- `OfflineError`: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 

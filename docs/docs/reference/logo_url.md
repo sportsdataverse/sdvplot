@@ -48,9 +48,10 @@ str | None: The archive URL (content-addressed, immutable), or None when no mark
 ## Raises
 
 - `TypeError`: If ``team`` is not a single value.
-- `ValueError`: If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is out of range.
-- `UnresolvedTeamError`: If ``strict=True`` and the team does not resolve.
-- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a name no mark in the archive has (a typo; the message lists the league's variants), or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and the team does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 

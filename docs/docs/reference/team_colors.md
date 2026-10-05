@@ -42,9 +42,8 @@ str | list | Series | None: The hex color for each team, None where a team does 
 ## Raises
 
 - `TypeError`: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-- `InputError`: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1 ``team_colors(teams, league)`` order) or ``which`` is not "primary"/"secondary".
-- `ValueError`: If ``season`` is not a year (or a list whose length does not match the teams), or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
+- `InputError`: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1 ``team_colors(teams, league)`` order), ``which`` is not "primary"/"secondary", ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons sdvplot knows for the league, or is a list whose length does not match the teams.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
 ## Example
 

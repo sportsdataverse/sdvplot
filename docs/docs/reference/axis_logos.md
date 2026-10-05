@@ -20,7 +20,8 @@ Routes to the adapter for ``target``'s library (matplotlib, plotnine, Plotly, Al
 the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. The
 adapters that draw axis logos (matplotlib, plotnine, Plotly and Altair) all take ``axis_logos(target, axis, *,
 league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")``, and Plotly and Altair
-also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no axis logos: there it raises TypeError.
+also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no axis logos: there it raises
+UnsupportedTargetError (a TypeError).
 
 ## Arguments
 
@@ -28,7 +29,7 @@ also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no ax
 |---|---|
 | `target` | The plot object. Its type picks the adapter. |
 | `*args` | Passed to the adapter: ``axis`` (which axis' tick labels to replace, ``"x"`` or ``"y"``). |
-| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season or one per team, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1), and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``. |
+| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season for every label, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1), and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``. |
 
 ## Returns
 
@@ -36,10 +37,12 @@ also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no ax
 
 ## Raises
 
-- `UnsupportedTargetError`: If no adapter is registered for ``target``'s library.
-- `OptionalDependencyError`: If the adapter's optional extra is not installed.
-- `TypeError`: If ``target``'s library has no axis logos (Bokeh, HoloViews, folium, pygal, great_tables).
-- `ValueError`: If ``height`` is outside (0, 1].
+- `UnsupportedTargetError`: (a TypeError) If no adapter is registered for ``target``'s library, its library has no axis logos (Bokeh, HoloViews, folium, pygal, great_tables), or the adapter cannot draw on this kind of ``target``.
+- `OptionalDependencyError`: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a raster adapter draws is an SVG and the ``svg`` extra is not installed.
+- `InputError`: (a ValueError) If ``height`` is outside (0, 1], or ``league``, ``id_system``, ``mark_type``, ``variant`` or ``season`` is not one sdvplot knows.
+- `ValueError`: If ``axis`` is not "x"/"y", or the axis is not one the adapter can read team labels from (its page lists the cases).
+- `OfflineError`: If a download the adapter needs (the logo manifest, a mark's image) fails and no cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 

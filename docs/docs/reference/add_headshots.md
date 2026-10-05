@@ -37,10 +37,13 @@ arguments. A plot (matplotlib, plotnine, Plotly, Altair, Bokeh, HoloViews, foliu
 
 ## Raises
 
-- `UnsupportedTargetError`: If no adapter is registered for ``target``'s library.
-- `OptionalDependencyError`: If the adapter's optional extra is not installed.
+- `UnsupportedTargetError`: (a TypeError) If no adapter is registered for ``target``'s library, or the adapter cannot draw on this kind of ``target`` (a pygal Bar chart, a folium FeatureGroup).
+- `OptionalDependencyError`: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a raster adapter draws is an SVG and the ``svg`` extra is not installed.
 - `TypeError`: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
-- `ValueError`: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's).
+- `InputError`: (a ValueError) If a value is out of range: a plot ``height`` outside (0, 1] or ``alpha`` outside [0, 1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's); or ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+- `ValueError`: If the adapter's own checks fail (inputs of different lengths, an axis it cannot place on); its page lists them.
+- `OfflineError`: If a download the adapter needs (the logo manifest, a mark's image, a headshot) fails and no cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+- `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ## Example
 
