@@ -68,7 +68,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 4 (62 games).
+**Season to date:** the 2026 season through week 4 (63 games).
 
 </div>
 
