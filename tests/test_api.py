@@ -161,6 +161,28 @@ def test_a_public_submodule_shows_only_its_all(name):
     assert own <= set(mod.__all__), own - set(mod.__all__)
 
 
+# Past its leading "what" arguments (the target and data, a table and its columns) a public function's arguments are
+# keyword-only, so a later release can add or reorder options without silently rebinding a positional value (N1).
+MAX_POSITIONAL = 4
+# Functions allowed more positional arguments, each with its reason. Empty: none needs more today.
+POSITIONAL_ALLOWLIST: dict[str, int] = {}
+
+
+@pytest.mark.parametrize("name", ["", *SUBMODULES])
+def test_public_functions_take_at_most_four_positional_arguments(name):
+    mod = _submodule(name) if name else sdvplot
+    over = {}
+    for n in mod.__all__:
+        fn = getattr(mod, n)
+        if not inspect.isfunction(fn):
+            continue
+        params = inspect.signature(fn).parameters.values()
+        count = sum(p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD) for p in params)
+        if count > POSITIONAL_ALLOWLIST.get(f"{mod.__name__}.{n}", MAX_POSITIONAL):
+            over[n] = count
+    assert not over, f"put a bare * after the leading arguments of {over}"
+
+
 def test_the_top_level_shows_only_its_all_and_the_submodules():
     shown = {n for n in dir(sdvplot) if not n.startswith("_")}
     assert shown - set(sdvplot.__all__) <= set(SUBMODULES), shown - set(sdvplot.__all__) - set(SUBMODULES)

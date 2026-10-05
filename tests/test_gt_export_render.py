@@ -95,5 +95,7 @@ def test_render_grid_on_a_colored_bg_is_trimmed_evenly(tmp_path):
 @pytest.mark.render
 def test_render_batch_matches_widths(tmp_path):
     df = pl.DataFrame({"g": ["short", "a much longer group value"], "v": [1, 2]})
-    paths = gt_save_batch(df, "g", lambda d, v: GT(d).tab_header(title=str(v)), "t-{group}.png", tmp_path, quiet=True)
+    paths = gt_save_batch(
+        df, "g", lambda d, v: GT(d).tab_header(title=str(v)), "t-{group}.png", dir=tmp_path, quiet=True
+    )
     assert len({size(p)[0] for p in paths}) == 1

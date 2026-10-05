@@ -59,6 +59,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   (298). A secondary equal to its primary is dropped (5 teams). `tools/fetch_sources.py --colors-only` refreshes the
   two new snapshots, `data-raw/espn_colors.csv` and `data-raw/logo_colors.csv`.
 
+- The `sdvplot.great_tables` helpers take their options by keyword only: past the table and the columns (or the
+  other leading "what" arguments: `gt_delta(gt, from_, to)`, `gt_highlight_cells(gt, columns, condition)`,
+  `gt_significance(gt, columns, p_columns)`, `gt_tiers(gt, levels, colors)`, `gt_save_batch(data, group, fn, file)`,
+  `gt_save_crop(data, file)`, `gt_title_header(gt, title)` and so on) every argument is keyword-only, so a later
+  release can add an option without rebinding a positional value. No public function of sdvplot or its submodules
+  takes more than four arguments by position (a test keeps it so). Migrate by naming the option:
+  `gt_color_pills(gt, "pts", palette=...)`, `gt_save_batch(df, "conf", build, "{group}.png", dir="out")`.
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
 - Release: a release run refuses a README that still installs from GitHub (it becomes the version's PyPI page), a

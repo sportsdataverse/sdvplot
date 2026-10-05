@@ -183,6 +183,7 @@ def _finish(img: Image.Image, file: str | PathLike[str] | None, width: int | Non
 def gt_save_crop(
     data: GT,
     file: str | PathLike[str] | None = None,
+    *,
     bg: str = "white",
     whitespace: int = 50,
     zoom: float = 2,
@@ -244,6 +245,7 @@ def gt_save_crop(
 def gt_social_crop(
     data: GT,
     file: str | PathLike[str] | None = None,
+    *,
     aspect_ratio: str | float = "1:1",
     bg: str = "white",
     whitespace: int = 60,
@@ -321,6 +323,7 @@ def gt_save_batch(
     group: str,
     fn: Callable[[Any, Any], GT],
     file: str,
+    *,
     dir: str | PathLike[str],
     match_width: bool = True,
     bg: str = "white",
@@ -613,6 +616,7 @@ def _save_composed(
 
 def gt_grid(
     tables: Sequence[GT] | Mapping[Any, GT] | None = None,
+    *,
     ncol: int = 2,
     labels: Any = None,
     label_style: Mapping[str, Any] | None = None,
@@ -747,6 +751,7 @@ def gt_grid(
 
 def gt_stack_tables(
     tables: Sequence[GT] | Mapping[Any, GT] | None = None,
+    *,
     gap: float = 16,
     align: str = "center",
     title: Any = None,
