@@ -254,3 +254,16 @@ def test_the_svgs_that_used_to_abort_the_process_raise_under_a_memory_limit(tmp_
     )
     assert r.returncode == 0, r.stderr[-2000:]
     assert r.stdout.splitlines() == ["InputError", "InputError", "ok (512, 512)"]
+
+
+def test_the_decoded_image_cache_counts_bytes_per_sample(cache, monkeypatch):
+    """A 16-bit grayscale PNG decodes as I;16, two bytes a pixel; counting one byte a sample let 16- and 32-bit images
+    (I;16, I, F) hold two to four times DECODED_BUDGET."""
+    buf = io.BytesIO()
+    Image.new("I;16", (40, 30), 1000).save(buf, "PNG")
+    body = buf.getvalue()
+    _manifest_with(monkeypatch, body, "png")
+    sha = hashlib.sha256(body).hexdigest()
+    img = _images.load_mark_image({"sha256": sha, "ext": "png", "archive_url": f"https://cdn/{sha}.png"})
+    assert img.mode == "I;16"
+    assert _images._decoded_bytes == len(img.tobytes()) == 40 * 30 * 2

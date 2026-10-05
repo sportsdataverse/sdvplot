@@ -72,6 +72,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   untouched) and leaves one alone with a warning in a directory you chose. It used to raise `OSError` from
   `shutil.rmtree` after deleting `manifest/`, leaving the later subdirectories and the in-memory caches as they were;
   the in-memory caches are now emptied even when a removal fails.
+- The in-memory cache of decoded images counts bytes per sample: a 16-bit image (mode `I;16`) is two bytes a pixel and
+  a 32-bit one (`I`, `F`) four. They were counted at one byte a sample, so they could hold two to four times the
+  256 MB budget.
 
 ### Security
 

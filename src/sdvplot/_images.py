@@ -183,7 +183,10 @@ _decoded_lock = threading.Lock()
 
 
 def _nbytes(img: Image.Image) -> int:
-    return img.width * img.height * len(img.getbands())
+    from PIL import ImageMode
+
+    # bytes per sample from the mode's array type: 2 for I;16, 4 for I and F, 1 for the 8-bit modes
+    return img.width * img.height * len(img.getbands()) * int(ImageMode.getmode(img.mode).typestr[-1])
 
 
 def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
