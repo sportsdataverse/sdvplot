@@ -1587,8 +1587,8 @@ def gt_theme_kenpom(gt: GT, density: str = "comfortable", **options: Any) -> GT:
                 [
                     _last_row_border(tid, "#FFFFFF"),
                     # R's odd and even rows (1-based), banded by a stylesheet rule: a cell's own fill is an inline
-                    # style, so it shows whichever was applied first, and table CSS is not made !important in the
-                    # notebook repr
+                    # style, so it shows whichever was applied first. great_tables never marks opt_css rules
+                    # !important (its VS Code and Positron repr marks only its own stylesheet's)
                     _css(tid, _KENPOM_ROWS.format("odd"), "background-color: #F2FAFD;"),
                     _css(tid, _KENPOM_ROWS.format("even"), "background-color: #e5ecf9;"),
                     _css(tid, ".gt_col_heading", "padding-bottom: 2px; padding-top: 2px;"),

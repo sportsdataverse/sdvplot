@@ -438,7 +438,6 @@ Bold the body cells of chosen rows, optionally recoloring their text and filling
 ### Raises
 
 - `TypeError`: ``gt`` is not a ``GT``.
-- `ValueError`: ``columns`` names a column the table lacks.
 
 ### Example
 

@@ -513,10 +513,12 @@ SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
 
 
 def important(*styles: Any) -> Any:
-    """great_tables cell styles as one inline rule with every declaration ``!important``. The notebook repr marks
-    great_tables' own cell rules ``!important`` (``td, th {border-style: none}``, the stub's and row groups'
-    ``background-color``), and a stylesheet ``!important`` beats a plain inline style: without this, a border or fill
-    shows in a saved image and not in Jupyter."""
+    """great_tables cell styles as one inline rule with every declaration ``!important``. In VS Code and Positron
+    notebooks (great_tables' ``_repr_html_`` finds ``VSCODE_PID`` or ``POSITRON_VERSION`` and turns on its
+    ``all_important``), every declaration of great_tables' own stylesheet is ``!important`` (``td, th {border-style:
+    none}``, the stub's, row groups' and stripes' ``background-color``), and a stylesheet ``!important`` beats a plain
+    inline style: without this, a border or fill shows in Jupyter, Quarto, Databricks and a saved image but not in VS
+    Code or Positron. Elsewhere the repr's stylesheet has no ``!important`` at all."""
     rule = "".join(s._to_html_style() for s in styles)
     return style.css(rule=" ".join(f"{d.strip()} !important;" for d in rule.split(";") if d.strip()))
 
