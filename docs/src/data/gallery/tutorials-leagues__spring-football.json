@@ -1,0 +1,21 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "spring-football",
+  "label": "Spring football",
+  "position": 12,
+  "page": "tutorials/leagues/spring-football.md",
+  "items": [
+    {
+      "title": "XFL and UFL franchises by ESPN id",
+      "alt": "Grid of XFL and UFL team logos, one row per league season from 2020 to 2026 and one column per ESPN team id, showing which franchises carried over into the UFL",
+      "image": "/img/gallery/tutorials/leagues/spring-football_3.png",
+      "anchor": "1-one-id-per-franchise-across-three-leagues"
+    },
+    {
+      "title": "UFL points for and against",
+      "alt": "Three panels for the 2024, 2025 and 2026 UFL seasons, each team's logo placed by points scored and allowed per game",
+      "image": "/img/gallery/tutorials/leagues/spring-football_9.png",
+      "anchor": "4-every-ufl-season-points-for-and-against"
+    }
+  ]
+}

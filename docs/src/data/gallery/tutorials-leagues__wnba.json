@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "wnba",
+  "label": "WNBA",
+  "position": 21,
+  "page": "tutorials/leagues/wnba.md",
+  "items": [
+    {
+      "title": "WNBA expansion teams' win races",
+      "alt": "Cumulative wins by game number for Golden State 2025 and 2026, Portland 2026 and Toronto 2026, each ending in the team's logo",
+      "image": "/img/gallery/tutorials/leagues/wnba_5.png",
+      "anchor": "1-the-expansion-teams-game-by-game"
+    },
+    {
+      "title": "WNBA team tiers",
+      "alt": "A dark tier list of WNBA team logos in five net-rating tiers",
+      "image": "/img/gallery/tutorials/leagues/wnba_9.png",
+      "anchor": "3-team-tiers"
+    },
+    {
+      "title": "WNBA scoring leaders with headshots",
+      "alt": "plotnine bar chart of the ten WNBA scoring leaders, each bar in team colors with a logo and headshot",
+      "image": "/img/gallery/tutorials/leagues/wnba_11.png",
+      "anchor": "4-scoring-leaders-with-headshots-in-plotnine"
+    }
+  ]
+}
