@@ -339,3 +339,18 @@ def test_locations_are_body_stub_or_row_groups_only(fn):
         fn(gt, None, league="nfl", locations=loc.column_labels())
     with pytest.raises(ValueError, match=r"loc\.body\(\), loc\.stub\(\) or loc\.row_groups\(\).*not LocTitle"):
         fn(gt, None, league="nfl", locations=[loc.body(), loc.title()])
+
+
+def test_drawn_cells_leaves_out_images_in_the_footer(manifest):
+    """Not a bug (round-5 review): great_tables puts source notes and footnotes in <tfoot>, whose cells are not
+    gt_row cells, so their images are never read as body cells."""
+    from great_tables import html as gt_html
+
+    from sdvplot._tables import img_tag
+
+    mark = gt_html(img_tag("https://cdn/1111.png", 30, "Las Vegas Raiders", team="13"))
+    gt = gt_sdv_logos(GT(pl.DataFrame({"team": ["LAR"]})), "team", league="nfl")
+    gt = gt.tab_source_note(mark).tab_footnote(mark, locations=loc.body(columns="team", rows=[0]))
+    html = gt.as_raw_html()
+    assert html.count('data-sdvplot-team="13"') == 2 and "<tfoot" in html
+    assert _cells(gt) == [("14", 0, "team")]
