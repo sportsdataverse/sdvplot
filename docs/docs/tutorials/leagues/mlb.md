@@ -69,7 +69,7 @@ standings.sort("diff", descending=True).head()
 rd = standings.sort("diff", descending=True)
 
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.bar(rd["abbreviation"], rd["diff"], color=sdvplot.team_colors(rd["abbreviation"].to_list(), "mlb"))
+ax.bar(rd["abbreviation"], rd["diff"], color=sdvplot.team_colors("mlb", rd["abbreviation"].to_list()))
 ax.axhline(0, color="#222222", linewidth=0.8)
 ax.set_ylabel("Run differential")
 ax.margins(x=0.01)
@@ -296,7 +296,7 @@ leaders = pl.DataFrame(rows).sort("hr")
 
 fig, ax = plt.subplots(figsize=(9, 6))
 y = range(leaders.height)
-ax.barh(list(y), leaders["hr"], color=sdvplot.team_colors(leaders["team"].to_list(), "mlb"), height=0.7)
+ax.barh(list(y), leaders["hr"], color=sdvplot.team_colors("mlb", leaders["team"].to_list()), height=0.7)
 ax.set_yticks(list(y), leaders["player"].to_list())
 for i, hr in enumerate(leaders["hr"]):
     ax.text(hr - 1, i, str(hr), ha="right", va="center", color="white", fontweight="bold")
@@ -407,7 +407,7 @@ rows = pl.DataFrame({"id": ids, "team_id": sdvplot.resolve(ids.to_list(), "mlb")
 START = 1950
 fig, ax = plt.subplots(figsize=(10, 5))
 for k, (franchise, abbr) in enumerate(rows.select("id", "abbr").iter_rows()):
-    color = sdvplot.team_colors(abbr, "mlb")
+    color = sdvplot.team_colors("mlb", abbr)
     spans = eras.filter(pl.col("id") == franchise).select("season", "end", "name").rows()
     for j, (start, end, name) in enumerate(spans):
         lo, hi = max(start, START), end + 1

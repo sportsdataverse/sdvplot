@@ -162,7 +162,7 @@ Every club's run differential as a bar in its colors, best at the top, the logo 
 rd = standings.sort("diff", "abbreviation")  # ties broken by name, so each re-render matches
 fig, ax = plt.subplots(figsize=(9, 8))
 y = list(range(rd.height))
-ax.barh(y, rd["diff"], color=sdvplot.team_colors(rd["abbreviation"].to_list(), "mlb"), height=0.72)
+ax.barh(y, rd["diff"], color=sdvplot.team_colors("mlb", rd["abbreviation"].to_list()), height=0.72)
 ax.axvline(0, color="#222222", lw=0.8)
 reach = max(abs(rd["diff"].min()), rd["diff"].max())
 ends = [d + (0.06 if d >= 0 else -0.06) * reach for d in rd["diff"]]
