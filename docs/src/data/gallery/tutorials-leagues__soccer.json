@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "soccer",
+  "label": "Soccer",
+  "position": 50,
+  "page": "tutorials/leagues/soccer.md",
+  "items": [
+    {
+      "title": "Premier League form in club colors",
+      "alt": "Twenty small panels of rolling five-match points, one per Premier League club in its ESPN color, with crests",
+      "image": "/img/gallery/tutorials/leagues/soccer_16.png",
+      "anchor": "5-form-club-by-club-in-club-colors"
+    },
+    {
+      "title": "Soccer shot map on a pitch",
+      "alt": "Every Arsenal shot and goal of the 2025-26 Premier League on a sportypy half pitch, with the Arsenal crest",
+      "image": "/img/gallery/tutorials/leagues/soccer_21.png",
+      "anchor": "7-the-champions-shots-on-a-pitch"
+    },
+    {
+      "title": "Soccer lineup card",
+      "alt": "Arsenal and Manchester City starting elevens in formation on an mplsoccer pitch, with crests",
+      "image": "/img/gallery/tutorials/leagues/soccer_24.png",
+      "anchor": "8-a-lineup-card-with-mplsoccer"
+    }
+  ]
+}

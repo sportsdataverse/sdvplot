@@ -1,0 +1,21 @@
+{
+  "section": "leaderboards",
+  "stem": "cfb-weekly",
+  "label": "College football weekly",
+  "position": 2,
+  "page": "leaderboards/cfb-weekly.md",
+  "items": [
+    {
+      "title": "College football top 25 by adjusted EPA",
+      "alt": "College football top 25 table with team logos, conference colors, record and opponent-adjusted EPA per play.",
+      "image": "/img/gallery/leaderboards/cfb-weekly_10.png",
+      "anchor": "1-top-25-by-adjusted-epa-per-play"
+    },
+    {
+      "title": "FBS teams by conference",
+      "alt": "Every FBS team logo placed by its opponent-adjusted net EPA per play, one row per conference.",
+      "image": "/img/gallery/leaderboards/cfb-weekly_12.png",
+      "anchor": "2-every-fbs-team-by-conference"
+    }
+  ]
+}

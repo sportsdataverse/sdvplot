@@ -1,0 +1,27 @@
+{
+  "section": "leaderboards",
+  "stem": "wnba",
+  "label": "WNBA",
+  "position": 4,
+  "page": "leaderboards/wnba.md",
+  "items": [
+    {
+      "title": "WNBA standings with net rating",
+      "alt": "WNBA standings table by conference with team logos, records and offensive, defensive and net ratings.",
+      "image": "/img/gallery/leaderboards/wnba_10.png",
+      "anchor": "1-standings-with-net-rating"
+    },
+    {
+      "title": "WNBA offense vs defense",
+      "alt": "WNBA team logos placed by offensive and defensive rating per 100 possessions this season.",
+      "image": "/img/gallery/leaderboards/wnba_12.png",
+      "anchor": "2-offense-against-defense"
+    },
+    {
+      "title": "WNBA scoring leaders with headshots",
+      "alt": "Table of the WNBA's top ten scorers with headshots, team logos and points, rebounds and assists per game.",
+      "image": "/img/gallery/leaderboards/wnba_15.png",
+      "anchor": "3-scoring-leaders-with-headshots"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "section": "leaderboards",
+  "stem": "nfl-weekly",
+  "label": "NFL weekly",
+  "position": 1,
+  "page": "leaderboards/nfl-weekly.md",
+  "items": [
+    {
+      "title": "NFL weekly power table",
+      "alt": "NFL power table: every team's logo, record, point differential and EPA per play, ranked by net EPA.",
+      "image": "/img/gallery/leaderboards/nfl-weekly_9.png",
+      "anchor": "1-power-table"
+    },
+    {
+      "title": "NFL EPA per play, offense vs defense",
+      "alt": "Scatter of NFL team logos by offensive EPA per play and defensive EPA allowed per play for the current season.",
+      "image": "/img/gallery/leaderboards/nfl-weekly_11.png",
+      "anchor": "2-offense-against-defense"
+    },
+    {
+      "title": "NFL quarterback EPA leaderboard",
+      "alt": "Horizontal bars of the top NFL quarterbacks by EPA per dropback this season, with headshots and team logos.",
+      "image": "/img/gallery/leaderboards/nfl-weekly_13.png",
+      "anchor": "3-quarterback-leaderboard"
+    }
+  ]
+}

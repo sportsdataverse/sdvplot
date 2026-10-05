@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "cricket",
+  "label": "Cricket",
+  "position": 51,
+  "page": "tutorials/leagues/cricket.md",
+  "items": [
+    {
+      "title": "IPL points race",
+      "alt": "Ten small panels of cumulative IPL 2026 points, each team in its ESPN color over the others in grey",
+      "image": "/img/gallery/tutorials/leagues/cricket_16.png",
+      "anchor": "6-the-points-race"
+    },
+    {
+      "title": "IPL final scorecard card",
+      "alt": "Both innings of the 2026 IPL final as batting bars in team colors with team logos",
+      "image": "/img/gallery/tutorials/leagues/cricket_19.png",
+      "anchor": "7-a-scorecard-card-for-the-final"
+    },
+    {
+      "title": "T20 World Cup tier list",
+      "alt": "Every team of the 2026 men's T20 World Cup as a flag in a tier by how far it went",
+      "image": "/img/gallery/tutorials/leagues/cricket_22.png",
+      "anchor": "8-the-t20-world-cup-as-a-tier-list"
+    }
+  ]
+}

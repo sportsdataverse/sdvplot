@@ -64,6 +64,90 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/wbb_23.png" alt="Weekly AP rank lines of the final women&#x27;s top 8 in team colors, logos at the finish" loading="lazy"/><br/>AP poll bump chart<br/><small>Women's college basketball</small>](tutorials/leagues/wbb.md#10-the-ap-poll-week-by-week)
 
+[<img src="/img/gallery/tutorials/leagues/mlb_16.png" alt="Horizontal bars of the ten 2026 MLB home run leaders, team logos at the base, headshots at the ends." loading="lazy"/><br/>MLB home run leaders with headshots<br/><small>MLB</small>](tutorials/leagues/mlb.md#6-home-run-leaders-with-headshots)
+
+[<img src="/img/gallery/tutorials/leagues/mlb_18.png" alt="Every 2026 regular-season home run by MLB&#x27;s home run leader plotted on a baseball field, colored by distance, with his team&#x27;s logo." loading="lazy"/><br/>Home run spray chart on a baseball field<br/><small>MLB</small>](tutorials/leagues/mlb.md#7-a-home-run-spray-chart-on-the-field)
+
+[<img src="/img/gallery/tutorials/leagues/mlb_20.png" alt="Timeline from 1950 of six MLB franchises&#x27; names and moves, one row per franchise with its current logo." loading="lazy"/><br/>MLB franchise name eras<br/><small>MLB</small>](tutorials/leagues/mlb.md#8-franchise-eras-renames-and-relocations)
+
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_7.png" alt="Bar chart of each 2026 Men&#x27;s College World Series team&#x27;s run differential in Omaha, with logos and records." loading="lazy"/><br/>College World Series run differential<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#2-run-differential-in-omaha)
+
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_9.png" alt="Step chart of cumulative runs by inning in the 2026 Men&#x27;s College World Series clinching game, with team logos at the line ends." loading="lazy"/><br/>College World Series final, inning by inning<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#3-the-clincher-inning-by-inning)
+
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_18.png" alt="Scatter of SEC schools&#x27; 2026 baseball winning percentage against softball winning percentage, drawn as logos." loading="lazy"/><br/>SEC schools in baseball and softball<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#7-one-school-two-sports)
+
+[<img src="/img/gallery/tutorials/leagues/nhl_12.png" alt="Carolina&#x27;s 2025-26 unblocked shots and goals on a half rink in team colors" loading="lazy"/><br/>NHL shot map on a rink<br/><small>NHL</small>](tutorials/leagues/nhl.md#4-a-shot-map-on-the-rink)
+
+[<img src="/img/gallery/tutorials/leagues/nhl_17.png" alt="Top ten NHL scorers of 2025-26 as stacked goal and assist bars with ESPN headshots and team logos" loading="lazy"/><br/>NHL points leaders with headshots<br/><small>NHL</small>](tutorials/leagues/nhl.md#6-scoring-leaders-with-headshots)
+
+[<img src="/img/gallery/tutorials/leagues/nhl_27.png" alt="Every NHL team&#x27;s logo in a tier by how far it went in the 2026 playoffs" loading="lazy"/><br/>NHL playoff tier list<br/><small>NHL</small>](tutorials/leagues/nhl.md#10-playoff-tiers)
+
+[<img src="/img/gallery/tutorials/leagues/pwhl_13.png" alt="The PWHL&#x27;s top five in points and in goals for 2025-26, with player photos and team logos" loading="lazy"/><br/>PWHL leaders card with player photos<br/><small>PWHL</small>](tutorials/leagues/pwhl.md#4-a-leaders-card-with-player-photos)
+
+[<img src="/img/gallery/tutorials/leagues/pwhl_22.png" alt="Every shot and goal of the 2026 Walter Cup-clinching game on a rink, each team&#x27;s logo in its attacking half" loading="lazy"/><br/>PWHL Walter Cup game shot map<br/><small>PWHL</small>](tutorials/leagues/pwhl.md#8-the-game-that-decided-the-walter-cup)
+
+[<img src="/img/gallery/tutorials/leagues/hockeytech_7.png" alt="Goals for and against per game for every AHL, ECHL, OHL, WHL, QMJHL and USHL team, as logos in six small multiples" loading="lazy"/><br/>Six HockeyTech leagues, one chart<br/><small>AHL, ECHL and junior hockey</small>](tutorials/leagues/hockeytech.md#3-the-same-chart-in-six-leagues)
+
+[<img src="/img/gallery/tutorials/leagues/hockeytech_12.png" alt="Every OHL, WHL and QMJHL team&#x27;s logo on a shared points-percentage axis, one row per league" loading="lazy"/><br/>CHL teams on one scale<br/><small>AHL, ECHL and junior hockey</small>](tutorials/leagues/hockeytech.md#5-the-chls-three-leagues-on-one-scale)
+
+[<img src="/img/gallery/tutorials/leagues/hockeytech_19.png" alt="QMJHL teams&#x27; logos in five points-percentage tiers for 2025-26" loading="lazy"/><br/>QMJHL tier list<br/><small>AHL, ECHL and junior hockey</small>](tutorials/leagues/hockeytech.md#8-qmjhl-tiers)
+
+[<img src="/img/gallery/tutorials/leagues/college-hockey_7.png" alt="Every Division I men&#x27;s team&#x27;s logo by opponent-adjusted goals for and against, 2025-26" loading="lazy"/><br/>College hockey adjusted ratings<br/><small>College hockey</small>](tutorials/leagues/college-hockey.md#3-opponent-adjusted-ratings)
+
+[<img src="/img/gallery/tutorials/leagues/college-hockey_21.png" alt="The top fifteen Division I women&#x27;s teams by net rating, 2025-26, logos on the axis" loading="lazy"/><br/>Women's college hockey ratings<br/><small>College hockey</small>](tutorials/leagues/college-hockey.md#8-womens-ratings-when-an-id-does-not-resolve-try-the-name)
+
+[<img src="/img/gallery/tutorials/leagues/soccer_16.png" alt="Twenty small panels of rolling five-match points, one per Premier League club in its ESPN color, with crests" loading="lazy"/><br/>Premier League form in club colors<br/><small>Soccer</small>](tutorials/leagues/soccer.md#5-form-club-by-club-in-club-colors)
+
+[<img src="/img/gallery/tutorials/leagues/soccer_21.png" alt="Every Arsenal shot and goal of the 2025-26 Premier League on a sportypy half pitch, with the Arsenal crest" loading="lazy"/><br/>Soccer shot map on a pitch<br/><small>Soccer</small>](tutorials/leagues/soccer.md#7-the-champions-shots-on-a-pitch)
+
+[<img src="/img/gallery/tutorials/leagues/soccer_24.png" alt="Arsenal and Manchester City starting elevens in formation on an mplsoccer pitch, with crests" loading="lazy"/><br/>Soccer lineup card<br/><small>Soccer</small>](tutorials/leagues/soccer.md#8-a-lineup-card-with-mplsoccer)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_16.png" alt="Ten small panels of cumulative IPL 2026 points, each team in its ESPN color over the others in grey" loading="lazy"/><br/>IPL points race<br/><small>Cricket</small>](tutorials/leagues/cricket.md#6-the-points-race)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_19.png" alt="Both innings of the 2026 IPL final as batting bars in team colors with team logos" loading="lazy"/><br/>IPL final scorecard card<br/><small>Cricket</small>](tutorials/leagues/cricket.md#7-a-scorecard-card-for-the-final)
+
+[<img src="/img/gallery/tutorials/leagues/cricket_22.png" alt="Every team of the 2026 men&#x27;s T20 World Cup as a flag in a tier by how far it went" loading="lazy"/><br/>T20 World Cup tier list<br/><small>Cricket</small>](tutorials/leagues/cricket.md#8-the-t20-world-cup-as-a-tier-list)
+
+</div>
+
+## Leaderboards
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/leaderboards/nfl-weekly_9.png" alt="NFL power table: every team&#x27;s logo, record, point differential and EPA per play, ranked by net EPA." loading="lazy"/><br/>NFL weekly power table<br/><small>NFL weekly</small>](leaderboards/nfl-weekly.md#1-power-table)
+
+[<img src="/img/gallery/leaderboards/nfl-weekly_11.png" alt="Scatter of NFL team logos by offensive EPA per play and defensive EPA allowed per play for the current season." loading="lazy"/><br/>NFL EPA per play, offense vs defense<br/><small>NFL weekly</small>](leaderboards/nfl-weekly.md#2-offense-against-defense)
+
+[<img src="/img/gallery/leaderboards/nfl-weekly_13.png" alt="Horizontal bars of the top NFL quarterbacks by EPA per dropback this season, with headshots and team logos." loading="lazy"/><br/>NFL quarterback EPA leaderboard<br/><small>NFL weekly</small>](leaderboards/nfl-weekly.md#3-quarterback-leaderboard)
+
+[<img src="/img/gallery/leaderboards/cfb-weekly_10.png" alt="College football top 25 table with team logos, conference colors, record and opponent-adjusted EPA per play." loading="lazy"/><br/>College football top 25 by adjusted EPA<br/><small>College football weekly</small>](leaderboards/cfb-weekly.md#1-top-25-by-adjusted-epa-per-play)
+
+[<img src="/img/gallery/leaderboards/cfb-weekly_12.png" alt="Every FBS team logo placed by its opponent-adjusted net EPA per play, one row per conference." loading="lazy"/><br/>FBS teams by conference<br/><small>College football weekly</small>](leaderboards/cfb-weekly.md#2-every-fbs-team-by-conference)
+
+[<img src="/img/gallery/leaderboards/nba_10.png" alt="NBA standings table by conference with team logos, records and offensive, defensive and net ratings." loading="lazy"/><br/>NBA standings with net rating<br/><small>NBA</small>](leaderboards/nba.md#1-standings-with-net-rating)
+
+[<img src="/img/gallery/leaderboards/nba_12.png" alt="Bars of every NBA team&#x27;s net rating this season in team colors, team logos on the x axis." loading="lazy"/><br/>NBA net rating bars<br/><small>NBA</small>](leaderboards/nba.md#2-net-rating-best-to-worst)
+
+[<img src="/img/gallery/leaderboards/nba_14.png" alt="Horizontal bars of the NBA&#x27;s top scorers in points per game, with player headshots and team logos." loading="lazy"/><br/>NBA scoring leaders with headshots<br/><small>NBA</small>](leaderboards/nba.md#3-scoring-leaders-with-headshots)
+
+[<img src="/img/gallery/leaderboards/wnba_10.png" alt="WNBA standings table by conference with team logos, records and offensive, defensive and net ratings." loading="lazy"/><br/>WNBA standings with net rating<br/><small>WNBA</small>](leaderboards/wnba.md#1-standings-with-net-rating)
+
+[<img src="/img/gallery/leaderboards/wnba_12.png" alt="WNBA team logos placed by offensive and defensive rating per 100 possessions this season." loading="lazy"/><br/>WNBA offense vs defense<br/><small>WNBA</small>](leaderboards/wnba.md#2-offense-against-defense)
+
+[<img src="/img/gallery/leaderboards/wnba_15.png" alt="Table of the WNBA&#x27;s top ten scorers with headshots, team logos and points, rebounds and assists per game." loading="lazy"/><br/>WNBA scoring leaders with headshots<br/><small>WNBA</small>](leaderboards/wnba.md#3-scoring-leaders-with-headshots)
+
+[<img src="/img/gallery/leaderboards/mlb_8.png" alt="MLB standings table grouped by division with team logos, records, games back and run differential pills." loading="lazy"/><br/>MLB division standings<br/><small>MLB</small>](leaderboards/mlb.md#1-division-standings)
+
+[<img src="/img/gallery/leaderboards/mlb_10.png" alt="Horizontal bars of every MLB club&#x27;s run differential in team colors, with logos at the bar ends." loading="lazy"/><br/>MLB run differential<br/><small>MLB</small>](leaderboards/mlb.md#2-run-differential)
+
+[<img src="/img/gallery/leaderboards/mlb_13.png" alt="Table of the top three MLB players in six batting and pitching categories, with headshots and team logos." loading="lazy"/><br/>MLB leaders with headshots<br/><small>MLB</small>](leaderboards/mlb.md#3-league-leaders-with-headshots)
+
+[<img src="/img/gallery/leaderboards/nhl_8.png" alt="NHL standings table grouped by division with team logos, points, goal differential and last ten games." loading="lazy"/><br/>NHL standings<br/><small>NHL</small>](leaderboards/nhl.md#1-standings)
+
+[<img src="/img/gallery/leaderboards/nhl_10.png" alt="Bars of every NHL team&#x27;s goal differential this season in team colors, team logos on the x axis." loading="lazy"/><br/>NHL goal differential<br/><small>NHL</small>](leaderboards/nhl.md#2-goal-differential)
+
+[<img src="/img/gallery/leaderboards/nhl_12.png" alt="Top ten NHL scorers as stacked goal and assist bars with ESPN headshots and team logos." loading="lazy"/><br/>NHL points leaders with headshots<br/><small>NHL</small>](leaderboards/nhl.md#3-scoring-leaders-with-headshots)
+
 </div>
 
 ## Recipes
