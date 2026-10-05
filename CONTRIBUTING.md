@@ -123,7 +123,7 @@ pages come from `tools/render_notebooks.py`.
 
 ## Changelog
 
-Every user-visible change gets an entry under `## Unreleased` in `CHANGELOG.md`, in
+Every user-visible change gets an entry under `## [Unreleased]` in `CHANGELOG.md`, in
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) form: a `### Added`, `### Changed` or `### Fixed` group, with
 a `####` topic heading when the entry needs one.
 
@@ -150,7 +150,7 @@ cd docs && npx yarn@1.22.22 install && npx yarn@1.22.22 start
    custom glyph, open an issue for a Reflex XY adapter; either way, update the version and date checked there.
 2. Bump `version` in `pyproject.toml`, run `uv lock`, and commit `uv.lock` with it (the `drift` workflow fails on a
    stale lock).
-3. In `CHANGELOG.md`, move the `## Unreleased` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
-   an emptied `## Unreleased`, which always stays at the top (a test asserts it).
+3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
+   an emptied `## [Unreleased]`, which always stays at the top (a test asserts it).
 4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
 5. Publish a GitHub Release `vX.Y.Z`; `release.yml` publishes to PyPI after its gates.

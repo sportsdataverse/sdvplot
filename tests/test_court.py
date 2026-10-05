@@ -129,7 +129,7 @@ def test_the_sdvplotr_real_row_sign_convention():
 # Real stats.nba.com shotchartdetail rows (2022-23), as committed in tests/fixtures.
 @pytest.mark.parametrize("as_strings", [False, True], ids=["typed", "all strings, as stats.nba.com sends them"])
 def test_real_corner_threes_and_rim_shots_land_where_the_court_says(as_strings):
-    shots = _shots(infer_schema=False) if as_strings else _shots()
+    shots = _shots(infer_schema_length=0) if as_strings else _shots()
     out = sdvplot.court_coords(shots, x="loc_x", y="loc_y")
     zone = out.partition_by("shot_zone_basic", as_dict=True)
     left, right, rim = (zone[(z,)] for z in ("Left Corner 3", "Right Corner 3", "Restricted Area"))
