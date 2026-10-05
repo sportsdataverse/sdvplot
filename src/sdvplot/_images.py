@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import collections
 import contextlib
-import functools
 import hashlib
 import io
 import re
+import threading
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -136,10 +137,8 @@ def mark_file(row: dict[str, Any]) -> Path:
     return fetch_immutable(str(row["archive_url"]), f"images/{sha[:2]}/{sha}.{ext}", sha)
 
 
-@functools.lru_cache(maxsize=256)
-def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
-    """The decoded image of one mark, kept per (sha256, ext, url, size) so a plot of n points decodes a team's logo
-    once, not n times. Callers must go through ``load_mark_image``, which hands out a copy."""
+def _decode_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
+    """The decoded image of one mark (SVGs rasterized, rasters scaled down to ``size``)."""
     from PIL import Image
 
     path = mark_file({"sha256": sha, "ext": ext, "archive_url": url})
@@ -153,16 +152,62 @@ def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image
     return img
 
 
-MEMORY_CACHES.append(_decoded_mark.cache_clear)  # clear_cache() also drops the decoded images held in memory
+# Decoded images kept in memory, least recently used first, bounded by pixel bytes rather than entry count: the archive
+# holds thousands of 4096 x 4096 rasters (67 MB each decoded), so a count bound alone could pin gigabytes.
+DECODED_BUDGET = 256 * 1024 * 1024
+_decoded: collections.OrderedDict[tuple[str, str, str, int | None], Image.Image] = collections.OrderedDict()
+_decoded_bytes = 0
+_decoded_lock = threading.Lock()
+
+
+def _nbytes(img: Image.Image) -> int:
+    return img.width * img.height * len(img.getbands())
+
+
+def _decoded_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
+    """The decoded image of one mark, kept per (sha256, ext, url, size) so repeated calls decode a team's logo once.
+    An image over a quarter of the budget is decoded per call instead of pushing everything else out. Callers must go
+    through ``load_mark_image``, which hands out a copy."""
+    global _decoded_bytes
+    key = (sha, ext, url, size)
+    with _decoded_lock:
+        if (hit := _decoded.get(key)) is not None:
+            _decoded.move_to_end(key)
+            return hit
+    img = _decode_mark(*key)
+    nbytes = _nbytes(img)
+    if nbytes <= DECODED_BUDGET // 4:
+        with _decoded_lock:
+            if key not in _decoded:
+                _decoded[key] = img
+                _decoded_bytes += nbytes
+                while _decoded_bytes > DECODED_BUDGET:
+                    _, old = _decoded.popitem(last=False)
+                    _decoded_bytes -= _nbytes(old)
+    return img
+
+
+def _clear_decoded() -> None:
+    global _decoded_bytes
+    with _decoded_lock:
+        _decoded.clear()
+        _decoded_bytes = 0
+
+
+MEMORY_CACHES.append(_clear_decoded)  # clear_cache() also drops the decoded images held in memory
 
 
 def load_mark_image(row: dict[str, Any], size: int | None = None) -> Image.Image:
     """The image for one manifest row (as ``select_mark`` returns it): fetched by sha256 once, SVGs rasterized.
 
     ``size`` is the longest side in pixels: rasters are only scaled down; SVGs are rasterized at it (default 512).
-    Decoded images are kept in memory (256 most recent); the caller gets its own copy, free to modify.
+    Decoded images are kept in memory (up to ``DECODED_BUDGET`` bytes of pixels, least recently used dropped first);
+    the caller gets its own copy, free to modify, with the source ``format`` kept.
     """
-    return _decoded_mark(str(row["sha256"]), str(row["ext"]), str(row["archive_url"]), size).copy()
+    img = _decoded_mark(str(row["sha256"]), str(row["ext"]), str(row["archive_url"]), size)
+    out = img.copy()
+    out.format = img.format  # Image.copy() drops it; callers may read img.format / Image.MIME
+    return out
 
 
 def _check_image(body: bytes) -> None:

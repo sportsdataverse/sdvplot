@@ -67,3 +67,48 @@ def test_clear_cache_also_drops_the_decoded_images(mark_images, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession())  # nothing to download from, and no stale decode to serve
     with pytest.raises((OfflineError, IndexError)):
         load_mark_image(row)
+
+
+def _counting_open(monkeypatch):
+    decoded = []
+    real_open = Image.open
+    monkeypatch.setattr(Image, "open", lambda *a, **k: decoded.append(a) or real_open(*a, **k))
+    return decoded
+
+
+def test_decoded_images_are_bounded_by_bytes_not_entries(mark_images, monkeypatch):
+    from sdvplot import _images
+
+    row = select_mark("LV", "nfl")
+    thumb = load_mark_image(row, size=32)
+    _images._clear_decoded()
+    monkeypatch.setattr(_images, "DECODED_BUDGET", 4 * thumb.width * thumb.height * len(thumb.getbands()))
+    for size in range(32, 16, -1):  # sixteen thumbnails: far more than the budget holds
+        load_mark_image(row, size=size)
+    assert _images._decoded_bytes <= _images.DECODED_BUDGET
+    decoded = _counting_open(monkeypatch)
+    load_mark_image(row, size=17)  # the most recent is still in memory
+    assert decoded == []
+    load_mark_image(row, size=32)  # the oldest was dropped to stay under the budget
+    assert len(decoded) == 1
+
+
+def test_an_image_over_a_quarter_of_the_budget_never_pushes_the_others_out(mark_images, monkeypatch):
+    from sdvplot import _images
+
+    row = select_mark("LV", "nfl")
+    thumb = load_mark_image(row, size=16)
+    _images._clear_decoded()
+    monkeypatch.setattr(_images, "DECODED_BUDGET", 8 * thumb.width * thumb.height * len(thumb.getbands()))
+    load_mark_image(row, size=16)  # small: kept
+    load_mark_image(row)  # the full image is far over a quarter of the budget: decoded, not kept
+    decoded = _counting_open(monkeypatch)
+    load_mark_image(row, size=16)
+    assert decoded == []  # the small one is still in memory
+    load_mark_image(row)
+    assert len(decoded) == 1  # the full one was never kept
+
+
+def test_a_returned_copy_keeps_the_source_format(mark_images):
+    img = load_mark_image(select_mark("LV", "nfl"))
+    assert img.format is not None and img.format == load_mark_image(select_mark("LV", "nfl")).format
