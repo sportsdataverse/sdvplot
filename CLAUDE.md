@@ -77,6 +77,7 @@ uv run pre-commit run --all-files           # `pre-commit install` refuses when 
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` |
+| `docs/static/img/sdvplot-logo.png` (the hex, 1036 x 1200), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network: the eight logos; starfield and Russo One in `tools/brand/`) | the script asserts the size |
 | `docs/src/pages/CHANGELOG.md` | copy of `CHANGELOG.md` (pre-commit hook) | tests |
 | `data-raw/sdvplotr_*.csv` | `Rscript tools/export_sdvplotr.R` | rebuild the index |
 
