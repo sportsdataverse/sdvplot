@@ -149,5 +149,6 @@
   skips points for gives exactly one `SdvplotWarning` (rules 1, 2, 6 and 7); `height` (including its out-of-range
   values) is checked on `add_headshots` and `axis_logos` as well as `add_logos` and `add_wordmarks`, and `alpha` on
   every verb that takes it; heights are compared within 1% of the requested value, as measured by the hooks.
+  An out-of-range `height` must raise when the verb is called, not only when the marks are rendered.
   `drawn_axis_marks` now returns `(team_id, tick position, height)`. `check_table_adapter_contract` likewise requires
   no warning for known values and exactly one for all-unknown input.

@@ -41,7 +41,8 @@ plotnine, warns there): a call that skips nothing gives no SdvplotWarning, and e
    (one unknown or several), never a raise.
 3. pandas/polars parity: a pandas Series with a non-default index draws the same marks as a polars Series.
 4. Height semantics: on every verb (add_logos here; rules 5-7 for the others), height is the fraction of the plot
-   height drawn, measured by the hooks; 0 and values above 1 raise ValueError.
+   height drawn, measured by the hooks; 0 and values above 1 raise ValueError when the verb is called (not later,
+   when the marks are rendered).
 5. Wordmarks: add_wordmarks follows rules 1, 2 and 4.
 6. Headshots: add_headshots draws player ids at their own x/y, skips an unknown id with exactly one warning, and
    follows rule 4.
@@ -177,19 +178,20 @@ def _check_marks(
     _once(r2, count, "all-unknown input")
 
 
-def _check_height(rule: str, verb: str, heights: Callable[[float], list[float]]) -> None:
-    """Rule 4 (named by ``rule``) for one verb. ``heights(h)`` draws with height=h on a fresh target and returns the
-    heights the hook measured: each must be h (within HEIGHT_TOLERANCE); 0 and values above 1 raise ValueError."""
+def _check_height(rule: str, verb: str, heights: Callable[[float, bool], list[float]]) -> None:
+    """Rule 4 (named by ``rule``) for one verb. ``heights(h, read)`` calls the verb with height=h on a fresh target
+    and, when ``read``, returns the heights the hook measured: each must be h (within HEIGHT_TOLERANCE). 0 and values
+    above 1 must raise ValueError from the call itself, not later when the marks are read (rendered)."""
     for h in (0.1, 0.25):
         try:
-            got = heights(h)
+            got = heights(h, True)
         except Exception as e:  # noqa: BLE001
             raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
         if not got or not all(math.isclose(g, h, rel_tol=HEIGHT_TOLERANCE) for g in got):
             _fail(rule, f"height={h} must be the height of every mark {verb} draws, it drew heights {got}")
     for bad in (0, 1.5):
         try:
-            heights(bad)
+            heights(bad, False)
         except ValueError:
             continue
         _fail(rule, f"height={bad} must raise ValueError from {verb} (height is a fraction in (0, 1])")
@@ -255,10 +257,10 @@ def check_adapter_contract(
     if _xyz(pmarks) != _xyz(lmarks) or _xyz(lmarks) != want_two:
         _fail(r3, f"pandas (index [5, 6]) drew {_xyz(pmarks)}, polars drew {_xyz(lmarks)}, expected {want_two}")
 
-    def heights(verb: str, values: Sequence[str]) -> Callable[[float], list[float]]:
-        def draw(h: float) -> list[float]:
-            _, marks, _ = _draw(adapter, verb, make_target(), adapter.drawn_marks, xs, ys, list(values),
-                                league=league, height=h)  # fmt: skip
+    def heights(verb: str, values: Sequence[str]) -> Callable[[float, bool], list[float]]:
+        def draw(h: float, read: bool) -> list[float]:
+            _, marks, _ = _draw(adapter, verb, make_target(), adapter.drawn_marks if read else lambda _: [], xs, ys,
+                                list(values), league=league, height=h)  # fmt: skip
             return [m[3] for m in marks]
 
         return draw
@@ -325,8 +327,9 @@ def check_adapter_contract(
         if "XXX" not in shown or a in shown or b in shown:
             _fail(r7, f"only the unknown category may stay as text, visible labels are {shown}")
 
-        def axis_heights(h: float) -> list[float]:
-            _, marks, _ = _draw(adapter, "axis_logos", make_axis([a, b]), read_axis, "x", league=league, height=h)
+        def axis_heights(h: float, read: bool) -> list[float]:
+            _, marks, _ = _draw(adapter, "axis_logos", make_axis([a, b]), read_axis if read else lambda _: [], "x",
+                                league=league, height=h)  # fmt: skip
             return [m[2] for m in marks]
 
         _check_height("rule 7 (axis logos: height)", "axis_logos", axis_heights)

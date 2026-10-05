@@ -183,6 +183,24 @@ def test_rule_4_catches_an_adapter_that_ignores_height(dummy, monkeypatch):
         check_adapter_contract(dummy, make_target=Canvas)
 
 
+def test_rule_4_catches_an_adapter_that_checks_height_only_when_rendered(dummy, monkeypatch):
+    working = dummy.add_logos
+
+    def lazy(target, x, y, teams, *, league, height=0.1, **kw):  # accepts any height when called
+        drawn = working(Canvas(), x, y, teams, league=league, **kw)
+        return Canvas([*target, *((t, xi, yi, height) for t, xi, yi, _ in drawn)])
+
+    def render(target):  # ... and only refuses a bad one when the marks are read
+        if any(not 0 < m[3] <= 1 for m in target):
+            raise ValueError("height is a fraction of the plot height")
+        return list(target)
+
+    _mutant(dummy, monkeypatch, lazy)
+    monkeypatch.setattr(dummy, "drawn_marks", render)
+    with pytest.raises(AssertionError, match=r"rule 4 \(height semantics\): height=0 must raise ValueError"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
 def test_rule_4_catches_an_adapter_that_accepts_a_height_above_one(dummy, monkeypatch):
     working = dummy.add_logos
 
