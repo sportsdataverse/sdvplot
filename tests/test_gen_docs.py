@@ -7,6 +7,8 @@ from typing import Any
 
 import pytest
 
+pytest.importorskip("docstring_parser")  # the docs group; the OS and lowest-direct jobs do not install it
+
 ROOT = Path(__file__).parents[1]
 spec = importlib.util.spec_from_file_location("gen_docs", ROOT / "tools" / "gen_docs.py")
 gd = importlib.util.module_from_spec(spec)

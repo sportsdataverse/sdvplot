@@ -22,23 +22,23 @@ classifiers = [
 ]
 dependencies = [
   "narwhals>=2.0",
-  "polars>=1.0,<2",
-  "Pillow>=10",
+  "polars>=1.24,<2",
+  "Pillow>=12.3",
   "platformdirs>=4",
-  "requests>=2.31",
+  "requests>=2.33",
 ]
 
 [project.optional-dependencies]
-svg = ["resvg-py>=0.2"]
+svg = ["resvg-py>=0.2.5"]
 mpl = ["matplotlib>=3.7"]
 plotnine = ["plotnine>=0.15"]
-plotly = ["plotly>=5"]
-altair = ["altair>=5"]
-bokeh = ["bokeh>=3"]
-holoviews = ["holoviews>=1.18", "bokeh>=3"]
+plotly = ["plotly>=5.14"]
+altair = ["altair>=5.1"]
+bokeh = ["bokeh>=3.8.2"]
+holoviews = ["holoviews>=1.18", "bokeh>=3.8.2"]
 tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
-folium = ["folium>=0.15"]
+folium = ["folium>=0.19"]
 surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
 plottable = ["plottable>=0.1.5"]
 pygal = ["pygal>=3.0"]
@@ -98,7 +98,6 @@ exclude = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = [
-  "error::sdvplot._errors.SdvplotWarning",
   "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
   "ignore:datetime.datetime.utcfromtimestamp:DeprecationWarning",  # pygal 3.1 labels DateTimeLine axes with it
 ]
@@ -127,3 +126,11 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["sdvplot"]
+
+[tool.coverage.report]
+# Set just under the measured total (96% line+branch on the offline suite); raise it as tests land.
+fail_under = 94

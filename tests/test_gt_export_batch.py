@@ -109,7 +109,7 @@ def test_batch_stops_when_no_browser_can_start(monkeypatch, tmp_path):
         ({"file": "net.png"}, ValueError, r"must contain \{group\}"),
         ({"file": "net-{group}"}, ValueError, "image extension"),
         ({"fn": "build"}, TypeError, "fn must be a function"),
-        ({"data": [1, 2]}, TypeError, "Unsupported"),
+        ({"data": [1, 2]}, TypeError, "Unsupported|Expected pandas-like"),  # the message differs across great_tables,
         ({"data": pl.DataFrame({"g": [None, None]}, schema={"g": pl.String})}, ValueError, "no non-missing"),
         ({"bg": "nope"}, ValueError, "color"),
         ({"whitespace": -5}, ValueError, "whitespace"),

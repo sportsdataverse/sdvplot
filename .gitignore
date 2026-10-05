@@ -14,3 +14,5 @@ mpl-results/
 
 # examples/automation/sdvplot_social.py output
 /out/
+.coverage
+.coverage.*
