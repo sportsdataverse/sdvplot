@@ -110,6 +110,32 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 </div>
 
+## Recipes
+
+<div class="sdv-gallery">
+
+[<img src="/img/gallery/recipes/nfl-epa-scatter_13.png" alt="Scatter of 2025 NFL offense and defense EPA per play with team logos; Seattle and New England highlighted, the other teams faded" loading="lazy"/><br/>NFL offense vs defense EPA, Super Bowl LX<br/><small>NFL EPA scatter</small>](recipes/nfl-epa-scatter.md#6-export-at-social-sizes)
+
+[<img src="/img/gallery/recipes/cfb-conference-table_13.png" alt="great_tables standings of the 2025 Big Ten with team logos, records and a bar per game, Indiana highlighted as 16-0 national champion" loading="lazy"/><br/>Big Ten final standings table<br/><small>CFB conference table</small>](recipes/cfb-conference-table.md#6-export-for-the-newsletter-and-for-social)
+
+[<img src="/img/gallery/recipes/nba-net-rating-quadrant_15.png" alt="plotnine scatter of 2025-26 NBA offensive and defensive ratings with team logos, faceted East and West, with conference average lines and net-rating diagonals" loading="lazy"/><br/>NBA offensive vs defensive rating by conference<br/><small>NBA net rating quadrant</small>](recipes/nba-net-rating-quadrant.md#6-export-for-the-blog-and-for-instagram)
+
+[<img src="/img/gallery/recipes/wnba-scoring-leaders-card_13.png" alt="Social card of the 2026 WNBA points-per-game leaders: rank, headshot, name, team logo and a bar in team colors for each of the top ten" loading="lazy"/><br/>WNBA scoring leaders card<br/><small>WNBA scoring leaders card</small>](recipes/wnba-scoring-leaders-card.md#6-export-for-instagram-and-x)
+
+[<img src="/img/gallery/recipes/mlb-run-differential_13.png" alt="Two-panel 2026 MLB graphic: ranked run-differential bars in team colors with logos at the bar ends, and running run differential lines highlighting the top two and bottom two teams" loading="lazy"/><br/>MLB run differential, ranked and game by game<br/><small>MLB run differential</small>](recipes/mlb-run-differential.md#6-one-graphic-for-the-blog)
+
+[<img src="/img/gallery/recipes/nhl-shot-map_13.png" alt="Shot map of the 2026 Stanley Cup Final Game 6 on a rink: Carolina&#x27;s shots in red at the left end, Vegas&#x27;s at the right, goals as stars with scorers, logos and the score at each side" loading="lazy"/><br/>NHL shot map, Stanley Cup clincher<br/><small>NHL shot map</small>](recipes/nhl-shot-map.md#6-export-for-x-and-the-blog)
+
+[<img src="/img/gallery/recipes/soccer-league-table_13.png" alt="great_tables Premier League 2025-26 final table with club crests, results, colored form pills for the last five matches and colored bars marking European and relegation places" loading="lazy"/><br/>Premier League final table with form pills<br/><small>Soccer league table</small>](recipes/soccer-league-table.md#6-export-for-the-newsletter-and-instagram)
+
+[<img src="/img/gallery/recipes/college-hoops-tiers_13.png" alt="Tier list of the 2025-26 Big Ten men&#x27;s basketball teams by adjusted efficiency margin, Michigan alone in the top tier, each tier labeled with its rating range" loading="lazy"/><br/>Big Ten men's basketball tier list<br/><small>College hoops tiers</small>](recipes/college-hoops-tiers.md#6-export-at-social-sizes)
+
+[<img src="/img/gallery/recipes/rank-bump-chart_13.png" alt="Bump chart of every Premier League club&#x27;s position after each match of 2025-26, the champion and the two biggest climbers in team colors, crests at the line ends" loading="lazy"/><br/>Premier League bump chart<br/><small>Rank bump chart</small>](recipes/rank-bump-chart.md#6-export-for-the-blog-and-x)
+
+[<img src="/img/gallery/recipes/head-to-head-card_13.png" alt="Dark matchup card comparing Seattle and New England&#x27;s 2025 regular seasons: mirrored bars of league rank in each team&#x27;s secondary color, logos and records at the top" loading="lazy"/><br/>Super Bowl LX tale of the tape<br/><small>Head-to-head card</small>](recipes/head-to-head-card.md#6-export-for-x-and-instagram)
+
+</div>
+
 ## Leaderboards
 
 <div class="sdv-gallery">
