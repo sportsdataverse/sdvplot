@@ -17,6 +17,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Visualization",
   "Typing :: Typed",
 ]
@@ -96,7 +97,10 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
+minversion = "8.0"
 testpaths = ["tests"]
+# -ra lists every skip with its reason; an unregistered marker or a misspelled ini key is an error, not a no-op
+addopts = ["-ra", "--strict-markers", "--strict-config"]
 filterwarnings = [
   "ignore:open_text is deprecated:DeprecationWarning",  # sportypy 1.0 reads its surface specs with it
   "ignore:datetime.datetime.utcfromtimestamp:DeprecationWarning",  # pygal 3.1 labels DateTimeLine axes with it

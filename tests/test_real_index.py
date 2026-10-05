@@ -32,7 +32,7 @@ def test_palette_never_merges_teams_that_share_an_abbreviation():  # KSU: Kansas
         p = sdvplot.palette("ncaa_baseball")
     assert len(w) == 1
     assert len(p) == sdvplot.teams("ncaa_baseball")["color_primary"].is_not_null().sum()
-    assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#bab0ac"
+    assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#fdbb30"  # 307: the school's ESPN gold, by name
 
 
 @pytest.mark.parametrize("id_system", PRIORITY + EXPLICIT_ONLY)
@@ -278,3 +278,81 @@ def test_mens_college_hockey_ids_espn_game_data_uses():  # SUNY Morrisville and 
     assert sdvplot.resolve(["126813", "132633"], "ncaa_mhockey") == ["126813", "132633"]
     assert sdvplot.resolve("Maryville (Mo) Saints", "ncaa_mhockey") == "132633"
     assert sdvplot.resolve("SUNY Morrisville Mustangs", "ncaa_mhockey") == "126813"  # ESPN-listed, not archived
+
+
+# Team colors by source, measured on the October 2026 snapshots: (published, i.e. nflverse or ESPN; logo-derived) per
+# league. A refresh that loses a source's rows fails here.
+COLOR_FLOORS = {
+    "aaf": (0, 8), "ahl": (0, 61), "cfb": (383, 304), "cricket": (0, 111), "echl": (0, 59), "mbb": (356, 10),
+    "milb": (0, 286), "mlb": (30, 0), "nba": (30, 0), "nbagl": (29, 3), "ncaa_baseball": (370, 44),
+    "ncaa_mhockey": (53, 55), "ncaa_softball": (358, 57), "ncaa_whockey": (30, 18), "nfl": (32, 0), "nhl": (32, 0),
+    "ohl": (0, 27), "phf": (0, 8), "pwhl": (0, 12), "qmjhl": (0, 30), "soccer": (2125, 506), "ufl": (11, 0),
+    "usfl": (0, 9), "ushl": (0, 17), "wbb": (354, 10), "whl": (0, 23), "wnba": (15, 0), "xfl": (7, 4),
+}  # fmt: skip
+
+
+def test_colors_are_hex_and_a_secondary_is_a_second_color():
+    t = sdvplot.teams()
+    assert set(t["color_source"]) == {"nflverse", "espn", "logo", "fallback"}
+    assert t["color_primary"].str.contains(r"^#[0-9a-f]{6}$").all()
+    assert t["color_secondary"].drop_nulls().str.contains(r"^#[0-9a-f]{6}$").all()
+    assert t.filter(pl.col("color_secondary") == pl.col("color_primary")).height == 0
+
+
+@pytest.mark.parametrize("league", sorted(COLOR_FLOORS))
+def test_color_coverage_per_league(league):
+    published, logo = COLOR_FLOORS[league]
+    source = sdvplot.teams(league)["color_source"]
+    assert source.is_in(["nflverse", "espn"]).sum() >= published
+    assert (source != "fallback").sum() >= published + logo
+
+
+def test_a_fallback_color_only_where_no_source_has_one():
+    # two scoreboard-only teams: no archived logo, and ESPN gives their ids no color in any sport
+    fallback = sdvplot.teams().filter(pl.col("color_source") == "fallback")
+    assert fallback.select("league", "team_id").rows() == [("ncaa_mhockey", "126813"), ("ncaa_mhockey", "132633")]
+
+
+@pytest.mark.parametrize(
+    ("league", "team", "colors"),
+    [
+        ("soccer", "10", ("#c60000", "#000000", "espn")),  # Huracán, from ESPN's per-team endpoint
+        ("ncaa_mhockey", "103", ("#8c2232", "#dbcca6", "espn")),  # Boston College: its school id in basketball
+        ("ncaa_baseball", "102", ("#ce0e2d", "#ffffff", "espn")),  # Rutgers: baseball's list says black; by name
+        ("soccer", "10207", ("#c92639", "#cda922", "logo")),  # Al Ahly: ESPN's stand-in black and red
+        ("cfb", "2097", ("#ff4713", "#2e1811", "logo")),  # Campbell: ESPN's black alone in every sport
+        ("ohl", "7", ("#fcb721", "#1e242f", "logo")),  # Barrie Colts: HockeyTech publishes no colors
+    ],
+)
+def test_colors_by_source(league, team, colors):
+    row = sdvplot.teams(league).filter(pl.col("team_id") == team)
+    assert row.select("color_primary", "color_secondary", "color_source").row(0) == colors
+
+
+def test_espn_colors_from_another_sport_come_only_from_school_keyed_leagues():
+    # college baseball and softball number their own teams: an id there is not the school's id in football
+    ec = pl.read_csv(Path(__file__).parents[1] / "data-raw" / "espn_colors.csv", infer_schema_length=0)
+    cross = ec.filter(pl.col("league") != pl.col("espn_league"))
+    school = {"cfb", "mbb", "wbb", "ncaa_mhockey", "ncaa_whockey"}
+    assert cross.height > 0 and set(cross["league"]) <= school and set(cross["espn_league"]) <= school
+
+
+def test_logo_colors_agree_with_published_ones_where_both_exist():
+    """The logo method, measured where a team also has published colors: its primary is within RGB distance 60 of
+    one of them for 68% of 4,214 teams, and 94% of the 139 in the five big leagues (ESPN's small-college and soccer
+    colors are often a shade the logo does not use)."""
+    logo = pl.read_csv(Path(__file__).parents[1] / "data-raw" / "logo_colors.csv", infer_schema_length=0)
+    both = (
+        sdvplot.teams().filter(pl.col("color_source").is_in(["nflverse", "espn"])).join(logo, on=["league", "team_id"])
+    )
+
+    def rgb(c):
+        return [int(c[i : i + 2], 16) for i in (1, 3, 5)]
+
+    def near(a, b):
+        return b is not None and sum((x - y) ** 2 for x, y in zip(rgb(a), rgb(b), strict=True)) < 60**2
+
+    ok = pl.Series([near(r["primary"], r["color_primary"]) or near(r["primary"], r["color_secondary"])
+                    for r in both.iter_rows(named=True)])  # fmt: skip
+    big = both["league"].is_in(["nfl", "nba", "mlb", "nhl", "wnba"])
+    assert both.height >= 4200 and ok.mean() >= 0.67 and ok.filter(big).mean() >= 0.94
