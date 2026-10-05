@@ -18,15 +18,17 @@ read `src/sdvplot/great_tables/` instead and see [Tables](#tables) at the end.
 Create `src/sdvplot/<library>.py`, named after the library. It is a public submodule. Import the library at the top of
 the module: that import is what tells sdvplot the extra is missing (step 4).
 
-The module exposes these public names:
+The module exposes these names. The four verbs are its public API: list them in `__all__`, and add
+`def __dir__(): return list(__all__)` so `dir()` and tab completion show only them. Everything else (helpers, the
+test hooks, constants) starts with an underscore.
 
 | Name | What it is |
 | --- | --- |
 | `add_logos`, `add_wordmarks` | `(target, x, y, teams, *, league, season=None, height=0.1, alpha=1, variant="default", embed=False, id_system="auto")` |
 | `add_headshots` | `(target, x, y, players, *, league, height=0.1, alpha=1, embed=False, id_system="espn")`: no `season`, no `variant` |
-| `axis_logos` | `(target, axis, ...)`: draw logos in place of tick labels, or raise `TypeError` and set `SUPPORTS_AXIS_LOGOS = False` |
-| `drawn_marks` | the test hook: `(target) -> list[tuple]` |
-| `SUPPORTS_AXIS_LOGOS` | `False` when `axis_logos` is not supported. The default, when absent, is `True` |
+| `axis_logos` | `(target, axis, ...)`: draw logos in place of tick labels, or raise `TypeError` and set `_SUPPORTS_AXIS_LOGOS = False` |
+| `_drawn_marks` | the test hook (private): `(target) -> list[tuple]` |
+| `_SUPPORTS_AXIS_LOGOS` | (private) `False` when `axis_logos` is not supported. The default, when absent, is `True` |
 
 Every `add_*` verb returns the object that was drawn on: the target itself when the library mutates in place, a new
 object when it builds one. Give every public function a Google-style docstring with `Args`, `Returns`, `Raises`,
@@ -65,7 +67,13 @@ import newlib
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_src
 
-SUPPORTS_AXIS_LOGOS = False
+_SUPPORTS_AXIS_LOGOS = False
+
+__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+
+
+def __dir__() -> list[str]:
+    return list(__all__)
 
 
 def _add(
@@ -119,20 +127,20 @@ def axis_logos(canvas: Any, axis: str, **kwargs: Any) -> Any:
     raise TypeError("sdvplot.newlib does not draw axis logos")
 
 
-def drawn_marks(canvas: Any) -> list[tuple[Any, ...]]:
+def _drawn_marks(canvas: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) per image on the canvas, in draw order."""
     return [(i["name"], i["x"], i["y"], i["height"], i["src"]) for i in canvas.images]
 ```
 
-The `drawn_marks` hook returns one `(team_id, x, y, height)` or `(team_id, x, y, height, url)` tuple per image drawn, in
+The `_drawn_marks` hook returns one `(team_id, x, y, height)` or `(team_id, x, y, height, url)` tuple per image drawn, in
 draw order. Measure `height` from what the library actually holds after the draw (an image's extent, a size in the
 emitted spec, the rendered SVG), never from the value you were asked for or stored: the harness exists to catch an
-ignored `height`. When the tuple carries a `url`, the harness also checks that it drew the right mark. Compare to
-`HEIGHT_TOLERANCE` (1%, relative), which absorbs rounding.
+ignored `height`. When the tuple carries a `url`, the harness also checks that it drew the right mark. The harness compares
+heights within 1% (relative), which absorbs rounding.
 
-If the library can draw axis logos, set `SUPPORTS_AXIS_LOGOS = True` (or leave it out), implement `axis_logos`, and add
-two more hooks: `drawn_axis_marks(target, axis) -> list[tuple[str, Any, float]]` (team id, tick position, height, in
-tick order) and `visible_axis_labels(target, axis) -> list[str]` (the tick labels still shown as text). See
+If the library can draw axis logos, set `_SUPPORTS_AXIS_LOGOS = True` (or leave it out), implement `axis_logos`, and add
+two more hooks: `_drawn_axis_marks(target, axis) -> list[tuple[str, Any, float]]` (team id, tick position, height, in
+tick order) and `_visible_axis_labels(target, axis) -> list[str]` (the tick labels still shown as text). See
 `src/sdvplot/matplotlib.py` for a full implementation.
 
 ## 3. Register it
@@ -215,8 +223,11 @@ players=("3139477", "4241479"), make_axis_target=None)` needs pandas and polars.
 
 The harness uses coordinates that are not row positions (`x=[10, 20]`, `y=[-3, -7]`), so swapped, shared or positional
 x and y values fail. Using `place()` passes rules 1, 2, 3 and most of 4 for free; what the harness really tests is
-your `drawn_marks` and your drawing. Add tests of your own for what is specific to the library (units, date axes, a
+your `_drawn_marks` and your drawing. Add tests of your own for what is specific to the library (units, date axes, a
 copy of the target, `embed=True`).
+
+Also add the module's name to `SUBMODULES` in `tests/test_api.py`, which checks that `dir()` shows only `__all__` and
+that nothing the module defines is public outside it.
 
 ## 6. Add the compatibility row
 
@@ -283,6 +294,6 @@ Use a Conventional Commit message such as `feat(newlib): add the newlib adapter`
 
 A table library has rows, columns and pixel heights instead of points and plot fractions, so it has its own harness,
 `check_table_adapter_contract`, with rules T0 to T6. A table adapter's `add_*` verbs take `(table, columns, *, league,
-height=<pixels>)` and return the new table. It exposes the hooks `drawn_cells(table)` (a `(team_id, row, column,
-height_px[, src])` tuple per image, in display order) and `rendered_html(table)`. Steps 3 to 8 are the same. Read
+height=<pixels>)` and return the new table. It exposes the hooks `_drawn_cells(table)` (a `(team_id, row, column,
+height_px[, src])` tuple per image, in display order) and `_rendered_html(table)`. Steps 3 to 8 are the same. Read
 `src/sdvplot/great_tables/` and its tests for a worked example.
