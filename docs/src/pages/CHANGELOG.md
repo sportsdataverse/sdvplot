@@ -3,6 +3,7 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+    - [Changed](#changed)
   - [[0.1.0] - 2026-10-05](#010---2026-10-05)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
@@ -19,7 +20,7 @@
       - [Parity extras (court coordinates, images by path, reference lines)](#parity-extras-court-coordinates-images-by-path-reference-lines)
       - [Parity extras (title images, team tiers)](#parity-extras-title-images-team-tiers)
       - [Release hardening](#release-hardening)
-    - [Changed](#changed)
+    - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
       - [Release hardening](#release-hardening-1)
@@ -37,6 +38,14 @@
 All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- `team_tiers` (matplotlib and plotnine) takes `variant=`, default `"auto"`: the dark theme now draws the archive's
+  dark-background logos (the `"dark"` variant), so dark marks such as the Capitals', the Giants', Penn State's or
+  Iowa's no longer fade into the near-black background. A team with no dark mark draws its default one, with no
+  warning; the light theme still draws the default logos. Pass `variant="default"` for the old look (sdvplotR's), or
+  any variant `add_logos` takes.
 
 ## [0.1.0] - 2026-10-05
 

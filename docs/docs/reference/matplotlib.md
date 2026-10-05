@@ -387,6 +387,7 @@ team_tiers(
     no_line_below_tier: Any = None,
     devel: bool = False,
     theme: Literal['dark', 'light'] = 'dark',
+    variant: str = 'auto',
 ) -> matplotlib.figure.Figure
 ```
 
@@ -409,7 +410,8 @@ A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvpl
 | `height` | `float \| None` | Logo height as a fraction of the panel height; None gives 0.1, about the largest height at which 32 logos in 5 tiers (7, 7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in figure. |
 | `no_line_below_tier` | `Any` | A tier number, or several, with no separator line below. |
 | `devel` | `bool` | Draw each team as text instead of its logo (fast, and needs no download). |
-| `theme` | `Literal['dark', 'light']` | "dark" (sdvplotR's: a near-black background) or "light" (white, for dark logos such as Ohio State's, Texas A&M's or Penn State's, which vanish on dark). |
+| `theme` | `Literal['dark', 'light']` | "dark" (sdvplotR's: a near-black background) or "light" (white). |
+| `variant` | `str` | The logo variant: "auto" (the default) draws the archive's "dark" variant, a mark made for dark backgrounds, on the dark theme and "default" on the light one; a team with no dark mark draws its default one, with no warning. Any other value ("default", "dark" or a named variant from ``marks()``) is drawn on either theme, as ``add_logos`` draws it: ``variant="default"`` keeps the default logos on the dark theme, as sdvplotR and sdvplot 0.1.0 draw them. |
 
 ### Returns
 
@@ -418,7 +420,7 @@ A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvpl
 ### Raises
 
 - `TypeError`: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-- `InputError`: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown.
+- `InputError`: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown; unless ``devel=True``, if ``variant`` is a name no mark in the archive has.
 - `ValueError`: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``theme`` is not "dark" or "light".
 - `OfflineError`: Unless ``devel=True``, if the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
 - `UnsafeDownloadError`: (an OSError) Unless ``devel=True``, if a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
@@ -437,8 +439,11 @@ fig = team_tiers(df, "nfl")
 # Draft it as text first, then add logos:
 fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
-# Dark logos on a white background:
+# A white background:
 fig = team_tiers(df, "cfb", theme="light")
+
+# The default logos on the dark background, as sdvplotR draws them:
+fig = team_tiers(df, "nfl", variant="default")
 ```
 
 ### See also

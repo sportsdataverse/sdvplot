@@ -21,6 +21,9 @@ THEMES: dict[str, tuple[str, str, str, str]] = {
     "dark": (BG, LINES, "#ffffff", MUTED),
     "light": ("#ffffff", "#3a3a3c", "#1e1e1e", "#636366"),
 }
+# theme -> the mark variant variant="auto" draws: the archive's dark-background logos on "dark". A team with no "dark"
+# mark gets its default one from select_mark, so no team drops out (sdvplotR draws the default logo on either)
+AUTO_VARIANT = {"dark": "dark", "light": "default"}
 SUBTITLE = "created with the #sdvplot Tiermaker"
 TIER_DESC = {1: "Elite", 2: "Very Good", 3: "Medium", 4: "Bad", 5: "What are they doing?", 6: "", 7: ""}
 # About the largest logo height (a fraction of the panel height) at which 32 square logos in 5 tiers (7, 7, 6, 6,
@@ -47,6 +50,7 @@ class Tiers:
     caption: str | None
     height: float
     alpha: float
+    variant: str  # the mark variant the logos are drawn in ("auto" already resolved by the theme)
     bg: str  # the theme's colors (THEMES)
     line_color: str
     text: str
@@ -71,6 +75,7 @@ def prepare(
     height: float | None = None,
     no_line_below_tier: Any = None,
     theme: Literal["dark", "light"] = "dark",
+    variant: str = "auto",
 ) -> Tiers:
     """Validate ``data`` and compute everything a tier plot draws (see the adapters' ``team_tiers``)."""
     if theme not in THEMES:
@@ -128,6 +133,7 @@ def prepare(
         caption=caption,
         height=h,
         alpha=a,
+        variant=AUTO_VARIANT[theme] if variant == "auto" else variant,  # any other value is select_mark's to check
         bg=THEMES[theme][0],
         line_color=THEMES[theme][1],
         text=THEMES[theme][2],

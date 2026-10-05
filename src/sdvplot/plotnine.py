@@ -850,6 +850,7 @@ def team_tiers(
     no_line_below_tier: Any = None,
     devel: bool = False,
     theme: Literal["dark", "light"] = "dark",
+    variant: str = "auto",
 ) -> ggplot:
     """A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme.
 
@@ -870,15 +871,20 @@ def team_tiers(
             figure.
         no_line_below_tier: A tier number, or several, with no separator line below.
         devel: Draw each team as text instead of its logo (fast, and needs no download).
-        theme: "dark" (sdvplotR's: a near-black background) or "light" (white, for dark logos such as Ohio State's,
-            Texas A&M's or Penn State's, which vanish on dark).
+        theme: "dark" (sdvplotR's: a near-black background) or "light" (white).
+        variant: The logo variant: "auto" (the default) draws the archive's "dark" variant, a mark made for dark
+            backgrounds, on the dark theme and "default" on the light one; a team with no dark mark draws its
+            default one, with no warning. Any other value ("default", "dark" or a named variant from ``marks()``)
+            is drawn on either theme, as ``geom_sdv_logos`` draws it: ``variant="default"`` keeps the default logos
+            on the dark theme, as sdvplotR and sdvplot 0.1.0 draw them.
 
     Returns:
         ggplot: The plot; a team that does not resolve is skipped with one SdvplotWarning, keeping its slot.
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown.
+        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown; unless
+            ``devel=True``, when the plot is drawn, if ``variant`` is a name no mark in the archive has.
         ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``theme`` is not "dark" or
             "light".
         OfflineError: Unless ``devel=True``, when the plot is drawn, if the logo manifest or a logo is neither cached
@@ -902,8 +908,11 @@ def team_tiers(
             # Draft it as text first:
             p = team_tiers(df, "nfl", devel=True)
 
-            # Dark logos on a white background:
+            # A white background:
             p = team_tiers(df, "cfb", theme="light")
+
+            # The default logos on the dark background, as sdvplotR draws them:
+            p = team_tiers(df, "nfl", variant="default")
 
     See Also:
         sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
@@ -911,13 +920,15 @@ def team_tiers(
     """
     t = _tiers.prepare(
         data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
-        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme, variant=variant,
     )  # fmt: skip
     frame = pd.DataFrame({"x": t.x, "y": t.y, "team": t.team_ids, "label": t.labels})
     if devel:
         marks: Any = geom_text(aes(label="label"), color=t.text)
     else:
-        marks = geom_sdv_logos(aes(team="team"), league=league, id_system="team_id", height=t.height, alpha=t.alpha)
+        marks = geom_sdv_logos(
+            aes(team="team"), league=league, id_system="team_id", height=t.height, alpha=t.alpha, variant=t.variant
+        )
     texts = {"title": t.title, "subtitle": t.subtitle, "caption": t.caption}
     return (
         ggplot(frame, aes("x", "y"))
