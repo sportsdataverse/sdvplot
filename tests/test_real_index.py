@@ -241,3 +241,25 @@ def test_ufl_season_codes_carry_their_seasons():
         (pl.col("league") == "ufl") & (pl.col("id_system") == "espn_abbr") & (pl.col("value") == "ARL")
     )
     assert a.select("team_id", "valid_from", "valid_to").rows() == [("112647", 2024, 2025)]
+
+
+def test_utah_marks_split_at_the_mammoth():  # NHL seasons are end years: 2025 is 2024-25
+    a = _index.alias_table().filter(
+        (pl.col("league") == "nhl") & (pl.col("id_system") == "mark") & pl.col("value").is_in(["nhl:59", "nhl:68"])
+    )
+    assert sorted(a.select("value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("nhl:59", "129764", None, None),  # the Utah Hockey Club's marks keep the archive's 2025-2025
+        ("nhl:68", "129764", 2026, None),  # the Utah Mammoth's start in 2025-26, not 2024-25 as the NHL dates them
+    ]
+
+
+@pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
+def test_live_utah_logo_by_season(tmp_path, monkeypatch):
+    from sdvplot import _manifest
+    from sdvplot._marks import select_mark
+
+    monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
+    _manifest._read.cache_clear()
+    for variant in ("default", "dark"):
+        assert select_mark("UTA", "nhl", 2025, variant)["entity_id"] == "59"  # the Utah Hockey Club, 2024-25
+        assert select_mark("UTA", "nhl", 2026, variant)["entity_id"] == "68"  # the Utah Mammoth, 2025-26 on

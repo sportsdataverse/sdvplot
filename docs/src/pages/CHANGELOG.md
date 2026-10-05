@@ -269,3 +269,8 @@
   2024-25, but the archive has only the 2026 Houston Gamblers marks for it, so `logo_url("HOU", "ufl", season=2024)`
   is the Gamblers logo. The archive's Roughnecks mark is the XFL team's (xfl 112648, 2020-23), another league's
   entity, and nothing establishes that the UFL team used it, so it is not wired (`docs/PARITY.md`).
+- NHL Utah: `logo_url("UTA", "nhl", season=2025)` (2024-25; NHL seasons are end years) is the Utah Hockey Club's mark
+  again, and 2026 on the Utah Mammoth's. The NHL's logo API dates the Mammoth's (team 68) logos from 2024-25, so they
+  outranked the Hockey Club's (team 59) one-season marks. A curated range (`data-raw/curated/mark_ranges.csv`, each
+  row with its reason) now starts team 68's marks in 2026, and a mark alias's range narrows a manifest row's own range
+  instead of only filling an open one (no other archived mark changes).

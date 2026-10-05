@@ -85,9 +85,9 @@ def _ranked(league: str) -> pl.DataFrame:
             .alias("_key")
         )
         .join(_mark_aliases(league), on="_key", how="inner")
-        .with_columns(
-            pl.coalesce("valid_from", "_alias_valid_from").alias("valid_from"),
-            pl.coalesce("valid_to", "_alias_valid_to").alias("valid_to"),
+        .with_columns(  # the intersection of the row's range and its alias's (null = unbounded on that side)
+            pl.max_horizontal("valid_from", "_alias_valid_from").alias("valid_from"),
+            pl.min_horizontal("valid_to", "_alias_valid_to").alias("valid_to"),
         )
         .drop("_key", "_alias_valid_from", "_alias_valid_to")
     )
@@ -112,7 +112,7 @@ def marks(team: Any, league: str, season: Any = None, *, id_system: str = "auto"
 
     Manifest entity ids are per-source, so rows reach a team only through its "mark" aliases; rows without a unique
     mapping are dropped, never matched on the raw id. ``valid_from``/``valid_to`` are each row's effective range: the
-    manifest's, else the mark alias's.
+    manifest's, narrowed by the mark alias's (an open side takes the alias's).
 
     Args:
         team: One team identifier (abbreviation, name, ESPN id, ...).

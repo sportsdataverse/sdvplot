@@ -314,6 +314,25 @@ def mark_aliases(
     )
 
 
+def curated_mark_ranges(mark: pl.DataFrame, curated: pl.DataFrame) -> pl.DataFrame:
+    """Season ranges for mark keys whose archived dates are wrong at their source (data-raw/curated/mark_ranges.csv,
+    each with its reason): the key's alias takes the curated range, which narrows the manifest rows' own at runtime
+    (marks()). A curated key that maps to no single team fails the build."""
+    c = curated.select(
+        "league", pl.col("mark").alias("value"), pl.col("valid_from", "valid_to").cast(pl.Int32), _curated=pl.lit(True)
+    )
+    missing = c.join(mark, on=["league", "value"], how="anti")
+    assert missing.height == 0, f"curated mark ranges for keys with no mark alias: {missing.rows()}"
+    return (
+        mark.join(c, on=["league", "value"], how="left", suffix="_c")
+        .with_columns(
+            pl.when("_curated").then(pl.col(f"{side}_c")).otherwise(pl.col(side)).alias(side)
+            for side in ("valid_from", "valid_to")
+        )
+        .select(mark.columns)
+    )
+
+
 def _report_marks(mk: pl.DataFrame) -> None:
     print(f"mark aliases: {mk.filter(pl.col('n') == 1).height} of {mk.height} manifest keys map to one team")
     bad = (
@@ -439,6 +458,8 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     mark = mk.filter(pl.col("n") == 1).select(
         "league", pl.lit("mark").alias("id_system"), "value", "team_id", "valid_from", "valid_to"
     )
+    if (raw / "curated" / "mark_ranges.csv").exists():
+        mark = curated_mark_ranges(mark, _csv(raw, "curated/mark_ranges.csv"))
     a = pl.concat([a, mark.cast(ALIAS_SCHEMA)])
     return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
 

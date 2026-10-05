@@ -448,3 +448,20 @@ def test_espn_team_endpoint_abbreviations_add_to_the_list_but_never_take_a_liste
         ("NCSU", "95"),  # added beside the list's NCST
         ("VALP", "302"),
     ]
+
+
+def test_curated_mark_ranges_date_their_key_and_fail_on_an_unknown_one():
+    mark = pl.DataFrame(
+        {"league": ["nhl", "nhl"], "id_system": ["mark"] * 2, "value": ["nhl:59", "nhl:68"], "team_id": ["129764"] * 2,
+         "valid_from": [None, None], "valid_to": [None, None]},
+        schema_overrides={"valid_from": pl.Int32, "valid_to": pl.Int32},
+    )  # fmt: skip
+    curated = pl.DataFrame({"league": ["nhl"], "mark": ["nhl:68"], "valid_from": ["2026"], "valid_to": [None]})
+    got = bi.curated_mark_ranges(mark, curated)
+    assert got.columns == mark.columns
+    assert sorted(got.select("value", "valid_from", "valid_to").rows()) == [
+        ("nhl:59", None, None),
+        ("nhl:68", 2026, None),
+    ]
+    with pytest.raises(AssertionError, match="nhl:99"):
+        bi.curated_mark_ranges(mark, curated.with_columns(pl.lit("nhl:99").alias("mark")))
