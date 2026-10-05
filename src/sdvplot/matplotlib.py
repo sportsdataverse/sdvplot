@@ -334,18 +334,29 @@ def draw_images(
     alpha: float = 1.0,
     zorder: float = 3,
     xycoords: Any = "data",
+    cache: dict[str, np.ndarray | None] | None = None,
+    skipped: list[str] | None = None,
 ) -> list[AnnotationBbox]:
     """``draw_placements`` for ``place_images``: each image is read once; the points whose image cannot be read are
-    skipped with one SdvplotWarning."""
-    images: dict[str, np.ndarray] = {}
-    unreadable: set[str] = set()
+    skipped with one SdvplotWarning.
+
+    Calls drawing one plot (a plotnine layer's panels) can share ``cache`` (url -> image, or None when unreadable) so
+    each image is read once across them, and ``skipped``, which then collects the unreadable points for the caller to
+    warn about once instead of warning here.
+    """
+    cache = {} if cache is None else cache
     for p in placements:
-        if p.url not in images and p.url not in unreadable:
+        if p.url not in cache:
             try:
-                images[p.url] = rgba_array(load_path_image(p.url))
+                cache[p.url] = rgba_array(load_path_image(p.url))
             except (OSError, ValueError, OfflineError):  # missing file, not an image, failed download
-                unreadable.add(p.url)
-    _warn_skipped("whose image could not be read", [p.url for p in placements if p.url in unreadable])
+                cache[p.url] = None
+    unreadable = [p.url for p in placements if cache[p.url] is None]
+    if skipped is None:
+        _warn_skipped("whose image could not be read", unreadable)
+    else:
+        skipped += unreadable
+    images = {url: img for url, img in cache.items() if img is not None}
     drawable = [p for p in placements if p.url in images]
     return draw_placements(ax, drawable, height=height, alpha=alpha, zorder=zorder, xycoords=xycoords, images=images)
 

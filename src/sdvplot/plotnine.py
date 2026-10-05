@@ -18,7 +18,7 @@ from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
 from sdvplot._marks import _check_mark_type
-from sdvplot._placement import check_alpha, check_height, place, place_images
+from sdvplot._placement import _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _unpack
 from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
 from sdvplot.matplotlib import draw_images, draw_placements
@@ -147,11 +147,22 @@ class geom_from_path(_geom_sdv_marks):
     _needs_league = False
     REQUIRED_AES = {"x", "y", "path"}
     DEFAULT_PARAMS = {"stat": "identity", "position": "identity", "na_rm": False, "height": 0.1, "alpha": 1}
+    _sdv_cache: dict[str, Any]
+    _sdv_skipped: list[str]
+
+    def draw_layer(self, data: pd.DataFrame, layout: Any, coord: Any) -> None:
+        # the panels of one draw share the images read and the points skipped: each image is read (or downloaded)
+        # once, and the unreadable ones are warned about once
+        self._sdv_cache, self._sdv_skipped = {}, []
+        super().draw_layer(data, layout, coord)
+        skipped, self._sdv_cache, self._sdv_skipped = self._sdv_skipped, {}, []
+        _warn_skipped("whose image could not be read", skipped)
 
     def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
         data = coord.transform(data, panel_params)
         placements = place_images(data["x"].tolist(), data["y"].tolist(), data["path"].tolist())
-        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
+        draw_images(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]),
+                    cache=self._sdv_cache, skipped=self._sdv_skipped)  # fmt: skip
 
 
 class _geom_ref_lines(geom):

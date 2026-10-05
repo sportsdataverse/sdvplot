@@ -246,3 +246,18 @@ def test_reference_lines_draw_one_segment_per_distinct_aesthetics_like_ggplot2()
     point_colors = list(dict.fromkeys(tuple(c) for c in ax.collections[0].get_facecolors()))
     assert line_colors == point_colors and len(set(line_colors)) == 2
     assert _ref_lines((ggplot(df, aes("x", "y", x0="x")) + sp9.geom_mean_lines()).draw()) == [([5.0], [])]
+
+
+def test_geom_from_path_warns_once_per_draw_and_reads_each_image_once_across_facets(tmp_path, cache, monkeypatch):
+    from sdvplot import _cache
+    from tests.conftest import FakeResponse, FakeSession
+
+    session = FakeSession(FakeResponse(404))  # one response: a second download of the dead URL would fail the test
+    monkeypatch.setattr(_cache, "SESSION", session)
+    (a,) = _pngs(tmp_path, "a.png")
+    dead = "https://example.com/gone.png"
+    df = pd.DataFrame({"x": [1.0, 2.0, 1.0, 2.0], "y": [1.0] * 4, "img": [a, dead, a, dead], "f": list("ppqq")})
+    p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path() + facet_wrap("f")
+    with pytest.warns(SdvplotWarning, match=r"skipped 2 point\(s\) whose image could not be read") as rec:
+        assert [m[0] for m in sp9.drawn_marks(p)] == [a, a]
+    assert len(rec) == 1 and len(session.calls) == 1
