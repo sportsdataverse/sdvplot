@@ -152,12 +152,9 @@ def safe_url(url: object) -> bool:
 
 def _pieces(r: requests.Response) -> Iterator[bytes]:
     """Body pieces as they arrive, so the cap and the deadline are checked on every receive (not per full chunk: a
-    server dripping a byte at a time would otherwise stall a 64 KiB read for hours)."""
-    read1 = getattr(getattr(r, "raw", None), "read1", None)  # urllib3 >= 2; returns whatever is available
-    if read1 is None:
-        yield from r.iter_content(8192)
-        return
-    while chunk := read1(65536, decode_content=True):
+    server dripping a byte at a time would otherwise stall a 64 KiB read for hours). urllib3 >= 2.6 (a dependency floor)
+    returns whatever has arrived, and decompresses at most the amount asked for."""
+    while chunk := r.raw.read1(65536, decode_content=True):
         yield chunk
 
 

@@ -81,6 +81,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   most `sdvplot._images.MAX_SIZE`, 4096) after a small probe render measures its aspect ratio. An SVG more than 64 times
   longer than it is wide, or a `size` over 4096, is an `InputError` before anything is rendered. resvg used to render
   at `width=size` first, so a tall SVG or a large `size` asked for gigabytes and could abort the Python process.
+- `urllib3>=2.6` is a dependency. `requests>=2.33` still allowed urllib3 1.26 and 2.0 to 2.5, which decompress a
+  whole received chunk at once: a 275-byte gzip body cost 4 GB of memory before the download byte cap saw it
+  (CVE-2025-66471). The download loop's fallback for urllib3 below 2 is removed.
 
 ## [0.1.0] - Unreleased
 

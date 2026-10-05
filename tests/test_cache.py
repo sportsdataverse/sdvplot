@@ -330,6 +330,19 @@ def test_a_drip_fed_download_stops_at_the_total_deadline(cache, monkeypatch):
         _cache.fetch_immutable("https://x/a.png", "images/ab/a.png", "0" * 64)
 
 
+def test_urllib3_is_floored_where_the_byte_cap_bounds_memory():
+    """Before urllib3 2.6, read1() decompressed a whole received chunk: a 275-byte gzip body cost 4 GB before the cap
+    saw it (CVE-2025-66471). _pieces relies on the floor; it has no fallback for older urllib3."""
+    import importlib.metadata
+
+    from packaging.requirements import Requirement
+    from packaging.version import Version
+
+    (req,) = [r for r in map(Requirement, importlib.metadata.requires("sdvplot")) if r.name == "urllib3"]
+    assert req.marker is None and "2.5.99" not in req.specifier and "2.6.0" in req.specifier
+    assert Version(importlib.metadata.version("urllib3")) >= Version("2.6")
+
+
 def test_a_redirect_off_https_is_refused_without_requesting_the_http_url(cache, monkeypatch):
     s = FakeSession(FakeResponse(302, b"", {"Location": "http://evil/m.csv"}), FakeResponse(200, b"pwned"))
     monkeypatch.setattr(_cache, "SESSION", s)

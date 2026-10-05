@@ -1,6 +1,7 @@
 """A small, hand-written team index every test runs against, so tests never touch the real generated index."""
 
 import hashlib
+import io
 from pathlib import Path
 
 import polars as pl
@@ -227,13 +228,17 @@ def fixture_index(request, tmp_path, monkeypatch):
     _index.reload_index()
 
 
+class FakeRaw(io.BytesIO):
+    """The body as urllib3's HTTPResponse serves it to _cache: read1() returns at most the amount asked for."""
+
+    def read1(self, size=-1, decode_content=True):
+        return super().read1(size)
+
+
 class FakeResponse:
     def __init__(self, status=200, body=b"", headers=None):
         self.status_code, self.content, self.headers = status, body, headers or {}
-
-    def iter_content(self, chunk_size=1):
-        for i in range(0, len(self.content), chunk_size):
-            yield self.content[i : i + chunk_size]
+        self.raw = FakeRaw(body)
 
     def close(self):
         pass
