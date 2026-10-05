@@ -3,11 +3,12 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+    - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
-    - [Added](#added)
+    - [Added](#added-1)
       - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
       - [Repository standards](#repository-standards)
       - [Matplotlib family](#matplotlib-family)
@@ -35,6 +36,12 @@
 All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- A deprecation helper, `sdvplot._deprecate` (`deprecate()` and `@deprecated_alias`), and its warning,
+  `sdvplot.SdvplotDeprecationWarning` (a `FutureWarning` and a `SdvplotWarning`), with a deprecation policy in
+  CONTRIBUTING.md: one minor release of warnings before a removal. Nothing is deprecated yet.
 
 ### Changed
 

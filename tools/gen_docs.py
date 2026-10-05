@@ -37,6 +37,7 @@ SECTIONS = [
 ]
 ERRORS = [
     "SdvplotWarning",
+    "SdvplotDeprecationWarning",
     "SdvplotError",
     "InputError",
     "UnresolvedTeamError",

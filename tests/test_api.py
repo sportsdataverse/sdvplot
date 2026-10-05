@@ -26,6 +26,7 @@ PUBLIC = {
     "surface",
     "court_coords",
     "SdvplotWarning",
+    "SdvplotDeprecationWarning",
     "SdvplotError",
     "InputError",
     "UnresolvedTeamError",

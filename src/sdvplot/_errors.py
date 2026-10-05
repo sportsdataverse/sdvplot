@@ -14,6 +14,11 @@ class SdvplotWarning(UserWarning):
     """Something was skipped or degraded (an unresolved team, a stale cache), but the call still returned."""
 
 
+class SdvplotDeprecationWarning(SdvplotWarning, FutureWarning):
+    """A deprecated sdvplot name or argument: it still works, and the message names its replacement and the release
+    that removes it. A FutureWarning, so it shows by default."""
+
+
 def warn(message: str, category: type[Warning] = SdvplotWarning) -> None:
     """``warnings.warn`` at the first frame outside the sdvplot package: the caller's own line, however deep inside
     sdvplot the warning is raised (a fixed ``stacklevel`` named sdvplot's files whenever the call chain changed)."""
