@@ -60,6 +60,30 @@ def test_rule_t2_catches_an_adapter_that_blanks_unknown_values(manifest, monkeyp
         _check()
 
 
+def test_rule_t1_catches_an_adapter_that_warns_when_nothing_is_skipped(manifest, monkeypatch):
+    def chatty(gt, columns, **kw):
+        warnings.warn("adding logos", SdvplotWarning, stacklevel=2)
+        return real_logos(gt, columns, **kw)
+
+    monkeypatch.setattr(sgt, "add_logos", chatty)
+    with pytest.raises(AssertionError, match=r"rule T1 \(resolution\): known values must not warn"):
+        _check()
+
+
+def test_rule_t2_catches_an_adapter_that_warns_once_per_unknown_value(manifest, monkeypatch):
+    def per_value(gt, columns, **kw):
+        for value in gt._tbl_data[columns]:
+            if value.startswith("XXX"):
+                warnings.warn(f"unknown {value}", SdvplotWarning, stacklevel=2)  # one per value, not one per call
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SdvplotWarning)
+            return real_logos(gt, columns, **kw)
+
+    monkeypatch.setattr(sgt, "add_logos", per_value)
+    with pytest.raises(AssertionError, match=r"rule T2 .*all-unknown input must warn exactly once when called"):
+        _check()
+
+
 def test_rule_t4_catches_an_adapter_that_ignores_height(manifest, monkeypatch):
     monkeypatch.setattr(sgt, "add_logos", lambda gt, columns, *, height=30, **kw: real_logos(gt, columns, **kw))
     with pytest.raises(AssertionError, match=r"rule T4 \(height in pixels\)"):

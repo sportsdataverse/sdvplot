@@ -6,14 +6,20 @@ An adapter module must expose add_logos, add_wordmarks, add_headshots and axis_l
 
 returning one tuple per drawn image, in draw order: (team_id, x, y, height) or (team_id, x, y, height, url). team_id
 is the canonical team id (str; the player id for headshots), x and y are the caller's position values for that image,
-height is the fraction of the plot height the adapter actually used (not the value it was asked for), and url, when
-present, is the image source the adapter used (so the harness can check it drew the right mark).
+height is the fraction of the plot height the image was drawn at, and url, when present, is the image source the
+adapter used (so the harness can check it drew the right mark). The hook measures height from what was drawn, never
+from the value the adapter was asked for or stored: the image's extent after a draw (matplotlib, plotnine), the size
+in the emitted spec or document (Plotly layout images, Vega-Lite marks, Bokeh and folium sizes), or the rendered SVG
+(pygal). The harness compares heights within HEIGHT_TOLERANCE (1%, relative), which absorbs pixel and attribute
+rounding (pygal writes three decimals) but not an ignored height or a wrong reference height.
 
 An adapter that draws axis logos sets SUPPORTS_AXIS_LOGOS = True (the default when the attribute is absent) and
 exposes two more hooks:
 
-    drawn_axis_marks(target, axis) -> list[tuple[str, Any]]   # (team_id, tick position) per axis image, tick order
-    visible_axis_labels(target, axis) -> list[str]            # the tick labels still shown as text
+    drawn_axis_marks(target, axis) -> list[tuple[str, Any, float]]  # (team_id, tick position, height), tick order
+    visible_axis_labels(target, axis) -> list[str]                   # the tick labels still shown as text
+
+where height is measured as for drawn_marks.
 
 An adapter that cannot (a map, a table) sets SUPPORTS_AXIS_LOGOS = False and raises TypeError from axis_logos.
 
@@ -24,16 +30,25 @@ it is not None, and from the target otherwise.
 The contract can fail: each rule below raises an AssertionError whose message starts with "rule N". The rules use
 coordinates that are not row positions (x=[10, 20], y=[-3, -7]) so swapped, shared or positional x/y are caught.
 
+Warnings are counted over one call and one read of the drawn marks (an adapter that resolves at render time, such as
+plotnine, warns there): a call that skips nothing gives no SdvplotWarning, and each reason a call skips points for
+(unknown teams, unknown player ids, ...) gives exactly one, however many values, layers or marks it covers.
+
 0. Registration: sdvplot's front door routes make_target() to this adapter.
-1. Resolution: the canonical ids of the teams passed, at their own x/y (and the team's own mark, when url is drawn).
-2. Warn and skip: an unknown team is dropped together with its own x/y, with an SdvplotWarning, never a raise.
+1. Resolution: the canonical ids of the teams passed, at their own x/y (and the team's own mark, when url is drawn),
+   with no warning.
+2. Warn and skip: an unknown team is dropped together with its own x/y, with exactly one SdvplotWarning per call
+   (one unknown or several), never a raise.
 3. pandas/polars parity: a pandas Series with a non-default index draws the same marks as a polars Series.
-4. Height semantics: height is the fraction drawn; 0 and values above 1 raise ValueError.
+4. Height semantics: on every verb (add_logos here; rules 5-7 for the others), height is the fraction of the plot
+   height drawn, measured by the hooks; 0 and values above 1 raise ValueError.
 5. Wordmarks: add_wordmarks follows rules 1, 2 and 4.
-6. Headshots: add_headshots draws player ids at their own x/y, skips an unknown id with a warning, honours height.
-7. Axis logos: known team categories become images in tick order, an unknown one warns and stays readable text;
-   or, without axis support, axis_logos raises TypeError.
-8. Alpha: alpha outside [0, 1] raises ValueError.
+6. Headshots: add_headshots draws player ids at their own x/y, skips an unknown id with exactly one warning, and
+   follows rule 4.
+7. Axis logos: known team categories become images in tick order, an unknown one gives exactly one warning and stays
+   readable text, and the images follow rule 4; or, without axis support, axis_logos raises TypeError.
+8. Alpha: on every verb that takes alpha (add_logos, add_wordmarks, add_headshots, and axis_logos when its signature
+   has alpha), alpha outside [0, 1] raises ValueError.
 
 Table adapters (great_tables) have rows, columns and pixel heights instead, so they get their own harness,
 check_table_adapter_contract(), with rules T0-T6 (messages start with "rule T<n>"). A table adapter's add_* take
@@ -45,17 +60,20 @@ check_table_adapter_contract(), with rules T0-T6 (messages start with "rule T<n>
 In drawn_cells, row is the 0-based display row of a body cell and -1 for a column label.
 
 T0. Registration: the front door routes the table to this adapter.
-T1. Resolution: a column ["LV", "LAR"] renders both teams' canonical ids at rows 0 and 1 (and their own marks).
-T2. Warn and keep: ["XXX", "LV"] renders LV at row 1, keeps "XXX" as text, warns once when called and never when
-    rendered; all-unknown input renders no image.
+T1. Resolution: a column ["LV", "LAR"] renders both teams' canonical ids at rows 0 and 1 (and their own marks),
+    with no warning.
+T2. Warn and keep: ["XXX", "LV"] renders LV at row 1, keeps "XXX" as text, warns exactly once when called and never
+    when rendered; all-unknown input renders no image and also warns exactly once.
 T3. pandas/polars parity: a pandas frame with a non-default index renders the same cells as a polars frame.
-T4. Height: height=24 is 24 px on every image; 0, negative and non-numeric heights raise ValueError.
+T4. Height: height=24 is 24 px on every image (drawn_cells reads it from the rendered HTML); 0, negative and
+    non-numeric heights raise ValueError.
 T5. Wordmarks: add_wordmarks satisfies T1-T4.
 T6. Headshots: add_headshots satisfies T1-T4 for player ids.
 """
 
 from __future__ import annotations
 
+import inspect
 import math
 import warnings
 from collections.abc import Callable, Sequence
@@ -65,31 +83,52 @@ from typing import Any
 from sdvplot._errors import SdvplotWarning
 from sdvplot._resolve import resolve
 
+HEIGHT_TOLERANCE = 0.01  # relative; heights are measured from what was drawn, so rounding must pass
+
 
 def _fail(rule: str, msg: str) -> None:
     raise AssertionError(f"{rule}: {msg}")
 
 
-def _call(
-    adapter: ModuleType, verb: str, make_target: Callable[[], Any], rule: str, *args: Any, **kw: Any
-) -> tuple[list[tuple[Any, ...]], list[warnings.WarningMessage]]:
-    """Run adapter.<verb> on a fresh target; return (drawn marks, warnings). A raise becomes a named AssertionError.
+def _count(rec: list[warnings.WarningMessage]) -> int:
+    return sum(issubclass(w.category, SdvplotWarning) for w in rec)
 
-    Marks are read from the object the verb returns (None means it mutated the target in place).
+
+def _draw(
+    adapter: ModuleType, verb: str, target: Any, read: Callable[[Any], Any], *args: Any, **kw: Any
+) -> tuple[Any, list[tuple[Any, ...]], int]:
+    """adapter.<verb>(target, ...), then ``read`` (a hook) on what was drawn on: (drawn object, marks, warnings).
+
+    The drawn object is the one the verb returns (None means it mutated the target in place). The warning count is
+    the SdvplotWarnings raised by the call and the read together. Exceptions propagate.
     """
-    t = make_target()
     with warnings.catch_warnings(record=True) as rec:
         warnings.simplefilter("always")
-        try:
-            out = getattr(adapter, verb)(t, *args, **kw)
-        except Exception as e:  # noqa: BLE001
-            raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
-        marks = [tuple(m) for m in adapter.drawn_marks(t if out is None else out)]
-    return marks, rec
+        out = getattr(adapter, verb)(target, *args, **kw)
+        drawn = target if out is None else out
+        marks = [tuple(m) for m in read(drawn)]
+    return drawn, marks, _count(rec)
 
 
-def _warned(rec: list[warnings.WarningMessage]) -> bool:
-    return any(issubclass(w.category, SdvplotWarning) for w in rec)
+def _call(
+    adapter: ModuleType, verb: str, make_target: Callable[[], Any], rule: str, *args: Any, **kw: Any
+) -> tuple[list[tuple[Any, ...]], int]:
+    """Run adapter.<verb> on a fresh target; return (drawn marks, warnings). A raise becomes a named AssertionError."""
+    try:
+        _, marks, count = _draw(adapter, verb, make_target(), adapter.drawn_marks, *args, **kw)
+    except Exception as e:  # noqa: BLE001
+        raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
+    return marks, count
+
+
+def _once(rule: str, count: int, what: str) -> None:
+    if count != 1:
+        _fail(rule, f"{what} must give exactly one SdvplotWarning per call, gave {count}")
+
+
+def _quiet(rule: str, count: int, what: str) -> None:
+    if count:
+        _fail(rule, f"{what} must not warn when nothing is skipped, warned {count} times")
 
 
 def _xyz(marks: list[tuple[Any, ...]]) -> list[tuple[Any, ...]]:
@@ -120,41 +159,50 @@ def _check_marks(
     xs, ys = [10.0, 20.0], [-3.0, -7.0]
     want_two = [(id_a, 10, -3), (id_b, 20, -7)]
 
-    marks, _ = _call(adapter, verb, make_target, r1, xs, ys, [a, b], league=league)
+    marks, count = _call(adapter, verb, make_target, r1, xs, ys, [a, b], league=league)
     if _xyz(marks) != want_two:
         _fail(r1, f"expected marks {want_two}, drew {_xyz(marks)}")
+    _quiet(r1, count, "known teams")
     _check_urls(r1, marks, urls)
 
-    marks, rec = _call(adapter, verb, make_target, r2, xs, ys, ["XXX", a], league=league)
+    marks, count = _call(adapter, verb, make_target, r2, xs, ys, ["XXX", a], league=league)
     if _xyz(marks) != [(id_a, 20, -7)]:
         _fail(
             r2, f"an unknown team must be skipped with its own x/y; expected [({id_a!r}, 20, -7)], drew {_xyz(marks)}"
         )
-    if not _warned(rec):
-        _fail(r2, "an unknown team must warn (SdvplotWarning)")
-    marks, rec = _call(adapter, verb, make_target, r2, xs, ys, ["XXX", "YYY"], league=league)
+    _once(r2, count, "an unknown team")
+    marks, count = _call(adapter, verb, make_target, r2, xs, ys, ["XXX", "YYY"], league=league)
     if marks:
         _fail(r2, f"all-unknown input must draw nothing, drew {marks}")
-    if not _warned(rec):
-        _fail(r2, "all-unknown input must warn (SdvplotWarning)")
+    _once(r2, count, "all-unknown input")
 
 
-def _check_height(
-    adapter: ModuleType, verb: str, make_target: Callable[[], Any], league: str, pair: Sequence[str], rule: str
-) -> None:
-    """Rule 4 (named by ``rule``) for one verb: height is the fraction drawn; 0 and values above 1 raise."""
-    xs, ys = [10.0, 20.0], [-3.0, -7.0]
+def _check_height(rule: str, verb: str, heights: Callable[[float], list[float]]) -> None:
+    """Rule 4 (named by ``rule``) for one verb. ``heights(h)`` draws with height=h on a fresh target and returns the
+    heights the hook measured: each must be h (within HEIGHT_TOLERANCE); 0 and values above 1 raise ValueError."""
     for h in (0.1, 0.25):
-        marks, _ = _call(adapter, verb, make_target, rule, xs, ys, list(pair), league=league, height=h)
-        if not marks or not all(math.isclose(m[3], h) for m in marks):
-            _fail(rule, f"height={h} must be the height of every drawn mark, drew heights {[m[3] for m in marks]}")
+        try:
+            got = heights(h)
+        except Exception as e:  # noqa: BLE001
+            raise AssertionError(f"{rule}: {verb} raised {e!r}") from e
+        if not got or not all(math.isclose(g, h, rel_tol=HEIGHT_TOLERANCE) for g in got):
+            _fail(rule, f"height={h} must be the height of every mark {verb} draws, it drew heights {got}")
     for bad in (0, 1.5):
         try:
-            getattr(adapter, verb)(make_target(), [0], [0], [pair[0]], league=league, height=bad)
+            heights(bad)
         except ValueError:
-            pass
-        else:
-            _fail(rule, f"height={bad} must raise ValueError (height is a fraction in (0, 1])")
+            continue
+        _fail(rule, f"height={bad} must raise ValueError from {verb} (height is a fraction in (0, 1])")
+
+
+def _check_alpha(rule: str, verb: str, draw: Callable[[float], Any]) -> None:
+    """Rule 8 for one verb: ``draw(alpha)`` draws with that alpha on a fresh target; outside [0, 1] it must raise."""
+    for bad in (-0.1, 1.5):
+        try:
+            draw(bad)
+        except ValueError:
+            continue
+        _fail(rule, f"alpha={bad} must raise ValueError from {verb} (alpha is an opacity in [0, 1])")
 
 
 def check_adapter_contract(
@@ -207,7 +255,19 @@ def check_adapter_contract(
     if _xyz(pmarks) != _xyz(lmarks) or _xyz(lmarks) != want_two:
         _fail(r3, f"pandas (index [5, 6]) drew {_xyz(pmarks)}, polars drew {_xyz(lmarks)}, expected {want_two}")
 
-    _check_height(adapter, "add_logos", make_target, league, known, "rule 4 (height semantics)")
+    def heights(verb: str, values: Sequence[str]) -> Callable[[float], list[float]]:
+        def draw(h: float) -> list[float]:
+            _, marks, _ = _draw(adapter, verb, make_target(), adapter.drawn_marks, xs, ys, list(values),
+                                league=league, height=h)  # fmt: skip
+            return [m[3] for m in marks]
+
+        return draw
+
+    def with_alpha(verb: str, value: str) -> Callable[[float], Any]:
+        return lambda alpha: _draw(adapter, verb, make_target(), lambda _: [], xs[:1], ys[:1], [value],
+                                   league=league, alpha=alpha)  # fmt: skip
+
+    _check_height("rule 4 (height semantics)", "add_logos", heights("add_logos", known))
 
     # rule 5: wordmarks follow rules 1, 2 and 4
     wa, wb = known_wordmarks
@@ -220,46 +280,59 @@ def check_adapter_contract(
         adapter, "add_wordmarks", make_target, league, known_wordmarks, (wid_a, wid_b), wurls,
         ("rule 5 (wordmarks: resolution)", "rule 5 (wordmarks: warn and skip)"),
     )  # fmt: skip
-    _check_height(adapter, "add_wordmarks", make_target, league, known_wordmarks, "rule 5 (wordmarks: height)")
+    _check_height("rule 5 (wordmarks: height)", "add_wordmarks", heights("add_wordmarks", known_wordmarks))
 
     # rule 6: headshots
     r6 = "rule 6 (headshots)"
     p, q = players
-    marks, _ = _call(adapter, "add_headshots", make_target, r6, xs, ys, [p, q], league=league)
+    marks, count = _call(adapter, "add_headshots", make_target, r6, xs, ys, [p, q], league=league)
     if _xyz(marks) != [(p, 10, -3), (q, 20, -7)]:
         _fail(r6, f"expected headshots [({p!r}, 10, -3), ({q!r}, 20, -7)], drew {_xyz(marks)}")
+    _quiet(r6, count, "known player ids")
     _check_urls(r6, marks, {p: lambda: headshot_url(p, league), q: lambda: headshot_url(q, league)})
-    marks, rec = _call(adapter, "add_headshots", make_target, r6, xs, ys, ["not-an-id", p], league=league)
-    if _xyz(marks) != [(p, 20, -7)] or not _warned(rec):
-        _fail(r6, f"an unknown player id must be skipped with its own x/y and warn, drew {_xyz(marks)}")
-    marks, _ = _call(adapter, "add_headshots", make_target, r6, xs, ys, [p, q], league=league, height=0.25)
-    if not marks or not all(math.isclose(m[3], 0.25) for m in marks):
-        _fail(r6, f"height=0.25 must be the height of every headshot, drew {[m[3] for m in marks]}")
+    marks, count = _call(adapter, "add_headshots", make_target, r6, xs, ys, ["not-an-id", p], league=league)
+    if _xyz(marks) != [(p, 20, -7)]:
+        _fail(r6, f"an unknown player id must be skipped with its own x/y, drew {_xyz(marks)}")
+    _once(r6, count, "an unknown player id")
+    _check_height("rule 6 (headshots: height)", "add_headshots", heights("add_headshots", players))
 
     # rule 7: axis logos
     r7 = "rule 7 (axis logos)"
+    alpha_draws = {verb: with_alpha(verb, value) for verb, value in
+                   (("add_logos", a), ("add_wordmarks", wa), ("add_headshots", p))}  # fmt: skip
     if getattr(adapter, "SUPPORTS_AXIS_LOGOS", True):
         if make_axis_target is None:
             _fail(r7, "make_axis_target is required for an adapter that supports axis logos")
         assert make_axis_target is not None
-        t = make_axis_target([a, "XXX", b])
-        with warnings.catch_warnings(record=True) as rec:
-            warnings.simplefilter("always")
-            try:
-                out = adapter.axis_logos(t, "x", league=league)
-            except Exception as e:  # noqa: BLE001
-                raise AssertionError(f"{r7}: axis_logos raised {e!r}") from e
-            drawn = out if out is not None else t
-            axis_marks = [tuple(m) for m in adapter.drawn_axis_marks(drawn, "x")]
+        make_axis = make_axis_target
+
+        def read_axis(drawn: Any) -> Any:
+            return adapter.drawn_axis_marks(drawn, "x")
+
+        try:
+            drawn, axis_marks, count = _draw(adapter, "axis_logos", make_axis([a, "XXX", b]), read_axis, "x",
+                                             league=league)  # fmt: skip
+        except Exception as e:  # noqa: BLE001
+            raise AssertionError(f"{r7}: axis_logos raised {e!r}") from e
+        with warnings.catch_warnings():  # counted above: a hook that renders again (plotnine) warns again
+            warnings.simplefilter("ignore", SdvplotWarning)
             shown = list(adapter.visible_axis_labels(drawn, "x"))
         if [m[0] for m in axis_marks] != [id_a, id_b]:
             _fail(r7, f"expected axis images for [{id_a!r}, {id_b!r}] in tick order, drew {axis_marks}")
         if not axis_marks[0][1] < axis_marks[1][1]:
             _fail(r7, f"axis images must sit at increasing tick positions, got {axis_marks}")
-        if not _warned(rec):
-            _fail(r7, "an unknown axis category must warn (SdvplotWarning)")
+        _once(r7, count, "an unknown axis category")
         if "XXX" not in shown or a in shown or b in shown:
             _fail(r7, f"only the unknown category may stay as text, visible labels are {shown}")
+
+        def axis_heights(h: float) -> list[float]:
+            _, marks, _ = _draw(adapter, "axis_logos", make_axis([a, b]), read_axis, "x", league=league, height=h)
+            return [m[2] for m in marks]
+
+        _check_height("rule 7 (axis logos: height)", "axis_logos", axis_heights)
+        if "alpha" in inspect.signature(adapter.axis_logos).parameters:  # no shipped adapter's axis logos take alpha
+            alpha_draws["axis_logos"] = lambda alpha: _draw(adapter, "axis_logos", make_axis([a, b]), lambda _: [],
+                                                            "x", league=league, alpha=alpha)  # fmt: skip
     else:
         try:
             adapter.axis_logos(make_target(), "x", league=league)
@@ -268,15 +341,9 @@ def check_adapter_contract(
         else:
             _fail(r7, "an adapter without axis-logo support must raise TypeError from axis_logos")
 
-    # rule 8: alpha
-    r8 = "rule 8 (alpha)"
-    for bad in (-0.1, 1.5):
-        try:
-            adapter.add_logos(make_target(), [0], [0], [a], league=league, alpha=bad)
-        except ValueError:
-            pass
-        else:
-            _fail(r8, f"alpha={bad} must raise ValueError (alpha is an opacity in [0, 1])")
+    # rule 8: alpha, on every verb that takes it
+    for verb, draw in alpha_draws.items():
+        _check_alpha("rule 8 (alpha)", verb, draw)
 
 
 def _table_call(
@@ -320,10 +387,12 @@ def _check_table_verb(
     a, b = pair
     want = [(ids[0], 0, "team"), (ids[1], 1, "team")]
 
-    cells, _, _, _ = _table_call(adapter, verb, make_table, r1, pl.DataFrame({"team": [a, b], "v": [1, 2]}),
-                                 league=league)  # fmt: skip
+    cells, count, late, _ = _table_call(adapter, verb, make_table, r1, pl.DataFrame({"team": [a, b], "v": [1, 2]}),
+                                        league=league)  # fmt: skip
     if [c[:3] for c in cells] != want:
         _fail(r1, f"expected cells {want}, rendered {[c[:3] for c in cells]}")
+    if count or late:
+        _fail(r1, f"known values must not warn, warned {count} times when called and {late} when rendered")
     _check_urls(r1, cells, urls)
 
     frame = pl.DataFrame({"team": [unknown, a], "v": [1, 2]})
@@ -338,8 +407,10 @@ def _check_table_verb(
         _fail(r2, f"an unknown value must stay as text, {unknown!r} is not in the rendered table")
     frame = pl.DataFrame({"team": [unknown, unknown + "2"], "v": [1, 2]})
     cells, count, _, _ = _table_call(adapter, verb, make_table, r2, frame, league=league)
-    if cells or not count:
-        _fail(r2, f"all-unknown input must render no image and warn, rendered {cells}")
+    if cells:
+        _fail(r2, f"all-unknown input must render no image, rendered {cells}")
+    if count != 1:
+        _fail(r2, f"all-unknown input must warn exactly once when called, warned {count} times")
 
     pcells, _, _, _ = _table_call(adapter, verb, make_table, r3,
                                   pd.DataFrame({"team": [a, b], "v": [1, 2]}, index=[5, 6]), league=league)  # fmt: skip

@@ -34,6 +34,8 @@ def _dummy_adapter():
     def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0):
         if not 0 < height <= 1:
             raise ValueError("height is a fraction of the plot height")
+        if not 0 <= alpha <= 1:
+            raise ValueError("alpha is an opacity")
         bad = [p for p in players if not str(p).isdigit()]
         if bad:
             warnings.warn(f"no headshot for {bad}", SdvplotWarning, stacklevel=2)
@@ -298,3 +300,176 @@ def test_rule_8_catches_an_adapter_that_accepts_any_alpha(dummy, monkeypatch):
     monkeypatch.setattr(dummy, "add_logos", lax)
     with pytest.raises(AssertionError, match=r"rule 8 \(alpha\)"):
         check_adapter_contract(dummy, make_target=Canvas)
+
+
+@pytest.mark.parametrize("how", ["a second resolution", "one warning per value"])
+def test_rule_2_catches_an_adapter_that_warns_more_than_once_per_call(dummy, monkeypatch, how):
+    working = dummy.add_logos
+
+    def noisy(target, x, y, teams, *, league, **kw):
+        if how == "a second resolution":  # e.g. once per layer, or a retry: the resolver warns again
+            resolve(list(teams), league)
+            return working(target, x, y, teams, league=league, **kw)
+        for xi, yi, team in zip(list(x), list(y), list(teams), strict=True):
+            working(target, [xi], [yi], [team], league=league, **kw)  # one call, so one warning, per unknown value
+        return target
+
+    _mutant(dummy, monkeypatch, noisy)
+    with pytest.raises(AssertionError, match=r"rule 2 \(unknown team: warn and skip\): .*exactly one SdvplotWarning"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_1_catches_an_adapter_that_warns_when_nothing_is_skipped(dummy, monkeypatch):
+    working = dummy.add_logos
+
+    def chatty(target, *a, **k):
+        warnings.warn("drawing logos", SdvplotWarning, stacklevel=2)
+        return working(target, *a, **k)
+
+    _mutant(dummy, monkeypatch, chatty)
+    with pytest.raises(AssertionError, match=r"rule 1 \(resolution\): known teams must not warn"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_6_catches_headshots_that_warn_twice_for_one_unknown_id(dummy, monkeypatch):
+    working = dummy.add_headshots
+
+    def noisy(target, x, y, players, **kw):
+        if any(not str(p).isdigit() for p in players):
+            warnings.warn("checking ids", SdvplotWarning, stacklevel=2)  # a validation pass that also warns
+        return working(target, x, y, players, **kw)
+
+    monkeypatch.setattr(dummy, "add_headshots", noisy)
+    with pytest.raises(AssertionError, match=r"rule 6 \(headshots\): .*exactly one SdvplotWarning"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+@pytest.mark.parametrize("verb", ["add_wordmarks", "add_headshots"])
+def test_rule_8_catches_a_verb_that_ignores_alpha(dummy, monkeypatch, verb):
+    working = getattr(dummy, verb)
+
+    def lax(target, x, y, teams, *, league, alpha=1.0, **kw):
+        return working(target, x, y, teams, league=league, **kw)  # alpha is accepted and dropped
+
+    monkeypatch.setattr(dummy, verb, lax)
+    with pytest.raises(AssertionError, match=rf"rule 8 \(alpha\): alpha=-0.1 must raise ValueError from {verb}"):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_rule_6_catches_headshots_that_accept_a_height_above_one(dummy, monkeypatch):
+    working = dummy.add_headshots
+
+    def lax(target, x, y, players, *, league, height=0.1, **kw):
+        return working(target, x, y, players, league=league, height=min(height, 1), **kw)
+
+    monkeypatch.setattr(dummy, "add_headshots", lax)
+    with pytest.raises(
+        AssertionError, match=r"rule 6 \(headshots: height\): height=1.5 must raise ValueError from add_headshots"
+    ):
+        check_adapter_contract(dummy, make_target=Canvas)
+
+
+def _axis_target(categories):
+    t = Canvas()
+    t.labels = list(categories)  # the x axis' tick labels, in tick order
+    return t
+
+
+@pytest.fixture
+def axis_dummy(dummy, monkeypatch):
+    """The dummy adapter with axis logos: each team label becomes an ("axis", team_id, tick, height) entry."""
+
+    def axis_logos(target, axis, *, league, height=0.1, **kw):
+        if not 0 < height <= 1:
+            raise ValueError("height is a fraction of the plot height")
+        for i, team_id in enumerate(resolve(list(target.labels), league)):
+            if team_id is not None:
+                target.append(("axis", team_id, float(i), height))
+                target.labels[i] = ""
+        return target
+
+    monkeypatch.setattr(dummy, "axis_logos", axis_logos)
+    monkeypatch.setattr(dummy, "SUPPORTS_AXIS_LOGOS", True)
+    monkeypatch.setattr(dummy, "drawn_axis_marks", lambda t, axis: [m[1:] for m in t if m[0] == "axis"], raising=False)
+    monkeypatch.setattr(dummy, "visible_axis_labels", lambda t, axis: [lab for lab in t.labels if lab], raising=False)
+    return dummy
+
+
+def test_an_adapter_with_axis_logos_passes_the_contract(axis_dummy):
+    check_adapter_contract(axis_dummy, make_target=Canvas, make_axis_target=_axis_target)
+
+
+def test_rule_7_catches_axis_logos_that_ignore_height(axis_dummy, monkeypatch):
+    working = axis_dummy.axis_logos
+    monkeypatch.setattr(
+        axis_dummy, "axis_logos", lambda t, axis, *, league, height=0.1: working(t, axis, league=league)
+    )
+    with pytest.raises(
+        AssertionError, match=r"rule 7 \(axis logos: height\): height=0.25 must be the height of every mark axis_logos"
+    ):
+        check_adapter_contract(axis_dummy, make_target=Canvas, make_axis_target=_axis_target)
+
+
+def test_rule_8_catches_axis_logos_that_take_alpha_and_ignore_it(axis_dummy, monkeypatch):
+    working = axis_dummy.axis_logos
+    monkeypatch.setattr(axis_dummy, "axis_logos", lambda t, axis, *, alpha=1.0, **kw: working(t, axis, **kw))
+    with pytest.raises(AssertionError, match=r"rule 8 \(alpha\): alpha=-0.1 must raise ValueError from axis_logos"):
+        check_adapter_contract(axis_dummy, make_target=Canvas, make_axis_target=_axis_target)
+
+
+def test_rule_7_catches_axis_logos_that_warn_twice(axis_dummy, monkeypatch):
+    working = axis_dummy.axis_logos
+
+    def noisy(target, axis, **kw):
+        resolve(list(target.labels), kw["league"])  # resolving the labels twice warns twice
+        return working(target, axis, **kw)
+
+    monkeypatch.setattr(axis_dummy, "axis_logos", noisy)
+    with pytest.raises(AssertionError, match=r"rule 7 \(axis logos\): .*exactly one SdvplotWarning"):
+        check_adapter_contract(axis_dummy, make_target=Canvas, make_axis_target=_axis_target)
+
+
+def test_rule_4_measures_the_matplotlib_height_drawn_not_the_height_recorded(mark_images, headshot_images, monkeypatch):
+    plt = pytest.importorskip("matplotlib.pyplot")
+    import sdvplot.matplotlib as smpl
+
+    real = smpl._AxesFractionImage.get_bbox
+    # the image is drawn at half the height the adapter records in its _sdvplot_mark
+    monkeypatch.setattr(smpl._AxesFractionImage, "get_bbox", lambda self, renderer: real(self, renderer).shrunk(1, 0.5))
+
+    def axes():
+        _, ax = plt.subplots(figsize=(6, 4), dpi=100)
+        ax.set(xlim=(0, 30), ylim=(-10, 0))
+        return ax
+
+    def bars(categories):
+        _, ax = plt.subplots(figsize=(6, 4), dpi=100)
+        ax.bar(categories, range(1, len(categories) + 1))
+        return ax
+
+    try:
+        with pytest.raises(
+            AssertionError, match=r"rule 4 \(height semantics\): height=0.1 must be the height of every mark add_logos"
+        ):
+            check_adapter_contract(smpl, make_target=axes, make_axis_target=bars)
+    finally:
+        plt.close("all")
+
+
+def test_rule_4_measures_the_pygal_height_drawn_not_the_height_recorded(mark_images, headshot_images, monkeypatch):
+    pygal = pytest.importorskip("pygal")
+    import sdvplot.pygal as spg
+
+    real = spg._filter
+    # the render draws half the height add_logos was asked for (and records)
+    monkeypatch.setattr(spg, "_filter", lambda chart, marks, height, alpha: real(chart, marks, height / 2, alpha))
+
+    def chart():
+        c = pygal.XY(stroke=False, show_legend=False)
+        c.add("games", [(10, -3), (20, -7)])
+        return c
+
+    with pytest.raises(
+        AssertionError, match=r"rule 4 \(height semantics\): height=0.1 must be the height of every mark add_logos"
+    ):
+        check_adapter_contract(spg, make_target=chart)
