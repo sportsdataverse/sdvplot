@@ -448,7 +448,8 @@ def _axis_logos(
 
 
 def _drawn_boxes(target: Any, tag: str) -> tuple[Axes, list[Any]]:
-    """The Axes and its sdvplot image boxes tagged ``tag``, after a draw (layout engines move the Axes on draw)."""
+    """The Axes and its sdvplot image boxes tagged ``tag``, after a draw. A layout engine (constrained, tight) resizes
+    the Axes on draw, so an image sized before that only shows the wrong fraction afterwards."""
     ax = target_axes(target)
     ax.figure.canvas.draw()
     return ax, [a for a in ax.artists if hasattr(a, tag)]

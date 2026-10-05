@@ -474,6 +474,39 @@ def test_rule_4_measures_the_matplotlib_height_drawn_not_the_height_recorded(mar
         plt.close("all")
 
 
+def test_rule_4_measures_the_matplotlib_height_after_the_layout_runs(mark_images, headshot_images, monkeypatch):
+    # an image sized in pixels when it is added, before constrained layout resizes the Axes on draw, ends up the
+    # wrong fraction of the Axes: only a hook that draws before it measures can see that
+    plt = pytest.importorskip("matplotlib.pyplot")
+    from matplotlib.transforms import Bbox
+
+    import sdvplot.matplotlib as smpl
+
+    real_init = smpl._AxesFractionImage.__init__
+
+    def frozen(self, arr, ax, fraction, **kw):
+        real_init(self, arr, ax, fraction, **kw)
+        self._px = fraction * ax.bbox.height  # pixels fixed now, not the fraction of the Axes read at draw time
+
+    monkeypatch.setattr(smpl._AxesFractionImage, "__init__", frozen)
+    monkeypatch.setattr(smpl._AxesFractionImage, "get_bbox",
+                        lambda self, renderer: Bbox.from_bounds(0, 0, self._px * self._sdv_cols / self._sdv_rows,
+                                                                self._px))  # fmt: skip
+
+    def axes():
+        _, ax = plt.subplots(figsize=(6, 4), dpi=100, layout="constrained")
+        ax.set(xlim=(0, 30), ylim=(-10, 0))
+        return ax
+
+    try:
+        with pytest.raises(
+            AssertionError, match=r"rule 4 \(height semantics\): height=0.1 must be the height of every mark add_logos"
+        ):
+            check_adapter_contract(smpl, make_target=axes)
+    finally:
+        plt.close("all")
+
+
 def test_rule_4_measures_the_pygal_height_drawn_not_the_height_recorded(mark_images, headshot_images, monkeypatch):
     pygal = pytest.importorskip("pygal")
     import sdvplot.pygal as spg
