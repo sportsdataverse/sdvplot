@@ -353,6 +353,21 @@ def test_a_redirect_off_https_is_refused_without_requesting_the_http_url(cache, 
         _cache._download("http://x/m.csv", None, 10)
 
 
+def _hops(n):
+    return [FakeResponse(302, b"", {"Location": f"/hop{i}"}) for i in range(1, n + 1)]
+
+
+def test_five_redirect_hops_are_followed_and_a_sixth_is_refused(cache, monkeypatch):
+    s = FakeSession(*_hops(5), FakeResponse(200, b"ok"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache._download("https://x/start", None, 100)[1] == b"ok"
+    s = FakeSession(*_hops(6), FakeResponse(200, b"one hop too far"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    with pytest.raises(UnsafeDownloadError, match="more than 5 redirects"):
+        _cache._download("https://x/start", None, 100)
+    assert [c[0] for c in s.calls] == ["https://x/start"] + [f"https://x/hop{i}" for i in range(1, 6)]
+
+
 def test_an_https_redirect_is_followed(cache, monkeypatch):
     s = FakeSession(FakeResponse(301, b"", {"Location": "/moved.csv"}), FakeResponse(200, b"ok"))
     monkeypatch.setattr(_cache, "SESSION", s)
