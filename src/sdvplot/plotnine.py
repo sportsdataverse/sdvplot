@@ -117,7 +117,8 @@ class geom_from_path(_geom_sdv_marks):
     panel height, default 0.1) and ``alpha``. The port of ggpath's ``geom_from_path()``, sized like the logo geoms.
 
     Args:
-        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path or an http(s) URL per row.
+        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or http(s) URL per
+            row.
         data: The layer's data (pandas or polars), when not the plot's.
         **kwargs: ``height`` in (0, 1], ``alpha`` in [0, 1], and plotnine's layer arguments (``inherit_aes``, ...).
 

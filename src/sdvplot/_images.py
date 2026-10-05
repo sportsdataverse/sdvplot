@@ -8,6 +8,8 @@ import io
 import warnings
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
+from urllib.request import url2pathname
 
 from PIL import Image
 
@@ -161,9 +163,13 @@ def load_url_image(url: str) -> Image.Image:
 
 
 def load_path_image(path: str) -> Image.Image:
-    """Any image by http(s) URL (cached like a headshot) or local path; raises OSError, ValueError or OfflineError."""
-    if path.startswith(("http://", "https://")):
+    """Any image by http(s) URL (cached like a headshot), file:// URI or local path; raises OSError, ValueError or
+    OfflineError."""
+    scheme = urlsplit(path).scheme.lower()  # URL schemes are case-insensitive; a Windows drive letter is no scheme
+    if scheme in ("http", "https"):
         return load_url_image(path)
+    if scheme == "file":  # what pathlib.Path.as_uri() writes
+        path = url2pathname(urlsplit(path).path)
     img: Image.Image = Image.open(path)
     img.load()
     return img

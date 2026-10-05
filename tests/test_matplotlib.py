@@ -292,3 +292,14 @@ def test_add_images_checks_its_arguments(tmp_path):
         smpl.add_images(ax, [1], [1], ["a.png"], alpha=2)
     with pytest.raises(ValueError, match="x, y and paths must have the same length, got 2, 1 and 1"):
         smpl.add_images(ax, [1, 2], [1], ["a.png"])
+
+
+def test_add_images_takes_one_path_an_uppercase_scheme_and_a_file_uri(tmp_path, cache):
+    from pathlib import Path
+
+    a = _png(tmp_path / "a b.png")  # a space, so the file URI is percent-encoded
+    upper = _cached_url(cache, "HTTPS://example.com/b.png")
+    ax = _axes()
+    smpl.add_images(ax, 5, -5, Path(a))  # one point, as a pathlib.Path
+    smpl.add_images(ax, [10, 15], [-5, -5], [upper, Path(a).as_uri()])
+    assert [m[0] for m in smpl.drawn_marks(ax)] == [a, upper, Path(a).as_uri()]

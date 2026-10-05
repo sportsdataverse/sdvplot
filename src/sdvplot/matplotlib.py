@@ -382,8 +382,8 @@ def add_images(
         target: A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid).
         x: The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position).
         y: The points' y positions, the same length as ``x``.
-        paths: The image for each point: a local path (str or ``pathlib.Path``) or an http(s) URL. A null path draws
-            nothing.
+        paths: The image for each point (or one ``pathlib.Path`` for one point): a local path (str or
+            ``pathlib.Path``), a ``file://`` URI or an http(s) URL. A null path draws nothing.
         height: The image height as a fraction of the Axes height, in (0, 1].
         alpha: Opacity, 0 to 1.
         zorder: matplotlib drawing order (3 draws above lines and markers).

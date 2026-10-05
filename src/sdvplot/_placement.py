@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import numbers
+import os
 import warnings
 from dataclasses import dataclass
 from typing import Any
@@ -132,6 +133,7 @@ def place_images(x: Any, y: Any, paths: Any) -> list[Placement]:
 
     A null path is skipped silently (as a null team is); a missing x or y is skipped with one warning.
     """
+    paths = os.fspath(paths) if isinstance(paths, os.PathLike) else paths  # one pathlib.Path is one point
     xs, ys, ps = _unpack(x)[0], _unpack(y)[0], _unpack(paths)[0]
     if not len(xs) == len(ys) == len(ps):
         raise ValueError(f"x, y and paths must have the same length, got {len(xs)}, {len(ys)} and {len(ps)}")
