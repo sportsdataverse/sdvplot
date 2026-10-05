@@ -35,6 +35,8 @@ Determinism / safety:
   trip the MDX parser. CommonMark still carries raw HTML blocks, which is how each cell's outputs get the theme's
   ``sdv-output`` wrapper and the iframes get in.
 * Polars frames print as markdown tables (a hidden first cell sets ``pl.Config``).
+* Kernels run with ``PYTHONHASHSEED=0``, so set order (Bokeh's glyph columns, for one) is the same in every render,
+  and consecutive prints land in one text block however the kernel happened to flush them.
 * The source ``.ipynb`` files are never modified -- execution happens on an in-memory copy. A notebook that fails
   keeps its previous page; one that is deleted loses its page, outputs, figures and gallery cards.
 """
@@ -228,7 +230,8 @@ def _execute(nb, timeout: float = DEFAULT_TIMEOUT):
 
     nb.cells.insert(0, nbformat.v4.new_code_cell(SETUP, id="sdvplot-render-setup"))
     try:
-        NotebookClient(nb, timeout=timeout, kernel_name="python3", allow_errors=False).execute()
+        client = NotebookClient(nb, timeout=timeout, kernel_name="python3", allow_errors=False)
+        client.execute(env={**os.environ, "PYTHONHASHSEED": "0"})  # str hashes, so set order, alike in every render
     finally:
         nb.cells.pop(0)
 
@@ -318,13 +321,13 @@ def _stable_ids(html: str, name: str) -> str:
     """Rename the ids a library draws at random on every render to ``sdv_<name>_<n>``, by first appearance and every
     reuse included, so an unchanged output renders byte-identical and the weekly refresh opens no PR for it.
 
-    The ids: great_tables' 10-letter table id (reused in its CSS), Altair's ``altair-viz-<hex>``, and the uuid4 and
-    32-hex ids of Bokeh, Panel, folium and Jupyter widget models. Underscores, not hyphens: folium uses its ids in
-    JavaScript variable names. A token in a URL path or query (after ``/``, ``=`` or ``.``) is not an id and stays."""
+    The ids: great_tables' 10-letter table id (reused in its CSS and, on a table with an id, its column ids),
+    Altair's ``altair-viz-<hex>``, and the uuid4 and 32-hex ids of Bokeh, Panel, folium and Jupyter widget models.
+    Underscores, not hyphens: folium uses its ids in JavaScript variable names. A token in a URL path or query (after ``/``, ``=`` or ``.``) is not an id and stays."""
     tables = [i for i in re.findall(r'<div id="([a-z]{10})"', html) if f"#{i}" in html]
     for n, old in enumerate(dict.fromkeys(tables + RANDOM_ID.findall(html))):
         new = f"sdv_{name}_{n}"
-        around = (r"(?<![\w-])", r"(?![\w-])") if old in tables else (r"(?<![/=.])", r"(?![0-9a-f])")
+        around = (r"(?<![\w-])", r"(?!\w)") if old in tables else (r"(?<![/=.])", r"(?![0-9a-f])")
         html = re.sub(around[0] + re.escape(old) + around[1], new, html)
     return html
 
@@ -402,7 +405,7 @@ def _clean_outputs(nb) -> None:
     """In-place: tidy executed cell outputs for clean, theme-safe rendering.
 
     * Drop ``stderr`` stream outputs (warning noise -- e.g. env-specific version warnings -- that isn't
-      pedagogically useful in a rendered tutorial).
+      pedagogically useful in a rendered tutorial), and join consecutive ``stdout`` outputs into one.
     * A frame's plain text beats its styled HTML: polars / pandas ``text/html`` carries a scoped ``<style>`` block
       that can clash with the Docusaurus theme. A polars frame's plain text is a markdown table (``SETUP``), so it
       moves to ``text/markdown`` and renders as a table. Other HTML (great_tables, folium, ...) stays, for a frame.
@@ -425,12 +428,19 @@ def _clean_outputs(nb) -> None:
             default=-1,
         )
         kept: list = []
-        for i, o in enumerate(outputs):
+        joinable = False  # the last kept output is stdout, with only stderr after it: the kernel's flush timer splits
+        for i, o in enumerate(outputs):  # prints into one stream output or several, differently from render to render
             ot = o.get("output_type")
             if ot == "stream":
-                if o.get("name") != "stderr":
+                if o.get("name") == "stderr":
+                    continue
+                if joinable:
+                    kept[-1]["text"] += o.get("text", "")
+                else:
                     kept.append(o)
+                joinable = True
                 continue
+            joinable = False
             data = o.get("data", {})
             if i <= last_init:
                 continue

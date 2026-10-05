@@ -220,6 +220,27 @@ def test_an_empty_print_draws_no_output_block(site):
     assert "sdv-output" not in _md(nb, _book(site))
 
 
+def test_consecutive_prints_are_one_block_however_the_kernel_split_them(site):
+    # the kernel flushes stdout on a timer, so two prints arrive as one stream output or two from render to render
+    nb = _notebook(
+        new_output("stream", name="stdout", text="a\n"),
+        new_output("stream", name="stderr", text="a warning\n"),
+        new_output("stream", name="stdout", text="b\n"),
+    )
+    rn._clean_outputs(nb)
+    assert '<div class="sdv-output">\n\n```text\na\nb\n```\n\n</div>' in _md(nb, _book(site))
+
+
+def test_every_render_hashes_strings_alike():
+    # Python salts str hashes per process, so set order (Bokeh's glyph columns, for one) changed between renders
+    def run():
+        nb = new_notebook(cells=[new_code_cell("print(hash('sdvplot'), list({'fill', 'hatch', 'line'}))")])
+        rn._execute(nb, 120)
+        return nb.cells[0].outputs[0]["text"]
+
+    assert run() == run()
+
+
 def test_a_polars_frame_becomes_a_table_while_a_pandas_frame_and_a_series_stay_text(site):  # RF 5
     nb = _notebook(
         new_output(
@@ -474,6 +495,14 @@ def test_stable_ids_rename_every_reuse_and_leave_urls_alone():
         '<div id="sdv_3_1_0"><style>#sdv_3_1_0 table {}</style></div><div id="sdv_3_1_1"></div>'
         '<script>var map_sdv_3_1_2 = L.map("map_sdv_3_1_2"); embed("sdv_3_1_1");</script>'
         f'<img src="https://cdn.example/sha256/{sha}.png"><img src="https://cdn.example/a/{hexid}.png?v={hexid}">'
+    )
+
+
+def test_a_table_id_is_stable_in_its_column_ids_too():
+    # a GT with an id (sdvplot's CSS helpers give it a random one) names each column header "<table id>-<column>"
+    html = '<div id="tkrbkqnbqy"><style>#tkrbkqnbqy th {}</style><th id="tkrbkqnbqy-logo"></th></div>'
+    assert rn._stable_ids(html, "3_1") == (
+        '<div id="sdv_3_1_0"><style>#sdv_3_1_0 th {}</style><th id="sdv_3_1_0-logo"></th></div>'
     )
 
 
