@@ -80,6 +80,35 @@ jobs:
       - name: Run tests (offline, no image comparison)
         run: uv run --no-sync pytest -q --maxfail=10
 
+  # The published sdist has no tools/, docs/ or data-raw/: its tests must still pass (a new repo-only test has to be
+  # added to the skip table in tests/conftest.py).
+  sdist:
+    name: pytest (from the sdist, py3.13)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
+      - name: Build the sdist and unpack it outside the checkout
+        run: |
+          uv build --sdist --out-dir "$RUNNER_TEMP/dist"
+          mkdir "$RUNNER_TEMP/unpacked"
+          tar -xzf "$RUNNER_TEMP"/dist/sdvplot-*.tar.gz -C "$RUNNER_TEMP/unpacked"
+      - name: Install the unpacked sdist with extras and test deps
+        working-directory: ${{ runner.temp }}/unpacked
+        run: |
+          cd sdvplot-*/
+          uv venv
+          uv pip install -e '.[all]' --group test
+      - name: Run tests (offline)
+        working-directory: ${{ runner.temp }}/unpacked
+        env:
+          SDVPLOT_RENDER_TESTS: "1"
+        run: |
+          cd sdvplot-*/
+          .venv/bin/python -m pytest -q --maxfail=10
+
   live:
     name: pytest (live, py3.13)
     # Live endpoints are third-party and flaky; a PR author cannot act on an outage.
