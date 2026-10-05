@@ -56,26 +56,28 @@ class _geom_sdv_marks(geom):
         kwargs.setdefault("show_legend", False)
         super().__init__(mapping, data, **kwargs)
 
-    def _place(self, data: pd.DataFrame) -> list[Placement]:
+    def _place(self, data: pd.DataFrame, x: list[Any], y: list[Any]) -> list[Placement]:
         p = self.params
         # the season= parameter, else the season aesthetic (a column, so each panel's copy of a row keeps its season)
         season = p["season"] if p["season"] is not None or "season" not in data else data["season"].tolist()
-        return place(
-            data["x"].tolist(), data["y"].tolist(), data[self._id_aes].tolist(), league=p["league"],
-            season=season, kind=self._kind, variant=p["variant"], id_system=p["id_system"],
-        )  # fmt: skip
+        return place(x, y, data[self._id_aes].tolist(), league=p["league"], season=season, kind=self._kind,
+                     variant=p["variant"], id_system=p["id_system"])  # fmt: skip
 
     def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Once per layer and render: place every panel's rows together, so each skip reason warns once."""
-        self._place(data)
+        """Once per layer and render: place every panel's rows together, so an unknown team or a missing mark warns
+        once. At zero positions: x and y are plotnine's to check, after this (``na_rm``, scale limits, its own
+        "Removed rows" warning), so they never warn here."""
+        zeros = [0.0] * len(data)
+        self._place(data, zeros, zeros)
         return data
 
     def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
         # ponytail: setup_data already warned for this layer's rows in every panel; a point that only a coord_trans
         # makes missing is skipped quietly here (warn from draw_panel too if that case ever matters)
+        data = coord.transform(data, panel_params)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", SdvplotWarning)
-            placements = self._place(coord.transform(data, panel_params))
+            placements = self._place(data, data["x"].tolist(), data["y"].tolist())
         draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 

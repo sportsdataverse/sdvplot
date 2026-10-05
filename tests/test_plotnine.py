@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 import polars as pl
 import pytest
@@ -8,7 +10,7 @@ import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 matplotlib.rcParams["figure.max_open_warning"] = 0
 import matplotlib.pyplot as plt  # noqa: E402
-from plotnine import aes, facet_wrap, geom_col, geom_point, ggplot  # noqa: E402
+from plotnine import aes, facet_wrap, geom_col, geom_point, ggplot, xlim  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.plotnine as sp9  # noqa: E402
@@ -66,6 +68,22 @@ def test_add_logos_on_a_faceted_plot_warns_once_per_render(mark_images):
     with pytest.warns(SdvplotWarning) as rec:
         assert [m[0] for m in sp9.drawn_marks(p)] == ["13", "13"]
     assert len(_sdv_warnings(rec)) == 1
+
+
+@pytest.mark.parametrize("dropped_by", ["na_rm", "xlim"])
+def test_rows_plotnine_drops_itself_do_not_warn(mark_images, dropped_by):
+    # na_rm=True silences a missing x, and xlim() removes an out-of-limits one: plotnine's call, not a skip of ours
+    x, extra, geom_kw = (
+        ([1.0, float("nan")], [], {"na_rm": True}) if dropped_by == "na_rm" else ([1.0, 5.0], [xlim(0, 2)], {})
+    )
+    p = ggplot(pd.DataFrame({"x": x, "y": [1.0, 2.0], "team": ["LV", "LAR"]}), aes("x", "y", team="team"))
+    p = p + sp9.geom_sdv_logos(league="nfl", **geom_kw)
+    for layer in extra:
+        p = p + layer
+    with warnings.catch_warnings(record=True) as rec:
+        warnings.simplefilter("always")
+        marks = sp9.drawn_marks(p)
+    assert [m[0] for m in marks] == ["13"] and _sdv_warnings(rec) == []
 
 
 def test_a_season_per_team_follows_its_row_into_every_panel(mark_images):
