@@ -260,7 +260,6 @@ TOLERATED = {
     "gt_social_crop": "renders through a headless browser",
     "gt_save_batch": "renders through a headless browser",
     "gt_grid": "renders through a headless browser",
-    "gt_stack_tables": "renders through a headless browser",
     "check_adapter_contract": "draws real marks, which need the network",
     "check_table_adapter_contract": "draws real marks, which need the network",
 }

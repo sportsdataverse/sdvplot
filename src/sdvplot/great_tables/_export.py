@@ -680,13 +680,14 @@ def gt_grid(
     Example:
         ::
 
-            from sdvplot.great_tables import gt_grid
             import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_grid
 
-            east = pl.DataFrame({"team": ["BUF", "MIA"], "wins": [11, 9]})
-            west = pl.DataFrame({"team": ["KC", "LV"], "wins": [12, 8]})
-            north = pl.DataFrame({"team": ["BAL", "CIN"], "wins": [10, 9]})
-            south = pl.DataFrame({"team": ["HOU", "IND"], "wins": [10, 8]})
+            east = GT(pl.DataFrame({"team": ["BUF", "MIA"], "wins": [11, 9]}))
+            west = GT(pl.DataFrame({"team": ["KC", "LV"], "wins": [12, 8]}))
+            north = GT(pl.DataFrame({"team": ["BAL", "CIN"], "wins": [10, 9]}))
+            south = GT(pl.DataFrame({"team": ["HOU", "IND"], "wins": [10, 8]}))
 
             gt_grid([east, west, north, south], ncol=2, title="Division leaders", caption="Data: ESPN")
             gt_grid([east, west], file="divisions.png", bg="#FBFAF7")
@@ -802,11 +803,12 @@ def gt_stack_tables(
     Example:
         ::
 
-            from sdvplot.great_tables import gt_stack_tables
             import polars as pl
+            from great_tables import GT
+            from sdvplot.great_tables import gt_stack_tables
 
-            offense = pl.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15]})
-            defense = pl.DataFrame({"team": ["BAL", "SF"], "epa": [-0.1, -0.08]})
+            offense = GT(pl.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15]}))
+            defense = GT(pl.DataFrame({"team": ["BAL", "SF"], "epa": [-0.1, -0.08]}))
 
             gt_stack_tables([offense, defense], title="Two tables", title_style={"font": "Oswald", "size": 30})
 
