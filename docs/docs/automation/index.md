@@ -11,7 +11,8 @@ makes season leaderboards and game-day graphics from live data, writes alt text 
 to Bluesky. A GitHub Actions template runs it every week. The data comes from ESPN's public APIs through
 [sportsdataverse-py](https://py.sportsdataverse.org/), so nothing needs an API key.
 
-It covers the NFL, college football, the NBA, the WNBA, MLB and the NHL.
+It covers the NFL, college football, the NBA, the WNBA, MLB, the NHL, and men's and women's college basketball (NCAA
+Division I only: the teams sdvplot's index holds).
 
 ## What it makes
 
@@ -108,8 +109,8 @@ season is under way, so its data runs through today; a finished season's table i
 
 | Option | Command | Meaning |
 | --- | --- | --- |
-| `--league` | `leaderboard`, `gameday` | `nfl`, `cfb`, `nba`, `wnba`, `mlb` or `nhl` |
-| `--season` | `leaderboard` | the season (the year it ends, for the NBA and NHL); default: the current one |
+| `--league` | `leaderboard`, `gameday` | `nfl`, `cfb`, `nba`, `wnba`, `mlb`, `nhl`, `mbb` or `wbb` |
+| `--season` | `leaderboard` | the season (the year it ends, for the NBA, the NHL and college basketball); default: the current one |
 | `--stat` | `leaderboard` | an ESPN leaders category, such as `rushingYards`, `assistsPerGame`, `ERA` or `goals`. An unknown one lists the league's categories |
 | `--top` | `leaderboard` | rows: default 10 square, 5 landscape |
 | `--size` | `leaderboard` | `square` (1080 x 1080) or `landscape` (1200 x 675) |

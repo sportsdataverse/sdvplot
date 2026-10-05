@@ -8,7 +8,8 @@ Subcommands::
 
 Each run writes PNGs to ``out/<today>/`` and adds its posts (image paths, alt text, caption, hashtags) to
 ``out/<today>/manifest.json``, which ``post`` reads. Data comes from ESPN's public APIs through the sdv-py
-(``sportsdataverse``) wrappers; nothing needs a key. With no finished games on the date, or no leaders yet for the
+(``sportsdataverse``) wrappers (a college league's Division I leaders, which sdv-py does not wrap, straight from ESPN's
+Core API); nothing needs a key. With no finished games on the date, or no leaders yet for the
 season, it uses the most recent date or season that has them and says so in the caption.
 
 Run from an sdvplot checkout (``uv sync --all-extras --all-groups`` first)::
@@ -25,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import functools
 import html
 import importlib
 import io
@@ -59,8 +61,13 @@ LEAGUES = {
     "wnba": ("basketball", "pointsPerGame", "WNBA"),
     "mlb": ("baseball", "homeRuns", "MLB"),
     "nhl": ("hockey", "points", "NHL"),
+    "mbb": ("basketball", "pointsPerGame", "CBB"),
+    "wbb": ("basketball", "pointsPerGame", "WCBB"),
 }
-TWO_YEAR = {"nba", "nhl"}  # seasons spanning two calendar years; ESPN names them by the year they end
+TWO_YEAR = {"nba", "nhl", "mbb", "wbb"}  # seasons spanning two calendar years; ESPN names them by the year they end
+# College leagues keep NCAA Division I teams only, which are the ones sdvplot's index holds. 50 is ESPN's id for that
+# group in both college basketball leagues; d1_group checks the name before using it.
+DIVISION_ONE = {"mbb": "50", "wbb": "50"}
 SIZES = {"square": (1080, 1080), "landscape": (1200, 675)}
 BG, INK, MUTED, NEUTRAL = "#0f1115", "#f5f6f7", "#a3a9b1", "#3a3f47"
 CREDIT = "Data: ESPN via sportsdataverse-py  |  Logos, headshots & colors: sdvplot"
@@ -103,6 +110,44 @@ def _ref_id(ref: dict[str, Any] | None, kind: str) -> str | None:
     return m.group(1) if m else None
 
 
+@functools.cache
+def d1_group(league: str, season: int) -> dict[str, Any]:
+    """ESPN's NCAA Division I group for a college season; NoData if ESPN's id names some other group."""
+    gid = DIVISION_ONE[league]
+    group = espn(league, "season_group")(season=season, season_type=2, group_id=gid, return_parsed=False)
+    if group.get("name") != "NCAA Division I":
+        raise NoData(f"ESPN group {gid} is {group.get('name')!r} for {league} {season}, not NCAA Division I")
+    return group
+
+
+@functools.cache
+def d1_teams(league: str, season: int) -> frozenset[str]:
+    """The team ids in ESPN's NCAA Division I group for a college season."""
+    d1_group(league, season)  # the id still names Division I
+    raw = espn(league, "season_group_teams")(
+        season=season, season_type=2, group_id=DIVISION_ONE[league], limit=1000, return_parsed=False
+    )
+    return frozenset(i for i in (_ref_id(item, "teams") for item in raw.get("items") or []) if i)
+
+
+def season_leaders(league: str, season: int) -> list[dict[str, Any]]:
+    """A regular season's ESPN leaders categories ([] when ESPN has none for it yet).
+
+    A college league's are its Division I group's: ESPN's league-wide college leaders span every division, and most of
+    their top scorers play on Division II, III and NAIA teams. ESPN serves a group's leaders under the group's own path,
+    which sdv-py does not wrap.
+    """
+    if league not in DIVISION_ONE:
+        leaders = espn(league, "season_type_leaders")(season=season, season_type=2, return_parsed=False)
+        return leaders.get("categories") or []
+    ref = d1_group(league, season)["$ref"].split("?")[0]
+    resp = requests.get(re.sub(r"^http:", "https:", ref) + "/leaders", timeout=30)
+    if resp.status_code == 404:
+        return []
+    resp.raise_for_status()
+    return resp.json().get("categories") or []
+
+
 def _stat_text(leader: dict[str, Any]) -> str:
     """The leader's value as shown: ESPN's display value when it is a number, else the value formatted."""
     shown, value = str(leader.get("displayValue", "")), float(leader["value"])
@@ -128,11 +173,14 @@ def fetch_leaders(
 
     current, in_progress = current_season(league)
     wanted = season or current
-    leaders = espn(league, "season_type_leaders")
+    mismatch = None  # a season whose ESPN group 50 is not Division I: try the next, and report it if none has leaders
     for year in (wanted, wanted - 1, wanted - 2):
         try:
-            cats = leaders(season=year, season_type=2, return_parsed=False).get("categories") or []
-        except NoDataError:  # ESPN has no regular-season leaders for that year (yet)
+            cats = season_leaders(league, year)
+        except NoDataError:  # ESPN has no regular-season leaders (or no Division I group) for that year (yet)
+            continue
+        except NoData as e:
+            mismatch = e
             continue
         cat = next((c for c in cats if c["name"].lower() == stat.lower()), None)
         if cats and cat is None:
@@ -140,7 +188,7 @@ def fetch_leaders(
         if cat and cat.get("leaders"):
             break
     else:
-        raise NoData(f"no {league} {stat} leaders for {wanted} or the two seasons before it")
+        raise mismatch or NoData(f"no {league} {stat} leaders for {wanted} or the two seasons before it")
 
     rows = cat["leaders"][:top]
     ids = [_ref_id(r.get("athlete"), "athletes") for r in rows]
@@ -189,6 +237,15 @@ LEADERS_SCHEMA = {
 
 def scoreboard(league: str, day: dt.date) -> dict[str, Any]:
     return espn(league, "scoreboard")(dates=f"{day:%Y%m%d}", return_parsed=False)
+
+
+def division_one(league: str, raw: dict[str, Any], games: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """For a college league, the games between two Division I teams (a visitor from another division has no logo or
+    colors in sdvplot's index); every game for any other league."""
+    if league not in DIVISION_ONE or not games:
+        return games
+    teams = d1_teams(league, int(raw["leagues"][0]["season"]["year"]))
+    return [g for g in games if g["away_id"] in teams and g["home_id"] in teams]
 
 
 def finals(raw: dict[str, Any]) -> list[dict[str, Any]]:
@@ -246,7 +303,8 @@ def fetch_games(league: str, day: dt.date) -> tuple[dt.date, pl.DataFrame, str |
     for _ in range(3):  # this season, then up to two seasons back
         raw = scoreboard(league, probe)
         for cand in [probe, *calendar_days(raw, probe)][:CALENDAR_TRIES]:
-            games = finals(raw if cand == probe else scoreboard(league, cand))
+            payload = raw if cand == probe else scoreboard(league, cand)
+            games = division_one(league, payload, finals(payload))
             if games:
                 tag, note = LEAGUES[league][2], None
                 if cand != day:
@@ -979,7 +1037,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     lb.add_argument(
         "--season",
         type=int,
-        help="the season (the year it ends for NBA/NHL); default: the current one",
+        help="the season (the year it ends for NBA, NHL and college basketball); default: the current one",
     )
     lb.add_argument(
         "--stat",

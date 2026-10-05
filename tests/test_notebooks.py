@@ -246,6 +246,15 @@ def test_every_render_hashes_strings_alike():
     assert run() == run()
 
 
+def test_kernels_render_as_ci_does_whatever_ide_launched_the_render(monkeypatch):
+    # great_tables marks a table's CSS !important when it sees VS Code or Positron (and changes its page for Quarto
+    # and Databricks), so a render from a VS Code terminal differed from the CI cron's
+    names = ("VSCODE_PID", "POSITRON_VERSION", "QUARTO_BIN_PATH", "DATABRICKS_RUNTIME_VERSION")
+    for name in names:
+        monkeypatch.setenv(name, "1")
+    assert not set(names) & set(rn._kernel_env()) and rn._kernel_env()["PYTHONHASHSEED"] == "0"
+
+
 def test_a_polars_frame_becomes_a_table_while_a_pandas_frame_and_a_series_stay_text(site):  # RF 5
     nb = _notebook(
         new_output(

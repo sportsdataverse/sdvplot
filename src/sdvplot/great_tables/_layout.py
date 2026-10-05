@@ -27,7 +27,14 @@ from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import warn
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
-from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id, important
+from sdvplot.great_tables._marks import (
+    _background,
+    _check_gt,
+    _record,
+    _secondary_on,
+    _table_id,
+    important,
+)
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -884,7 +891,7 @@ def gt_tiers(
     for level, fill in zip(names, fills, strict=True):
         rows = [i for i, t in enumerate(tiers) if t == level]
         if rows:
-            look = [important(gst.fill(color=fill)), gst.text(weight="bold", color=on_color(fill))]
+            look = [important(gst.fill(color=fill)), important(gst.text(weight="bold", color=on_color(fill)))]
             gt = gt.tab_style(look, loc.body(columns=tier_column, rows=rows))
     return _record(gt, "_sdvplot_key", dict(zip(names, fills, strict=True)))
 
@@ -938,6 +945,8 @@ def gt_spotlight(
         TypeError: If ``gt`` is not a great_tables ``GT``.
         ValueError: If ``if_none`` is not one of its choices.
 
+
+
     Example:
         ::
 
@@ -956,7 +965,7 @@ def gt_spotlight(
     focus = _row_indices(gt, rows)
     if not focus:
         if if_none == "dim" and dim_color is not None:
-            return gt.tab_style(gst.text(color=dim_color), loc.body())
+            return gt.tab_style(important(gst.text(color=dim_color)), loc.body())
         if if_none == "warn":
             msg = "rows matched no rows, so the table is unchanged; set if_none='dim' to dim the whole table instead"
             warn(msg)
@@ -968,13 +977,13 @@ def gt_spotlight(
     rest = [c for c in rendered if c not in chosen]
     if dim_color is not None:
         if others:
-            gt = gt.tab_style(gst.text(color=dim_color), loc.body(rows=others))
+            gt = gt.tab_style(important(gst.text(color=dim_color)), loc.body(rows=others))
         if rest:
-            gt = gt.tab_style(gst.text(color=dim_color), loc.body(columns=rest, rows=focus))
+            gt = gt.tab_style(important(gst.text(color=dim_color)), loc.body(columns=rest, rows=focus))
 
     looks: list[Any] = [] if fill is None else [important(gst.fill(color=fill))]
     if text_color is not None or bold:
-        looks.append(gst.text(color=text_color, weight="bold" if bold else None))
+        looks.append(important(gst.text(color=text_color, weight="bold" if bold else None)))
     if looks:
         gt = gt.tab_style(looks, loc.body(columns=chosen, rows=focus))
 
@@ -1134,6 +1143,8 @@ def gt_outliers(
         TypeError: If ``gt`` is not a great_tables ``GT``.
         ValueError: If ``columns`` selects nothing, ``bounds`` is missing for ``"bounds"``, or an option is invalid.
 
+
+
     Example:
         ::
 
@@ -1178,7 +1189,7 @@ def gt_outliers(
         if not hit:
             continue
         flagged = True
-        looks: list[Any] = [gst.text(color=color, weight="bold" if bold else None)]
+        looks: list[Any] = [important(gst.text(color=color, weight="bold" if bold else None))]
         if fill is not None:
             looks.append(important(gst.fill(color=fill)))
         gt = gt.tab_style(looks, loc.body(columns=col, rows=hit))

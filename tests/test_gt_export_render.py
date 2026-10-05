@@ -99,3 +99,116 @@ def test_render_batch_matches_widths(tmp_path):
         df, "g", lambda d, v: GT(d).tab_header(title=str(v)), "t-{group}.png", dir=tmp_path, quiet=True
     )
     assert len({size(p)[0] for p in paths}) == 1
+
+
+@pytest.mark.render
+@pytest.mark.parametrize("all_important", [False, True], ids=["as_raw_html", "notebook repr"])
+@pytest.mark.parametrize("theme_first", [False, True])
+def test_render_kenpom_bands_rows_and_leaves_a_fill_on_top(tmp_path, all_important, theme_first):
+    df = pl.DataFrame({"team": ["LV", "LAR", "LAC", "KC"], "conf": ["W", "W", "W", "W"], "wins": [10, 8, 5, 15]})
+
+    def fill(gt):
+        return gt.data_color(columns="wins", palette=["#FF00FF", "#FF00FF"])
+
+    gt = GT(df, groupname_col="conf", id="kp")
+    gt = fill(sgt.gt_theme_kenpom(gt)) if theme_first else sgt.gt_theme_kenpom(fill(gt))
+    html = gt.as_raw_html(make_page=True, all_important=all_important)
+    import nokap
+
+    with Image.open(nokap.from_html(html, tmp_path / "kp.png", selector="#kp table")) as im:
+        colors = {c for _, c in im.convert("RGB").getcolors(1 << 20)}
+    assert {MAGENTA, (0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)} <= colors  # the fill and both bands
+
+
+@pytest.mark.render
+@pytest.mark.parametrize(
+    ("helper", "covered"),
+    [
+        (lambda gt: sgt.gt_color_ranks(gt, "rk", palette=["#FF00FF", "#FF00FF"]), True),  # data_color: plain fills
+        (lambda gt: sgt.gt_color_results(gt, "res", win_color="#FF00FF", loss_color="#FF00FF"), False),  # !important
+        (lambda gt: sgt.gt_color_pills(gt, "rk", palette=["#FF00FF", "#FF00FF"], domain=[1, 4]), False),  # own span
+    ],
+    ids=["gt_color_ranks", "gt_color_results", "gt_color_pills"],
+)
+def test_render_notebook_stripes_cover_only_plain_fills(tmp_path, helper, covered):
+    # in VS Code and Positron great_tables' repr marks its stylesheet !important, so a stripe beats a plain inline fill
+    import warnings
+
+    import nokap
+
+    df = pl.DataFrame({"team": ["LV", "LAR", "LAC", "KC"], "res": ["W", "L", "W", "L"], "rk": [1, 2, 3, 4]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # the striping warning, tested offline
+        gt = helper(GT(df, id="st").opt_row_striping())
+    shot = nokap.from_html(gt.as_raw_html(make_page=True, all_important=True), tmp_path / "s.png", selector="#st table")
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    bands = [rgb.crop((0, rgb.height * k // 5, rgb.width, rgb.height * (k + 1) // 5)) for k in range(1, 5)]
+    magenta = [sum(n for n, c in band.getcolors(1 << 20) if c == MAGENTA) for band in bands]
+    filled = [n > max(magenta) / 2 for n in magenta]  # a covered row keeps a sliver of its neighbor's fill
+    assert filled == ([True, False, True, False] if covered else [True] * 4)
+
+
+NAVY = (0x00, 0x22, 0x44)
+
+
+@pytest.mark.render
+@pytest.mark.parametrize(
+    "helper",
+    [
+        lambda gt: sgt.gt_color_results(gt, "res", win_color="#002244"),  # white ink by default
+        lambda gt: sgt.gt_bold_rows(gt, rows=[0, 1, 2, 3], text_color="white", highlight_color="#002244"),
+        lambda gt: sgt.gt_spotlight(gt, rows=[0, 1, 2, 3], fill="#002244", text_color="white", dim_color=None),
+        lambda gt: sgt.gt_highlight_cells(
+            gt, ["team", "res"], lambda s: s.is_not_null(), fill="#002244", text_color="white"
+        ),  # fmt: skip
+    ],
+    ids=["gt_color_results", "gt_bold_rows", "gt_spotlight", "gt_highlight_cells"],
+)
+def test_render_vscode_stripes_leave_the_text_color_paired_with_a_fill(tmp_path, helper):
+    # the VS Code/Positron repr (all_important) made the stripes' text color beat a helper's plain one on rows 2 and 4:
+    # white ink on a navy fill turned the stripe's dark gray
+    import nokap
+
+    df = pl.DataFrame({"team": ["LVLVLV", "LARLAR", "LACLAC", "KCKCKC"], "res": ["W", "W", "W", "W"]})
+    gt = helper(GT(df, id="ink").opt_row_striping())
+    shot = nokap.from_html(
+        gt.as_raw_html(make_page=True, all_important=True), tmp_path / "i.png", selector="#ink table"
+    )
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    column = [rgb.getpixel((3, y)) == NAVY for y in range(rgb.height)]
+    rows = []  # the navy rows, top to bottom, as (first y, last y)
+    for y, navy in enumerate(column):
+        if navy and (not rows or rows[-1][1] != y - 1):
+            rows.append((y, y))
+        elif navy:
+            rows[-1] = (rows[-1][0], y)
+    inked = [
+        any(min(c) >= 235 for _, c in rgb.crop((0, top + 2, rgb.width, bottom - 1)).getcolors(1 << 20))
+        for top, bottom in rows
+    ]
+    assert inked == [True] * 4, rows
+
+
+@pytest.mark.render
+def test_render_kenpom_bands_alternate_over_data_rows_around_summary_rows(tmp_path):
+    # a group's summary row is a <tr> in the body: counted as a data row, it shifted the bands of the next group
+    import nokap
+
+    df = pl.DataFrame({"team": ["LV", "KC", "BUF", "MIA"], "conf": ["W", "W", "E", "E"], "w": [1, 2, 3, 4]})
+    gt = GT(df, groupname_col="conf", rowname_col="team", id="kps").summary_rows(fns={"Sum": pl.col("w").sum()})
+    shot = nokap.from_html(
+        sgt.gt_theme_kenpom(gt).as_raw_html(make_page=True), tmp_path / "k.png", selector="#kps table"
+    )
+    with Image.open(shot) as im:
+        rgb = im.convert("RGB")
+    x = rgb.width - 4  # inside the last body column, clear of its text
+    runs = []  # the band color of each data row, top to bottom
+    for y in range(rgb.height):
+        c = rgb.getpixel((x, y))
+        if c in ((0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)) and (not runs or runs[-1][1] != y - 1 or runs[-1][0] != c):
+            runs.append([c, y])
+        elif runs and runs[-1][0] == c and runs[-1][1] == y - 1:
+            runs[-1][1] = y
+    assert [c for c, _ in runs] == [(0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)] * 2

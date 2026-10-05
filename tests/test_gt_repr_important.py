@@ -68,3 +68,91 @@ def test_every_border_and_fill_style_goes_through_important():
                 if name in {"borders", "fill", "_borders"} and id(node) not in wrapped:
                     bare.append(f"{path.name}:{node.lineno}")
     assert bare == []
+
+
+# --- row striping ------------------------------------------------------------------------------------------------------
+# In VS Code and Positron, great_tables' repr marks its whole stylesheet !important (its "vscode" and "positron" render
+# envs; Jupyter, Quarto and the docs pages do not), the stripes' background and text color included, and those beat a
+# plain inline style on every other row. A text color a helper pairs with its fill goes through important() like the
+# fill, which a stylesheet !important cannot beat; data_color's fills (gt_color_ranks) are not sdvplot's, so it warns.
+
+from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot.great_tables import (  # noqa: E402
+    gt_bold_rows,
+    gt_color_pills,
+    gt_color_ranks,
+    gt_color_results,
+    gt_highlight_cells,
+    gt_highlight_na,
+    gt_indicator_boxes,
+    gt_outliers,
+    gt_tiers,
+)
+
+RENDER_ENVS = ("VSCODE_PID", "POSITRON_VERSION", "QUARTO_BIN_PATH", "DATABRICKS_RUNTIME_VERSION")
+BODY_COLOR = re.compile(r'<t[dh] style="([^"]*)" class="gt_row')
+
+
+def _games():
+    return pl.DataFrame(
+        {
+            "team": ["LV", "KC", "BUF", "LAR"],
+            "res": ["W", "L", "W", "L"],
+            "rk": [1, 2, 3, 4],
+            "tier": ["S", "A", "S", "A"],
+        }
+    )
+
+
+def _render_env(monkeypatch, env):
+    for name in RENDER_ENVS:
+        monkeypatch.delenv(name, raising=False)
+    if env:
+        monkeypatch.setenv(env, "1")
+
+
+PAIRED = {  # a fill helper and the text color it pairs with the fill
+    "gt_color_results": lambda gt: gt_color_results(gt, "res"),
+    "gt_bold_rows": lambda gt: gt_bold_rows(gt, rows=[0, 1], highlight_color="#002244"),
+    "gt_highlight_cells": lambda gt: gt_highlight_cells(gt, "rk", lambda s: s > 1, text_color="white"),
+    "gt_highlight_na": lambda gt: gt_highlight_na(gt, "rk", na_strings=["2"], fill="#002244", text_color="white"),
+    "gt_spotlight": lambda gt: gt_spotlight(gt, rows=[1], fill="#002244", text_color="white"),
+    "gt_outliers": lambda gt: gt_outliers(gt, "rk", method="bounds", bounds=(2, 3), fill="#002244"),
+    "gt_tiers": lambda gt: gt_tiers(gt, {"S": "#C84630", "A": "#5DA271"}, image_columns=[]),
+}
+OTHERS = {
+    "gt_color_pills": lambda gt: gt_color_pills(gt, "rk", domain=[1, 4]),  # the fill is the pill's own element
+    "gt_indicator_boxes": lambda gt: gt_indicator_boxes(gt, "rk"),
+    "gt_row_accent": lambda gt: gt_row_accent(gt, "res", palette={"W": "#003366", "L": "#B8232F"}),  # a border
+    "gt_highlight_cells, no ink": lambda gt: gt_highlight_cells(gt, "rk", lambda s: s > 1),
+}
+
+
+@pytest.mark.parametrize("helper", sorted(PAIRED))
+def test_the_text_color_a_helper_pairs_with_its_fill_is_important(helper, monkeypatch):
+    _render_env(monkeypatch, "VSCODE_PID")  # where the stripes are !important: still no warning, nothing to cover
+    html = PAIRED[helper](GT(_games()).opt_row_striping()).as_raw_html(all_important=True)
+    inks = [d.strip() for cell in BODY_COLOR.findall(html) for d in cell.split(";") if d.strip().startswith("color")]
+    assert inks and all(d.endswith("!important") for d in inks), inks
+
+
+@pytest.mark.parametrize("helper", sorted(OTHERS))
+def test_a_helper_the_stripes_cannot_cover_does_not_warn(helper, monkeypatch):
+    _render_env(monkeypatch, "VSCODE_PID")
+    OTHERS[helper](GT(_games()).opt_row_striping())
+
+
+@pytest.mark.parametrize("env", ["VSCODE_PID", "POSITRON_VERSION"])
+def test_color_ranks_warns_once_on_stripes_where_the_repr_makes_them_important(env, monkeypatch):
+    _render_env(monkeypatch, env)
+    match = r"in VS Code and Positron notebooks.*opt_row_striping\(row_striping=False\)"
+    with pytest.warns(SdvplotWarning, match=match) as seen:
+        gt_color_ranks(GT(_games()).opt_row_striping(), "rk")
+    assert len([w for w in seen if issubclass(w.category, SdvplotWarning)]) == 1
+    gt_color_ranks(GT(_games()), "rk")  # no striping, no warning (SdvplotWarning is an error here)
+
+
+@pytest.mark.parametrize("env", [None, "QUARTO_BIN_PATH", "DATABRICKS_RUNTIME_VERSION"])
+def test_color_ranks_is_quiet_where_the_repr_keeps_the_stripes_plain(env, monkeypatch):
+    _render_env(monkeypatch, env)  # Jupyter, Quarto, Databricks and the docs: the inline fills win
+    gt_color_ranks(GT(_games()).opt_row_striping(), "rk")

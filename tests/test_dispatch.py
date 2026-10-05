@@ -6,6 +6,7 @@ import pytest
 
 import sdvplot._dispatch as d
 from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsupportedTargetError
+from sdvplot._headshots import headshot_url
 from sdvplot._resolve import resolve
 from sdvplot.testing import check_adapter_contract
 
@@ -20,27 +21,31 @@ Canvas.__module__ = "fakeplot.canvas"
 def _dummy_adapter():
     mod = types.ModuleType("sdvplot_dummy_adapter")
 
-    def add_logos(target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0, variant="default"):
+    def add_logos(
+        target, x, y, teams, *, league, season=None, height=0.1, alpha=1.0, variant="default", id_system="auto"
+    ):
         if not 0 < height <= 1:
             raise ValueError("height is a fraction of the plot height")
         if not 0 <= alpha <= 1:
             raise ValueError("alpha is an opacity")
         # positional values, never index labels; x, y and teams are filtered together
-        for xi, yi, team_id in zip(list(x), list(y), resolve(list(teams), league, season=season), strict=True):
+        ids = resolve(list(teams), league, season=season, id_system=id_system)
+        for xi, yi, team_id in zip(list(x), list(y), ids, strict=True):
             if team_id is not None:
                 target.append((team_id, xi, yi, height))
         return target
 
-    def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0):
+    def add_headshots(target, x, y, players, *, league, height=0.1, alpha=1.0, id_system="espn"):
         if not 0 < height <= 1:
             raise ValueError("height is a fraction of the plot height")
         if not 0 <= alpha <= 1:
             raise ValueError("alpha is an opacity")
-        bad = [p for p in players if not str(p).isdigit()]
+        urls = [headshot_url(p, league, id_system=id_system) for p in players]  # None: no headshot, as in place()
+        bad = [p for p, url in zip(players, urls, strict=True) if url is None]
         if bad:
             warnings.warn(f"no headshot for {bad}", SdvplotWarning, stacklevel=2)
-        for xi, yi, pid in zip(list(x), list(y), list(players), strict=True):
-            if str(pid).isdigit():
+        for xi, yi, pid, url in zip(list(x), list(y), list(players), urls, strict=True):
+            if url is not None:
                 target.append((str(pid), xi, yi, height))
         return target
 
@@ -102,6 +107,25 @@ def test_an_unrelated_importerror_inside_the_adapter_is_not_mislabelled(monkeypa
 
 def test_the_dummy_adapter_passes_the_shared_contract(dummy):
     check_adapter_contract(dummy, make_target=Canvas)
+
+
+def test_the_contract_pages_minimal_adapter_runs_and_takes_what_the_front_door_passes(monkeypatch):
+    """docs/docs/adapters/contract.md's example, run as written: it passes the harness, and it accepts ``id_system``,
+    which the front door forwards, and skips a player id that has no headshot with one warning."""
+    import re
+    from pathlib import Path
+
+    page = (Path(__file__).parents[1] / "docs" / "docs" / "adapters" / "contract.md").read_text(encoding="utf-8")
+    code = re.findall(r"```python\n(.*?)```", page, re.S)[-1]
+    monkeypatch.setattr(d, "ADAPTERS", {})
+    monkeypatch.setitem(sys.modules, "fakeplot_adapter", None)  # the page sets it; monkeypatch removes it after
+    ns: dict = {}
+    exec(compile(code, "contract.md", "exec"), ns)
+    canvas = ns["Canvas"]
+    assert d.add_logos(canvas(), [0], [0], ["LV"], league="nfl", id_system="auto") == [("13", 0, 0, 0.1)]
+    with pytest.warns(SdvplotWarning, match="no headshot") as seen:
+        drawn = d.add_headshots(canvas(), [0, 1], [0, 1], ["3139477", "x9"], league="nfl", id_system="espn")
+    assert drawn == [("3139477", 0, 0, 0.1)] and len(seen) == 1
 
 
 def test_the_contract_catches_an_adapter_that_crashes_on_unknown_teams(dummy, monkeypatch):
