@@ -6,19 +6,29 @@ is a fraction of each panel's height. ``add_logos(p, ...)`` returns a new ggplot
 
 from __future__ import annotations
 
+import warnings
 from typing import Any
 
 import pandas as pd
 from matplotlib.figure import Figure
-from plotnine import aes, element_text, ggplot, scale_color_manual, scale_fill_manual, theme
+from plotnine import (
+    aes,
+    element_text,
+    ggplot,
+    labs,
+    scale_color_manual,
+    scale_fill_manual,
+    theme,
+)
 from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
+from sdvplot._errors import SdvplotWarning
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
+from sdvplot.matplotlib import _align, add_title_image, check_title_image, draw_placements, title_source
 from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import draw_placements
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
 from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
 from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
@@ -310,6 +320,86 @@ def axis_logos(
     return target + _AxisLogos(
         axis, league=league, season=season, height=height, variant=variant, mark_type=mark_type, id_system=id_system
     )
+
+
+class _TitleImage:
+    """Added with ``+``: sets the title, then (as a plotnine watermark, drawn after the figure texts) puts the image
+    beside the rendered title, aligned with it as the theme's ``plot_title`` alignment says."""
+
+    def __init__(self, image: Any, title: str, league: str | None, season: Any, side: str, height: float) -> None:
+        self.height = check_title_image(side, height)
+        self.side, self.title = side, title or " "  # a blank title still gives the image a line to sit on
+        self.source = title_source(image, league, season)  # resolved (and warned about) when built, not drawn
+
+    def __radd__(self, gg: ggplot) -> ggplot:
+        gg += labs(title=self.title)
+        gg.watermarks.append(self)
+        return gg
+
+    def draw(self, figure: Figure) -> None:
+        if self.source is None:
+            return
+        text = next((t for t in figure.texts if t.get_text() == self.title), None)
+        if text is None:
+            warnings.warn(
+                f"title_image: the plot's title is no longer {self.title!r}; add title_image() after labs(title=...)",
+                SdvplotWarning,
+                stacklevel=2,
+            )
+            return
+
+        def align() -> float:  # plotnine left-aligns the text and places it by the theme's plot_title ha
+            theme_ = getattr(figure.get_layout_engine(), "theme", None)
+            return _align(theme_.getp(("plot_title", "ha")) if theme_ is not None else "left")
+
+        add_title_image(figure, text, self.source, self.side, self.height, align)
+
+
+def title_image(
+    image: Any,
+    title: str = "",
+    *,
+    league: str | None = None,
+    season: Any = None,
+    side: str = "left",
+    height: float = 15,
+) -> Any:
+    """A plot title with an image (a team logo, or any image) beside it, added to a ggplot with ``+``.
+
+    The pair follows the theme's ``plot_title`` alignment, like the image inside sdvplotR's title: plotnine centres a
+    lone title and left-aligns one with a subtitle.
+
+    Args:
+        image: A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL
+            (http or https) or a local file path.
+        title: The title text; it replaces ``labs(title=...)``, so add ``title_image`` after any ``labs``.
+        league: The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path.
+        season: One season, to pick the team's logo for that era.
+        side: "left" or "right" of the title text.
+        height: The image height in points (1/72 inch). The title keeps its own line height, so an image much taller
+            than the text needs room: a ``plot_title`` margin in ``theme()``.
+
+    Returns:
+        object: An object to add to a ggplot; the image is loaded (and an unknown team warned about) now.
+
+    Raises:
+        ValueError: If ``side`` is not "left"/"right" or ``height`` is not a positive number.
+        OfflineError: If a URL or logo cannot be downloaded and is not cached.
+        FileNotFoundError: If a local path does not exist.
+
+    Example:
+        ::
+
+            from plotnine import aes, geom_point, ggplot
+            from sdvplot.plotnine import title_image
+
+            p = ggplot(df, aes("epa", "sr")) + geom_point() + title_image("KC", "Chiefs", league="nfl", height=20)
+
+    See Also:
+        sdvplotR ggtitle_image(): https://sdvplotR.sportsdataverse.org/reference/ggtitle_image.html ;
+        sdvplot.matplotlib.title_image: the same for matplotlib.
+    """
+    return _TitleImage(image, title, league, season, side, height)
 
 
 def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:

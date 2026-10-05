@@ -126,3 +126,10 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Added — parity extras (title images, team tiers)
+
+- `title_image()` in `sdvplot.matplotlib` (Axes title or Figure suptitle) and `sdvplot.plotnine` (added with `+`):
+  sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
+  unknown team warns once and keeps the title) or any image by URL or local path; `height` is in points, `side` is
+  `"left"` or `"right"`, and the image and title are aligned together as the title is.

@@ -65,3 +65,28 @@ def test_baseline_plotnine_facets(mark_images):
         + p9.theme(figure_size=(4, 2), strip_text=p9.element_blank())
     )
     return p.draw()
+
+
+@COMPARE
+def test_baseline_title_image(mark_images):
+    from sdvplot.matplotlib import title_image
+
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    title_image(_bare(ax), "LV", league="nfl")  # a blank title: the image alone, centred, no glyphs
+    return fig
+
+
+@COMPARE
+def test_baseline_plotnine_title_image(mark_images):
+    p9 = pytest.importorskip("plotnine")
+    from sdvplot.plotnine import title_image
+
+    df = pd.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0]})
+    p = (
+        p9.ggplot(df, p9.aes("x", "y"))
+        + p9.geom_point()
+        + title_image("LAR", league="nfl", side="right")
+        + p9.theme_void()
+        + p9.theme(figure_size=(4, 2))
+    )
+    return p.draw()

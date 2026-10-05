@@ -7,22 +7,27 @@ draw_placements too. Cartopy GeoAxes are matplotlib Axes: transform= takes the C
 
 from __future__ import annotations
 
+import numbers
 import sys
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib.text import Text
 from matplotlib.ticker import FixedFormatter, FixedLocator
-from matplotlib.transforms import Bbox
+from matplotlib.transforms import Affine2D, Bbox
 from PIL import Image
 
-from sdvplot._images import load_mark_image, load_url_image
-from sdvplot._placement import Placement, check_alpha, check_height, place
+from sdvplot._images import load_mark_image, load_url_image, logo_image
+from sdvplot._placement import Placement, _real, check_alpha, check_height, place
 
 SUPPORTS_AXIS_LOGOS = True
 MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
+TITLE_GAP = 4  # points between a title image and its title text
+_HA = {"left": 0.0, "center": 0.5, "right": 1.0}
 
 
 class _AxesFractionImage(OffsetImage):
@@ -421,6 +426,147 @@ def axis_logos(
         box._sdvplot_axis_mark = (axis, p.team_id, loc)  # type: ignore[attr-defined]
         ax.add_artist(box)
     return target
+
+
+def _align(ha: Any) -> float:
+    """A horizontal alignment as a fraction: 0 left, 0.5 centre, 1 right (plotnine also takes a number)."""
+    if isinstance(ha, numbers.Real):
+        return float(ha)
+    return _HA.get(ha, 0.5)
+
+
+class _TitleImage(AnnotationBbox):
+    """An image beside a title Text, ``height`` points tall. sdvplotR puts the image inside the title, so the pair is
+    aligned as one: at each draw this shifts the text by the image's width (times the title's alignment) to match."""
+
+    def __init__(self, arr: np.ndarray, text: Text, side: str, height: float, align: Callable[[], float]) -> None:
+        left = side == "left"
+        super().__init__(
+            OffsetImage(arr, zoom=height / arr.shape[0]),  # OffsetImage sizes in points: rows * zoom
+            (0.0, 0.5) if left else (1.0, 0.5),
+            xycoords=text,  # a fraction of the text's bbox
+            xybox=(-TITLE_GAP if left else TITLE_GAP, 0),
+            boxcoords="offset points",
+            box_alignment=(1.0, 0.5) if left else (0.0, 0.5),
+            frameon=False,
+            pad=0,
+            annotation_clip=False,
+            zorder=text.get_zorder() - 0.01,  # drawn just before the text, so the text draws with this draw's shift
+        )
+        self._sdv_left, self._sdv_align, self._sdv_shift = left, align, Affine2D()
+        text.set_transform(text.get_transform() + self._sdv_shift)
+
+    def update_positions(self, renderer: Any) -> None:
+        room = self.offsetbox.get_bbox(renderer).width + renderer.points_to_pixels(TITLE_GAP)
+        rel = self._sdv_align()
+        self._sdv_shift.clear().translate((1 - rel) * room if self._sdv_left else -rel * room, 0)
+        super().update_positions(renderer)
+
+
+def check_title_image(side: Any, height: Any) -> float:
+    """``height`` as a float, or ValueError unless ``side`` is "left"/"right" and ``height`` is a positive number."""
+    if side not in ("left", "right"):
+        raise ValueError(f"side must be 'left' or 'right', got {side!r}")
+    if not _real(height) or height <= 0:
+        raise ValueError(f"height is the image height in points, > 0, got {height!r}")
+    return float(height)
+
+
+def title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarray, str] | None:
+    """The image to put beside a title, plus what it was: a team's logo when ``league`` is given (None, with one
+    SdvplotWarning, when the team does not resolve or has no logo), else the image at a URL or local path."""
+    if league is not None:
+        img = logo_image(image, league, season=season)
+        return None if img is None else (rgba_array(img), str(image))
+    source = str(image)
+    if source.startswith(("http://", "https://")):
+        return rgba_array(load_url_image(source)), source
+    with Image.open(source) as img:
+        return rgba_array(img), source
+
+
+def add_title_image(
+    container: Any, text: Text, source: tuple[np.ndarray, str], side: str, height: float, align: Callable[[], float]
+) -> AnnotationBbox:
+    """Draw ``source`` (from title_source) beside ``text``, an Axes title or a Figure's suptitle/text."""
+    box = _TitleImage(source[0], text, side, height, align)
+    box._sdvplot_title_image = (side, source[1])  # type: ignore[attr-defined]
+    container.add_artist(box)
+    return box
+
+
+def title_image(
+    target: Any,
+    image: Any,
+    title: str = "",
+    *,
+    league: str | None = None,
+    season: Any = None,
+    side: str = "left",
+    height: float = 15,
+    **text_kw: Any,
+) -> Any:
+    """Set the plot title and draw an image (a team logo, or any image) beside it.
+
+    The title and the image are aligned together, like the image inside sdvplotR's title: a centred title centres the
+    pair, a left-aligned one starts with the image.
+
+    Args:
+        target: A matplotlib Axes (sets its title), a Figure (sets its suptitle), or a seaborn grid with one Axes.
+        image: A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL
+            (http or https) or a local file path.
+        title: The title text.
+        league: The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path.
+        season: One season, to pick the team's logo for that era.
+        side: "left" or "right" of the title text.
+        height: The image height in points (1/72 inch), at any dpi. The title keeps its own line height, so an image
+            much taller than the text needs room: raise ``pad``.
+        **text_kw: Passed to ``Axes.set_title`` (``loc``, ``fontsize``, ``pad``, ...) or ``Figure.suptitle``.
+
+    Returns:
+        object: ``target`` itself, titled.
+
+    Raises:
+        ValueError: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several
+            Axes.
+        OfflineError: If a URL or logo cannot be downloaded and is not cached.
+        FileNotFoundError: If a local path does not exist.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            from sdvplot.matplotlib import title_image
+
+            fig, ax = plt.subplots()
+            ax.plot([1, 2, 3], [3, 1, 2])
+            title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
+
+        A Figure's suptitle, the image on the right::
+
+            title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
+
+    See Also:
+        sdvplotR ggtitle_image(): https://sdvplotR.sportsdataverse.org/reference/ggtitle_image.html ;
+        sdvplot.plotnine.title_image: the same for plotnine.
+    """
+    h = check_title_image(side, height)
+    source = title_source(image, league, season)
+    if isinstance(target, Figure):
+        container: Any = target
+        text = target.suptitle(title or " ", **text_kw)  # a blank title still gives the image a line to sit on
+    else:
+        container = target_axes(target)
+        text = container.set_title(title or " ", **text_kw)
+    if source is not None:
+        add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
+    return target
+
+
+def drawn_title_images(target: Any) -> list[tuple[str, str]]:
+    """Test hook: (side, image) for each title image on a Figure or an Axes, image being the team or URL/path given."""
+    container = target if isinstance(target, Figure) else target_axes(target)
+    return [a._sdvplot_title_image for a in container.artists if hasattr(a, "_sdvplot_title_image")]
 
 
 def drawn_marks(target: Any) -> list[tuple[Any, ...]]:
