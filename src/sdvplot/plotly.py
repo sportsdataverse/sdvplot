@@ -13,9 +13,11 @@ import math
 import re
 from typing import Any
 
-import plotly.graph_objects as go
+from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
 
-from sdvplot._errors import UnsupportedTargetError, warn
+with requires_extra("plotly"):
+    import plotly.graph_objects as go
+
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, axis_letter, image_sources
 

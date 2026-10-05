@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 import warnings
+from collections.abc import Iterator
 from types import FrameType
 
 _PACKAGE = os.path.dirname(os.path.abspath(__file__)) + os.sep
@@ -59,8 +61,23 @@ class IntegrityError(DownloadError):
     not an image PIL can decode."""
 
 
-class OptionalDependencyError(SdvplotError, ImportError):
-    """A feature needs an optional extra that is not installed."""
+class OptionalDependencyError(SdvplotError, ModuleNotFoundError):
+    """A feature needs an optional extra that is not installed: an adapter submodule imported without its library
+    (``import sdvplot.plotly`` without plotly), an SVG mark without the svg extra. The message names the extra to
+    install."""
+
+
+@contextlib.contextmanager
+def requires_extra(extra: str) -> Iterator[None]:
+    """Around an adapter module's library imports: a missing library is an OptionalDependencyError naming the extra
+    (still a ModuleNotFoundError, with the missing module's ``name``) instead of a bare ModuleNotFoundError."""
+    try:
+        yield
+    except ModuleNotFoundError as e:
+        raise OptionalDependencyError(
+            f'{e.name or "a library"} is not installed: this needs the {extra} extra, pip install "sdvplot[{extra}]"',
+            name=e.name,
+        ) from e
 
 
 class UnsupportedTargetError(SdvplotError, TypeError):

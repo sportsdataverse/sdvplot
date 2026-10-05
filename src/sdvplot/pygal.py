@@ -14,11 +14,13 @@ from __future__ import annotations
 
 from typing import Any
 
-import pygal
-from pygal.style import Style
+from sdvplot._errors import UnsupportedTargetError, requires_extra
+
+with requires_extra("pygal"):
+    import pygal
+    from pygal.style import Style
 
 from sdvplot._colors import team_colors
-from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
 from sdvplot._types import Which

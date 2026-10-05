@@ -8,31 +8,33 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-import numpy as np
-import pandas as pd
-from matplotlib.figure import Figure
-from plotnine import (
-    aes,
-    element_blank,
-    element_rect,
-    element_text,
-    geom_text,
-    ggplot,
-    labs,
-    scale_color_manual,
-    scale_fill_manual,
-    scale_x_continuous,
-    scale_y_reverse,
-    theme_minimal,
-)
-from plotnine import theme as p9_theme  # team_tiers takes a `theme` argument
-from plotnine._utils import remove_missing
-from plotnine.geoms import geom_hline, geom_vline
-from plotnine.geoms.geom import geom
+from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
+
+with requires_extra("plotnine"):
+    import numpy as np
+    import pandas as pd
+    from matplotlib.figure import Figure
+    from plotnine import (
+        aes,
+        element_blank,
+        element_rect,
+        element_text,
+        geom_text,
+        ggplot,
+        labs,
+        scale_color_manual,
+        scale_fill_manual,
+        scale_x_continuous,
+        scale_y_reverse,
+        theme_minimal,
+    )
+    from plotnine import theme as p9_theme  # team_tiers takes a `theme` argument
+    from plotnine._utils import remove_missing
+    from plotnine.geoms import geom_hline, geom_vline
+    from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack

@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import sys
 import typing
 
 import pytest
@@ -358,3 +359,46 @@ def test_team_resolving_functions_pass_id_system_and_strict_to_the_resolver(call
         assert call(id_system="name") == unresolved
     with pytest.raises(sdvplot.InputError, match="unknown id_system"):
         call(id_system="espnn")
+
+
+# S6: each adapter submodule's library and the extra that installs it. Every public submodule but testing and typing
+# needs one, so a new adapter cannot skip this check.
+EXTRAS = {
+    "matplotlib": ("matplotlib", "mpl"),
+    "plotnine": ("plotnine", "plotnine"),
+    "plottable": ("plottable", "plottable"),
+    "plotly": ("plotly", "plotly"),
+    "altair": ("altair", "altair"),
+    "bokeh": ("bokeh", "bokeh"),
+    "holoviews": ("holoviews", "holoviews"),
+    "folium": ("folium", "folium"),
+    "pygal": ("pygal", "pygal"),
+    "reactable": ("reactable", "reactable"),
+    "great_tables": ("great_tables", "tables"),
+}
+
+
+def test_every_adapter_submodule_names_its_extra():
+    assert set(EXTRAS) == set(SUBMODULES) - {"testing", "typing"}
+
+
+@pytest.mark.parametrize("name", EXTRAS)
+def test_importing_an_adapter_without_its_library_names_the_extra(monkeypatch, name):
+    library, extra = EXTRAS[name]
+    for mod in [m for m in sys.modules if m == library or m.startswith(library + ".")] + [library]:
+        monkeypatch.setitem(sys.modules, mod, None)  # None in sys.modules: importing it raises ModuleNotFoundError
+    for mod in [m for m in sys.modules if m == f"sdvplot.{name}" or m.startswith(f"sdvplot.{name}.")]:
+        monkeypatch.delitem(sys.modules, mod)  # restored afterwards, as are the libraries
+    with pytest.raises(sdvplot.OptionalDependencyError, match=rf'pip install "sdvplot\[{extra}\]"') as exc:
+        importlib.import_module(f"sdvplot.{name}")
+    assert isinstance(exc.value, ModuleNotFoundError) and exc.value.name.split(".")[0] == library
+
+
+def test_the_front_door_passes_the_adapters_missing_extra_error_through(monkeypatch):
+    go = pytest.importorskip("plotly.graph_objects")
+    fig = go.Figure()
+    for mod in [m for m in sys.modules if m == "plotly" or m.startswith("plotly.")]:
+        monkeypatch.setitem(sys.modules, mod, None)
+    monkeypatch.delitem(sys.modules, "sdvplot.plotly", raising=False)
+    with pytest.raises(sdvplot.OptionalDependencyError, match=r'pip install "sdvplot\[plotly\]"'):
+        sdvplot.add_logos(fig, [1], [1], ["LV"], league="nfl")

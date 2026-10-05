@@ -12,17 +12,19 @@ import sys
 from collections.abc import Callable
 from typing import Any, Literal
 
-import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-from matplotlib.text import Text
-from matplotlib.ticker import FixedFormatter, FixedLocator
-from matplotlib.transforms import Affine2D, Bbox, Transform
-from PIL import Image
+from sdvplot._errors import InputError, OfflineError, UnsupportedTargetError, requires_extra, warn
+
+with requires_extra("mpl"):
+    import numpy as np
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+    from matplotlib.text import Text
+    from matplotlib.ticker import FixedFormatter, FixedLocator
+    from matplotlib.transforms import Affine2D, Bbox, Transform
+    from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import InputError, OfflineError, UnsupportedTargetError, warn
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 

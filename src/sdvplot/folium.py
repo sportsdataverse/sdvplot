@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-import folium
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("folium"):
+    import folium
+
 from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_sources

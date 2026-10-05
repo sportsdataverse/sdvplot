@@ -12,13 +12,15 @@ import math
 import numbers
 from typing import Any
 
-import narwhals as nw
-from reactable import Column
-from reactable.models import CellInfo
+from sdvplot._errors import InputError, requires_extra
+
+with requires_extra("reactable"):
+    import narwhals as nw
+    from reactable import Column
+    from reactable.models import CellInfo
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import hex6
-from sdvplot._errors import InputError
 from sdvplot._normalize import norm_season
 from sdvplot._placement import KINDS, _missing, check_alpha
 from sdvplot._tables import check_px, img_tag, mark_html

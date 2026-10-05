@@ -16,7 +16,7 @@ sidebar_position: 18
 | `OfflineError` | `SdvplotError`, `RuntimeError` | A download failed and no cached copy exists. |
 | `DownloadError` | `OfflineError`, `OSError` | A download got an HTTP error status (a 4xx or 5xx response) and no cached copy exists. Also an OSError, so ``except OSError`` catches it. |
 | `IntegrityError` | `DownloadError` | A download is not the file the manifest promises: its sha256 differs (it is not cached), or the archived file is not an image PIL can decode. |
-| `OptionalDependencyError` | `SdvplotError`, `ImportError` | A feature needs an optional extra that is not installed. |
+| `OptionalDependencyError` | `SdvplotError`, `ModuleNotFoundError` | A feature needs an optional extra that is not installed: an adapter submodule imported without its library (``import sdvplot.plotly`` without plotly), an SVG mark without the svg extra. The message names the extra to install. |
 | `UnsupportedTargetError` | `SdvplotError`, `TypeError` | sdvplot cannot draw on this object: no adapter takes its kind of plot or table, or the adapter does not support the verb (axis logos on a map, a table, Bokeh, HoloViews or pygal). |
 | `UnsafeDownloadError` | `SdvplotError`, `OSError` | A download was refused: too large, too slow, or redirected away from https. |
 | `UnsafeCachePathError` | `SdvplotError`, `ValueError` | A manifest value (sha256, ext) or cache path would reach outside the sdvplot cache directory. |
