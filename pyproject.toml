@@ -41,7 +41,7 @@ reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.19"]
 surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
 plottable = ["plottable>=0.1.5"]
-pygal = ["pygal>=3.0"]
+pygal = ["pygal>=3.0.1"]  # 3.0.0 imports pkg_resources, absent without setuptools
 all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,reactable,folium,surfaces,plottable,pygal]"]
 
 [project.urls]
