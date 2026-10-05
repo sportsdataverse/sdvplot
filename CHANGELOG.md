@@ -108,6 +108,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - The warning (or, with `strict=True`, the error) for an ambiguous team value lists the teams it could mean and what
   picks one: `'Charlotte' (ambiguous: 2429 Charlotte 49ers or 3253 Charlotte Saints); pass season= for a code reused
   across eras, or id_system= for the id system of the values`. It used to say only "ambiguous".
+- Docstrings: `matplotlib.add_logos`, `add_wordmarks`, `add_headshots` and `axis_logos` list the
+  `UnsupportedTargetError` and `OfflineError` they raise (`add_images` the former), and plotnine's `add_logos` and
+  `add_wordmarks` say `season` takes one season or one per point, as they always did.
 - A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
   wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
   NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the

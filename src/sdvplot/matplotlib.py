@@ -198,6 +198,9 @@ def add_logos(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target
             has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -265,6 +268,9 @@ def add_wordmarks(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
             several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -319,6 +325,9 @@ def add_headshots(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
             several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -409,6 +418,7 @@ def add_images(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target
             has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
 
     Example:
         ::
@@ -482,6 +492,9 @@ def axis_logos(
 
     Raises:
         ValueError: If ``axis`` is not "x"/"y", ``height`` is out of range, or the target has several Axes.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::

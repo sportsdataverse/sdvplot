@@ -458,7 +458,7 @@ def add_logos(
         y: The points' y positions, the same length as ``x``.
         teams: The team for each point, in any id system ``resolve()`` understands.
         league: The SDV league key, e.g. "nfl".
-        season: One season for every point.
+        season: One season, or one per point, to pick each team's mark for that era.
         height: The logo height as a fraction of the panel height, in (0, 1].
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
@@ -513,7 +513,7 @@ def add_wordmarks(
         y: The points' y positions, the same length as ``x``.
         teams: The team for each point.
         league: The SDV league key, e.g. "nfl".
-        season: One season for every point.
+        season: One season, or one per point, to pick each team's wordmark for that era.
         height: The wordmark height as a fraction of the panel height, in (0, 1].
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
