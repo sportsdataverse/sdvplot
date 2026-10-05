@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import numbers
 import sys
-import warnings
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -23,7 +22,7 @@ from matplotlib.transforms import Affine2D, Bbox, Transform
 from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsupportedTargetError
+from sdvplot._errors import OfflineError, UnsupportedTargetError, warn
 from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
@@ -209,13 +208,11 @@ def add_logos(
             ax.set_ylim(-10, 0)
             sdvplot.add_logos(ax, [10, 20], [-3, -7], ["KC", "BUF"], league="nfl", height=0.15)
 
-        On a Cartopy map, at longitude/latitude::
-
-            import cartopy.crs as ccrs
-
-            ax = plt.axes(projection=ccrs.Robinson())
-            ax.set_global()
-            sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
+            # On a Cartopy map, at longitude/latitude:
+            #   import cartopy.crs as ccrs
+            #   ax = plt.axes(projection=ccrs.Robinson())
+            #   ax.set_global()
+            #   sdvplot.add_logos(ax, [-94.48], [39.05], ["KC"], league="nfl", transform=ccrs.PlateCarree())
 
     See Also:
         sdvplotR geom_nfl_logos(): https://sdvplotR.sportsdataverse.org/ ;
@@ -629,7 +626,7 @@ def _title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarr
     try:
         return _rgba_array(load_path_image(source)), source
     except (OSError, ValueError, OfflineError) as e:  # missing file, not an image, failed download (as _read_images)
-        warnings.warn(f"title_image: could not read {source!r} ({e}); drawn without it", SdvplotWarning, stacklevel=3)
+        warn(f"title_image: could not read {source!r} ({e}); drawn without it")
         return None
 
 
@@ -700,8 +697,7 @@ def title_image(
             ax.plot([1, 2, 3], [3, 1, 2])
             title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
 
-        A Figure's suptitle, the image on the right::
-
+            # A Figure's suptitle, the image on the right:
             title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
 
     See Also:
@@ -775,12 +771,10 @@ def team_tiers(
             df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
             fig = team_tiers(df, "nfl")
 
-        Draft it as text first, then add logos::
-
+            # Draft it as text first, then add logos:
             fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
-        Dark logos on a white background::
-
+            # Dark logos on a white background:
             fig = team_tiers(df, "cfb", theme="light")
 
     See Also:

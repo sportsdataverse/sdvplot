@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import functools
 import numbers
-import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, overload
 
 from sdvplot import _index
-from sdvplot._errors import InputError, SdvplotWarning, UnresolvedTeamError
-from sdvplot._normalize import _is_na, norm_season, norm_value
+from sdvplot._errors import InputError, UnresolvedTeamError, warn
+from sdvplot._normalize import _is_na, check_season, norm_season, norm_value
 from sdvplot._types import IdSystem
 
 if TYPE_CHECKING:
@@ -171,7 +170,10 @@ def _seasons(season: Any, n: int) -> list[int | None]:
     one, season = _scalar(season)
     if one or _is_na(season):
         return [norm_season(season)] * n
-    items, _ = _unpack(season)
+    try:
+        items, _ = _unpack(season)
+    except TypeError:  # _unpack's message names values; this is the season argument
+        raise TypeError(f"season must be a year, or one per team, got {type(season).__name__}") from None
     if len(items) != n:
         raise ValueError(f"season has {len(items)} values but there are {n} teams")
     return [norm_season(s) for s in items]
@@ -182,9 +184,7 @@ def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     msg = f"{len(unresolved)} value(s) did not resolve to a {league} team: {shown}"
     if strict:
         raise UnresolvedTeamError(msg)
-    warnings.warn(
-        msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.", SdvplotWarning, stacklevel=3
-    )
+    warn(msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.")
 
 
 # The result comes back in the container the values came in (_unpack). The last overload takes what the others do not
@@ -243,9 +243,11 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
         caller's library.
 
     Raises:
-        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
-        ValueError: If ``league`` or ``id_system`` is unknown, or
-            ``season`` is not a year (or a list whose length does not match the teams).
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is
+            neither a year nor a list of them.
+        ValueError: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons
+            sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next
+            year), or is a list whose length does not match the teams.
         UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
@@ -282,6 +284,8 @@ def _resolve_ids(
     why ("unknown" or "ambiguous"). The caller decides whether to warn."""
     _index.check_league(league)
     systems = _systems(id_system)
+    for year in {s for s in seasons if s is not None}:  # every season path resolves here: the league's own range
+        check_season(year, league)
     table, latest = _lookup(league), _latest(league)
     out: list[str | None] = []
     unresolved: dict[str, str] = {}

@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import warnings
 from collections import Counter
 from typing import TYPE_CHECKING, Any, overload
 
 from sdvplot import _index
-from sdvplot._errors import InputError, SdvplotWarning
+from sdvplot._errors import InputError, warn
 from sdvplot._resolve import _seasons, _unpack, resolve
 from sdvplot._types import Which
 
@@ -74,11 +73,7 @@ def palette(league: str, teams: Any = None, *, which: Which = "primary", season:
         rows = _index.team_table().filter(pl.col("league") == league).select("team_id", "abbr").rows()
         shared = {a for a, n in Counter(a for _, a in rows if a).items() if n > 1}
         if shared:
-            warnings.warn(
-                f"abbreviations shared by several {league} teams are keyed by team_id: {', '.join(sorted(shared))}",
-                SdvplotWarning,
-                stacklevel=2,
-            )
+            warn(f"abbreviations shared by several {league} teams are keyed by team_id: {', '.join(sorted(shared))}")
         return {(tid if not abbr or abbr in shared else abbr): colors[tid] for tid, abbr in rows if tid in colors}
     values, _ = _unpack(teams)
     if slots := [v for v in values if isinstance(v, str) and v in _COLUMNS]:  # pre-0.1: palette(league, which)

@@ -12,7 +12,6 @@ import numbers
 import random
 import string
 import textwrap
-import warnings
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, Literal
@@ -25,7 +24,7 @@ from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
 from sdvplot._contrast import contrast, hex6, mix, on_color, solid
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import warn
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
 from sdvplot.great_tables._marks import (
@@ -735,7 +734,7 @@ def gt_percentile_bar(
         return gt
     keep = _row_indices(gt, rows)
     if not keep:
-        warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
+        warn("rows matched no rows; the table is unchanged")
         return gt
 
     lo, hi = float(domain[0]), float(domain[1])
@@ -872,11 +871,7 @@ def gt_tiers(
     missing = [x for x in names if x not in tiers]
     if missing:
         held = list(dict.fromkeys(t for t in tiers if t is not None))
-        warnings.warn(
-            f"tier(s) {missing} are not in {tier_column!r}, so they get no rows; it holds {held}",
-            SdvplotWarning,
-            stacklevel=2,
-        )
+        warn(f"tier(s) {missing} are not in {tier_column!r}, so they get no rows; it holds {held}")
 
     chosen = data.columns if image_columns is None else _columns(gt, image_columns)
     images = [c for c in chosen if c != tier_column]
@@ -969,7 +964,7 @@ def gt_spotlight(
             return gt.tab_style(gst.text(color=dim_color), loc.body())
         if if_none == "warn":
             msg = "rows matched no rows, so the table is unchanged; set if_none='dim' to dim the whole table instead"
-            warnings.warn(msg, SdvplotWarning, stacklevel=2)
+            warn(msg)
         return gt
 
     if dim_color is not None or text_color is not None:
@@ -993,7 +988,7 @@ def gt_spotlight(
     if accent_color is not None:
         edge = rendered[:1] if accent_column is None else [c for c in _columns(gt, accent_column) if c in rendered]
         if not edge:
-            warnings.warn("accent_column matched no rendered column; no accent drawn", SdvplotWarning, stacklevel=2)
+            warn("accent_column matched no rendered column; no accent drawn")
         else:
             bar = important(gst.borders(sides="left", color=accent_color, weight=f"{accent_width:g}px"))
             gt = gt.tab_style(bar, loc.body(columns=edge, rows=focus))
@@ -1064,7 +1059,7 @@ def gt_row_accent(
 
     keep = set(_row_indices(gt, rows))
     if not keep:
-        warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
+        warn("rows matched no rows; the table is unchanged")
         return gt
     if hide:
         gt = gt.cols_hide(columns=selected)
@@ -1175,7 +1170,7 @@ def gt_outliers(
     data = _frame(gt)
     numeric = [c for c in cols if data[c].dtype.is_numeric()]
     if not numeric:
-        warnings.warn("no numeric columns among columns; nothing to flag", SdvplotWarning, stacklevel=2)
+        warn("no numeric columns among columns; nothing to flag")
         return gt
     if color is None:
         shown = None if fill is None else solid(fill, _background(gt))  # fill goes to CSS as given

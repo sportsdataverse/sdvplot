@@ -458,7 +458,11 @@ def _target_channel(chart: Any, channel: str) -> Any:
     """The channel object (alt.X / alt.Y) the chart's spec reads the axis from: the first with a field, as ``_unit``."""
     enc: Any = getattr(chart, "encoding", alt.Undefined)
     ch: Any = alt.Undefined if enc is alt.Undefined else getattr(enc, channel, alt.Undefined)
-    if ch is not alt.Undefined and "field" in ch.to_dict():
+    # ``field`` or the ``alt.X("team")`` shorthand: reading either does not serialize the channel, which Altair refuses
+    # for an untyped channel when the chart's data is not at hand
+    if ch is not alt.Undefined and any(
+        getattr(ch, a, alt.Undefined) is not alt.Undefined for a in ("field", "shorthand")
+    ):
         return ch
     for sub in getattr(chart, "layer", None) or []:
         found = _target_channel(sub, channel)

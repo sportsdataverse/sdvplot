@@ -11,12 +11,11 @@ from __future__ import annotations
 import datetime as dt
 import math
 import re
-import warnings
 from typing import Any
 
 import plotly.graph_objects as go
 
-from sdvplot._errors import SdvplotWarning, UnsupportedTargetError
+from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, axis_letter, image_sources
 
@@ -236,8 +235,7 @@ def _add(
     keep = [i for i, (cx, cy) in enumerate(zip(xs, ys, strict=True)) if cx is not None and cy is not None]
     if len(keep) < len(placements):
         off = [p.team_id for i, p in enumerate(placements) if i not in keep]
-        warnings.warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}", SdvplotWarning,
-                      stacklevel=3)  # fmt: skip
+        warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}")  # fmt: skip
     placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
     if not placements:
         return fig

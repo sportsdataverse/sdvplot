@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import functools
 from collections.abc import Callable
 from importlib import resources
@@ -83,6 +84,39 @@ def check_league(league: str) -> None:
         raise InputError(f"unknown league {league!r}; known leagues: {sorted(known)}")
 
 
+@functools.cache
+def _season_table() -> dict[str | None, tuple[int, int]]:
+    """league -> (first, last) season a season argument may name, and None -> the bounds for any league; built once per
+    index load. The first season is the earliest the aliases date (MLB's 1871 for the index), and a league's own where
+    its aliases close a range (``valid_to``), so its history is dated: the NFL's 1920, the WNBA's 1997, the XFL's 2020.
+    Aliases that only open a range (the NHL's 2026 renames) say nothing about where a league starts, so such a league
+    keeps the index's floor. The last season is the later of the latest one the aliases name and next year, for every
+    league (an older index still takes this season and the next)."""
+    a = alias_table()
+    lo = a.select(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min())).item()
+    hi = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+    if lo is None or hi is None:
+        return {}
+    last = max(int(hi), datetime.date.today().year + 1)
+    out: dict[str | None, tuple[int, int]] = {None: (int(lo), last)}
+    dated = set(a.filter(pl.col("valid_to").is_not_null())["league"].to_list())
+    firsts = (
+        a.filter(pl.col("league").is_in(sorted(dated)))
+        .group_by("league")
+        .agg(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min()).alias("first"))
+    )
+    for league, first in firsts.iter_rows():
+        out[league] = (int(first), last)
+    return out
+
+
+def season_bounds(league: str | None = None) -> tuple[int, int] | None:
+    """The first and last season a season argument may name for ``league`` (None: any league), or None when no alias
+    is dated; see ``_season_table``."""
+    table = _season_table()
+    return table.get(league, table.get(None))
+
+
 def on_reload(fn: Callable[[], None]) -> None:
     """Register a cache that must be dropped when the index is reloaded (the resolver's lookup tables)."""
     _RELOAD_HOOKS.append(fn)
@@ -92,6 +126,7 @@ def reload_index() -> None:
     """Forget the loaded index and everything derived from it."""
     _read.cache_clear()
     _leagues.cache_clear()
+    _season_table.cache_clear()
     for fn in _RELOAD_HOOKS:
         fn()
 

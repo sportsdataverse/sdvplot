@@ -225,8 +225,49 @@ def check_adapter_contract(
 ) -> None:
     """Raise an AssertionError naming the broken rule if the adapter breaks the sdvplot adapter contract.
 
-    ``make_axis_target(categories)`` must build a target whose x axis shows those categories, in order. It is
-    required when the adapter supports axis logos (rule 7).
+    The rules, and the test hooks the adapter must expose, are in this module's docstring.
+
+    Args:
+        adapter: The adapter module under test (it exposes ``add_logos``, ``add_wordmarks``, ``add_headshots``,
+            ``axis_logos`` and the ``_drawn_marks`` hook).
+        make_target: Builds a fresh target (a plot) to draw on each time it is called.
+        league: The SDV league key the checks run in.
+        known: Two team ids of ``league`` that have logos.
+        known_wordmarks: Two team ids of ``league`` that have wordmarks.
+        players: Two player ids of ``league`` that have headshots.
+        make_axis_target: ``make_axis_target(categories)`` builds a target whose x axis shows those categories, in
+            order. Required when the adapter supports axis logos (rule 7).
+
+    Returns:
+        None: Returns normally when every rule holds.
+
+    Raises:
+        AssertionError: Naming the broken rule ("rule N: ..."), when the adapter breaks it.
+        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            from sdvplot import matplotlib as adapter
+            from sdvplot.testing import check_adapter_contract
+
+            def make_target():
+                _, ax = plt.subplots()
+                ax.set_xlim(0, 30)
+                ax.set_ylim(-10, 0)
+                return ax
+
+            def make_axis_target(categories):
+                _, ax = plt.subplots()
+                ax.bar(categories, range(1, len(categories) + 1))
+                return ax
+
+            check_adapter_contract(adapter, make_target=make_target, make_axis_target=make_axis_target)
+
+    See Also:
+        Add an adapter: https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter ;
+        sdvplot.testing.check_table_adapter_contract: the harness for table adapters
     """
     import pandas as pd
     import polars as pl
@@ -452,8 +493,37 @@ def check_table_adapter_contract(
 ) -> None:
     """Raise an AssertionError naming the broken rule (T0-T6) if a table adapter breaks the table contract.
 
-    ``make_table(frame)`` builds the adapter's table from a pandas or polars DataFrame (for great_tables: ``GT``).
-    The rules and hooks are in this module's docstring.
+    The rules and the ``_drawn_cells`` and ``_rendered_html`` hooks are in this module's docstring.
+
+    Args:
+        adapter: The table adapter module under test (it exposes ``add_logos``, ``add_wordmarks``, ``add_headshots``
+            and the two hooks).
+        make_table: ``make_table(frame)`` builds the adapter's table from a pandas or polars DataFrame (for
+            great_tables: ``GT``).
+        league: The SDV league key the checks run in.
+        known: Two team ids of ``league`` that have logos.
+        known_wordmarks: Two team ids of ``league`` that have wordmarks.
+        players: Two player ids of ``league`` that have headshots.
+
+    Returns:
+        None: Returns normally when every rule holds.
+
+    Raises:
+        AssertionError: Naming the broken rule ("rule T<n>: ..."), when the adapter breaks it.
+        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+
+    Example:
+        ::
+
+            from great_tables import GT
+            from sdvplot import great_tables as adapter
+            from sdvplot.testing import check_table_adapter_contract
+
+            check_table_adapter_contract(adapter, make_table=GT)
+
+    See Also:
+        Add an adapter: https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter ;
+        sdvplot.testing.check_adapter_contract: the harness for plot adapters
     """
     import polars as pl
 
