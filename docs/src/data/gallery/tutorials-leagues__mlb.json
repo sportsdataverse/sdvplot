@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "mlb",
+  "label": "MLB",
+  "position": 30,
+  "page": "tutorials/leagues/mlb.md",
+  "items": [
+    {
+      "title": "MLB home run leaders with headshots",
+      "alt": "Horizontal bars of the ten 2026 MLB home run leaders, team logos at the base, headshots at the ends.",
+      "image": "/img/gallery/tutorials/leagues/mlb_16.png",
+      "anchor": "6-home-run-leaders-with-headshots"
+    },
+    {
+      "title": "Home run spray chart on a baseball field",
+      "alt": "Every 2026 regular-season home run by MLB's home run leader plotted on a baseball field, colored by distance, with his team's logo.",
+      "image": "/img/gallery/tutorials/leagues/mlb_18.png",
+      "anchor": "7-a-home-run-spray-chart-on-the-field"
+    },
+    {
+      "title": "MLB franchise name eras",
+      "alt": "Timeline from 1950 of six MLB franchises' names and moves, one row per franchise with its current logo.",
+      "image": "/img/gallery/tutorials/leagues/mlb_20.png",
+      "anchor": "8-franchise-eras-renames-and-relocations"
+    }
+  ]
+}
