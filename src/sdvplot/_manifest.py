@@ -6,7 +6,7 @@ import functools
 import io
 from typing import TYPE_CHECKING
 
-from sdvplot._cache import fetch_cached
+from sdvplot._cache import MEMORY_CACHES, fetch_cached
 
 if TYPE_CHECKING:
     import polars as pl
@@ -43,13 +43,18 @@ def _validate(body: bytes) -> None:
         raise ValueError("the logo manifest has no rows")
 
 
-@functools.cache
+# keyed by mtime so a refreshed file is read again; only the current file matters, so the previous frame (~17 MiB) is
+# dropped rather than kept for the session
+@functools.lru_cache(maxsize=1)
 def _read(path: str, mtime: float) -> pl.DataFrame:
     # every column as text first, so ids keep leading zeros and never become floats; then type the season range
     return pl.read_csv(path, infer_schema_length=0).with_columns(
         pl.col("valid_from").cast(pl.Int32, strict=False),
         pl.col("valid_to").cast(pl.Int32, strict=False),
     )
+
+
+MEMORY_CACHES.append(_read.cache_clear)  # clear_cache() also frees the parsed manifest
 
 
 def load_manifest() -> pl.DataFrame:

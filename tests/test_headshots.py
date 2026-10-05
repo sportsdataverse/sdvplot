@@ -1,4 +1,5 @@
 import io
+import os
 
 import numpy as np
 import polars as pl
@@ -108,3 +109,18 @@ def test_a_players_table_missing_a_column_keeps_the_cached_copy(cache, monkeypat
     with pytest.warns(SdvplotWarning, match="using the cached copy") as w:
         assert _headshots.headshot_url("00-0033873", "nfl", id_system="gsis") == espn
     assert len(w) == 1
+
+
+def test_a_refreshed_or_cleared_players_table_is_not_kept_in_memory(cache, monkeypatch):  # re-audit, original 5
+    buf = io.BytesIO()
+    pl.DataFrame({"gsis_id": ["00-0033873"], "espn_id": ["3139477"], "headshot": [None]}).write_parquet(buf)
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, buf.getvalue())))
+    _headshots._players.cache_clear()
+    assert _headshots.headshot_url("00-0033873", "nfl", id_system="gsis")
+    path = _cache.cache_path("nflverse/players.parquet")
+    later = path.stat().st_mtime + 60
+    os.utime(path, (later, later))  # a refreshed file: its mtime is part of the key
+    assert _headshots.headshot_url("00-0033873", "nfl", id_system="gsis")
+    assert _headshots._players.cache_info().currsize == 1  # the new table only
+    _cache.clear_cache()
+    assert _headshots._players.cache_info().currsize == 0

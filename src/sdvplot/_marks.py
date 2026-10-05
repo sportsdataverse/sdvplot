@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import weakref
 from typing import TYPE_CHECKING, Any
 
 from sdvplot import _index
+from sdvplot._cache import MEMORY_CACHES
 from sdvplot._errors import InputError, UnresolvedTeamError, warn
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
@@ -42,8 +44,9 @@ def _check_mark_type(mark_type: str) -> None:
         raise InputError(f"mark_type must be one of {list(MARK_TYPES)}, got {mark_type!r}")
 
 
-# (the manifest frame, every variant it holds): rebuilt when a refreshed manifest is a new object, as _RANKED is
-_VARIANTS: list[tuple[pl.DataFrame, frozenset[str]]] = []
+# (the manifest frame, every variant it holds): rebuilt when a refreshed manifest is a new object, as _RANKED is. The
+# frame is held weakly here and in _RANKED, so a refreshed or cleared one is freed (_manifest keeps only the latest)
+_VARIANTS: list[tuple[weakref.ref[pl.DataFrame], frozenset[str]]] = []
 
 
 def _check_variant(variant: str, league: str) -> None:
@@ -52,8 +55,8 @@ def _check_variant(variant: str, league: str) -> None:
     if variant in ("default", "dark"):
         return
     manifest = load_manifest()
-    if not _VARIANTS or _VARIANTS[0][0] is not manifest:
-        _VARIANTS[:] = [(manifest, frozenset(manifest["variant"].drop_nulls().to_list()))]
+    if not _VARIANTS or _VARIANTS[0][0]() is not manifest:
+        _VARIANTS[:] = [(weakref.ref(manifest), frozenset(manifest["variant"].drop_nulls().to_list()))]
     if not isinstance(variant, str) or variant not in _VARIANTS[0][1]:  # a list would be unhashable in the set
         _index.check_league(league)
         known = sorted({"default", "dark", *_ranked(league)["variant"].drop_nulls().to_list()})
@@ -84,13 +87,15 @@ def _mark_aliases(league: str) -> pl.DataFrame:
     )
 
 
-# league -> (the loaded manifest frame, its rows mapped and ranked). _manifest caches that frame per path+mtime, so
-# a refreshed manifest is a new object and rebuilds; an index reload clears it (R45)
-_RANKED: dict[str, tuple[pl.DataFrame, pl.DataFrame]] = {}
+# league -> (the loaded manifest frame, weakly; its rows mapped and ranked). _manifest caches that frame per
+# path+mtime, so a refreshed manifest is a new object and rebuilds; an index reload clears it (R45)
+_RANKED: dict[str, tuple[weakref.ref[pl.DataFrame], pl.DataFrame]] = {}
 _index.on_reload(_RANKED.clear)
 # league -> (its ranked table, that table's rows as dicts by team_id, filled per team on first use): select_mark's
 # lookup, a dict hit instead of a polars filter per call
 _TEAM_ROWS: dict[str, tuple[pl.DataFrame, dict[str, list[dict[str, Any]]]]] = {}
+for _clear in (_VARIANTS.clear, _RANKED.clear, _TEAM_ROWS.clear):
+    MEMORY_CACHES.append(_clear)  # clear_cache() also drops what was built from the manifest it deletes
 
 
 def _ranked(league: str) -> pl.DataFrame:
@@ -98,7 +103,7 @@ def _ranked(league: str) -> pl.DataFrame:
     best first; marks() only filters it on team_id."""
     manifest = load_manifest()
     hit = _RANKED.get(league)
-    if hit is not None and hit[0] is manifest:
+    if hit is not None and hit[0]() is manifest:
         return hit[1]
     m = (
         manifest.filter((pl.col("level") == "team") & (pl.col("league") == league))
@@ -127,7 +132,7 @@ def _ranked(league: str) -> pl.DataFrame:
         )
         .drop("_open")
     )
-    _RANKED[league] = (manifest, ranked)
+    _RANKED[league] = (weakref.ref(manifest), ranked)
     return ranked
 
 

@@ -91,6 +91,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
   `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
   column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
+- A long-running session no longer keeps every logo manifest (about 17 MiB parsed) or nflverse player table it has read:
+  when the cached file is refreshed, the previous one is freed. `clear_cache()` now also frees the parsed manifest, the
+  player table and the per-league tables built from the manifest, as it already freed the decoded images.
 
 ## [0.1.0] - Unreleased
 
