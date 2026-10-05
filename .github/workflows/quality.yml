@@ -6,7 +6,9 @@ on:
     branches: [main]
   workflow_dispatch:
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # a PR's runs share one group (a new push supersedes the last); each push to main gets its own, so it is never
+  # cancelled or replaced while it waits
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}  # a run on main is that merge's record
 permissions:
   contents: read
@@ -27,5 +29,7 @@ jobs:
         run: uv run --frozen ruff format --check .
       - name: mypy
         run: uv run --frozen mypy
+      - name: zizmor (the workflows that publish or hold a write token)
+        run: uvx zizmor@1.30.1 --offline .github/workflows/release.yml .github/workflows/docs-deploy.yml
       - name: pre-commit hooks
         run: uv run --frozen pre-commit run --all-files --show-diff-on-failure

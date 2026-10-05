@@ -52,6 +52,12 @@ jobs:
         with: { version: "0.12.21", enable-cache: false, python-version: "3.13" }
       - name: Build sdist + wheel
         run: uv build
+      - name: The wheel to publish installs bare and runs its core
+        # the exact file that is uploaded, with no extras (the tests ran on the source tree, not on this build)
+        run: |
+          uv venv "$RUNNER_TEMP/smoke"
+          uv pip install --python "$RUNNER_TEMP/smoke" dist/sdvplot-*.whl
+          "$RUNNER_TEMP/smoke/bin/python" -c 'import sdvplot as s; assert len(s.teams("nfl")) == 32; assert s.palette("nfl")["KC"] == "#e31837"'
       - name: Upload build artifacts for the publish job
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
