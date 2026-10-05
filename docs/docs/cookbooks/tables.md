@@ -242,18 +242,19 @@ gt_legend_continuous(gt, title="Run differential", labels=["-250", "0", "+250"])
 ## 5. Gotcha: stripes can paint over your fills
 
 Two rules for cell fills. Rule 1 is for plain fills: `data_color`, `gt_color_ranks` (built on it) and
-`tab_style` fills. `gt_color_results`, `gt_highlight_cells` and sdvplot's row helpers mark their fills `!important`,
-which stripes cannot cover; on a striped table they warn, because the stripes still cover the text color they
-pair with the fill. Rule 2 is about themes.
+`tab_style` fills. `gt_color_results`, `gt_highlight_cells` and sdvplot's row helpers mark their fills, and the
+text colors they pair with them, `!important`, which stripes cannot cover. Rule 2 is about themes.
 
-1. **Turn row striping off when you fill cells.** In a notebook, and on these pages, great_tables shows a table
-   with every CSS rule marked `!important`, so a striped row's background beats the fill. Use
-   `opt_row_striping(row_striping=False)` (or a theme's own switch, such as `row_striping_include_table_body`).
-   Saved images and `as_raw_html()` keep the fills, so a table can look right in an export and wrong here.
+1. **Turn row striping off when you fill cells.** In a VS Code or Positron notebook, great_tables shows a table
+   with every CSS rule marked `!important`, so a striped row's background beats a plain fill (`gt_color_ranks`
+   warns there). Use `opt_row_striping(row_striping=False)` (or a theme's own switch, such as
+   `row_striping_include_table_body`). Jupyter, these pages, saved images and `as_raw_html()` keep the fills, so a
+   table can look right in an export and wrong in VS Code.
 2. **Theme order does not matter.** `gt_theme_kenpom` bands its rows with a CSS rule, not cell styles, so a fill
    shows whether it is applied before or after the theme.
 
-The first two tables show rule 1; the pair at the end shows rule 2.
+The first two tables show rule 1 (open the notebook in VS Code to see the stripes win); the pair at the end shows
+rule 2.
 
 ```python
 top = (
@@ -268,7 +269,7 @@ def fill(gt):
 
 
 base = gt_sdv_logos(GT(top).cols_label(logo="", team="Team", diff="Goal diff."), "logo", league="nhl", height=22)
-display(fill(base.opt_row_striping()).tab_header("Striping on: every other fill is covered"))
+display(fill(base.opt_row_striping()).tab_header("Striping on: in VS Code, every other fill is covered"))
 display(fill(base.opt_row_striping(row_striping=False)).tab_header("Striping off: every fill shows"))
 gt_grid(
     [gt_theme_kenpom(fill(base)), fill(gt_theme_kenpom(base))],

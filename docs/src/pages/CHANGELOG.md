@@ -50,8 +50,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Documentation: the MBB, WBB and college-hockey tutorials draw their tier lists on `team_tiers(theme="light")`, where
   dark logos (Iowa, West Virginia, Penn State) no longer vanish into the dark background.
 - Documentation: the tables cookbook's stripes gotcha says theme order no longer matters (`gt_theme_kenpom` bands
-  with a CSS rule), and the college softball World Series table turns row striping off after `gt_theme_ncaa`, so the
-  `gt_color_results` rows keep their white text in a notebook.
+  with a CSS rule) and that stripes cover plain fills only in VS Code and Positron notebooks, and the college softball
+  World Series table turns row striping off after `gt_theme_ncaa` (`gt_color_results` fills every row).
 - The social-graphics example (`examples/automation/sdvplot_social.py`) covers men's and women's college basketball
   (`--league mbb` / `wbb`, hashtags CBB and WCBB). Both keep NCAA Division I only, as ESPN's group 50 (checked by
   name): leaderboards read that group's own leaders, since ESPN's league-wide college leaders are mostly Division II,
