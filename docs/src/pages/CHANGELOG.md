@@ -215,4 +215,4 @@
   tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
   `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
   (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
-  panel, is the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
+  panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.

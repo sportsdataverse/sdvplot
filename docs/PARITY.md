@@ -49,7 +49,7 @@ unknown team warned about) when `title_image()` is built.
 `width`; matplotlib returns a Figure, plotnine a ggplot, both drawn from one preparation (`sdvplot._tiers`). As in
 sdvplotR, teams are ranked before they are resolved, so an unknown team warns once and leaves its slot empty;
 `presort=True` sorts a missing team last; tier labels wrap as `strwrap(label, 15)` does; `devel=True` draws the
-resolved abbreviation. The default `height`, 0.1, is the largest two-decimal height at which 32 logos in 5 tiers (7,
+resolved abbreviation. The default `height`, 0.1, is about the largest height at which 32 logos in 5 tiers (7,
 7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in figure (about sdvplotR's
 `width = 0.075` npc). Differences: a tier with no `tier_desc` entry gets no label (sdvplotR shows "NA"); a null
 `tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and

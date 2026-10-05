@@ -742,7 +742,7 @@ def team_tiers(
             doing?"). Labels wrap at 15 characters; a tier without one gets none.
         presort: Sort teams alphabetically within each tier (ignores ``tier_rank``).
         alpha: Logo opacity, 0 to 1.
-        height: Logo height as a fraction of the panel height; None gives 0.1, the largest two-decimal height at
+        height: Logo height as a fraction of the panel height; None gives 0.1, about the largest height at
             which 32 logos in 5 tiers (7, 7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in
             figure.
         no_line_below_tier: A tier number, or several, with no separator line below.

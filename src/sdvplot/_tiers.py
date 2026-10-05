@@ -17,7 +17,7 @@ from sdvplot._resolve import _unpack, resolve
 BG, LINES, MUTED = "#1e1e1e", "#e0e0e0", "#8e8e93"  # sdvplotR's dark theme: background, tier lines, subtitle/caption
 SUBTITLE = "created with the #sdvplot Tiermaker"
 TIER_DESC = {1: "Elite", 2: "Very Good", 3: "Medium", 4: "Bad", 5: "What are they doing?", 6: "", 7: ""}
-# The largest two-decimal logo height (a fraction of the panel height) at which 32 square logos in 5 tiers (7, 7, 6, 6,
+# About the largest logo height (a fraction of the panel height) at which 32 square logos in 5 tiers (7, 7, 6, 6,
 # 6) neither overlap nor leave the panel at matplotlib's and plotnine's default 6.4 x 4.8 in figure; it stands in for
 # sdvplotR's width = 0.075 npc. tests/test_team_tiers.py measures it.
 DEFAULT_HEIGHT = 0.1
