@@ -73,6 +73,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `logo_image` about 1 ms instead of 4 ms (most of it the copy of the image the caller gets). A cached file within
   its TTL is remembered for the session instead of having its metadata re-read on every call, the bundled index's
   directory is looked up once, and each team's marks are taken from the manifest once per manifest load.
+- The matplotlib-family adapters (matplotlib, seaborn, plotnine, plottable, `title_image`) keep a mark in memory no
+  bigger than they draw it, 512 px tall. Half of the logo archive is 4096 px: each such mark held 64 MiB, a quarter of
+  the decoded-image cache, so a few of them pushed out everything else and every plot decoded them again (about 0.5 s
+  each). Now a repeated `add_logos` with a 4096 px mark takes about 0.02 s instead of 0.5 s; the first one still pays
+  the decode.
 
 ### Fixed
 

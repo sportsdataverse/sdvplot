@@ -82,7 +82,11 @@ def _target_axes(target: Any) -> Axes:
 
 
 def _image(p: Placement) -> np.ndarray:
-    return _rgba_array(load_mark_image(p.mark) if p.mark is not None else load_url_image(p.url))
+    if p.mark is None:
+        return _rgba_array(load_url_image(p.url))
+    # decoded no bigger than drawn: half the archive is 4096 px (64 MiB each decoded); a wide mark keeps its full height
+    size = round(_MAX_IMAGE_HEIGHT * max(1.0, p.aspect or 1.0))
+    return _rgba_array(load_mark_image(p.mark, size))
 
 
 def _xycoords(ax: Axes, transform: Any) -> Any:
@@ -620,7 +624,7 @@ def _title_source(image: Any, league: str | None, season: Any) -> tuple[np.ndarr
     SdvplotWarning, when the team does not resolve or has no logo; a failed download raises, as in add_logos), else
     the image at a URL or local path (None, with one SdvplotWarning, when it cannot be read)."""
     if league is not None:
-        img = logo_image(image, league, season=season)
+        img = logo_image(image, league, season=season, size=_MAX_IMAGE_HEIGHT)  # a title image is points tall
         return None if img is None else (_rgba_array(img), str(image))
     source = str(image)
     try:
