@@ -39,6 +39,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- Documentation: the MBB, WBB and college-hockey tutorials draw their tier lists on `team_tiers(theme="light")`, where
+  dark logos (Iowa, West Virginia, Penn State) no longer vanish into the dark background.
 
 ### Fixed
 
