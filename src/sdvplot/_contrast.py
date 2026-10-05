@@ -5,16 +5,22 @@ from __future__ import annotations
 _HEX = set("0123456789abcdefABCDEF")
 
 
-def hex6(color: str) -> str:
-    """A color as lowercase ``#rrggbb``: accepts ``#rgb``, ``rgb``, ``#rrggbb`` and ``#rrggbbaa`` (alpha dropped)."""
+def hex6(color: str, *, drop_alpha: bool = False) -> str:
+    """A color as lowercase ``#rrggbb``: accepts ``#rgb``, ``#rrggbb``, ``#rgba`` and ``#rrggbbaa`` (``#`` optional).
+
+    Callers draw and measure the result as an opaque color (contrast, ramps, theme accents), so a color with
+    transparency is a ValueError rather than silently drawn solid; an opaque alpha (``ff``) is dropped. A caller that
+    sets its own alpha passes ``drop_alpha=True`` (as R's ``scales::alpha()`` replaces a color's alpha). Named colors
+    and tuples are not hex colors.
+    """
     c = str(color).strip().lstrip("#")
-    if len(c) == 3:
+    if len(c) in (3, 4):
         c = "".join(ch * 2 for ch in c)
-    if len(c) == 8:
-        c = c[:6]
-    if len(c) != 6 or not set(c) <= _HEX:
+    if len(c) not in (6, 8) or not set(c) <= _HEX:
         raise ValueError(f"not a hex color: {color!r}")
-    return "#" + c.lower()
+    if len(c) == 8 and c[6:].lower() != "ff" and not drop_alpha:
+        raise ValueError(f"{color!r} has transparency; give an opaque color such as '#{c[:6].lower()}'")
+    return "#" + c[:6].lower()
 
 
 def luminance(color: str) -> float:

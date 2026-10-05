@@ -152,3 +152,8 @@
 - A table theme replaces the table's font list instead of prepending to it: a table themed twice no longer lists every
   font twice, and a second theme no longer keeps the first one's font as its fallback (with `gt_theme_sdv`, directly
   behind Lato). `gt_theme_sdv` and `gt_theme_sdv_team` fall back to gt's `default_fonts()`, as sdvplotR's do.
+- `#rgba` and `#rrggbbaa` colors with transparency are refused (`ValueError`) wherever sdvplot measures or blends a
+  color (contrast, palettes and ramps, theme accents) instead of being drawn solid with their alpha silently dropped;
+  an opaque alpha (`f`/`ff`) is accepted and `#rgba` is now read. `reactable_sdv_team_color_bg` still replaces
+  `na_color`'s alpha with its own `alpha`, as sdvplotR does, and color arguments passed straight to CSS still take
+  any CSS color, named or translucent.

@@ -37,7 +37,7 @@ HTML bytes.
 | `reactable_sdv_headshots` | same | same | ported. `id_system=` for `id_type=`; height 40 px as in R |
 | `reactable_sdv_cols_label` | a named list of `colDef(header = "<img>")` | `list[Column(id=name, name="", header="<img>", html=True)]` | ported. Column names that do not resolve are left out with one warning (R drops them silently) |
 | `reactable_sdv_team_color_bar` | `colDef(style = function(value, index, name))` returning CSS text | `Column(style=fn(CellInfo) -> dict)` | ported. `which=` for `type=`; `na_color` defaults to `#b3b3b3` (R's `grey70`) |
-| `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color |
+| `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color; `alpha` replaces any alpha it has, as `scales::alpha()` does |
 
 ## Wave B: table themes
 
@@ -72,7 +72,7 @@ HTML bytes.
 | all 18 themes | `tab_options(footnotes.border.bottom.style = "none")` | no such option; great_tables' `.gt_footnotes` is already `border-bottom-style: none` | dropped (no-op) |
 | all 18 themes | `.theme_scale_output()` (density rescales a finished table: `_styles` text sizes and the size/padding options, gt's defaults included) | `_scale_output()` walks `GT._styles` and `GT._options` the same way; sizes match R on athletic, gtutils, kenpom, ncaa, pl, savant, sofa, tier at "compact" and "social" | ported |
 | all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())`; an empty id gets a random one too (R keeps `""`, which scopes nothing). Every wave shares this one helper (`_marks._table_id`) | ported (stricter) |
-| all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color raises `ValueError` naming the argument | ported (stricter) |
+| all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color, or a hex color with transparency, raises `ValueError` naming the argument | ported (stricter) |
 | all 18 themes | `...` to `tab_options()`, last | `**options` to `tab_options()`, last (great_tables' snake_case names) | ported |
 
 ## Wave C1: cell styling and formatting
@@ -119,7 +119,9 @@ All 17 functions keep sdvplotR's names, argument names, order and defaults, with
 `gt_object` is `gt`; an R style `list()` is a `dict` (default `None`), and an unknown style key raises `ValueError`
 (R ignores it); `columns`/`rows` take anything great_tables accepts (names, lists, polars selectors; 0-based positions,
 polars expressions, functions of a pandas frame) where R takes tidyselect and data-masked expressions with 1-based
-indices; colors that feed contrast or ramps must be hex (`#rgb`, `#rrggbb`), where R also takes color names; R's
+indices; colors that feed contrast or ramps must be opaque hex (`#rgb`, `#rrggbb`, or `#rgba`/`#rrggbbaa` with alpha
+`f`/`ff`), where R also takes color names and `col2rgb()` silently drops a translucent color's alpha (here a
+`ValueError`: the color would be drawn and measured solid); R's
 `cli` warnings are `SdvplotWarning`, its aborts `ValueError`/`TypeError`.
 
 | R function | gt feature | great_tables equivalent | decision |

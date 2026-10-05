@@ -10,6 +10,7 @@ from sdvplot._contrast import contrast, hex6, luminance, mix, on_color
         ("abc", "#aabbcc"),
         ("#E31837", "#e31837"),
         ("#e31837ff", "#e31837"),
+        ("#F00F", "#ff0000"),  # #rgba, opaque
         (" #000000 ", "#000000"),
     ],
 )
@@ -17,10 +18,21 @@ def test_hex6_normalizes(given, want):
     assert hex6(given) == want
 
 
-@pytest.mark.parametrize("bad", ["", "#12", "#12345", "#gggggg", "red"])
+@pytest.mark.parametrize("bad", ["", "#12", "#12345", "#gggggg", "red", "rebeccapurple", (1.0, 0.0, 0.0, 0.5)])
 def test_hex6_rejects_non_hex(bad):
+    # named colors and rgba tuples were never hex6 input: the tables measure hex colors (CSS-only arguments take names)
     with pytest.raises(ValueError, match="not a hex color"):
         hex6(bad)
+
+
+@pytest.mark.parametrize(
+    ("translucent", "solid"), [("#E3183780", "#e31837"), ("#e3183700", "#e31837"), ("#F008", "#ff0000")]
+)
+def test_hex6_refuses_a_translucent_color_rather_than_drawing_it_solid(translucent, solid):
+    # its callers draw and measure colors opaque (contrast, ramps, theme accents): dropping the alpha changed the color
+    with pytest.raises(ValueError, match="has transparency"):
+        hex6(translucent)
+    assert hex6(translucent, drop_alpha=True) == solid  # for a caller that sets its own alpha
 
 
 def test_luminance_and_contrast_match_wcag():

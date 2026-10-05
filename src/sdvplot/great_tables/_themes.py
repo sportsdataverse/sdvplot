@@ -86,7 +86,7 @@ def _color(value: str, arg: str) -> str:
     try:
         return hex6(value)
     except ValueError:
-        raise ValueError(f"{arg} must be a hex color such as '#8C2F1E', not {value!r}") from None
+        raise ValueError(f"{arg} must be a hex color with no transparency, such as '#8C2F1E', not {value!r}") from None
 
 
 def _shape(gt: GT) -> tuple[list[str], int]:

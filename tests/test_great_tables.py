@@ -362,3 +362,9 @@ def test_a_player_id_read_through_a_float_keeps_its_integer_form():
     gt = gt_sdv_headshots(GT(pd.DataFrame({"player": [3139477, None]})), "player", league="nfl")
     assert sgt.drawn_cells(gt) == [("3139477", 0, "player", 30.0, sdvplot.headshot_url("3139477", "nfl"))]
     assert 'alt="3139477"' in gt.as_raw_html()
+
+
+def test_css_only_color_arguments_still_take_named_and_translucent_colors():
+    """hex6 refuses a translucent color where a color is measured or blended; one passed straight to CSS is not."""
+    for color in ("rebeccapurple", "#ff000080"):
+        assert color in sgt.gt_border_grid(GT(pl.DataFrame({"w": [1]})), color=color).as_raw_html()

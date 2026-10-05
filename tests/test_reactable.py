@@ -115,6 +115,10 @@ def test_team_color_bg_is_a_translucent_team_fill(kind):
     df = _frame(kind, {"team": ["LAR"], "wins": [5]})
     col = reactable_sdv_team_color_bg(df, "team", league="nfl", which="secondary", id="team")
     assert _built(Reactable(df, columns=[col]), "team").style == [{"background-color": "#ffa30026"}]
+    # alpha sets the fill's transparency, replacing any in na_color, as R's scales::alpha() does
+    with pytest.warns(SdvplotWarning, match="'XXX'"):
+        col = reactable_sdv_team_color_bg(_frame(kind, {"team": ["XXX"]}), "team", league="nfl", na_color="#B3B3B380")
+    assert col.style(CellInfo("XXX", 0, "team")) == {"background-color": "#b3b3b326"}
     with pytest.raises(ValueError, match="alpha"):
         reactable_sdv_team_color_bg(df, "team", league="nfl", alpha=2)
     with pytest.raises(ValueError, match="'club' not found"):
