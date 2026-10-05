@@ -393,7 +393,7 @@ def add_images(
         x: The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position).
         y: The points' y positions, the same length as ``x``.
         paths: The image for each point (or one ``pathlib.Path`` for one point): a local path (str or
-            ``pathlib.Path``), a ``file://`` URI or an http(s) URL. A null path draws nothing.
+            ``pathlib.Path``), a ``file://`` URI or an https URL (http is refused). A null path draws nothing.
         height: The image height as a fraction of the Axes height, in (0, 1].
         alpha: Opacity, 0 to 1.
         zorder: matplotlib drawing order (3 draws above lines and markers).
@@ -669,7 +669,7 @@ def title_image(
     Args:
         target: A matplotlib Axes (sets its title), a Figure (sets its suptitle), or a seaborn grid with one Axes.
         image: A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL
-            (http or https) or a local file path.
+            (https; http is refused) or a local file path.
         title: The title text.
         league: The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path.
         season: One season, to pick the team's logo for that era.

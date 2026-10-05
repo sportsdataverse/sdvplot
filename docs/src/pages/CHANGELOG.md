@@ -50,6 +50,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+- Documentation: `sdvplot.matplotlib.add_images` and `title_image`, and `sdvplot.plotnine.geom_from_path` and
+  `title_image`, say an image URL must be https. They said "http or https", but an http URL is refused with
+  `UnsafeDownloadError`.
 
 ### Fixed
 

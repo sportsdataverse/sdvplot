@@ -259,8 +259,8 @@ def load_url_image(url: str) -> Image.Image:
 
 
 def load_path_image(path: str) -> Image.Image:
-    """Any image by http(s) URL (cached like a headshot), file:// URI or local path; raises OSError, ValueError or
-    OfflineError."""
+    """Any image by https URL (cached like a headshot), file:// URI or local path; raises OSError, ValueError or
+    OfflineError (an http URL is refused with UnsafeDownloadError, an OSError)."""
     scheme = urlsplit(path).scheme.lower()  # URL schemes are case-insensitive; a Windows drive letter is no scheme
     if scheme in ("http", "https"):
         return load_url_image(path)

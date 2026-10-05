@@ -245,8 +245,8 @@ class geom_from_path(_geom_sdv_marks):
     panel height, default 0.1) and ``alpha``. The port of ggpath's ``geom_from_path()``, sized like the logo geoms.
 
     Args:
-        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or http(s) URL per
-            row.
+        mapping: ``aes(x=..., y=..., path=...)``; ``path`` holds a local file path, ``file://`` URI or https URL per
+            row (http is refused).
         data: The layer's data (pandas or polars), when not the plot's.
         **kwargs: ``height`` in (0, 1], ``alpha`` in [0, 1], and plotnine's layer arguments (``inherit_aes``, ...).
 
@@ -719,7 +719,7 @@ def title_image(
 
     Args:
         image: A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL
-            (http or https) or a local file path.
+            (https; http is refused) or a local file path.
         title: The title text; it replaces ``labs(title=...)``, so add ``title_image`` after any ``labs``.
         league: The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path.
         season: One season, to pick the team's logo for that era.
