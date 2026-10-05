@@ -295,3 +295,52 @@ def test_one_warning_per_skip_reason_in_both_adapters(mark_images):
     with pytest.warns(SdvplotWarning, match="archived") as drawn:
         p.draw()
     assert len(drawn) == 1  # the missing logo, once per render
+
+
+# ---- theme --------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("theme", ["dark", "light"])
+def test_prep_theme_colors_read_on_their_background(theme):  # WCAG: 7 for labels, 4.5 for small text, 3 for lines
+    from sdvplot._contrast import contrast
+
+    t = prepare(_frame(tier_no=[1], team=["LV"]), "nfl", theme=theme)
+    assert contrast(t.text, t.bg) >= 7 and contrast(t.muted, t.bg) >= 4.5 and contrast(t.line_color, t.bg) >= 3
+
+
+def test_prep_dark_is_sdvplotrs_theme_and_light_is_white():
+    dark, light = (prepare(_frame(tier_no=[1], team=["LV"]), "nfl", theme=x) for x in ("dark", "light"))
+    assert (dark.bg, dark.line_color, dark.text, dark.muted) == (_tiers.BG, _tiers.LINES, "#ffffff", _tiers.MUTED)
+    assert light.bg == "#ffffff"
+
+
+def test_prep_rejects_an_unknown_theme():
+    with pytest.raises(ValueError, match="theme"):
+        prepare(_frame(tier_no=[1], team=["LV"]), "nfl", theme="sepia")
+
+
+def test_matplotlib_tiers_light_theme(mark_images):
+    fig = smpl.team_tiers(_frame(tier_no=[1, 2], team=["LV", "LAR"]), "nfl", theme="light", caption="data")
+    ax = fig.axes[0]
+    t = prepare(_frame(tier_no=[1, 2], team=["LV", "LAR"]), "nfl", theme="light")
+    assert to_hex(fig.get_facecolor()) == to_hex(ax.get_facecolor()) == t.bg
+    assert {to_hex(line.get_color()) for line in ax.lines} == {t.line_color}
+    assert {to_hex(label.get_color()) for label in ax.get_yticklabels()} == {t.text}
+    texts = {a.get_text(): to_hex(a.get_color()) for a in ax.texts if isinstance(a, Annotation)}
+    assert texts["NFL Team Tiers"] == t.text and texts["data"] == t.muted
+    assert to_hex(ax._left_title.get_color()) == t.muted  # the subtitle
+    devel = smpl.team_tiers(_frame(tier_no=[1], team=["LV"]), "nfl", theme="light", devel=True).axes[0]
+    assert {to_hex(x.get_color()) for x in devel.texts if not isinstance(x, Annotation)} == {t.text}
+
+
+def test_plotnine_tiers_light_theme(mark_images):
+    sp9 = _sp9()
+    t = prepare(_frame(tier_no=[1, 2], team=["LV", "LAR"]), "nfl", theme="light")
+    fig = sp9.team_tiers(_frame(tier_no=[1, 2], team=["LV", "LAR"]), "nfl", theme="light", caption="data").draw()
+    ax = fig.axes[0]
+    assert to_hex(fig.get_facecolor()) == to_hex(ax.get_facecolor()) == t.bg
+    assert {to_hex(label.get_color()) for label in ax.get_yticklabels()} == {t.text}
+    texts = {x.get_text(): to_hex(x.get_color()) for x in fig.texts}
+    assert texts["NFL Team Tiers"] == t.text and texts["data"] == t.muted
+    devel = sp9.team_tiers(_frame(tier_no=[1], team=["LV"]), "nfl", theme="light", devel=True).draw().axes[0]
+    assert {to_hex(x.get_color()) for x in devel.texts} == {t.text}

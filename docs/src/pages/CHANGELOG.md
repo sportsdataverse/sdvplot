@@ -279,3 +279,6 @@
   second ESPN id (Minnesota State's `24059` resolves to `2364`, not only by name), and any other is a team of its own
   (Delaware, `48`, `DEL`). The archive has no Delaware mark, so its logo is `None` with a warning and its colors are
   flagged `color_source="fallback"`; none is made up.
+- `team_tiers()` (matplotlib and plotnine) takes `theme="dark"` (the default, sdvplotR's) or `theme="light"`: dark
+  logos such as Ohio State's, Texas A&M's and Penn State's vanished on the fixed dark background. The light theme's
+  labels, lines, subtitle and caption meet WCAG contrast on white; sdvplotR has only the dark theme (`docs/PARITY.md`).

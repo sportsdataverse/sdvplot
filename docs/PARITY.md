@@ -55,7 +55,8 @@ resolved abbreviation. The default `height`, 0.1, is about the largest height at
 `width = 0.075` npc). Differences: a tier with no `tier_desc` entry gets no label (sdvplotR shows "NA"); a null
 `tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and
 subtitle sit over the panel (sdvplotR: `plot.title.position = "plot"`, which the plotnine version keeps); there is
-no `season`.
+no `season`. Addition: `theme="light"` draws on white with dark lines and text, for dark logos (Ohio State,
+Texas A&M, Penn State) that vanish on sdvplotR's dark background, the only one it has; `"dark"` is the default.
 
 **X4 `geom_from_path` / `add_images`.** Images are sized like sdvplot's logo verbs: `height` is a fraction of the
 panel (Axes) height, default 0.1, and the image keeps its aspect ratio. ggpath's `width`, `angle`, `hjust`, `vjust` and

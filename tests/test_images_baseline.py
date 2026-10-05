@@ -120,6 +120,16 @@ def test_baseline_team_tiers(mark_images):
 
 
 @COMPARE
+def test_baseline_team_tiers_light(mark_images):
+    from sdvplot.matplotlib import team_tiers
+
+    df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
+    fig = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2, theme="light")
+    fig.set_size_inches(4, 3)
+    return fig
+
+
+@COMPARE
 def test_baseline_plotnine_title_image(mark_images):
     p9 = pytest.importorskip("plotnine")
     from sdvplot.plotnine import title_image
@@ -145,6 +155,18 @@ def test_baseline_plotnine_team_tiers(mark_images):
     df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
     p = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2) + p9.theme(figure_size=(4, 3))
     return p.draw()
+
+
+@COMPARE
+def test_baseline_plotnine_team_tiers_light(mark_images):
+    pytest.importorskip("plotnine")
+    import plotnine as p9
+
+    from sdvplot.plotnine import team_tiers
+
+    df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
+    p = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2, theme="light")
+    return (p + p9.theme(figure_size=(4, 3))).draw()
 
 
 @COMPARE

@@ -11,7 +11,7 @@ import numbers
 import sys
 import warnings
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -727,8 +727,9 @@ def team_tiers(
     height: float | None = None,
     no_line_below_tier: Any = None,
     devel: bool = False,
+    theme: Literal["dark", "light"] = "dark",
 ) -> Figure:
-    """A tier list: each team's logo in its tier's row, tier 1 on top, on sdvplotR's dark Tiermaker theme.
+    """A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme.
 
     Args:
         data: A pandas or polars DataFrame with ``tier_no`` (1 is the top tier) and ``team`` (any id system
@@ -747,6 +748,8 @@ def team_tiers(
             figure.
         no_line_below_tier: A tier number, or several, with no separator line below.
         devel: Draw each team as text instead of its logo (fast, and needs no download).
+        theme: "dark" (sdvplotR's: a near-black background) or "light" (white, for dark logos such as Ohio State's,
+            Texas A&M's or Penn State's, which vanish on dark).
 
     Returns:
         matplotlib.figure.Figure: A new figure with one Axes; a team that does not resolve is skipped with one
@@ -754,8 +757,8 @@ def team_tiers(
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``height``/``alpha`` is
-            out of range.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, ``height``/``alpha`` is
+            out of range, or ``theme`` is not "dark" or "light".
 
     Example:
         ::
@@ -770,6 +773,10 @@ def team_tiers(
 
             fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
+        Dark logos on a white background::
+
+            fig = team_tiers(df, "cfb", theme="light")
+
     See Also:
         sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
         sdvplot.plotnine.team_tiers: the same as a plotnine ggplot.
@@ -778,29 +785,29 @@ def team_tiers(
 
     t = _tiers.prepare(
         data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
-        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme,
     )  # fmt: skip
-    fig, ax = plt.subplots(layout="constrained", facecolor=_tiers.BG)
-    ax.set_facecolor(_tiers.BG)
+    fig, ax = plt.subplots(layout="constrained", facecolor=t.bg)
+    ax.set_facecolor(t.bg)
     for y in t.lines:
-        ax.axhline(y, color=_tiers.LINES, linewidth=0.8)
+        ax.axhline(y, color=t.line_color, linewidth=0.8)
     ax.set_xlim(t.xlim)
     ax.set_ylim(t.ylim[1], t.ylim[0])  # tier 1 on top
     ax.set_xticks([])
-    ax.set_yticks(t.breaks, t.break_labels, color="white", fontweight="bold")
+    ax.set_yticks(t.breaks, t.break_labels, color=t.text, fontweight="bold")
     ax.tick_params(length=0)
     ax.spines[:].set_visible(False)
     if devel:
         for x, y, label in zip(t.x, t.y, t.labels, strict=True):
-            ax.text(x, y, label, color="white", ha="center", va="center")
+            ax.text(x, y, label, color=t.text, ha="center", va="center")
     else:
         placements = place(t.x, t.y, t.team_ids, league=league, id_system="team_id")
         draw_placements(ax, placements, height=t.height, alpha=t.alpha)
     anchor: Text | None = None  # the subtitle sits on the panel, the title on the subtitle, both left-aligned
     size = ax.title.get_fontproperties().get_size_in_points()
     styles: list[tuple[str | None, dict[str, Any]]] = [
-        (t.subtitle, {"color": _tiers.MUTED, "fontsize": size}),
-        (t.title, {"color": "white", "fontweight": "bold", "fontsize": 1.2 * size}),  # sdvplotR: rel(1.2)
+        (t.subtitle, {"color": t.muted, "fontsize": size}),
+        (t.title, {"color": t.text, "fontweight": "bold", "fontsize": 1.2 * size}),  # sdvplotR: rel(1.2)
     ]
     for text, style in styles:
         if not text:
@@ -812,7 +819,7 @@ def team_tiers(
                                  va="bottom", **style)  # fmt: skip
     if t.caption:
         ax.annotate(t.caption, (1, 0), xycoords="axes fraction", xytext=(0, -6), textcoords="offset points",
-                    ha="right", va="top", color=_tiers.MUTED, fontsize="small")  # fmt: skip
+                    ha="right", va="top", color=t.muted, fontsize="small")  # fmt: skip
     return fig
 
 
