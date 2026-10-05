@@ -509,3 +509,22 @@ def test_every_theme_has_a_ported_row_in_the_parity_table():
         rows = [line for line in text.splitlines() if line.startswith(f"| `{name}` |")]
         assert rows, f"{name} has no row in docs/PARITY_TABLES.md"
         assert any(row.rstrip(" |").split("|")[-1].strip().startswith("ported") for row in rows), name
+
+
+DEFAULT_FONTS = GT(pl.DataFrame(ROWS))._options.table_font_names.value
+FONT_THEMES = [
+    n for n in [*THEMES, "gt_theme_sdv"] if getattr(sgt, n)(table())._options.table_font_names.value != DEFAULT_FONTS
+]
+
+
+@pytest.mark.parametrize("name", FONT_THEMES)
+def test_a_theme_replaces_the_table_font_list_rather_than_stacking_on_it(name):
+    theme = getattr(sgt, name)
+    once = theme(table())
+    fonts = once._options.table_font_names.value
+    assert len(fonts) == len(set(fonts))  # each font once
+    assert theme(theme(table()))._options.table_font_names.value == fonts  # re-theming changes nothing
+    other = sgt.gt_theme_athletic if name == "gt_theme_kenpom" else sgt.gt_theme_kenpom
+    # the earlier theme's font is not left behind as the next one's fallback
+    assert theme(other(table()))._options.table_font_names.value == fonts
+    assert table_font(theme(other(table())).as_raw_html()) == table_font(once.as_raw_html())

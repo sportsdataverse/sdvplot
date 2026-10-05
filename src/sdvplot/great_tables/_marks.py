@@ -353,6 +353,30 @@ def _density(density: str) -> dict[str, int]:
     return DENSITY[density]
 
 
+# gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
+R_FONTS = (
+    "system-ui",
+    "Segoe UI",
+    "Roboto",
+    "Helvetica",
+    "Arial",
+    "sans-serif",
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji",
+)
+
+
+def _table_font(gt: GT, font: Any, weight: Any = None) -> GT:
+    """R's ``opt_table_font(font = list(google_font(x), default_fonts()))`` for a theme's ``font`` (a GoogleFont).
+
+    R prepends to the table's font list; this replaces it, so a table themed twice, or by two themes, lists each font
+    once and keeps no earlier theme's font as a fallback (nothing after ``sans-serif`` in the stack is ever reached).
+    """
+    return gt.opt_table_font(font=[font, *R_FONTS], add=False, weight=weight)
+
+
 # great_tables' default paddings that sdvplotR's density also scales (gt has the same defaults)
 _DEFAULT_PADDING = {
     "row_group_padding": 8,
@@ -427,7 +451,7 @@ def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[st
     weight: Any = "800"  # CSS numeric weights; great_tables types only the keywords
     medium: Any = "500"
     gt = (
-        gt.opt_table_font(font=lato)
+        _table_font(gt, lato)
         .tab_style(style.text(font=chivo, weight=weight, size=size(22, "title"), color=pal["title"]), loc.title())
         .tab_style(
             style.text(font=lato, size=size(14, "subtitle"), color=pal.get("subtitle", pal["muted"])), loc.subtitle()
