@@ -373,6 +373,24 @@ def test_css_only_color_arguments_still_take_named_and_translucent_colors():
 TRANSLUCENT = "#FFEB3B66"  # 40% yellow: it shows as #fff7b1 on a white table, which wants black ink
 
 
+def test_translucent_fills_go_to_css_as_given_and_the_ink_is_read_on_what_shows():
+    """sdvplotR accepts these colors; they are drawn as given, and only the text color is measured, on the color the
+    fill shows as over the table background."""
+    pills = sgt.gt_color_pills(GT(pl.DataFrame({"v": [1.0, None, 3.0]})), "v", domain=(1, 3), na_color=TRANSLUCENT)
+    pills = pills.as_raw_html()
+    assert f"background-color: {TRANSLUCENT}; color: #000000;" in pills
+    boxes = sgt.gt_indicator_boxes(
+        GT(pl.DataFrame({"v": [1.0, 0.0, None]})),
+        "v",
+        color_yes=TRANSLUCENT,
+        color_no=TRANSLUCENT,
+        color_na=TRANSLUCENT,
+    ).as_raw_html()
+    assert boxes.count(f"background-color: {TRANSLUCENT}; color: #000000;") == 3
+    outliers = sgt.gt_outliers(GT(pl.DataFrame({"v": [1, 2, 2, 3, 100]})), "v", fill=TRANSLUCENT).as_raw_html()
+    assert re.search(rf"color: #B3261E;[^\"]*background-color: {TRANSLUCENT}", outliers, re.IGNORECASE)
+
+
 def test_a_translucent_table_background_is_read_as_it_shows_not_as_white():
     # #111111CC is 80% near-black: over the page it shows as #414141, which wants white ink (main read it as #111111)
     dark = GT(pl.DataFrame({"team": ["LV"], "note": ["Lost the starting QB"]})).tab_options(

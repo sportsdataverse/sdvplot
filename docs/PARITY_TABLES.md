@@ -120,8 +120,11 @@ All 17 functions keep sdvplotR's names, argument names, order and defaults, with
 (R ignores it); `columns`/`rows` take anything great_tables accepts (names, lists, polars selectors; 0-based positions,
 polars expressions, functions of a pandas frame) where R takes tidyselect and data-masked expressions with 1-based
 indices; colors that feed contrast or ramps must be opaque hex (`#rgb`, `#rrggbb`, or `#rgba`/`#rrggbbaa` with alpha
-`f`/`ff`), where R also takes color names and `col2rgb()` silently drops a translucent color's alpha (here a
-`ValueError`: the color would be drawn and measured solid); R's
+`f`/`ff`), where R also takes color names and `col2rgb()` silently drops a translucent color's alpha. Here a
+translucent color is a `ValueError` where sdvplot draws a color it computes from it (palette stops, ramps, legend and
+tier swatches, theme accents), which would otherwise come out solid; a color passed to CSS as given and only measured
+for its ink (`gt_color_pills(na_color=)`, `gt_indicator_boxes()`'s colors, `gt_outliers(fill=)`) is drawn translucent,
+as in R, and its ink is read on what it shows over the table background (R measures it with the alpha dropped); R's
 `cli` warnings are `SdvplotWarning`, its aborts `ValueError`/`TypeError`.
 
 | R function | gt feature | great_tables equivalent | decision |

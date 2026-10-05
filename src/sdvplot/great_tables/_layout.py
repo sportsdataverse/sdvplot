@@ -25,7 +25,7 @@ import polars as pl
 from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
-from sdvplot._contrast import contrast, hex6, mix, on_color
+from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
@@ -1120,7 +1120,8 @@ def gt_outliers(
         threshold: The cutoff for ``"iqr"`` (default 1.5) and ``"sd"`` (default 3).
         bounds: ``(lower, upper)`` for ``"bounds"``; ``None`` on either side leaves it open.
         side: ``"both"``, ``"high"`` or ``"low"``.
-        fill: A fill behind flagged values.
+        fill: A hex fill behind flagged values (a translucent ``#rrggbbaa`` is drawn as given; the default text
+            color is read on what it shows over the table background).
         color: The flagged text color; defaults to a warning red, or the readable ink when the red fails 4.5:1 on
             ``fill``.
         bold: Bold flagged values.
@@ -1163,7 +1164,8 @@ def gt_outliers(
         warnings.warn("no numeric columns among columns; nothing to flag", SdvplotWarning, stacklevel=2)
         return gt
     if color is None:
-        color = "#B3261E" if fill is None or contrast("#B3261E", fill) >= 4.5 else on_color(fill)
+        shown = None if fill is None else solid(fill, _background(gt))  # fill goes to CSS as given
+        color = "#B3261E" if shown is None or contrast("#B3261E", shown) >= 4.5 else on_color(shown)
 
     flagged = False
     for col in numeric:

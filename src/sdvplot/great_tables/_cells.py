@@ -26,10 +26,10 @@ from great_tables._gt_data import Body, Boxhead, ColInfo
 from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
 
-from sdvplot._contrast import hex6, mix, on_color
+from sdvplot._contrast import hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot._tables import row_positions
-from sdvplot.great_tables._marks import _check_gt, _constant, _table_id
+from sdvplot.great_tables._marks import _background, _check_gt, _constant, _table_id
 
 # ---------------------------------------------------------------------------------------------------------------------
 # shared helpers (sdvplotR R/utils-theme.R and the per-function row/column handling)
@@ -1028,7 +1028,8 @@ def gt_color_pills(
             paletteer palettes, which Python does not have).
         pill_height: Pill height in pixels.
         text_color: The pill text color; ``None`` picks black or white per pill.
-        na_color: A hex color for a pill over a missing value; ``None`` leaves the cell blank.
+        na_color: A hex color for a pill over a missing value (a translucent ``#rrggbbaa`` is drawn as given);
+            ``None`` leaves the cell blank.
 
     Returns:
         GT: A new table with pills, recording ``_sdvplot_scale``; ``gt`` itself, with one SdvplotWarning, when
@@ -1080,7 +1081,7 @@ def gt_color_pills(
             v *= 100
         return _format_value(v, digits, format_type, suffix)
 
-    out, outside = gt, 0
+    out, outside, bg = gt, 0, _background(gt)
     for c in cols:
         width = max((len(label(numbers[c][i])) for i in keep), default=1)
         cells: dict[int, str] = {}
@@ -1096,7 +1097,7 @@ def gt_color_pills(
                 if ramped is None:
                     outside += 1
                 fill, text = ramped or "#808080", label(numbers[c][i])
-            ink = text_color or on_color(fill)
+            ink = text_color or on_color(solid(fill, bg))  # na_color goes to CSS as given; measure what shows
             cells[i] = (
                 f"<span style='display: inline-block; width: {width}ch; padding-left: 3px; padding-right: 3px; "
                 f"height: {pill_height}px; line-height: {pill_height}px; background-color: {fill}; color: {ink}; "
@@ -1227,8 +1228,9 @@ def gt_indicator_boxes(
         indicator_vals: The ``(no, yes)`` values.
         indicator_rule: A function deciding when a box is filled, called with each cell's numeric value (and the
             column name, when it takes two arguments); ``None`` tests equality with ``indicator_vals[1]``.
-        color_yes: Fill of boxes meeting the rule (hex).
-        color_no: Fill of the others (hex).
+        color_yes: Fill of boxes meeting the rule (hex; a translucent ``#rrggbbaa`` is drawn as given, and the text
+            color is read on what it shows over the table background).
+        color_no: Fill of the others (hex, as ``color_yes``).
         show_na_as_na: Print ``NA`` in a missing value's box instead of leaving it blank.
         show_text: Print the formatted value inside each box (boxes then widen to fit).
         show_only: Print text in only one class of box: ``"yes"``, ``"no"`` or ``"NA"``; ``None`` prints all.
@@ -1276,6 +1278,7 @@ def gt_indicator_boxes(
     with_column = _takes_column(rule)
     na_fill = color_na or color_no
     border = f"border: {border_width}px solid {border_color};" if border_color is not None else ""
+    bg = _background(gt)  # the colors go to CSS as given; the ink is measured on what a translucent one shows
 
     out = gt
     for c in cols:
@@ -1303,7 +1306,7 @@ def gt_indicator_boxes(
                 content = "" if x is None and not show_na_as_na else text
             cells[i] = (
                 f"<span style='display:inline-block; width:{width}px; height:{box_height}px; "
-                f"line-height:{box_height}px; background-color: {color}; color: {on_color(color)}; "
+                f"line-height:{box_height}px; background-color: {color}; color: {on_color(solid(color, bg))}; "
                 f"vertical-align:middle; margin:4px 1px; font-size: {text_size}px; font-weight: {text_weight}; "
                 f"text-align:center; {border}'>{content}</span>"
             )
