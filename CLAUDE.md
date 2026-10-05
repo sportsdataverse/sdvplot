@@ -114,9 +114,12 @@ The manifest `entity_id` is per-source, so it never equals a team id. Map throug
 
 Google-style (napoleon) with `Args`, `Returns`, `Raises`, `Example` and `See Also`, linking the reference page.
 `uv run python tools/gen_docs.py --check` enforces it for the top level and for every public submodule's `__all__`
-functions, and checks each submodule Example statically (syntax, undefined names). `tests/test_submodule_examples.py`
-runs them offline against an empty cache, with a 20 s limit each; one that needs the network or a browser must be listed
-in its `TOLERATED` with a reason, and never excuses an `AssertionError` or `NameError`. Polars 1.x API only; ruff line length 120.
+functions (the submodules are found with pkgutil; a new one also needs a `MODULE_SECTIONS` group for its reference
+page), and checks each submodule Example statically (syntax, undefined names). `tests/test_submodule_examples.py` runs
+them offline against a cache seeded with what they draw (`seeded_cache`: every NFL team's logo and wordmark, the
+examples' headshots and URL images), with a 20 s limit each; an example that needs more gets it seeded there, and one
+that needs a browser is listed in `TOLERATED` with a reason, which never excuses an `AssertionError` or `NameError`.
+Polars 1.x API only; ruff line length 120.
 
 ## Commits
 

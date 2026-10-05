@@ -1,25 +1,33 @@
 """Run every public submodule Example (the half of the docstring gate that executes code).
 
 ``tools/gen_docs.py --check`` checks the Examples statically (syntax and undefined names); this runs them. Each runs
-with an empty cache directory of its own, the network blocked, a scratch working directory and a time limit, so the
-result does not depend on the developer's warm cache. Anything that cannot run offline is listed in TOLERATED with a
+with a cache directory of its own, seeded with the marks, headshots and images the examples draw (seeded_cache), the
+network blocked, a scratch working directory and a time limit, so each example runs to its end offline and the result
+does not depend on the developer's warm cache. Anything that still cannot run offline is listed in TOLERATED with a
 reason; an unlisted skip, or a tolerated example that raises AssertionError, NameError or SyntaxError, fails.
 """
 
 import contextlib
+import hashlib
 import importlib.util
+import json
 import signal
 import socket
 import sys
+import time
 from pathlib import Path
 
+import polars as pl
 import pytest
 
 pytest.importorskip("docstring_parser")  # the docs group; the OS and lowest-direct jobs do not install it
 pytest.importorskip("ruff")  # the static example check runs `python -m ruff`
 
-from sdvplot import _cache  # noqa: E402
+import sdvplot  # noqa: E402
+from sdvplot import _cache, _manifest  # noqa: E402
 from sdvplot._errors import OfflineError  # noqa: E402
+from sdvplot._headshots import headshot_url  # noqa: E402
+from tests.conftest import FakeResponse, FakeSession, seed_image  # noqa: E402
 
 ROOT = Path(__file__).parents[1]
 spec = importlib.util.spec_from_file_location("gen_docs", ROOT / "tools" / "gen_docs.py")
@@ -41,42 +49,9 @@ NETWORK = (NetworkBlocked, OfflineError)
 BROWSER = (Exception,)  # great_tables renders through headless Chrome; whatever it raises without one is tolerated
 NEVER_TOLERATED = (AssertionError, NameError, SyntaxError)
 
-_MARKS = "needs the network: its marks are not cached (the cache is empty)"
 _BROWSER = "renders through a headless browser, which CI and many machines lack"
 # "<submodule>.<name>" -> (the exceptions that excuse it, why). Every skip must be listed.
 TOLERATED: dict[str, tuple[tuple[type[BaseException], ...], str]] = {
-    "altair.add_logos": (NETWORK, _MARKS),
-    "altair.add_wordmarks": (NETWORK, _MARKS),
-    "altair.axis_logos": (NETWORK, _MARKS),
-    "altair.logo_layer": (NETWORK, _MARKS),
-    "bokeh.add_logos": (NETWORK, _MARKS),
-    "bokeh.add_wordmarks": (NETWORK, _MARKS),
-    "folium.add_logos": (NETWORK, _MARKS),
-    "folium.add_wordmarks": (NETWORK, _MARKS),
-    "great_tables.add_logos": (NETWORK, _MARKS),
-    "great_tables.add_wordmarks": (NETWORK, _MARKS),
-    "great_tables.gt_sdv_cols_label": (NETWORK, _MARKS),
-    "great_tables.gt_sdv_logos": (NETWORK, _MARKS),
-    "great_tables.gt_sdv_wordmarks": (NETWORK, _MARKS),
-    "great_tables.gt_theme_sdv": (NETWORK, _MARKS),
-    "holoviews.add_logos": (NETWORK, _MARKS),
-    "holoviews.add_wordmarks": (NETWORK, _MARKS),
-    "matplotlib.add_headshots": (NETWORK, _MARKS),
-    "matplotlib.add_logos": (NETWORK, _MARKS),
-    "matplotlib.add_wordmarks": (NETWORK, _MARKS),
-    "matplotlib.axis_logos": (NETWORK, _MARKS),
-    "matplotlib.team_tiers": (NETWORK, _MARKS),
-    "matplotlib.title_image": (NETWORK, _MARKS),
-    "plotly.add_logos": (NETWORK, _MARKS),
-    "plotly.add_wordmarks": (NETWORK, _MARKS),
-    "plotly.axis_logos": (NETWORK, _MARKS),
-    "plotnine.title_image": (NETWORK, _MARKS),
-    "plottable.headshot_column": (NETWORK, _MARKS),
-    "plottable.logo_column": (NETWORK, _MARKS),
-    "pygal.add_logos": (NETWORK, _MARKS),
-    "pygal.add_wordmarks": (NETWORK, _MARKS),
-    "reactable.reactable_sdv_logos": (NETWORK, _MARKS),
-    "reactable.reactable_sdv_wordmarks": (NETWORK, _MARKS),
     "great_tables.gt_grid": (BROWSER, _BROWSER),
     "great_tables.gt_save_batch": (BROWSER, _BROWSER),
     "great_tables.gt_save_crop": (BROWSER, _BROWSER),
@@ -86,6 +61,43 @@ TOLERATED: dict[str, tuple[tuple[type[BaseException], ...], str]] = {
 # the fixture marks, and test_contract_examples_pass_on_fixture_marks below runs these two examples the same way.
 FIXTURE_BACKED = {"testing.check_adapter_contract", "testing.check_table_adapter_contract"}
 EXAMPLES = gd.submodule_examples()
+# What the examples draw, seeded into each one's cache: a logo and a wordmark for every NFL team of the shipped index,
+# the headshots of these ESPN athlete ids and these URL images. An example that needs more stops at a blocked network
+# call and fails: seed what it needs here.
+SEEDED_LEAGUE = "nfl"
+SEEDED_PLAYERS = ("3139477", "3918298", "3916387")
+SEEDED_URLS = (
+    "https://example.com/banner.png",
+    "https://www.python.org/static/img/python-logo.png",
+    "https://www.python.org/static/favicon.ico",
+)
+
+
+@pytest.fixture
+def seeded_cache(cache, monkeypatch):
+    """The cache with SEEDED_*: a manifest of made-up marks (served once by a fake session) and every image as a fresh,
+    verified PNG, so no example downloads."""
+    rows = []
+    for team_id, name, program in sdvplot.teams(SEEDED_LEAGUE).select("team_id", "name", "program").iter_rows():
+        for mark_type, w, h in (("logo", 500, 500), ("wordmark", 500, 200)):
+            sha = hashlib.sha256(f"{SEEDED_LEAGUE}:{team_id}:{mark_type}".encode()).hexdigest()
+            rows.append({"level": "team", "league": SEEDED_LEAGUE, "entity_id": team_id, "entity_name": name,
+                         "program": program, "mark_type": mark_type, "variant": "default", "valid_from": None,
+                         "valid_to": None, "source": "espn", "url": f"https://x/{sha}.png", "sha256": sha,
+                         "ext": "png", "bytes": 100, "width": w, "height": h, "archive_url": f"https://cdn/{sha}.png",
+                         "first_seen": "2026-09-26", "last_seen": "2026-10-01"})  # fmt: skip
+            path = seed_image(cache / "images" / sha[:2] / f"{sha}.png", size=(w // 10, h // 10))
+            _cache._intact.add(str(path.resolve()))  # made-up shas: count the seeded files as verified
+    body = pl.DataFrame(rows).write_csv().encode()
+    with monkeypatch.context() as m:  # only for this download: an example's own downloads must reach the blocker
+        m.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body, {"ETag": '"seeded"'})))
+        _manifest._read.cache_clear()
+        _manifest.load_manifest()
+    for url in [*(headshot_url(p, SEEDED_LEAGUE) for p in SEEDED_PLAYERS), *SEEDED_URLS]:
+        key = hashlib.sha256(url.encode()).hexdigest()
+        path = seed_image(cache / "urlimages" / key[:2] / key, size=(150, 109))
+        _cache._meta_path(path).write_text(json.dumps({"fetched_at": time.time()}))
+    return cache
 
 
 def run_example(code: str, root: Path, monkeypatch, *, timeout: float = EXAMPLE_TIMEOUT) -> BaseException | None:
@@ -141,14 +153,14 @@ def failure(key: str, exc: BaseException | None, tolerated=TOLERATED) -> str | N
         return None
     if entry and isinstance(exc, entry[0]) and not isinstance(exc, NEVER_TOLERATED):
         return None
-    hint = " (unlisted skip: add it to TOLERATED with a reason)" if isinstance(exc, NETWORK) else ""
-    return f"{key}: {type(exc).__name__}: {exc}{hint}"
+    hint = " (unlisted skip: seed what it fetches in seeded_cache, or list it in TOLERATED with a reason)"
+    return f"{key}: {type(exc).__name__}: {exc}{hint if isinstance(exc, NETWORK) else ''}"
 
 
 @pytest.mark.real_index
 @pytest.mark.parametrize("key", sorted(set(EXAMPLES) - FIXTURE_BACKED))
-def test_the_example_runs_offline(key, tmp_path, monkeypatch):
-    why = failure(key, run_example(EXAMPLES[key], tmp_path, monkeypatch))
+def test_the_example_runs_offline(key, monkeypatch, seeded_cache):
+    why = failure(key, run_example(EXAMPLES[key], seeded_cache.parent, monkeypatch))
     assert why is None, why
 
 
