@@ -82,7 +82,7 @@ There are two colors per team; ask for any other and you get a `ValueError` that
 
 ```python
 top = (
-    nhl_box.group_by("team_abbrev")
+    nhl_box.group_by("team_abbrev", maintain_order=True)
     .agg(gf=pl.col("goals").mean())
     .sort(["gf", "team_abbrev"], descending=[True, False])
     .head(5)
@@ -128,7 +128,7 @@ west_ids = sdvplot.teams("nba").filter(pl.col("conference") == "Western Conferen
 west = (
     nba_box.with_columns(pl.col("team_id").cast(pl.Int64).cast(pl.Utf8))
     .join(west_ids, on="team_id")
-    .group_by("team_abbreviation", "team_display_name")
+    .group_by("team_abbreviation", "team_display_name", maintain_order=True)
     .agg(wins=pl.col("team_winner").sum(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .sort(["wins", "team_abbreviation"], descending=[True, False])
 )
@@ -159,7 +159,7 @@ CENTRAL = ["CHI", "COL", "DAL", "MIN", "NSH", "STL", "UTA", "WPG"]
 central = nhl_box.filter(pl.col("team_abbrev").is_in(CENTRAL)).with_columns(
     margin=pl.col("goals") - pl.col("goals_against")
 )
-means = central.group_by("team_abbrev").agg(pl.col("margin").mean())
+means = central.group_by("team_abbrev", maintain_order=True).agg(pl.col("margin").mean())
 order = means.sort(["margin", "team_abbrev"], descending=[True, False])["team_abbrev"]
 palette = sdvplot.palette("nhl", teams=central["team_abbrev"])
 
@@ -251,7 +251,7 @@ east = (
     .with_columns(game_no=pl.int_range(pl.len()).over("team_abbreviation"))
 )
 order = (
-    east.group_by("team_abbreviation")
+    east.group_by("team_abbreviation", maintain_order=True)
     .agg(pl.col("team_winner").sum())
     .sort(["team_winner", "team_abbreviation"], descending=[True, False])
 )["team_abbreviation"].to_list()
@@ -321,7 +321,7 @@ chart and restore your defaults afterwards. Team colors and logos draw over the 
 import morethemes as mt
 
 net = (
-    nba_box.group_by("team_abbreviation")
+    nba_box.group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .filter(pl.col("games") > 10)
     .sort(["diff", "team_abbreviation"], descending=[True, False])
@@ -355,7 +355,7 @@ the fallbacks with the clubs' real colors in your own dict.
 ```python
 share = (
     sdvplot.teams()
-    .group_by("league")
+    .group_by("league", maintain_order=True)
     .agg(teams=pl.len(), fallback=(pl.col("color_source") == "fallback").mean())
     .sort("fallback", "league")
 )

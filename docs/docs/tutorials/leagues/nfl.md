@@ -45,8 +45,12 @@ The chart every NFL season ends with: each team's offensive EPA per play against
 allowed, with the team's logo as the point. The defense axis is flipped so the good teams sit top right.
 
 ```python
-offense = plays.group_by("posteam").agg(off_epa=pl.col("epa").mean(), off_sr=pl.col("success").mean())
-defense = plays.group_by("defteam").agg(def_epa=pl.col("epa").mean(), def_sr=pl.col("success").mean())
+offense = plays.group_by("posteam", maintain_order=True).agg(
+    off_epa=pl.col("epa").mean(), off_sr=pl.col("success").mean()
+)
+defense = plays.group_by("defteam", maintain_order=True).agg(
+    def_epa=pl.col("epa").mean(), def_sr=pl.col("success").mean()
+)
 teams = offense.join(defense, left_on="posteam", right_on="defteam").rename({"posteam": "team"})
 
 fig, ax = plt.subplots(figsize=(9, 6))
@@ -128,7 +132,7 @@ games = pl.concat(
 divisions = nfl.load_nfl_teams().select(team="team_abbr", division="team_division")
 names = sdvplot.teams("nfl").select("team_id", "name")
 
-records = games.group_by("team").agg(
+records = games.group_by("team", maintain_order=True).agg(
     W=(pl.col("pf") > pl.col("pa")).sum(),
     L=(pl.col("pf") < pl.col("pa")).sum(),
     T=(pl.col("pf") == pl.col("pa")).sum(),
@@ -269,7 +273,7 @@ quarterback's team color.
 ```python
 qbs = (
     pbp.filter(pl.col("season_type") == "REG", pl.col("passer_player_id").is_not_null(), pl.col("epa").is_not_null())
-    .group_by("passer_player_id")
+    .group_by("passer_player_id", maintain_order=True)
     .agg(
         name=pl.col("passer_player_name").first(),
         team=pl.col("posteam").last(),
@@ -323,12 +327,14 @@ wins = (
         ]
     )
     .filter(pl.col("team").is_in(["OAK", "LV", "SD", "LAC", "STL", "LA"]))
-    .group_by("season", "team")
+    .group_by("season", "team", maintain_order=True)
     .agg(wins=pl.col("win").sum())
     .sort("season")
 )
 wins = wins.with_columns(team_id=sdvplot.resolve(wins["team"], "nfl", season=wins["season"]))
-wins.group_by("team_id", "team").agg(first=pl.col("season").min(), last=pl.col("season").max()).sort("team_id", "first")
+wins.group_by("team_id", "team", maintain_order=True).agg(
+    first=pl.col("season").min(), last=pl.col("season").max()
+).sort("team_id", "first")
 ```
 
 <div class="sdv-output">
@@ -377,7 +383,7 @@ room at the edges, so no logo is cut off.
 ```python
 import plotly.graph_objects as go
 
-split = plays.group_by("posteam").agg(
+split = plays.group_by("posteam", maintain_order=True).agg(
     pass_epa=pl.col("epa").filter(pl.col("play_type") == "pass").mean(),
     rush_epa=pl.col("epa").filter(pl.col("play_type") == "run").mean(),
     pass_rate=(pl.col("play_type") == "pass").mean(),
@@ -428,11 +434,7 @@ touchdown from scrimmage in the regular season, from the line of scrimmage to th
 field the play went to.
 
 ```python
-import logging
-
 import numpy as np
-
-logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)  # sportypy asks for fonts few systems have
 
 tds = pbp.filter(
     pl.col("season_type") == "REG",

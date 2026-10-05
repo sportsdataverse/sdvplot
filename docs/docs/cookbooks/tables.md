@@ -160,7 +160,7 @@ you would post them:
 players = nba.load_nba_player_boxscore(seasons=[SEASON]).filter((pl.col("season_type") == 2) & ~pl.col("did_not_play"))
 scorers = (
     players.sort("game_date")
-    .group_by("athlete_id", "athlete_display_name")
+    .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         team=pl.col("team_abbreviation").last(),
         team_name=pl.col("team_display_name").last(),
@@ -241,7 +241,9 @@ gt_legend_continuous(gt, title="Run differential", labels=["-250", "0", "+250"])
 
 ## 5. Gotcha: stripes and themes can paint over your fills
 
-Two rules keep cell fills (`data_color`, `gt_color_ranks`, `gt_color_results`) visible.
+Two rules keep cell fills visible. Rule 1 is for plain fills: `data_color`, `gt_color_ranks` (built on it) and
+`tab_style` fills. `gt_color_results`, `gt_highlight_cells` and sdvplot's row helpers mark their fills `!important`,
+which stripes cannot cover. Rule 2 is for every fill.
 
 1. **Turn row striping off when you fill cells.** In a notebook, and on these pages, great_tables shows a table
    with every CSS rule marked `!important`, so a striped row's background beats the fill. Use
@@ -295,7 +297,7 @@ against the league, each stat ranked so 100 is best (fewest points allowed and t
 games = wnba.load_wnba_team_boxscore(seasons=[SEASON]).filter(pl.col("season_type") == 2)
 made, tried = pl.col("three_point_field_goals_made"), pl.col("three_point_field_goals_attempted")
 per_game = (
-    games.group_by("team_abbreviation", "team_display_name")
+    games.group_by("team_abbreviation", "team_display_name", maintain_order=True)
     .agg(
         gp=pl.len(),
         wins=pl.col("team_winner").sum(),
@@ -354,7 +356,7 @@ results = pl.concat(
         schedule.select("week", team="away_team", pts="away_score", opp="home_score"),
     ]
 ).filter(pl.col("team").is_in(["BAL", "CIN", "CLE", "PIT"]))
-record = results.group_by("team").agg(
+record = results.group_by("team", maintain_order=True).agg(
     w=(pl.col("pts") > pl.col("opp")).sum(),
     l=(pl.col("pts") < pl.col("opp")).sum(),
     t=(pl.col("pts") == pl.col("opp")).sum(),
@@ -402,9 +404,12 @@ weeks_stats = nfl.load_nfl_team_stats([NFL_SEASON]).filter(pl.col("season_type")
 plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
 epa = pl.col("passing_epa") + pl.col("rushing_epa")
 net = (
-    weeks_stats.group_by("team")
+    weeks_stats.group_by("team", maintain_order=True)
     .agg(off=epa.sum() / plays.sum())
-    .join(weeks_stats.group_by(team=pl.col("opponent_team")).agg(dfn=epa.sum() / plays.sum()), on="team")
+    .join(
+        weeks_stats.group_by(team=pl.col("opponent_team"), maintain_order=True).agg(dfn=epa.sum() / plays.sum()),
+        on="team",
+    )
     .with_columns(net=pl.col("off") - pl.col("dfn"))
     .sort("net", descending=True)
     .with_columns(
@@ -526,7 +531,7 @@ embed_css()
 nba_teams = (
     nba.load_nba_team_boxscore(seasons=[SEASON])
     .filter(pl.col("season_type") == 2)
-    .group_by("team_abbreviation", "team_display_name")
+    .group_by("team_abbreviation", "team_display_name", maintain_order=True)
     .agg(
         gp=pl.len(),
         wins=pl.col("team_winner").sum(),

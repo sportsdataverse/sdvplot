@@ -77,7 +77,7 @@ elif season < current:
     status = f"**Offseason:** the final {label(season)} regular season; the {label(current)} season has no games yet."
     through = "final regular season"
 elif (today - playoffs["game_date"].max()).days <= 10:
-    status = f"**Updated {today}:** the final {label(season)} regular season; the playoffs are under way."
+    status = f"**Playoffs:** the final {label(season)} regular season; the playoffs are under way."
     through = "final regular season"
 else:
     status = f"**Offseason:** the final {label(season)} regular season."

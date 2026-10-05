@@ -144,8 +144,10 @@ from plotnine import aes, element_text, ggplot, labs, scale_y_reverse, theme, th
 from sdvplot.plotnine import geom_mean_lines, geom_sdv_logos
 
 shots = pbp.filter((pl.col("season_type") == "R") & (pl.col("strength_state") == "5v5") & pl.col("xg").is_not_null())
-games = regular.group_by("team_abbrev").agg(pl.len().alias("gp"))
-xg_for = shots.group_by(pl.col("event_team_abbr").alias("team_abbrev")).agg(pl.col("xg").sum().alias("xgf"))
+games = regular.group_by("team_abbrev", maintain_order=True).agg(pl.len().alias("gp"))
+xg_for = shots.group_by(pl.col("event_team_abbr").alias("team_abbrev"), maintain_order=True).agg(
+    pl.col("xg").sum().alias("xgf")
+)
 # a shot against a team is a shot by its opponent in the same game
 opp = (
     regular.select("game_id", "team_abbrev")
@@ -156,7 +158,7 @@ shots = shots.with_columns(pl.col("game_id").cast(pl.Int64))  # Int32 in the pla
 assert shots.schema["game_id"] == opp.schema["game_id"]
 xg_against = (
     shots.join(opp, left_on=["game_id", "event_team_abbr"], right_on=["game_id", "opponent"])
-    .group_by("team_abbrev")
+    .group_by("team_abbrev", maintain_order=True)
     .agg(pl.col("xg").sum().alias("xga"))
 )
 xg = (
@@ -257,7 +259,7 @@ attempts = pbp.filter(
 league_goals, league_xg = (attempts["event_type"] == "GOAL").sum(), attempts["xg"].sum()
 print(f"{league_goals:,} goals on {league_xg:,.0f} expected: the model runs {league_xg / league_goals - 1:.0%} high")
 finish = (
-    attempts.group_by(pl.col("event_team_abbr").alias("team"))
+    attempts.group_by(pl.col("event_team_abbr").alias("team"), maintain_order=True)
     .agg((pl.col("event_type") == "GOAL").sum().alias("goals"), pl.col("xg").sum().alias("xg"))
     .with_columns((pl.col("goals") - pl.col("xg") * league_goals / league_xg).alias("gax"))
     .sort("gax", descending=True)
@@ -360,6 +362,7 @@ eras = {
     2004: "Phoenix Coyotes",
     2015: "Arizona Coyotes",
     2022: "Arizona Coyotes",
+    2025: "Utah Hockey Club",
     2026: "Utah Mammoth",
 }
 fig, axes = plt.subplots(1, len(eras), figsize=(10, 2.6))
@@ -390,7 +393,7 @@ from plotnine import facet_wrap, geom_line, scale_x_continuous
 from sdvplot.plotnine import scale_color_sdv
 
 last_period = (
-    pbp.group_by("game_id")
+    pbp.group_by("game_id", maintain_order=True)
     .agg(pl.col("period").max().alias("last_period"))
     .with_columns(pl.col("game_id").cast(pl.Int64))
 )
@@ -500,9 +503,9 @@ from sdvplot.matplotlib import team_tiers
 playoffs = team_box.filter(pl.col("game_type") == 3).with_columns(
     rnd=(pl.col("game_id") // 100 % 10), win=(pl.col("goals") > pl.col("goals_against")).cast(pl.Int32)
 )
-final_wins = playoffs.filter(pl.col("rnd") == 4).group_by("team_abbrev").agg(pl.col("win").sum())
+final_wins = playoffs.filter(pl.col("rnd") == 4).group_by("team_abbrev", maintain_order=True).agg(pl.col("win").sum())
 champion = final_wins.filter(pl.col("win") == 4)["team_abbrev"].item()
-reached = playoffs.group_by("team_abbrev").agg(pl.col("rnd").max())
+reached = playoffs.group_by("team_abbrev", maintain_order=True).agg(pl.col("rnd").max())
 tiers = (
     standings.select(pl.col("team_abbrev_default").alias("team"), "points")
     .join(reached, left_on="team", right_on="team_abbrev", how="left")

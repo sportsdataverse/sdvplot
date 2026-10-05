@@ -46,8 +46,8 @@ sdvplot needs.
 def epa_per_play(stats: pl.DataFrame) -> pl.DataFrame:
     plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
     epa = pl.col("passing_epa") + pl.col("rushing_epa")
-    offense = stats.group_by("team").agg(off_epa=epa.sum() / plays.sum())
-    defense = stats.group_by(team=pl.col("opponent_team")).agg(def_epa=epa.sum() / plays.sum())
+    offense = stats.group_by("team", maintain_order=True).agg(off_epa=epa.sum() / plays.sum())
+    defense = stats.group_by(team=pl.col("opponent_team"), maintain_order=True).agg(def_epa=epa.sum() / plays.sum())
     return offense.join(defense, on="team").sort("team")
 
 
@@ -56,7 +56,7 @@ nfl_epa = epa_per_play(nfl_weeks)
 
 nba_box = nba.load_nba_team_boxscore(seasons=[SEASON]).filter(pl.col("season_type") == 2)
 nba_teams = (
-    nba_box.group_by("team_abbreviation")
+    nba_box.group_by("team_abbreviation", maintain_order=True)
     .agg(games=pl.len(), diff=(pl.col("team_score") - pl.col("opponent_team_score")).mean())
     .filter(pl.col("games") > 10)
     .sort("team_abbreviation")
@@ -142,12 +142,14 @@ NFL abbreviations).
 
 ```python
 nhl_scoring = (
-    nhl_games.group_by("team_abbrev")
+    nhl_games.group_by("team_abbrev", maintain_order=True)
     .agg(gpg=pl.col("goals").mean())
     .sort(["gpg", "team_abbrev"], descending=[True, False])
     .head(10)
 )
-nfl_sacks = nfl_weeks.group_by("team").agg(pl.col("def_sacks").sum()).sort("def_sacks", "team").tail(10)
+nfl_sacks = (
+    nfl_weeks.group_by("team", maintain_order=True).agg(pl.col("def_sacks").sum()).sort("def_sacks", "team").tail(10)
+)
 
 fig, (left, right) = plt.subplots(1, 2, figsize=(10, 5))
 colors = sdvplot.team_colors(nhl_scoring["team_abbrev"], "nhl")
@@ -186,7 +188,11 @@ runs = (
         goal_diff=(pl.col("goals") - pl.col("goals_against")).cum_sum().over("team_abbrev"),
     )
 )
-last = runs.group_by("team_abbrev").agg(pl.all().sort_by("game_no").last()).sort("goal_diff", "team_abbrev")
+last = (
+    runs.group_by("team_abbrev", maintain_order=True)
+    .agg(pl.all().sort_by("game_no").last())
+    .sort("goal_diff", "team_abbrev")
+)
 gap = 9  # goals: about one logo height on this axis
 spots = []
 for y in last["goal_diff"]:
@@ -403,7 +409,7 @@ CONFERENCES = {
 }
 conf = (
     mbb_ratings.filter(pl.col("conference").is_in(list(CONFERENCES)))
-    .group_by("conference")
+    .group_by("conference", maintain_order=True)
     .agg(pl.col("adj_em").mean())
     .sort("adj_em")
 )
@@ -436,7 +442,7 @@ box score, work directly. The season's top scorers (50+ games), by volume and ef
 ```python
 players = nba.load_nba_player_boxscore(seasons=[SEASON]).filter((pl.col("season_type") == 2) & ~pl.col("did_not_play"))
 scorers = (
-    players.group_by("athlete_id", "athlete_display_name")
+    players.group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         ppg=pl.col("points").mean(),
@@ -498,13 +504,10 @@ display(Image(filename=out / "landscape.png", width=600))
 
 ```text
 square (1080, 1080)
-```
-
-```text
 landscape (1200, 675)
 ```
 
-![png](matplotlib-logos_files/matplotlib-logos_27_2.png)
+![png](matplotlib-logos_files/matplotlib-logos_27_1.png)
 
 </div>
 

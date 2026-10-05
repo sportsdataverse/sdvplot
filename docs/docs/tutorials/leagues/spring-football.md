@@ -114,41 +114,56 @@ plt.show()
 One gap shows in the Houston column: ESPN gave the 2024-25 Houston Roughnecks the id of the USFL's Houston Gamblers,
 and the logo archive's only mark for that id is the 2026 Gamblers logo, so 2024 and 2025 draw it too.
 
-## 2. Pass ids, not abbreviations
+## 2. Abbreviations or ids, season by season
 
-ESPN's abbreviations changed with the teams (Birmingham was BIR in 2024 and BHAM in 2026; Arlington was ARL), and
-sdvplot's UFL index carries the current ones. The old abbreviations do not resolve and sdvplot warns once instead of
-guessing; the ids resolve every season.
+ESPN's abbreviations changed with the teams (Birmingham was BIR in 2024 and BHAM in 2026; Arlington was ARL).
+sdvplot's index dates each one by the seasons ESPN's scoreboards show it, so the data's own abbreviations resolve as
+well as its ids.
 
 ```python
-ufl_2024 = teams.filter(pl.col("league") == "ufl", pl.col("season") == 2024).unique("team_id").sort("name")
-
-with warnings.catch_warnings(record=True) as caught:
-    warnings.simplefilter("always")
-    by_abbreviation = sdvplot.resolve(ufl_2024["abbreviation"], "ufl", season=2024)
-print(caught[0].message)
+ufl_2024 = (
+    teams.filter(pl.col("league") == "ufl", pl.col("season") == 2024)
+    .unique("team_id", keep="first", maintain_order=True)
+    .sort("name")
+)
 
 ufl_2024.select("name", "abbreviation", "team_id").with_columns(
-    by_abbreviation=by_abbreviation, by_id=sdvplot.resolve(ufl_2024["team_id"], "ufl", season=2024)
+    by_abbreviation=sdvplot.resolve(ufl_2024["abbreviation"], "ufl", season=2024),
+    by_id=sdvplot.resolve(ufl_2024["team_id"], "ufl", season=2024),
 )
 ```
 
 <div class="sdv-output">
 
-```text
-5 value(s) did not resolve to a ufl team: 'ARL' (unknown), 'BIR' (unknown), 'MEM' (unknown), 'MIC' (unknown), 'SA' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
-```
-
 | name                  | abbreviation | team_id | by_abbreviation | by_id  |
 |-----------------------|--------------|---------|-----------------|--------|
-| Arlington Renegades   | ARL          | 112647  | null            | 112647 |
-| Birmingham Stallions  | BIR          | 126073  | null            | 126073 |
+| Arlington Renegades   | ARL          | 112647  | 112647          | 112647 |
+| Birmingham Stallions  | BIR          | 126073  | 126073          | 126073 |
 | D.C. Defenders        | DC           | 112646  | 112646          | 112646 |
 | Houston Roughnecks    | HOU          | 126075  | 126075          | 126075 |
-| Memphis Showboats     | MEM          | 129043  | null            | 129043 |
-| Michigan Panthers     | MIC          | 125957  | null            | 125957 |
-| San Antonio Brahmas   | SA           | 126746  | null            | 126746 |
+| Memphis Showboats     | MEM          | 129043  | 129043          | 129043 |
+| Michigan Panthers     | MIC          | 125957  | 125957          | 125957 |
+| San Antonio Brahmas   | SA           | 126746  | 126746          | 126746 |
 | St. Louis Battlehawks | STL          | 112651  | 112651          | 112651 |
+
+</div>
+
+A code no UFL team has used, such as the USFL Pittsburgh Maulers' PIT, gives `None` and one warning instead of a
+guess.
+
+```python
+with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter("always")
+    print(sdvplot.resolve("PIT", "ufl", season=2024))
+print(caught[0].message)
+```
+
+<div class="sdv-output">
+
+```text
+None
+1 value(s) did not resolve to a ufl team: 'PIT' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
+```
 
 </div>
 
@@ -165,7 +180,7 @@ from sdvplot.great_tables import gt_color_pills, gt_sdv_logos, gt_theme_scoreboa
 table = (
     records.filter(pl.col("league") == "ufl", pl.col("season") == 2026)
     .with_columns(Diff=pl.col("PF") - pl.col("PA"))
-    .sort(["W", "Diff"], descending=True)
+    .sort(["W", "Diff", "name"], descending=[True, True, False])
     .select(logo="team_id", team="name", W="W", L="L", PF="PF", PA="PA", Diff="Diff")
 )
 limit = table["Diff"].abs().max()  # pills colored on a scale centered on zero
@@ -183,7 +198,7 @@ limit = table["Diff"].abs().max()  # pills colored on a scale centered on zero
 
 <div class="sdv-output">
 
-<iframe class="sdv-frame" src="/outputs/tutorials/leagues/spring-football/7_0.html" title="HTML output" height="480" loading="lazy"></iframe>
+<iframe class="sdv-frame" src="/outputs/tutorials/leagues/spring-football/9_0.html" title="HTML output" height="480" loading="lazy"></iframe>
 
 </div>
 
@@ -215,7 +230,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](spring-football_files/spring-football_9_0.png)
+![png](spring-football_files/spring-football_11_0.png)
 
 </div>
 
@@ -260,7 +275,7 @@ totals = games.with_columns(
 
 <div class="sdv-output">
 
-![png](spring-football_files/spring-football_11_0.png)
+![png](spring-football_files/spring-football_13_0.png)
 
 </div>
 
@@ -274,7 +289,7 @@ import plotly.graph_objects as go
 
 running = (
     teams.filter(pl.col("league") == "ufl", pl.col("season") == 2026)
-    .sort("week")
+    .sort("week", "team_id")
     .with_columns(running=(pl.col("score") - pl.col("allowed")).cum_sum().over("team_id"))
 )
 
@@ -299,7 +314,7 @@ fig.update_layout(
     width=800,
     height=500,
 )
-ends = running.group_by("team_id", maintain_order=True).last().sort("running")
+ends = running.group_by("team_id", maintain_order=True).last().sort("running", "team_id")
 spots = ends["running"].to_list()
 for i in range(1, len(spots)):  # nudge the logos apart where teams finished close together
     spots[i] = max(spots[i], spots[i - 1] + 13)
@@ -309,7 +324,7 @@ fig
 
 <div class="sdv-output">
 
-<iframe class="sdv-frame" src="/outputs/tutorials/leagues/spring-football/13_0.html" title="Interactive Plotly figure" height="480" loading="lazy"></iframe>
+<iframe class="sdv-frame" src="/outputs/tutorials/leagues/spring-football/15_0.html" title="Interactive Plotly figure" height="480" loading="lazy"></iframe>
 
 </div>
 
@@ -337,9 +352,14 @@ sdvplot.teams("xfl").select("team_id", "name", "color_primary", "color_source").
 ```python
 xfl_2023 = (
     records.filter(pl.col("league") == "xfl", pl.col("season") == 2023)
-    .join(teams.select("team_id", "color").unique("team_id"), on="team_id")
+    .join(
+        teams.filter(pl.col("league") == "xfl", pl.col("season") == 2023)
+        .select("team_id", "color")
+        .unique("team_id", keep="last", maintain_order=True),
+        on="team_id",
+    )
     .with_columns(color="#" + pl.col("color"))
-    .sort("W", descending=True)
+    .sort(["W", "name"], descending=[True, False])
 )
 
 fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -355,7 +375,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](spring-football_files/spring-football_16_0.png)
+![png](spring-football_files/spring-football_18_0.png)
 
 </div>
 
@@ -385,7 +405,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](spring-football_files/spring-football_18_0.png)
+![png](spring-football_files/spring-football_20_0.png)
 
 </div>
 

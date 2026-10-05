@@ -66,7 +66,7 @@ games = (
 )
 clubs = mlb.parse_mlb_api_teams(mlb.mlb_teams(season=SEASON)).select(team_id="id", team="abbreviation")
 totals = (
-    games.group_by("team_id")
+    games.group_by("team_id", maintain_order=True)
     .agg(diff=pl.col("margin").sum().cast(pl.Int64), games=pl.len())
     .join(clubs, on="team_id")
     .sort("diff", "team")  # ties (two teams at -58) need a second key to keep one order every run

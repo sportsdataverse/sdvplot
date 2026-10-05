@@ -121,7 +121,11 @@ the finding. `tier_rank` keeps teams in rating order inside a tier. The subtitle
 the cuts; the caption names the data.
 
 ```python
-tiers = league.group_by("tier_no").agg(lo=pl.col("adj_em").min(), hi=pl.col("adj_em").max()).sort("tier_no")
+tiers = (
+    league.group_by("tier_no", maintain_order=True)
+    .agg(lo=pl.col("adj_em").min(), hi=pl.col("adj_em").max())
+    .sort("tier_no")
+)
 tier_desc = {
     row["tier_no"]: f"{row['hi']:+.1f}" if row["lo"] == row["hi"] else f"{row['hi']:+.1f} to {row['lo']:+.1f}"
     for row in tiers.iter_rows(named=True)
@@ -130,7 +134,7 @@ best = league.row(0, named=True)
 data = league.select(team="team_id", tier_no="tier_no", tier_rank=pl.int_range(1, pl.len() + 1).over("tier_no"))
 
 
-def tier_list(height=0.12, alpha=0.8):
+def tier_list(height=0.12, alpha=0.8, theme="dark"):
     return team_tiers(
         data,
         "mbb",
@@ -142,6 +146,7 @@ def tier_list(height=0.12, alpha=0.8):
         tier_desc=tier_desc,
         height=height,
         alpha=alpha,
+        theme=theme,
     )
 
 
@@ -158,30 +163,12 @@ plt.show()
 ## 5. Fix the contrast
 
 On the dark Tiermaker background, three logos almost vanish: Iowa's black hawk, Penn State's navy lion and Michigan
-State's dark green Spartan. Most college logos are drawn for a white page, so the fix is a light background.
-`team_tiers` returns an ordinary matplotlib figure, so restyling it is a few lines: the background, the tier lines,
-and the white text turned dark. The logos go to full opacity too (`alpha=1`); the theme's default 0.8 softens them
-against the dark background but washes them out on white.
+State's dark green Spartan. Most college logos are drawn for a white page, so the fix is a light background:
+`theme="light"` draws the tiers on white with dark labels and lines. The logos go to full opacity too (`alpha=1`);
+the default 0.8 softens them against the dark background but washes them out on white.
 
 ```python
-INK, MUTED = "#1d1d1d", "#6b6b6b"
-
-
-def light(fig):
-    """Recolor a team_tiers figure for a white background."""
-    ax = fig.axes[0]
-    fig.set_facecolor("white")
-    ax.set_facecolor("white")
-    for line in ax.lines:  # the tier separators
-        line.set_color("#d4d4d4")
-    for label in ax.get_yticklabels():  # the tier labels
-        label.set_color(INK)
-    for text in [ax.title, *ax.texts]:  # subtitle, title and caption
-        text.set_color(INK if text.get_color() == "white" else MUTED)
-    return fig
-
-
-fig = light(tier_list(alpha=1))
+fig = tier_list(alpha=1, theme="light")
 plt.show()
 ```
 
@@ -201,7 +188,7 @@ is also why the wide 1200 x 675 cut is the better post here.
 ```python
 exports = {"big_ten_tiers_1200x675.png": ((8, 4.5), 0.12), "big_ten_tiers_1080x1080.png": ((7.2, 7.2), 0.075)}
 for name, (size, height) in exports.items():
-    fig = light(tier_list(height, alpha=1))
+    fig = tier_list(height, alpha=1, theme="light")
     fig.set_size_inches(*size)
     fig.savefig(OUT / name, dpi=150)
     plt.close(fig)
@@ -213,13 +200,10 @@ Image(OUT / "big_ten_tiers_1200x675.png", width=700)
 
 ```text
 big_ten_tiers_1200x675.png (1200, 675)
-```
-
-```text
 big_ten_tiers_1080x1080.png (1080, 1080)
 ```
 
-![png](college-hoops-tiers_files/college-hoops-tiers_13_2.png)
+![png](college-hoops-tiers_files/college-hoops-tiers_13_1.png)
 
 </div>
 
