@@ -1,0 +1,59 @@
+[
+  {
+    "type": "doc",
+    "id": "reference/index",
+    "label": "Overview"
+  },
+  {
+    "type": "category",
+    "label": "Teams",
+    "items": [
+      "reference/resolve",
+      "reference/suggest",
+      "reference/teams"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Colors",
+    "items": [
+      "reference/palette",
+      "reference/team_colors"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Logos and headshots",
+    "items": [
+      "reference/logo_url",
+      "reference/logo_image",
+      "reference/marks",
+      "reference/headshot_url"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Plots and tables",
+    "items": [
+      "reference/add_logos",
+      "reference/add_wordmarks",
+      "reference/add_headshots",
+      "reference/axis_logos",
+      "reference/surface",
+      "reference/court_coords"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Housekeeping",
+    "items": [
+      "reference/versions",
+      "reference/clear_cache"
+    ]
+  },
+  {
+    "type": "doc",
+    "id": "reference/errors",
+    "label": "Errors and warnings"
+  }
+]

@@ -4,11 +4,22 @@ sidebar_label: logo_image
 sidebar_position: 7
 ---
 
-# `logo_image`
+# logo_image
+
+<div class="sdv-signature">
 
 ```python
-logo_image(team: Any, league: str, season: Any = None, variant: str = 'default', mark_type: str = 'logo', size: int | None = None) -> PIL.Image.Image | None
+logo_image(
+    team: Any,
+    league: str,
+    season: Any = None,
+    variant: str = 'default',
+    mark_type: str = 'logo',
+    size: int | None = None,
+) -> PIL.Image.Image | None
 ```
+
+</div>
 
 The team's mark as a PIL image (downloaded once, then cached).
 
@@ -47,4 +58,5 @@ img.size   # (64, 64)
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

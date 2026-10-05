@@ -4,11 +4,21 @@ sidebar_label: resolve
 sidebar_position: 1
 ---
 
-# `resolve`
+# resolve
+
+<div class="sdv-signature">
 
 ```python
-resolve(values: Any, league: str, season: Any = None, id_system: str = 'auto', strict: bool = False) -> Any
+resolve(
+    values: Any,
+    league: str,
+    season: Any = None,
+    id_system: str = 'auto',
+    strict: bool = False,
+) -> Any
 ```
+
+</div>
 
 Canonical team_id(s) for team values in one league.
 
@@ -47,4 +57,5 @@ sdvplot.resolve(["KC", "SF"], "nfl")          # ['12', '25']
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

@@ -4,11 +4,21 @@ sidebar_label: logo_url
 sidebar_position: 6
 ---
 
-# `logo_url`
+# logo_url
+
+<div class="sdv-signature">
 
 ```python
-logo_url(team: Any, league: str, season: Any = None, variant: str = 'default', mark_type: str = 'logo') -> str | None
+logo_url(
+    team: Any,
+    league: str,
+    season: Any = None,
+    variant: str = 'default',
+    mark_type: str = 'logo',
+) -> str | None
 ```
+
+</div>
 
 The CDN URL of a team's logo or wordmark, chosen for the season.
 
@@ -46,4 +56,5 @@ sdvplot.logo_url("KC", "nfl")   # 'https://sdv.nyc3.cdn.digitaloceanspaces.com/a
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

@@ -96,12 +96,13 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     Example:
         ::
 
+            import matplotlib.pyplot as plt
             import sdvplot
 
-            try:
-                sdvplot.add_logos(object(), [0.5], [0.5], ["KC"], league="nfl")
-            except sdvplot.UnsupportedTargetError:
-                pass   # raised: object() is not a plot or table
+            fig, ax = plt.subplots()
+            ax.set_xlim(0, 30)
+            ax.set_ylim(-10, 0)
+            sdvplot.add_logos(ax, [10, 20], [-3, -7], ["KC", "BUF"], league="nfl", height=0.15)
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -135,12 +136,11 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
     Example:
         ::
 
+            import matplotlib.pyplot as plt
             import sdvplot
 
-            try:
-                sdvplot.add_wordmarks(object(), [0.5], [0.5], ["KC"], league="nfl")
-            except sdvplot.UnsupportedTargetError:
-                pass   # raised: object() is not a plot or table
+            fig, ax = plt.subplots()
+            sdvplot.add_wordmarks(ax, [0.5], [0.5], ["KC"], league="nfl", height=0.1)
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -174,12 +174,11 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
     Example:
         ::
 
+            import matplotlib.pyplot as plt
             import sdvplot
 
-            try:
-                sdvplot.add_headshots(object(), [0.5], [0.5], ["KC"], league="nfl")
-            except sdvplot.UnsupportedTargetError:
-                pass   # raised: object() is not a plot or table
+            fig, ax = plt.subplots()
+            sdvplot.add_headshots(ax, [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -212,12 +211,12 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     Example:
         ::
 
+            import matplotlib.pyplot as plt
             import sdvplot
 
-            try:
-                sdvplot.axis_logos(object(), "x", league="nfl")
-            except sdvplot.UnsupportedTargetError:
-                pass   # raised: object() is not a plot or table
+            fig, ax = plt.subplots()
+            ax.bar(["KC", "BUF", "BAL"], [12, 10, 9])
+            sdvplot.axis_logos(ax, "x", league="nfl", height=0.08)
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;

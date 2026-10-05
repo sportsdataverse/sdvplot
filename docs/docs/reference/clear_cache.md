@@ -4,11 +4,15 @@ sidebar_label: clear_cache
 sidebar_position: 17
 ---
 
-# `clear_cache`
+# clear_cache
+
+<div class="sdv-signature">
 
 ```python
 clear_cache() -> None
 ```
+
+</div>
 
 Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
 
@@ -28,4 +32,5 @@ sdvplot.clear_cache()   # the next logo_url() / logo_image() re-downloads
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

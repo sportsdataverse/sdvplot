@@ -4,11 +4,20 @@ sidebar_label: team_colors
 sidebar_position: 5
 ---
 
-# `team_colors`
+# team_colors
+
+<div class="sdv-signature">
 
 ```python
-team_colors(teams: Any, league: str, which: str = 'primary', season: Any = None) -> Any
+team_colors(
+    teams: Any,
+    league: str,
+    which: str = 'primary',
+    season: Any = None,
+) -> Any
 ```
+
+</div>
 
 One "#hex" (or None) per team value, in the same container the values came in.
 
@@ -41,4 +50,5 @@ sdvplot.team_colors("KC", "nfl", "secondary")  # '#ffb612'
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

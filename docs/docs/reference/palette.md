@@ -4,11 +4,20 @@ sidebar_label: palette
 sidebar_position: 4
 ---
 
-# `palette`
+# palette
+
+<div class="sdv-signature">
 
 ```python
-palette(league: str, which: str = 'primary', teams: Any = None, season: Any = None) -> dict[typing.Any, str]
+palette(
+    league: str,
+    which: str = 'primary',
+    teams: Any = None,
+    season: Any = None,
+) -> dict[Any, str]
 ```
+
+</div>
 
 A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
@@ -44,4 +53,5 @@ sdvplot.palette("nfl", teams=["KC", "SF"])   # {'KC': '#e31837', 'SF': '#aa0000'
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

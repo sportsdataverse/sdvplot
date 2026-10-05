@@ -1,6 +1,7 @@
-"""Generate the API reference pages (docs/docs/reference/) from sdvplot's public docstrings.
+"""Generate the API reference pages (docs/docs/reference/) from sdvplot's public docstrings, and the site's data files
+(docs/src/data/): the reference sidebar.
 
-Usage: uv run python tools/gen_docs.py [--out DIR] [--check]
+Usage: uv run python tools/gen_docs.py [--out DIR] [--data-out DIR] [--check]
 
 Pages are generated, never hand-edited. --check renders to a temp dir and byte-compares (exit 1 on drift). Both modes
 fail when a public function's docstring misses the standard sections (summary, Args, Returns, Example)."""
@@ -10,6 +11,8 @@ from __future__ import annotations
 import argparse
 import filecmp
 import inspect
+import json
+import re
 import sys
 import tempfile
 import textwrap
@@ -22,6 +25,8 @@ sys.path.insert(0, str(ROOT / "src"))
 import sdvplot  # noqa: E402
 
 OUT = ROOT / "docs" / "docs" / "reference"
+DATA = ROOT / "docs" / "src" / "data"
+DATA_FILES = ["reference_sidebar.json"]
 SECTIONS = [
     ("Teams", ["resolve", "suggest", "teams"]),
     ("Colors", ["palette", "team_colors"]),
@@ -30,6 +35,7 @@ SECTIONS = [
     ("Housekeeping", ["versions", "clear_cache"]),
 ]
 ERRORS = ["SdvplotWarning", "UnresolvedTeamError", "OfflineError", "OptionalDependencyError", "UnsupportedTargetError"]
+SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 
 
 def _section(text: str, header: str) -> str | None:
@@ -57,13 +63,48 @@ def _example(text: str) -> str | None:
     return textwrap.dedent(body).strip("\n").rstrip() or None
 
 
-def _see_also(text: str) -> str | None:
-    return " ".join((_section(text, "See Also") or "").split()) or None
+def _see_also(text: str) -> list[str]:
+    """One markdown list item per ``;``-separated entry: ``label: https://...`` becomes a link, anything else stays."""
+    items = []
+    for entry in " ".join((_section(text, "See Also") or "").split()).split(";"):
+        entry = entry.strip()
+        m = re.fullmatch(r"(.+?):\s*(https?://\S+)", entry)
+        if m:
+            items.append(f"- [{m.group(1)}]({m.group(2)})")
+        elif entry:
+            items.append(f"- {entry}")
+    return items
 
 
 def _cell(text: str) -> str:
     """GFM splits table cells on an unescaped pipe, even inside a code span."""
     return text.replace("|", "\\|")
+
+
+def _annotation(ann: object) -> str:
+    return inspect.formatannotation(ann).replace("typing.", "")
+
+
+def _signature(name: str, sig: inspect.Signature) -> str:
+    """``name(params) -> ret`` on one line, or one parameter per line when that is longer than SIG_WIDTH."""
+    one = f"{name}{sig}".replace("typing.", "")
+    if len(one) <= SIG_WIDTH:
+        return one
+    kinds = inspect.Parameter
+    params = list(sig.parameters.values())
+    parts: list[str] = []
+    for i, p in enumerate(params):
+        if p.kind is kinds.KEYWORD_ONLY and (
+            i == 0 or params[i - 1].kind not in (kinds.KEYWORD_ONLY, kinds.VAR_POSITIONAL)
+        ):
+            parts.append("*")
+        parts.append(str(p).replace("typing.", ""))
+        if p.kind is kinds.POSITIONAL_ONLY and (
+            i + 1 == len(params) or params[i + 1].kind is not kinds.POSITIONAL_ONLY
+        ):
+            parts.append("/")
+    ret = "" if sig.return_annotation is inspect.Signature.empty else f" -> {_annotation(sig.return_annotation)}"
+    return f"{name}(\n" + "".join(f"    {x},\n" for x in parts) + f"){ret}"
 
 
 def render_function(name: str, fn: object, position: int) -> tuple[str, list[str]]:
@@ -85,21 +126,28 @@ def render_function(name: str, fn: object, position: int) -> tuple[str, list[str
         errors.append(f"{name}: missing Example:")
     out = [
         f"---\ntitle: {name}\nsidebar_label: {name}\nsidebar_position: {position}\n---\n",
-        f"# `{name}`\n",
-        f"```python\n{name}{sig}\n```\n",
+        f"# {name}\n",
+        f'<div class="sdv-signature">\n\n```python\n{_signature(name, sig)}\n```\n\n</div>\n',
     ]
     if doc.short_description:
         out.append(doc.short_description + "\n")
     if doc.long_description:
         out.append(doc.long_description + "\n")
     if doc.params:
-        out.append("## Arguments\n\n| Name | Type | Description |\n|---|---|---|")
+        anns = []
         for p in doc.params:
             param = sig.parameters.get(p.arg_name.lstrip("*"))
-            ann = param.annotation if param else inspect.Parameter.empty
-            typ = "" if ann is inspect.Parameter.empty else f"`{_cell(inspect.formatannotation(ann))}`"
+            anns.append(param.annotation if param else inspect.Parameter.empty)
+        typed = any(a is not inspect.Parameter.empty and _annotation(a) != "Any" for a in anns)
+        out.append("## Arguments\n")
+        out.append("| Name | Type | Description |\n|---|---|---|" if typed else "| Name | Description |\n|---|---|")
+        for p, ann in zip(doc.params, anns, strict=True):
             desc = _cell(" ".join((p.description or "").split()))
-            out.append(f"| `{p.arg_name}` | {typ} | {desc} |")
+            if typed:
+                typ = "" if ann is inspect.Parameter.empty else f"`{_cell(_annotation(ann))}`"
+                out.append(f"| `{p.arg_name}` | {typ} | {desc} |")
+            else:
+                out.append(f"| `{p.arg_name}` | {desc} |")
         out.append("")
     if doc.returns:
         typ = f"`{doc.returns.type_name}` — " if doc.returns.type_name else ""
@@ -112,7 +160,7 @@ def render_function(name: str, fn: object, position: int) -> tuple[str, list[str
         out.append(f"## Example\n\n```python\n{example}\n```\n")
     see = _see_also(raw)
     if see:
-        out.append(f"## See also\n\n{see}\n")
+        out.append("## See also\n\n" + "\n".join(see) + "\n")
     return "\n".join(out).rstrip() + "\n", errors
 
 
@@ -129,12 +177,32 @@ def _errors_page(position: int) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render(out_dir: Path) -> list[str]:
+def sidebar_items() -> list[dict[str, object]]:
+    """The API reference category's sidebar items: the overview, one category per SECTIONS group, the errors page.
+    Doc ids are file paths, so the page URLs do not change."""
+    items: list[dict[str, object]] = [{"type": "doc", "id": "reference/index", "label": "Overview"}]
+    for title, names in SECTIONS:
+        items.append({"type": "category", "label": title, "items": [f"reference/{n}" for n in names]})
+    items.append({"type": "doc", "id": "reference/errors", "label": "Errors and warnings"})
+    return items
+
+
+def _write_json(path: Path, obj: object) -> None:
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+
+
+def render(out_dir: Path, data_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
     for stale in out_dir.glob("*.md"):  # every page here is generated: drop those of removed functions
         stale.unlink()
     errors: list[str] = []
-    index = ["---\ntitle: API reference\nsidebar_label: Overview\nsidebar_position: 0\n---\n", "# API reference\n"]
+    index = [
+        "---\ntitle: API reference\nsidebar_label: Overview\nsidebar_position: 0\n---\n",
+        "# API reference\n",
+        "Every public function, grouped by what it works with. Each page gives the signature, the arguments and "
+        "what the function returns and raises.\n",
+    ]
     pos = 1
     listed = {n for _, names in SECTIONS for n in names}
     missing = sorted(
@@ -143,34 +211,50 @@ def render(out_dir: Path) -> list[str]:
     errors += [f"{n}: public but not placed in a SECTIONS group" for n in missing]
     for title, names in SECTIONS:
         index.append(f"## {title}\n")
+        index.append("| Function | What it does |\n|---|---|")
         for n in names:
             page, errs = render_function(n, getattr(sdvplot, n), pos)
             errors += errs
             (out_dir / f"{n}.md").write_text(page, encoding="utf-8", newline="\n")
             summary = docstring_parser.parse(inspect.getdoc(getattr(sdvplot, n)) or "").short_description or ""
-            index.append(f"- [`{n}`]({n}.md): {summary}")
+            index.append(f"| [{n}]({n}.md) | {_cell(summary)} |")
             pos += 1
         index.append("")
-    index.append("## Errors and warnings\n\n- [Errors and warnings](errors.md)\n")
+    index.append(
+        "## Errors and warnings\n\n[Errors and warnings](errors.md): the warning sdvplot emits and the errors it "
+        "raises, with what each means.\n"
+    )
     (out_dir / "errors.md").write_text(_errors_page(pos), encoding="utf-8", newline="\n")
     (out_dir / "index.md").write_text("\n".join(index).rstrip() + "\n", encoding="utf-8", newline="\n")
+    _write_json(data_dir / "reference_sidebar.json", sidebar_items())
     return errors
+
+
+def _stale(fresh: Path, committed: Path, names: list[str]) -> list[str]:
+    """Names that differ between the fresh render and the committed copy, or exist in only one of them."""
+    return [
+        n
+        for n in names
+        if (fresh / n).exists() != (committed / n).exists()
+        or ((fresh / n).exists() and not filecmp.cmp(fresh / n, committed / n, shallow=False))
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--out", type=Path, default=OUT)
+    p.add_argument("--data-out", type=Path, default=DATA)
     p.add_argument("--check", action="store_true")
     args = p.parse_args(argv)
     if args.check:
         with tempfile.TemporaryDirectory() as tmp:
-            errors = render(Path(tmp))
-            fresh = sorted(f.name for f in Path(tmp).glob("*.md"))
-            committed = sorted(f.name for f in args.out.glob("*.md")) if args.out.exists() else []
-            stale = [
-                n for n in fresh if n not in committed or not filecmp.cmp(Path(tmp) / n, args.out / n, shallow=False)
-            ]
-            stale += [n for n in committed if n not in fresh]
+            ref, data = Path(tmp) / "reference", Path(tmp) / "data"
+            errors = render(ref, data)
+            pages = sorted(
+                {f.name for f in ref.glob("*.md")}
+                | ({f.name for f in args.out.glob("*.md")} if args.out.exists() else set())
+            )
+            stale = _stale(ref, args.out, pages) + _stale(data, args.data_out, DATA_FILES)
         for e in errors:
             print(f"docstring: {e}", file=sys.stderr)
         if stale:
@@ -180,10 +264,10 @@ def main(argv: list[str] | None = None) -> int:
         if not stale and not errors:
             print("reference is current")
         return 1 if (stale or errors) else 0
-    errors = render(args.out)
+    errors = render(args.out, args.data_out)
     for e in errors:
         print(f"docstring: {e}", file=sys.stderr)
-    print(f"wrote {len(list(args.out.glob('*.md')))} pages to {args.out}")
+    print(f"wrote {len(list(args.out.glob('*.md')))} pages to {args.out} and the site data to {args.data_out}")
     return 1 if errors else 0
 
 

@@ -4,11 +4,17 @@ sidebar_label: teams
 sidebar_position: 3
 ---
 
-# `teams`
+# teams
+
+<div class="sdv-signature">
 
 ```python
-teams(league: str | None = None) -> polars.dataframe.frame.DataFrame
+teams(
+    league: str | None = None,
+) -> polars.dataframe.frame.DataFrame
 ```
+
+</div>
 
 The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors.
 
@@ -36,4 +42,5 @@ sdvplot.teams("nfl").shape   # (32, 12)
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

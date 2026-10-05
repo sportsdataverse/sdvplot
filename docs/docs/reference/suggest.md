@@ -4,11 +4,19 @@ sidebar_label: suggest
 sidebar_position: 2
 ---
 
-# `suggest`
+# suggest
+
+<div class="sdv-signature">
 
 ```python
-suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]
+suggest(
+    value: Any,
+    league: str,
+    n: int = 5,
+) -> list[tuple[str, str]]
 ```
+
+</div>
 
 Up to n (team_id, name) candidates for a value that did not resolve, best first.
 
@@ -40,4 +48,5 @@ sdvplot.suggest("Kansas Cty Chiefs", "nfl", n=2)   # [('12', 'Kansas City Chiefs
 
 ## See also
 
-sdvplotR: https://sdvplotR.sportsdataverse.org/ ; sdv-py: https://py.sportsdataverse.org/
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
+- [sdv-py](https://py.sportsdataverse.org/)

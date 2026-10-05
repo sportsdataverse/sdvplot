@@ -1,2 +1,8 @@
 /* stylelint-disable docusaurus/copyright-header */
-/* sdvplot only. The shared family theme is sdv-theme.css, which loads first; nothing here yet. */
+/* sdvplot only. The shared family theme is sdv-theme.css, which loads first. */
+
+/* API reference signatures (tools/gen_docs.py wraps them in .sdv-signature): wrap inside the block instead of
+   clipping. A single token wider than the column still scrolls. */
+.sdv-signature code {
+  white-space: pre-wrap;
+}

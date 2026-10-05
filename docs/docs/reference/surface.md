@@ -4,11 +4,23 @@ sidebar_label: surface
 sidebar_position: 14
 ---
 
-# `surface`
+# surface
+
+<div class="sdv-signature">
 
 ```python
-surface(league: str, team: Any = None, *, season: Any = None, ax: Any = None, center_logo: bool | float = False, **sportypy_kwargs: Any) -> Any
+surface(
+    league: str,
+    team: Any = None,
+    *,
+    season: Any = None,
+    ax: Any = None,
+    center_logo: bool | float = False,
+    **sportypy_kwargs: Any,
+) -> Any
 ```
+
+</div>
 
 Draw the league's playing surface with sportypy, in a team's colors.
 
@@ -42,4 +54,5 @@ ax = sdvplot.surface("nfl", "KC", center_logo=True)
 
 ## See also
 
-sdvplotR sdv_surface(): https://sdvplotR.sportsdataverse.org/ ; sportypy: https://sportypy.sportsdataverse.org/
+- [sdvplotR sdv_surface()](https://sdvplotR.sportsdataverse.org/)
+- [sportypy](https://sportypy.sportsdataverse.org/)
