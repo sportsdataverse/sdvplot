@@ -474,7 +474,6 @@ def score_card(game: dict[str, Any], league: str, day: dt.date, path: Path) -> d
     ax.text(w - 32, 636, f"{tag}  ·  {long_date(day)}", color=MUTED, fontsize=15, ha="right", va="center")
     if game["note"]:
         fit(ax, w / 2, 596, game["note"], w - 64, 14, color=MUTED, ha="center", va="center")
-    winner = "home" if game["home_score"] > game["away_score"] else "away"
     for side, x0 in (("away", 24), ("home", w / 2 + 12)):
         pw, color = w / 2 - 36, team_color(game[f"{side}_id"], league)
         ink, cx = on_color(color), x0 + (w / 2 - 36) / 2
@@ -484,7 +483,7 @@ def score_card(game: dict[str, Any], league: str, day: dt.date, path: Path) -> d
         fit(ax, cx, 342, f"{rank}{game[f'{side}_location']}", pw - 40, 20, color=ink, ha="center", va="center")
         fit(ax, cx, 294, game[f"{side}_name"].upper(), pw - 40, 30, color=ink, fontweight="bold", ha="center",
             va="center")  # fmt: skip
-        won = side == winner
+        won = game[f"{side}_score"] > game[f"{'home' if side == 'away' else 'away'}_score"]  # a tie bolds neither
         ax.text(cx, 172, str(game[f"{side}_score"]), color=ink, fontsize=104, ha="center", va="center",
                 fontweight="bold" if won else "normal", alpha=1 if won else 0.7, zorder=3)  # fmt: skip
     ax.text(32, 40, CREDIT, color=MUTED, fontsize=12, va="center")
@@ -618,32 +617,40 @@ def run_leaderboard(args: argparse.Namespace) -> Path:
     return write_manifest(out, [post])
 
 
+def winners(game: dict[str, Any]) -> list[str]:
+    """The team ids that did not lose: the winner, or both teams after a tie."""
+    return [
+        game[f"{s}_id"] for s, o in (("away", "home"), ("home", "away")) if game[f"{s}_score"] >= game[f"{o}_score"]
+    ]
+
+
 def run_gameday(args: argparse.Namespace) -> Path:
     league, tag = args.league, LEAGUES[args.league][2]
     day, games, note = fetch_games(league, args.date)
-    ranked = games.with_columns(r=pl.min_horizontal("away_rank", "home_rank").fill_null(99)).sort(
-        "r", maintain_order=True
-    )
-    games = ranked.drop("r").head(args.max_games)
+    ranked = games.with_columns(r=pl.min_horizontal("away_rank", "home_rank").fill_null(99))
+    finals_ = list(ranked.sort("r", maintain_order=True).drop("r").iter_rows(named=True))
     out = Path(args.out) / dt.date.today().isoformat()
     out.mkdir(parents=True, exist_ok=True)
     stem = f"{league}-{day:%Y%m%d}"
     cards = []
-    for g in games.iter_rows(named=True):
-        image = score_card(g, league, day, out / f"{stem}-{slug(g['away_abbr'])}-at-{slug(g['home_abbr'])}.png")
+    for g in finals_[: args.max_games]:
+        teams = f"{slug(g['away_abbr'])}-at-{slug(g['home_abbr'])}-{slug(g['game_id'])}"  # the id: doubleheaders
+        image = score_card(g, league, day, out / f"{stem}-{teams}.png")
         image["alt"] = (
             f"Final score card, {tag}, {long_date(day)}: {g['away_location']} {g['away_name']} {g['away_score']}, "
             f"{g['home_location']} {g['home_name']} {g['home_score']} ({g['status']}), with both team logos."
         )
         cards.append(image)
-    best = None  # the best rule score on a winning team, across the day's games
-    for g in games.iter_rows(named=True):
-        winner = g["home_id"] if g["home_score"] > g["away_score"] else g["away_id"]
-        box = fetch_box(league, g["game_id"]).filter(pl.col("team_id") == winner).sort("score", descending=True)
+    with ThreadPoolExecutor(max_workers=8) as pool:  # every final, drawn or not: one box score each
+        boxes = list(pool.map(lambda g: fetch_box(league, g["game_id"]), finals_))
+    best = None  # the best rule score on a team that did not lose, across all of the day's finals
+    for g, box in zip(finals_, boxes, strict=True):
+        box = box.filter(pl.col("team_id").is_in(winners(g))).sort("score", descending=True, maintain_order=True)
         if box.height and (best is None or box["score"][0] > best[0]["score"]):
             best = (box.row(0, named=True), g)
-    kind = phase(games.row(0, named=True)).lower()  # preseason or postseason, said in the caption
-    images, caption = cards, f"{tag} {kind + ' ' if kind else ''}final scores, {long_date(day)}."
+    kind = phase(finals_[0]).lower()  # preseason or postseason, said in the caption
+    prefix = f"{kind} " if kind else ""
+    images, caption = cards, f"{tag} {prefix}final scores, {long_date(day)}."
     if best:
         player, g = best
         potg = potg_card(player, g, league, day, out / f"{stem}-player-of-the-game.png")
@@ -667,7 +674,7 @@ def run_gameday(args: argparse.Namespace) -> Path:
             "caption": caption if i == 0 else f"More {tag} final scores, {long_date(day)} ({i + 1}/{len(chunks)}).",
             "hashtags": [tag, "sdvplot"],
             "images": chunk,
-        }  # fmt: skip
+        }
         for i, chunk in enumerate(chunks)
     ]
     return write_manifest(out, posts)

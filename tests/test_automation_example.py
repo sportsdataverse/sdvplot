@@ -121,7 +121,7 @@ def test_gameday_writes_score_cards_a_player_card_and_the_manifest(
     sizes = [(i["width"], i["height"]) for i in post["images"]]
     assert sizes == [(1080, 1080), (1200, 675), (1200, 675)]  # the player card first, then a card per game
     assert post["images"][0]["path"] == "nfl-20260927-player-of-the-game.png"
-    assert [i["path"] for i in post["images"][1:]] == ["nfl-20260927-lar-at-lv.png", "nfl-20260927-lv-at-lar.png"]
+    assert [i["path"] for i in post["images"][1:]] == ["nfl-20260927-lar-at-lv-1.png", "nfl-20260927-lv-at-lar-2.png"]
     # the best score on a WINNING team (the loser's 99 does not count), and the offseason note, are in the caption
     assert "Player of the game: Star Passer" in post["caption"] and gameday_data in post["caption"]
     assert "Los Angeles Rams 17, Las Vegas Raiders 24" in post["images"][1]["alt"]
@@ -518,6 +518,54 @@ def test_num_keeps_minus_signs_and_reads_pairs():
         pytest.approx(-0.5),
         ["1 CAR · -5 RUSH YDS"],
     )  # a loss, not a 5-yard gain
+
+
+def _box_with(game_id, *players):
+    rows = [{"game_id": game_id, "team_id": team, "athlete_id": pid, "has_headshot": True, "name": name,
+             "position": "QB", "score": score, "lines": [f"{name} line"]} for team, pid, name, score in players]  # fmt: skip
+    return pl.DataFrame(rows, schema=social.BOX_SCHEMA)
+
+
+def test_player_of_the_game_is_chosen_from_every_final_not_only_the_drawn_cards(
+    tmp_path, monkeypatch, mark_images, headshot_images
+):
+    games = pl.DataFrame([_game(str(i), "14", "13", 17, 24) for i in range(5)])
+    boxes = {str(i): _box_with(str(i), ("13", "3139477", f"Starter {i}", 10.0 + i)) for i in range(4)}
+    boxes["4"] = _box_with("4", ("13", "4241479", "Late Star", 50.0))  # the fifth game, past --max-games
+    monkeypatch.setattr(social, "fetch_games", lambda league, day: (DAY, games, None))
+    monkeypatch.setattr(social, "fetch_box", lambda league, game_id: boxes[game_id])
+    social.main(["gameday", "--league", "nfl", "--max-games", "2", "--out", str(tmp_path)])
+    (post,) = _manifest(tmp_path)["posts"]
+    assert "Player of the game: Late Star" in post["caption"]
+    paths = [i["path"] for i in post["images"]]  # two cards drawn; the same matchup twice keeps both files
+    assert paths == [
+        "nfl-20260927-player-of-the-game.png",
+        "nfl-20260927-lar-at-lv-0.png",
+        "nfl-20260927-lar-at-lv-1.png",
+    ]
+
+
+def test_a_tie_bolds_neither_score_and_both_teams_can_have_the_player_of_the_game(
+    tmp_path, monkeypatch, mark_images, headshot_images
+):
+    games = pl.DataFrame([_game("1", "14", "13", 20, 20)])
+    box = _box_with("1", ("14", "4241479", "Away Guy", 10.0), ("13", "3139477", "Home Hero", 50.0))
+    monkeypatch.setattr(social, "fetch_games", lambda league, day: (DAY, games, None))
+    monkeypatch.setattr(social, "fetch_box", lambda league, game_id: box)
+    weights, save = [], social.save
+
+    def spy(fig, path):  # the score texts are the 104 pt ones
+        weights.extend(t.get_fontweight() for t in fig.axes[0].texts if t.get_fontsize() == 104)
+        return save(fig, path)
+
+    monkeypatch.setattr(social, "save", spy)
+    social.main(["gameday", "--league", "nfl", "--out", str(tmp_path)])
+    assert weights == [
+        "normal",
+        "normal",
+    ]  # the score card; the player card has no 104 pt text
+    (post,) = _manifest(tmp_path)["posts"]
+    assert "Player of the game: Home Hero" in post["caption"]
 
 
 SCRIPT = ROOT / "examples" / "automation" / "sdvplot_social.py"
