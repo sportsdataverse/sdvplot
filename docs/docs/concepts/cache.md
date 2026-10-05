@@ -36,8 +36,12 @@ the ETag it saved. A `304 Not Modified` just renews the copy's age. Otherwise sd
 atomically and saves the new ETag. A truncated download, or a manifest missing a column sdvplot reads, is rejected, and
 the old copy stays.
 
+Image URLs in these tables end up in the HTML the web adapters write, so they must be plain https URLs. A manifest
+row whose `archive_url` is not one is dropped, and an nflverse headshot that is not one counts as missing (the
+player gets their ESPN headshot), each with one `SdvplotWarning`.
+
 Images are named by their sha256. sdvplot downloads each one once, checks the hash and keeps it. A file whose hash does
-not match is not cached.
+not match is not cached: sdvplot raises `IntegrityError`.
 
 ## Working offline
 
@@ -49,6 +53,10 @@ not match is not cached.
   OfflineError: could not download <url> and there is no cached copy; connect once, or point SDVPLOT_CACHE_DIR at a
   directory that has one (...)
   ```
+
+  When the server answered with an error status (a 4xx or 5xx response), the error is a `DownloadError`, an
+  `OfflineError` that is also an `OSError`. `except sdvplot.OfflineError` catches every case; `except
+  sdvplot.SdvplotError` catches every error sdvplot raises.
 
 To work offline, call the functions you need once while connected, or copy a filled cache directory to the machine and
 point `SDVPLOT_CACHE_DIR` at it.
@@ -63,7 +71,8 @@ sdvplot.clear_cache()
 
 `clear_cache()` deletes only sdvplot's own subdirectories (`manifest`, `images`, `rasters`, `nflverse`). Anything else
 in the cache root stays, so pointing `SDVPLOT_CACHE_DIR` at a shared directory is safe. The next call that needs a file
-downloads it again.
+downloads it again. A subdirectory that is a symlink is unlinked in the default cache directory (what it points to
+is untouched) and left alone with a warning in a directory you chose.
 
 ## `versions()`
 

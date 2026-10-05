@@ -16,7 +16,8 @@ read `src/sdvplot/great_tables/` instead and see [Tables](#tables) at the end.
 ## 1. Write the module
 
 Create `src/sdvplot/<library>.py`, named after the library. It is a public submodule. Import the library at the top of
-the module: that import is what tells sdvplot the extra is missing (step 4).
+the module, inside `with requires_extra("<extra>"):`: that block is what tells the user which extra is missing
+(step 4).
 
 The module exposes these names. The four verbs are its public API: list them in `__all__`, and add
 `def __dir__(): return list(__all__)` so `dir()` and tab completion show only them. Everything else (helpers, the
@@ -62,9 +63,11 @@ from __future__ import annotations
 
 from typing import Any
 
-import newlib
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("newlib"):
+    import newlib
+
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, image_src
 
@@ -242,16 +245,16 @@ Set the floor to a version you tested: CI also installs the lowest allowed versi
 Then run `uv lock`, and commit `uv.lock` with the change, because the `drift` workflow fails on a stale lock. Check
 `git status` after any `uv run`: it can re-lock `uv.lock` on its own.
 
-You do not raise the missing-extra error yourself. Because the adapter imports the library at the top of its module,
-the front door catches the `ModuleNotFoundError` and raises `OptionalDependencyError`:
+You do not raise the missing-extra error yourself. `requires_extra` turns a library missing inside its block into
+`OptionalDependencyError` (a `ModuleNotFoundError`), for `import sdvplot.newlib` and the front door alike:
 
 ```text
-newlib support needs the newlib extra: pip install sdvplot[newlib]
+newlib is not installed: this needs the newlib extra, pip install "sdvplot[newlib]"
 ```
 
-It does so only when the missing module is your adapter module, your `package`, or one of its submodules. Any other
-`ImportError` inside the adapter is a real bug and propagates unchanged. So keep `import newlib` at module level and
-leave other imports to fail loudly.
+Keep only the library's own imports inside the block: any other `ImportError` in the adapter is a real bug and
+propagates unchanged. Add the module, its library and its extra to `EXTRAS` in `tests/test_api.py`, which imports
+each adapter with its library hidden and checks the message.
 
 ## 5. Test it with the contract harness
 
@@ -354,7 +357,7 @@ uv run pytest -q
 uv run python tools/gen_docs.py --check
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy   # mypy needs every extra installed
 uv run pre-commit run --all-files
 ```
 

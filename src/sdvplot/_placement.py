@@ -76,13 +76,15 @@ def place(
     kind: str = "logo",
     variant: str = "default",
     id_system: str = "auto",
+    strict: bool = False,
     _warn: bool = True,
 ) -> list[Placement]:
     """The marks to draw for each (x, y, team), in input order, skipping (with one warning per reason) the points
     whose team is unknown, whose x or y is missing, or that have no mark.
 
     ``x``, ``y`` and ``teams`` are read positionally (a pandas index is ignored). For ``kind="headshot"``, ``teams``
-    holds player ids and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``). ``_warn=False``
+    holds player ids and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``); otherwise
+    ``strict=True`` raises UnresolvedTeamError for a team that does not resolve, as ``resolve`` does. ``_warn=False``
     skips the same points without warning, for an adapter that already warned for them (no process-wide warning
     filter is touched, so it is thread-safe).
     """
@@ -116,8 +118,8 @@ def place(
         skipped("with no headshot", no_image)
     else:
         seasons = _seasons(season, len(ts))
-        if _warn:  # one warning for unknown values
-            ids = resolve(ts, league, season=seasons, id_system=cast("IdSystem", id_system))
+        if _warn or strict:  # one warning for unknown values, or the strict error
+            ids = resolve(ts, league, season=seasons, id_system=cast("IdSystem", id_system), strict=strict)
         else:
             ids, _ = _resolve_ids(ts, league, seasons, id_system)
         rows: dict[tuple[str, int | None], dict[str, Any] | None] = {}

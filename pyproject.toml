@@ -27,6 +27,7 @@ dependencies = [
   "Pillow>=12.3",
   "platformdirs>=4",
   "requests>=2.33",
+  "urllib3>=2.6",  # bounded decompression (CVE-2025-66471): the download byte cap is a memory bound only from 2.6
 ]
 
 [project.optional-dependencies]
@@ -129,10 +130,17 @@ extend-exclude = [
 line-ending = "lf"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+# RUF022: __all__ stays sorted. RUF100: no stale noqa in the package (tests/, tools/ and examples/ still carry ~140
+# unused ones, nearly all E402; not cleaned up yet)
+select = ["E", "F", "I", "B", "UP", "SIM", "C901", "RUF022", "RUF100"]
+
+[tool.ruff.lint.mccabe]
+# Today's ceiling: the three functions above it carry a `noqa: C901` with the reason; any other that passes it fails
+max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["E501"]
+"tests/**" = ["E501", "RUF100"]
+"{tools,examples}/**" = ["RUF100"]
 
 [tool.mypy]
 files = ["src/sdvplot", "tests/test_types.py"]

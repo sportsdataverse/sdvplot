@@ -28,20 +28,23 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | --- | --- |
 | `_resolve.py` | `resolve`, `suggest`, the `PRIORITY` id-system order |
 | `_index.py`, `_normalize.py` | the bundled team index (`teams()`), value/season normalization |
+| `_lazy.py` | `pl`, a stand-in for polars that imports it on first use. Core modules take `pl` from it (`import polars as pl` only under `TYPE_CHECKING`) and import PIL and requests inside the functions that need them, so `import sdvplot` loads none of the three; `tests/test_import_time.py` fails if a module-level import brings one back |
 | `_colors.py` | `palette`, `team_colors` |
 | `_marks.py`, `_manifest.py` | `marks`, `logo_url`, `select_mark`; the cached logo manifest |
 | `_images.py` | `logo_image` (PIL; SVG needs `[svg]`) |
 | `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse) |
-| `_cache.py` | the download cache, `clear_cache` |
+| `_cache.py` | the download cache, `clear_cache`, and `MEMORY_CACHES`: every in-memory cache of what the cache holds (parsed manifest, decoded images) registers its clear there, so `clear_cache()` frees it |
 | `_dispatch.py` | `add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the adapter registry |
 | `testing.py` | `check_adapter_contract` and `check_table_adapter_contract`, the shared adapter harnesses |
 | `_placement.py` | `Placement`, `place`, `check_height`, `check_alpha`: the step every adapter shares |
+| `_tiers.py` | `prepare` and `Tiers`: `team_tiers`' ranking, tier lines, labels and limits, which the matplotlib and plotnine adapters only draw |
 | `_contrast.py` | WCAG contrast and readable ink (surfaces, table themes) |
 | `matplotlib.py`, `plotnine.py`, `plottable.py` | the adapters (public submodules, named after their library) |
-| `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `image_src`, `image_sources`: what the web adapters share |
+| `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `axis_letter`, `image_src`, `image_sources`: what the web adapters share |
 | `plotly.py`, `altair.py`, `bokeh.py`, `holoviews.py`, `folium.py` | the web adapters (public submodules) |
 | `pygal.py` | the pygal adapter (an xml filter draws the marks at each render) and `team_style` |
 | `_surface.py` | `surface` (sportypy) |
+| `_court.py` | `court_coords`: stats.nba.com legacy shot coordinates onto sportypy's court (narwhals, so any dataframe) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) plus one module per table wave (`_marks.py`; later `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`); `docs/PARITY_TABLES.md` records each R function's port |
 | `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |
@@ -50,6 +53,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `great_tables/_layout.py` | wave C2: legends (`gt_legend_*`), `gt_percentile_bar`, `gt_tiers`, row emphasis, notes, `gt_snake`; reads the `_sdvplot_scale` / `_sdvplot_key` records |
 | `reactable.py` | the `reactable_sdv_*` column helpers |
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
+| `_deprecate.py` | `deprecate` and `@deprecated_alias`: the one way to warn about a rename (`SdvplotDeprecationWarning`; CONTRIBUTING's deprecation policy) |
 | `_types.py` | the `Literal` aliases of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`, `MarkType`); `tests/test_types.py` keeps them equal to the runtime sets and is in mypy's `files` |
 | `typing.py` | `sdvplot.typing`, the public re-export of those aliases for user annotations (the `numpy.typing` precedent) |
 
@@ -65,7 +69,7 @@ uv sync                                     # install with the dev groups
 uv run pytest -q                            # offline tests
 SDVPLOT_LIVE_TESTS=1 uv run pytest -q       # plus network tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy                    # needs every extra (CI syncs --all-extras; so does the pre-push hook)
 uv run pre-commit run --all-files           # `pre-commit install` refuses when core.hooksPath is set
 ```
 

@@ -50,6 +50,8 @@ ERRORS = [
     "InputError",
     "UnresolvedTeamError",
     "OfflineError",
+    "DownloadError",
+    "IntegrityError",
     "OptionalDependencyError",
     "UnsupportedTargetError",
     "UnsafeDownloadError",
@@ -180,7 +182,7 @@ def _signature(name: str, sig: inspect.Signature) -> str:
     return f"{name}(\n" + "".join(f"    {x},\n" for x in parts) + f"){ret}"
 
 
-def render_function(name: str, fn: object, position: int | None) -> tuple[str, list[str]]:
+def render_function(name: str, fn: object, position: int | None) -> tuple[str, list[str]]:  # noqa: C901 - a section each
     """A top-level function's page, or with ``position=None`` its section of a submodule page: no front matter, a
     ``##`` title and every heading one level down."""
     h = "#" if position is not None else "##"

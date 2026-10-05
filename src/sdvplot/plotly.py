@@ -13,9 +13,11 @@ import math
 import re
 from typing import Any
 
-import plotly.graph_objects as go
+from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
 
-from sdvplot._errors import UnsupportedTargetError, warn
+with requires_extra("plotly"):
+    import plotly.graph_objects as go
+
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import aspect, axis_letter, image_sources
 
@@ -25,7 +27,7 @@ _PLOTLY_DEFAULT_MARGIN = {"t": 100, "b": 80, "l": 80, "r": 80}  # plotly.js's ma
 _REF = re.compile(r"^([xy])(\d*)$")
 _READABLE = ("scatter", "scattergl", "bar")  # trace types whose extent sdvplot can work out
 
-__all__ = ["add_logos", "add_wordmarks", "add_headshots", "axis_logos"]
+__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

@@ -10,10 +10,71 @@ The Folium adapter: logos, wordmarks and headshots as map markers with image ico
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Put each player's headshot on a Folium map at its (longitude, latitude). |
 | [add_logos](#add_logos) | Put each team's logo on a Folium map at its (longitude, latitude), with the team name as a tooltip. |
 | [add_wordmarks](#add_wordmarks) | Put each team's wordmark on a Folium map at its (longitude, latitude). |
-| [add_headshots](#add_headshots) | Put each player's headshot on a Folium map at its (longitude, latitude). |
 | [axis_logos](#axis_logos) | Not supported: a map has no category axes. |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    target: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> Any
+```
+
+</div>
+
+Put each player's headshot on a Folium map at its (longitude, latitude).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``folium.Map``. |
+| `x` | `Any` | The longitudes. |
+| `y` | `Any` | The latitudes, the same length as ``x``. |
+| `players` | `Any` | The player id for each point (shown as the tooltip). |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the map's reference height (see ``add_logos``), in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`object` — ``target`` itself, with the markers added.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or a location is not a number.
+- `TypeError`: If ``target`` is not a ``folium.Map``.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+import folium
+import sdvplot
+
+m = folium.Map(location=[39, -95], zoom_start=4)
+sdvplot.add_headshots(m, [-94.48], [39.05], ["3139477"], league="nfl", height=0.08)
+```
+
+### See also
+
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -140,67 +201,6 @@ import sdvplot
 
 m = folium.Map(location=[39, -95], zoom_start=4)
 sdvplot.add_wordmarks(m, [-94.48], [39.05], ["KC"], league="nfl", height=0.04)
-```
-
-### See also
-
-- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    target: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> Any
-```
-
-</div>
-
-Put each player's headshot on a Folium map at its (longitude, latitude).
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A ``folium.Map``. |
-| `x` | `Any` | The longitudes. |
-| `y` | `Any` | The latitudes, the same length as ``x``. |
-| `players` | `Any` | The player id for each point (shown as the tooltip). |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the map's reference height (see ``add_logos``), in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`object` — ``target`` itself, with the markers added.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or a location is not a number.
-- `TypeError`: If ``target`` is not a ``folium.Map``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-import folium
-import sdvplot
-
-m = folium.Map(location=[39, -95], zoom_start=4)
-sdvplot.add_headshots(m, [-94.48], [39.05], ["3139477"], league="nfl", height=0.08)
 ```
 
 ### See also

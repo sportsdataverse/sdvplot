@@ -10,10 +10,71 @@ The Bokeh adapter: logos, wordmarks and headshots as one ``image_url`` glyph per
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Bokeh figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Bokeh figure. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Bokeh figure. |
-| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Bokeh figure. |
 | [axis_logos](#axis_logos) | Not supported on Bokeh: Bokeh glyphs cannot sit outside the plot frame at a fixed pixel offset. |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    target: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> Any
+```
+
+</div>
+
+Draw each player's headshot centred on its (x, y) point of a Bokeh figure.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``bokeh.plotting.figure``. |
+| `x` | `Any` | The points' x positions, in the figure's x values. |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the reference height (see ``add_logos``), in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`object` — ``target`` itself, with one renderer named ``sdvplot_headshot`` added.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no pixel height (neither ``frame_height`` nor ``height`` is set).
+- `TypeError`: If ``target`` is not a Bokeh figure.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+from bokeh.plotting import figure
+import sdvplot
+
+p = figure(frame_height=300)
+sdvplot.add_headshots(p, [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -151,67 +212,6 @@ sdvplot.add_wordmarks(p, ["KC", "BUF"], [12, 10], ["KC", "BUF"], league="nfl", h
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    target: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> Any
-```
-
-</div>
-
-Draw each player's headshot centred on its (x, y) point of a Bokeh figure.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A ``bokeh.plotting.figure``. |
-| `x` | `Any` | The points' x positions, in the figure's x values. |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the reference height (see ``add_logos``), in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`object` — ``target`` itself, with one renderer named ``sdvplot_headshot`` added.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the figure has no pixel height (neither ``frame_height`` nor ``height`` is set).
-- `TypeError`: If ``target`` is not a Bokeh figure.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-from bokeh.plotting import figure
-import sdvplot
-
-p = figure(frame_height=300)
-sdvplot.add_headshots(p, [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 

@@ -11,8 +11,10 @@ from PIL import Image  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.matplotlib as smpl  # noqa: E402
+from sdvplot import _images  # noqa: E402
 from sdvplot._errors import SdvplotWarning  # noqa: E402
 from sdvplot.testing import check_adapter_contract  # noqa: E402
+from tests.conftest import seed_image  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -92,6 +94,19 @@ def test_a_wordmark_keeps_its_aspect_ratio(mark_images):
     (box,) = ax.artists
     ext = box.offsetbox.get_window_extent(ax.figure.canvas.get_renderer())
     assert ext.width / ext.height == pytest.approx(2.5, rel=0.01)
+
+
+def test_a_4096_px_mark_is_decoded_no_bigger_than_it_is_drawn(mark_images):  # re-audit finding 2
+    images = mark_images / "images"
+    seed_image(images / "11" / f"{'1' * 64}.png", size=(4096, 4096))  # LV's logo (500 x 500 in the manifest)
+    seed_image(images / "44" / f"{'4' * 64}.png", size=(4096, 1638))  # LV's wordmark (500 x 200)
+    _images._clear_decoded()
+    ax = _axes()
+    sdvplot.add_logos(ax, [10], [-3], ["LV"], league="nfl")
+    sdvplot.add_wordmarks(ax, [20], [-3], ["LV"], league="nfl")
+    smpl.title_image(ax, "LV", "Raiders", league="nfl")
+    # 512 px tall at most, as drawn (_MAX_IMAGE_HEIGHT); the wide wordmark keeps that height, not 512 px of width
+    assert sorted(img.size for img in _images._decoded.values()) == [(512, 512), (1280, 512)]
 
 
 def test_a_figure_with_several_axes_names_the_fix(mark_images):
@@ -316,3 +331,15 @@ def test_add_images_warns_exactly_once_per_skip_reason_and_checks_height_at_the_
     ]
     with pytest.raises(ValueError, match="fraction of the plot height"):
         smpl.add_images(object(), [], [], [], height=2)  # before the target or the points are looked at
+
+
+def test_a_very_wide_mark_is_decoded_within_max_size(monkeypatch):
+    """512 px tall is asked for, but never a longest side past MAX_SIZE (a wordmark wider than 8:1)."""
+    from sdvplot import matplotlib as smpl
+    from sdvplot._images import MAX_SIZE
+
+    seen = []
+    monkeypatch.setattr(smpl, "load_mark_image", lambda mark, size=None: seen.append(size) or Image.new("RGBA", (8, 1)))
+    p = type("P", (), {"mark": {"sha256": "0" * 64}, "url": None, "aspect": 20.0})()
+    smpl._image(p)
+    assert seen == [MAX_SIZE]

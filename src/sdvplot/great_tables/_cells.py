@@ -157,6 +157,7 @@ def gt_bold_rows(gt: GT, rows: Any = None, text_color: str = "black", highlight_
 def gt_color_results(
     gt: GT,
     result_column: Any = "result",
+    *,
     win_color: str = "#5DA271",
     loss_color: str = "#C84630",
     tie_color: str | None = None,
@@ -229,6 +230,7 @@ def gt_highlight_cells(
     gt: GT,
     columns: Any,
     condition: Callable[[Any], Any] | Any,
+    *,
     fill: str = "#FFF3B0",
     text_color: str | None = None,
     bold: bool = False,
@@ -331,6 +333,7 @@ def _condition_masks(gt: GT, cols: list[str], condition: Any) -> dict[str, list[
 def gt_highlight_na(
     gt: GT,
     columns: Any = None,
+    *,
     fill: str | None = "#F0F0F0",
     text_color: str | None = None,
     bold: bool = False,
@@ -481,6 +484,7 @@ def _md(text: str) -> str:
 
 def gt_538_caption(
     gt: GT,
+    *,
     top_caption: str | None = None,
     bottom_caption: str | None = None,
     rule_color: str | None = None,
@@ -596,6 +600,7 @@ def _bars(gt: GT, where: type, colors: str | Sequence[str], **a: Any) -> str:
 def gt_border_bars_top(
     gt: GT,
     colors: str | Sequence[str],
+    *,
     bar_height: float = 10,
     bar_width: str = "100%",
     bar_align: str = "center",
@@ -678,6 +683,7 @@ def gt_border_bars_top(
 def gt_border_bars_bottom(
     gt: GT,
     colors: str | Sequence[str],
+    *,
     bar_height: float = 10,
     bar_width: str = "100%",
     bar_align: str = "center",
@@ -814,9 +820,10 @@ def _cutline_svg(text: str, color: str, size: float) -> str:
     return "data:image/svg+xml;charset=utf-8," + quote(svg, safe="")
 
 
-def gt_cutline(
+def gt_cutline(  # noqa: C901 - most branches validate its ten arguments; great_tables splits are parked
     gt: GT,
     after: int | Sequence[int],
+    *,
     label: str | Sequence[str | None] | None = None,
     color: str = "#A6081A",
     weight: float = 2,
@@ -1089,6 +1096,7 @@ def _record_scale(
 def gt_color_pills(
     gt: GT,
     columns: Any,
+    *,
     rows: Any = None,
     palette: Sequence[str] = ("#C84630", "#5DA271"),
     fill_type: str = "continuous",
@@ -1226,6 +1234,7 @@ def gt_color_pills(
 def gt_color_ranks(
     gt: GT,
     columns: Any,
+    *,
     rows: Any = None,
     palette: Sequence[str] = ("#3D8B6E", "#9DC5A7", "#EDE0CC", "#DB9070", "#BE4D3A"),
     domain: Sequence[float] | None = None,
@@ -1324,6 +1333,7 @@ def _box_label(v: float | None, digits: int | None, format_type: str, suffix: st
 def gt_indicator_boxes(
     gt: GT,
     columns: Any = None,
+    *,
     key_columns: Any = None,
     indicator_vals: Sequence[float] = (0, 1),
     indicator_rule: Callable[..., Any] | None = None,
@@ -1507,6 +1517,7 @@ def gt_fmt_rank(gt: GT, columns: Any, superscript: bool = True, suffix_size: str
 def gt_fmt_tally(
     gt: GT,
     columns: Any,
+    *,
     separator: str = "-",
     label: str | None = None,
     share: bool = False,
@@ -1622,6 +1633,7 @@ def gt_delta(
     gt: GT,
     from_: Any,
     to: Any,
+    *,
     column_label: str = "Change",
     percent: bool = False,
     decimals: int = 1,
@@ -1734,6 +1746,7 @@ def gt_delta(
 
 def gt_column_subheaders(
     gt: GT,
+    *,
     heading_color: str = "black",
     subtitle_color: str = "#808080",
     heading_weight: str = "bold",

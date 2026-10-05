@@ -41,7 +41,6 @@ PRIORITY: tuple[str, ...] = (
 )
 # Systems "auto" never tries, only an explicit id_system: NHL stats API ids 1-28 are other teams' ESPN ids (R49)
 EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id",)
-_AMBIGUOUS = object()
 Candidates = list[tuple[str, int | None, int | None]]
 
 
@@ -84,7 +83,8 @@ def _match(
     table: dict[str, dict[str, Candidates]],
     latest: int | None = None,
 ) -> Any:
-    """The team_id for one key, None if unknown, _AMBIGUOUS if the deciding system names several teams.
+    """The team_id for one key, None if unknown, or a sorted tuple of the team_ids when the deciding system names
+    several teams (ambiguous).
 
     With a season, a first pass only considers aliases whose range covers it, so a reused code such as "LA" goes
     to the team that used it that season. Then, or first without a season, a pass reads the ``latest`` season, so a
@@ -101,7 +101,7 @@ def _match(
                 if not cands:
                     continue
             ids = {c[0] for c in cands}
-            return next(iter(ids)) if len(ids) == 1 else _AMBIGUOUS
+            return next(iter(ids)) if len(ids) == 1 else tuple(sorted(ids))
     return None
 
 
@@ -173,18 +173,27 @@ def _seasons(season: Any, n: int) -> list[int | None]:
     try:
         items, _ = _unpack(season)
     except TypeError:  # _unpack's message names values; this is the season argument
-        raise TypeError(f"season must be a year, or one per team, got {type(season).__name__}") from None
+        raise InputError(f"season must be a year, or one per team, got {type(season).__name__}") from None
     if len(items) != n:
-        raise ValueError(f"season has {len(items)} values but there are {n} teams")
+        raise InputError(f"season has {len(items)} values but there are {n} teams")
     return [norm_season(s) for s in items]
 
 
 def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
     shown = ", ".join(f"{v!r} ({why})" for v, why in unresolved.items())
     msg = f"{len(unresolved)} value(s) did not resolve to a {league} team: {shown}"
+    if any(why.startswith("ambiguous") for why in unresolved.values()):
+        # the candidates are listed: what picks one is a season (a reused code) or the id system the values come from
+        msg += "; pass season= for a code reused across eras, or id_system= for the id system of the values"
     if strict:
         raise UnresolvedTeamError(msg)
     warn(msg + ". Use sdvplot.suggest() for candidates, or strict=True to raise.")
+
+
+def _ambiguous(team_ids: tuple[str, ...], league: str) -> str:
+    """'ambiguous: 2390 Miami Hurricanes or 193 Miami (OH) RedHawks': the teams one value could mean."""
+    names = dict(_index.teams(league).select("team_id", "name").iter_rows())
+    return "ambiguous: " + " or ".join(f"{tid} {names.get(tid, '')}".strip() for tid in team_ids)
 
 
 # The result comes back in the container the values came in (_unpack). The last overload takes what the others do not
@@ -243,11 +252,11 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
         caller's library.
 
     Raises:
-        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series, or ``season`` is
-            neither a year nor a list of them.
-        ValueError: If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside the seasons
-            sdvplot knows for the league (from its first dated season in the bundled index, 1920 for the NFL, to next
-            year), or is a list whose length does not match the teams.
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``season`` is neither a year nor a
+            list of them (a ``pd.Timestamp``, ``"2020-21"``), is outside the seasons sdvplot knows for the league
+            (from its first dated season in the bundled index, 1920 for the NFL, to next year), or is a list whose
+            length does not match the teams.
         UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
 
     Example:
@@ -281,7 +290,7 @@ def _resolve_ids(
     items: list[Any], league: str, seasons: list[int | None], id_system: str
 ) -> tuple[list[str | None], dict[str, str]]:
     """resolve() without the report: the ids (None where a value does not resolve), and each unresolved value with
-    why ("unknown" or "ambiguous"). The caller decides whether to warn."""
+    why ("unknown", or "ambiguous: " and the teams it could mean). The caller decides whether to warn."""
     _index.check_league(league)
     systems = _systems(id_system)
     for year in {s for s in seasons if s is not None}:  # every season path resolves here: the league's own range
@@ -298,8 +307,8 @@ def _resolve_ids(
         if (key, s) not in memo:
             memo[(key, s)] = _match(key, s, systems, table, latest)
         hit = memo[(key, s)]
-        if hit is None or hit is _AMBIGUOUS:
-            unresolved[str(value)] = "ambiguous" if hit is _AMBIGUOUS else "unknown"
+        if hit is None or isinstance(hit, tuple):
+            unresolved[str(value)] = "unknown" if hit is None else _ambiguous(hit, league)
             out.append(None)
         else:
             out.append(hit)
@@ -320,7 +329,7 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
         list[tuple[str, str]]: ``(team_id, name)`` pairs, best match first; empty when nothing is close.
 
     Raises:
-        ValueError: If ``league`` is unknown.
+        InputError: (a ValueError) If ``league`` is unknown, or ``n`` is not an int of at least 1.
 
     Example:
         ::
@@ -336,6 +345,8 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     import difflib
 
     _index.check_league(league)
+    if isinstance(n, bool) or not isinstance(n, numbers.Integral) or n < 1:
+        raise InputError(f"n is the most candidates to return, an int of at least 1, got {n!r}")
     key = norm_value(value)
     if key is None:
         return []

@@ -10,13 +10,142 @@ The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figu
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot. |
+| [add_images](#add_images) | Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plot. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a matplotlib or seaborn plot. |
-| [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot. |
 | [axis_logos](#axis_logos) | Replace a team axis' tick labels with the teams' logos (or wordmarks). |
-| [add_images](#add_images) | Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot. |
-| [title_image](#title_image) | Set the plot title and draw an image (a team logo, or any image) beside it. |
 | [team_tiers](#team_tiers) | A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme. |
+| [title_image](#title_image) | Set the plot title and draw an image (a team logo, or any image) beside it. |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    target: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    zorder: float = 3,
+    id_system: str = 'espn',
+    transform: Any = None,
+) -> Any
+```
+
+</div>
+
+Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid). |
+| `x` | `Any` | The points' x positions, in data coordinates (read by position). |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the Axes height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `zorder` | `float` | matplotlib drawing order. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `transform` | `Any` | The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform. A mark whose position falls outside the Axes is not drawn, whatever the transform. |
+
+### Returns
+
+`object` — ``target`` itself, drawn on.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
+
+### Example
+
+```python
+import matplotlib.pyplot as plt
+import sdvplot
+
+fig, ax = plt.subplots()
+sdvplot.add_headshots(ax, [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
+
+## add_images
+
+<div class="sdv-signature">
+
+```python
+add_images(
+    target: Any,
+    x: Any,
+    y: Any,
+    paths: Any,
+    *,
+    height: float = 0.1,
+    alpha: float = 1,
+    zorder: float = 3,
+    transform: Any = None,
+) -> Any
+```
+
+</div>
+
+Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot.
+
+The image counterpart of ``add_logos``, with the same sizing: ``height`` is a fraction of the Axes height, and
+each image keeps its aspect ratio. URLs are downloaded once and cached (like headshots); local files are read
+as they are. PNG, JPEG, GIF, WebP and the other formats Pillow reads work; SVG does not.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid). |
+| `x` | `Any` | The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position). |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `paths` | `Any` | The image for each point (or one ``pathlib.Path`` for one point): a local path (str or ``pathlib.Path``), a ``file://`` URI or an https URL (http is refused). A null path draws nothing. |
+| `height` | `float` | The image height as a fraction of the Axes height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `zorder` | `float` | matplotlib drawing order (3 draws above lines and markers). |
+| `transform` | `Any` | The coordinates x and y are in, when not the Axes' data: a Cartopy CRS (required on a GeoAxes) or a matplotlib Transform such as ``ax.transAxes``. |
+
+### Returns
+
+`object` — ``target`` itself, drawn on. Points whose image cannot be read (a missing file, a file that is not an image, a failed download) or whose x or y is missing are skipped, with one SdvplotWarning per reason.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+
+### Example
+
+```python
+import matplotlib.pyplot as plt
+from sdvplot.matplotlib import add_images
+
+fig, ax = plt.subplots()
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 10)
+add_images(ax, [3, 7], [5, 5], ["court.png", "https://www.python.org/static/img/python-logo.png"],
+           height=0.2)
+```
+
+### See also
+
+- [ggpath geom_from_path()](https://mrcaseb.github.io/ggpath/)
+- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -68,6 +197,8 @@ Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plo
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -142,6 +273,8 @@ Draw each team's wordmark centred on its (x, y) point of a matplotlib or seaborn
 ### Raises
 
 - `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -156,67 +289,6 @@ sdvplot.add_wordmarks(ax, [0.5], [0.5], ["KC"], league="nfl", height=0.1)
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    target: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    zorder: float = 3,
-    id_system: str = 'espn',
-    transform: Any = None,
-) -> Any
-```
-
-</div>
-
-Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid). |
-| `x` | `Any` | The points' x positions, in data coordinates (read by position). |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the Axes height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `zorder` | `float` | matplotlib drawing order. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-| `transform` | `Any` | The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform. A mark whose position falls outside the Axes is not drawn, whatever the transform. |
-
-### Returns
-
-`object` — ``target`` itself, drawn on.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
-
-### Example
-
-```python
-import matplotlib.pyplot as plt
-import sdvplot
-
-fig, ax = plt.subplots()
-sdvplot.add_headshots(ax, [0.5], [0.5], ["3139477"], league="nfl", height=0.2)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 
@@ -263,6 +335,8 @@ not teams stay as text, with one SdvplotWarning.
 ### Raises
 
 - `ValueError`: If ``axis`` is not "x"/"y", ``height`` is out of range, or the target has several Axes.
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+- `OfflineError`: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when the CDN refuses it or sends the wrong file).
 
 ### Example
 
@@ -278,137 +352,6 @@ sdvplot.axis_logos(ax, "x", league="nfl", height=0.08)
 ### See also
 
 - [sdvplotR element_sdv_logo()](https://sdvplotR.sportsdataverse.org/)
-
-## add_images
-
-<div class="sdv-signature">
-
-```python
-add_images(
-    target: Any,
-    x: Any,
-    y: Any,
-    paths: Any,
-    *,
-    height: float = 0.1,
-    alpha: float = 1,
-    zorder: float = 3,
-    transform: Any = None,
-) -> Any
-```
-
-</div>
-
-Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot.
-
-The image counterpart of ``add_logos``, with the same sizing: ``height`` is a fraction of the Axes height, and
-each image keeps its aspect ratio. URLs are downloaded once and cached (like headshots); local files are read
-as they are. PNG, JPEG, GIF, WebP and the other formats Pillow reads work; SVG does not.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes (or a JointGrid). |
-| `x` | `Any` | The points' x positions, in data coordinates (list, numpy array, or pandas/polars Series; read by position). |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `paths` | `Any` | The image for each point (or one ``pathlib.Path`` for one point): a local path (str or ``pathlib.Path``), a ``file://`` URI or an http(s) URL. A null path draws nothing. |
-| `height` | `float` | The image height as a fraction of the Axes height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `zorder` | `float` | matplotlib drawing order (3 draws above lines and markers). |
-| `transform` | `Any` | The coordinates x and y are in, when not the Axes' data: a Cartopy CRS (required on a GeoAxes) or a matplotlib Transform such as ``ax.transAxes``. |
-
-### Returns
-
-`object` — ``target`` itself, drawn on. Points whose image cannot be read (a missing file, a file that is not an image, a failed download) or whose x or y is missing are skipped, with one SdvplotWarning per reason.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
-
-### Example
-
-```python
-import matplotlib.pyplot as plt
-from sdvplot.matplotlib import add_images
-
-fig, ax = plt.subplots()
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 10)
-add_images(ax, [3, 7], [5, 5], ["court.png", "https://www.python.org/static/img/python-logo.png"],
-           height=0.2)
-```
-
-### See also
-
-- [ggpath geom_from_path()](https://mrcaseb.github.io/ggpath/)
-- [sdvplotR](https://sdvplotR.sportsdataverse.org/)
-
-## title_image
-
-<div class="sdv-signature">
-
-```python
-title_image(
-    target: Any,
-    image: Any,
-    title: str = '',
-    *,
-    league: str | None = None,
-    season: Any = None,
-    side: str = 'left',
-    height: float = 15,
-    **text_kw: Any,
-) -> Any
-```
-
-</div>
-
-Set the plot title and draw an image (a team logo, or any image) beside it.
-
-The title and the image are aligned together, like the image inside sdvplotR's title: a centred title centres the
-pair, a left-aligned one starts with the image.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `target` | `Any` | A matplotlib Axes (sets its title), a Figure (sets its suptitle), or a seaborn grid with one Axes. |
-| `image` | `Any` | A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL (http or https) or a local file path. |
-| `title` | `str` | The title text. |
-| `league` | `str \| None` | The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path. |
-| `season` | `Any` | One season, to pick the team's logo for that era. |
-| `side` | `str` | "left" or "right" of the title text. |
-| `height` | `float` | The image height in points (1/72 inch), at any dpi. The title keeps its own line height, so an image much taller than the text needs room: ``pad=`` on an Axes title, ``y=`` on a Figure's suptitle. |
-| `**text_kw` | `Any` | Passed to ``Axes.set_title`` (``loc``, ``fontsize``, ``pad``, ...) or ``Figure.suptitle``. |
-
-### Returns
-
-`object` — ``target`` itself, titled. Calling it again on the same title replaces the image. An image by URL or path that cannot be read gives one SdvplotWarning and the title without it.
-
-### Raises
-
-- `ValueError`: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several Axes.
-- `OfflineError`: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
-
-### Example
-
-```python
-import matplotlib.pyplot as plt
-from sdvplot.matplotlib import title_image
-
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [3, 1, 2])
-title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
-
-# A Figure's suptitle, the image on the right:
-title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
-```
-
-### See also
-
-- [sdvplotR ggtitle_image()](https://sdvplotR.sportsdataverse.org/reference/ggtitle_image.html)
-- sdvplot.plotnine.title_image: the same for plotnine.
 
 ## team_tiers
 
@@ -482,3 +425,70 @@ fig = team_tiers(df, "cfb", theme="light")
 
 - [sdvplotR sdv_team_tiers()](https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html)
 - sdvplot.plotnine.team_tiers: the same as a plotnine ggplot.
+
+## title_image
+
+<div class="sdv-signature">
+
+```python
+title_image(
+    target: Any,
+    image: Any,
+    title: str = '',
+    *,
+    league: str | None = None,
+    season: Any = None,
+    side: str = 'left',
+    height: float = 15,
+    **text_kw: Any,
+) -> Any
+```
+
+</div>
+
+Set the plot title and draw an image (a team logo, or any image) beside it.
+
+The title and the image are aligned together, like the image inside sdvplotR's title: a centred title centres the
+pair, a left-aligned one starts with the image.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A matplotlib Axes (sets its title), a Figure (sets its suptitle), or a seaborn grid with one Axes. |
+| `image` | `Any` | A team, in any id system ``resolve()`` understands, when ``league`` is given; otherwise an image URL (https; http is refused) or a local file path. |
+| `title` | `str` | The title text. |
+| `league` | `str \| None` | The SDV league key, e.g. "nfl"; None reads ``image`` as a URL or path. |
+| `season` | `Any` | One season, to pick the team's logo for that era. |
+| `side` | `str` | "left" or "right" of the title text. |
+| `height` | `float` | The image height in points (1/72 inch), at any dpi. The title keeps its own line height, so an image much taller than the text needs room: ``pad=`` on an Axes title, ``y=`` on a Figure's suptitle. |
+| `**text_kw` | `Any` | Passed to ``Axes.set_title`` (``loc``, ``fontsize``, ``pad``, ...) or ``Figure.suptitle``. |
+
+### Returns
+
+`object` — ``target`` itself, titled. Calling it again on the same title replaces the image. An image by URL or path that cannot be read gives one SdvplotWarning and the title without it.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``height`` is not a number of points of at least 1.
+- `ValueError`: If ``side`` is not "left"/"right", or the target has several Axes.
+- `OfflineError`: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
+
+### Example
+
+```python
+import matplotlib.pyplot as plt
+from sdvplot.matplotlib import title_image
+
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [3, 1, 2])
+title_image(ax, "KC", "Kansas City Chiefs Analysis", league="nfl", height=20)
+
+# A Figure's suptitle, the image on the right:
+title_image(fig, "https://example.com/banner.png", "Week 1", side="right")
+```
+
+### See also
+
+- [sdvplotR ggtitle_image()](https://sdvplotR.sportsdataverse.org/reference/ggtitle_image.html)
+- sdvplot.plotnine.title_image: the same for plotnine.

@@ -10,11 +10,74 @@ The Altair adapter: logos, wordmarks and headshots as a native Vega-Lite image l
 
 | Name | What it is |
 |---|---|
+| [add_headshots](#add_headshots) | Layer each player's headshot, centred on its (x, y) point, onto an Altair chart. |
 | [add_logos](#add_logos) | Layer each team's logo, centred on its (x, y) point, onto an Altair chart. |
 | [add_wordmarks](#add_wordmarks) | Layer each team's wordmark, centred on its (x, y) point, onto an Altair chart. |
-| [add_headshots](#add_headshots) | Layer each player's headshot, centred on its (x, y) point, onto an Altair chart. |
 | [axis_logos](#axis_logos) | Replace a discrete axis' team labels with the teams' logos (or wordmarks). |
 | [logo_layer](#logo_layer) | A Vega-Lite image layer of team logos, to layer onto a chart: ``alt.layer(chart, logo_layer(...))``. |
+
+## add_headshots
+
+<div class="sdv-signature">
+
+```python
+add_headshots(
+    chart: Any,
+    x: Any,
+    y: Any,
+    players: Any,
+    *,
+    league: str,
+    height: float = 0.1,
+    alpha: float = 1,
+    embed: bool = False,
+    id_system: str = 'espn',
+) -> altair.vegalite.v6.api.LayerChart
+```
+
+</div>
+
+Layer each player's headshot, centred on its (x, y) point, onto an Altair chart.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `chart` | `Any` | An ``altair.Chart`` or ``LayerChart``. |
+| `x` | `Any` | The points' x positions, in the chart's x values. |
+| `y` | `Any` | The points' y positions, the same length as ``x``. |
+| `players` | `Any` | The player id for each point. |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `height` | `float` | The headshot height as a fraction of the chart height, in (0, 1]. |
+| `alpha` | `float` | Opacity, 0 to 1. |
+| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
+| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+
+### Returns
+
+`altair.LayerChart` — A new chart, ``chart`` plus the image layer.
+
+### Raises
+
+- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
+- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
+- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
+
+### Example
+
+```python
+import altair as alt
+import pandas as pd
+import sdvplot
+
+df = pd.DataFrame({"x": [0.3], "y": [0.5], "player": ["3139477"]})
+chart = alt.Chart(df).mark_point().encode(x="x", y="y")
+sdvplot.add_headshots(chart, df["x"], df["y"], df["player"], league="nfl", height=0.2)
+```
+
+### See also
+
+- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## add_logos
 
@@ -153,69 +216,6 @@ sdvplot.add_wordmarks(bars, df["team"], df["wins"], df["team"], league="nfl", he
 ### See also
 
 - [sdvplotR geom_nfl_wordmarks()](https://sdvplotR.sportsdataverse.org/)
-
-## add_headshots
-
-<div class="sdv-signature">
-
-```python
-add_headshots(
-    chart: Any,
-    x: Any,
-    y: Any,
-    players: Any,
-    *,
-    league: str,
-    height: float = 0.1,
-    alpha: float = 1,
-    embed: bool = False,
-    id_system: str = 'espn',
-) -> altair.vegalite.v6.api.LayerChart
-```
-
-</div>
-
-Layer each player's headshot, centred on its (x, y) point, onto an Altair chart.
-
-### Arguments
-
-| Name | Type | Description |
-|---|---|---|
-| `chart` | `Any` | An ``altair.Chart`` or ``LayerChart``. |
-| `x` | `Any` | The points' x positions, in the chart's x values. |
-| `y` | `Any` | The points' y positions, the same length as ``x``. |
-| `players` | `Any` | The player id for each point. |
-| `league` | `str` | The SDV league key, e.g. "nfl". |
-| `height` | `float` | The headshot height as a fraction of the chart height, in (0, 1]. |
-| `alpha` | `float` | Opacity, 0 to 1. |
-| `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
-
-### Returns
-
-`altair.LayerChart` — A new chart, ``chart`` plus the image layer.
-
-### Raises
-
-- `ValueError`: If ``height`` or ``alpha`` is out of range, the inputs differ in length, or the chart cannot take a layer (see ``add_logos``).
-- `TypeError`: If the target is not an Altair ``Chart`` or ``LayerChart``.
-- `OfflineError`: If ``embed=True`` and an image is neither cached nor downloadable.
-
-### Example
-
-```python
-import altair as alt
-import pandas as pd
-import sdvplot
-
-df = pd.DataFrame({"x": [0.3], "y": [0.5], "player": ["3139477"]})
-chart = alt.Chart(df).mark_point().encode(x="x", y="y")
-sdvplot.add_headshots(chart, df["x"], df["y"], df["player"], league="nfl", height=0.2)
-```
-
-### See also
-
-- [sdvplotR geom_nfl_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## axis_logos
 

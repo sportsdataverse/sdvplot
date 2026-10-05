@@ -1,13 +1,16 @@
 import hashlib
 import io
+import os
+import subprocess
+import sys
 
 import polars as pl
 import pytest
 from PIL import Image
 
 from sdvplot import _cache, _images, _manifest
-from sdvplot._errors import SdvplotWarning
-from tests.conftest import FakeResponse, FakeSession
+from sdvplot._errors import DownloadError, InputError, IntegrityError, SdvplotError, SdvplotWarning
+from tests.conftest import FakeResponse, FakeSession, in_threads, slow_download
 
 
 def _png(w, h):
@@ -49,6 +52,20 @@ def test_png_logo_is_decoded_and_scaled_down(cache, monkeypatch):
     _manifest_with(monkeypatch, _png(500, 250), "png")
     img = _images.logo_image("LV", "nfl", size=100)
     assert img.size == (100, 50)
+
+
+def test_a_refused_logo_download_is_an_sdvplot_error(cache, monkeypatch):  # M5: never requests.HTTPError
+    _manifest_with(monkeypatch, _png(10, 10), "png")
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.raises(DownloadError, match="HTTP 404") as exc:
+        _images.logo_image("LV", "nfl")
+    assert isinstance(exc.value, SdvplotError) and isinstance(exc.value, OSError)
+
+
+def test_an_archived_file_that_is_not_an_image_is_an_integrity_error(cache, monkeypatch):  # M5: not a bare OSError
+    _manifest_with(monkeypatch, b"not an image", "png")
+    with pytest.raises(IntegrityError, match="not an image PIL can decode"):
+        _images.logo_image("LV", "nfl")
 
 
 def test_png_without_size_keeps_its_pixels(cache, monkeypatch):
@@ -186,3 +203,102 @@ def test_a_read_only_cache_still_returns_the_rasterized_svg(cache, monkeypatch):
     monkeypatch.setattr(type(raster), "unlink", read_only)
     assert _images.logo_image("LV", "nfl", size=200).size == (200, 100)  # corrupt raster, no unlink, no write
     assert _images.logo_image("LV", "nfl", size=100).size == (100, 50)  # a new size, no write
+
+
+# --- bounded SVG rendering -----------------------------------------------------------------------------------------
+
+
+def _svg(w, h):
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><rect width="{w}" height="{h}"/></svg>'.encode()
+    )
+
+
+def _svg_row(monkeypatch, body):
+    _manifest_with(monkeypatch, body, "svg")
+    sha = hashlib.sha256(body).hexdigest()
+    return {"sha256": sha, "ext": "svg", "archive_url": f"https://cdn/{sha}.svg"}
+
+
+@pytest.mark.parametrize(
+    ("shape", "size", "expected"),
+    [
+        ((1, 4), 512, (128, 512)),
+        ((4, 1), 64, (64, 16)),
+        ((1, 64), 640, (10, 640)),
+        # a wordmark wider than any in the archive (13:1), at the largest size an adapter asks for (matplotlib's _image)
+        ((16, 1), 4096, (4096, 256)),
+    ],
+)
+def test_an_svg_is_rendered_with_its_longest_side_at_size(cache, monkeypatch, shape, size, expected):
+    pytest.importorskip("resvg_py")
+    assert _images.load_mark_image(_svg_row(monkeypatch, _svg(*shape)), size).size == expected
+
+
+def test_an_svg_size_over_max_size_is_refused_before_anything_is_rendered(cache, monkeypatch):
+    resvg_py = pytest.importorskip("resvg_py")
+    row = _svg_row(monkeypatch, SVG)
+    rendered = []
+    monkeypatch.setattr(resvg_py, "svg_to_bytes", lambda **kw: rendered.append(kw))
+    with pytest.raises(InputError, match="4096"):
+        _images.load_mark_image(row, _images.MAX_SIZE + 1)
+    assert rendered == []
+
+
+def test_an_svg_beyond_1_to_64_is_refused(cache, monkeypatch):
+    pytest.importorskip("resvg_py")
+    with pytest.raises(InputError, match="aspect ratio"):
+        _images.load_mark_image(_svg_row(monkeypatch, _svg(1, 100)))
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="RLIMIT_AS is enforced on Linux")
+def test_the_svgs_that_used_to_abort_the_process_raise_under_a_memory_limit(tmp_path):
+    """These renders asked resvg for 100 GB and 6.4 GB: the process died with SIGABRT (Rust's allocation failure)."""
+    pytest.importorskip("resvg_py")
+    script = (
+        "import resource, sys\n"
+        "resource.setrlimit(resource.RLIMIT_AS, (1 << 30, 1 << 30))\n"
+        "from pathlib import Path\n"
+        "from sdvplot import _images\n"
+        "from sdvplot._errors import InputError\n"
+        "for name, size in [('tall', 512), ('square', 40000), ('square', 512)]:\n"
+        "    try:\n"
+        "        print('ok', _images._rasterize(Path(sys.argv[1]) / f'{name}.svg', name[0] * 64, size, 'svg').size)\n"
+        "    except InputError:\n"
+        "        print('InputError')\n"
+    )
+    (tmp_path / "tall.svg").write_bytes(_svg(1, 100000))
+    (tmp_path / "square.svg").write_bytes(_svg(10, 10))
+    env = {**os.environ, "SDVPLOT_CACHE_DIR": str(tmp_path / "cache")}
+    r = subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path)], capture_output=True, text=True, env=env, timeout=120
+    )
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert r.stdout.splitlines() == ["InputError", "InputError", "ok (512, 512)"]
+
+
+def test_the_decoded_image_cache_counts_bytes_per_sample(cache, monkeypatch):
+    """A 16-bit grayscale PNG decodes as I;16, two bytes a pixel; counting one byte a sample let 16- and 32-bit images
+    (I;16, I, F) hold two to four times DECODED_BUDGET."""
+    buf = io.BytesIO()
+    Image.new("I;16", (40, 30), 1000).save(buf, "PNG")
+    body = buf.getvalue()
+    _manifest_with(monkeypatch, body, "png")
+    sha = hashlib.sha256(body).hexdigest()
+    img = _images.load_mark_image({"sha256": sha, "ext": "png", "archive_url": f"https://cdn/{sha}.png"})
+    assert img.mode == "I;16"
+    assert _images._decoded_bytes == len(img.tobytes()) == 40 * 30 * 2
+
+
+def test_threads_asking_for_one_uncached_logo_download_and_decode_it_once(cache, monkeypatch):
+    body = _png(500, 250)
+    _manifest_with(monkeypatch, body, "png")
+    downloads, decodes = [], []
+    monkeypatch.setattr(
+        _cache, "_download", slow_download({f"https://cdn/{hashlib.sha256(body).hexdigest()}.png": body}, downloads)
+    )
+    decode = _images._decode_mark
+    monkeypatch.setattr(_images, "_decode_mark", lambda *key: decodes.append(key) or decode(*key))
+    imgs = in_threads(lambda: _images.logo_image("LV", "nfl", size=64))  # raised PermissionError on Windows
+    assert len(downloads) == 1 and len(decodes) == 1
+    assert len({(im.size, im.tobytes()) for im in imgs}) == 1 and imgs[0].size == (64, 32)

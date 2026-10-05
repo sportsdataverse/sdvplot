@@ -38,6 +38,9 @@ uv sync                       # runtime + the dev groups (test, lint, docs, pre-
 uv sync --all-extras          # also install every plotting extra
 ```
 
+mypy needs every extra: without the plotting libraries the adapters' types collapse to `Any` and it reports errors
+that CI (which syncs `--all-extras`) never sees. Run it as `uv run --all-extras mypy`; the pre-push hook does the same.
+
 Commit a regenerated `uv.lock` together with the `pyproject.toml` change that caused it.
 
 ### pre-commit
@@ -57,7 +60,7 @@ instead.
 uv run pytest -q                           # offline, the default
 SDVPLOT_LIVE_TESTS=1 uv run pytest -q      # adds the network tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy
+uv run --all-extras mypy                   # type-checks against every extra, as CI does
 ```
 
 Tests run against a small hand-written index fixture. A test that needs the shipped index carries the `real_index`
