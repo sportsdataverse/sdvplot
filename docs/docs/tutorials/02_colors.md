@@ -1,7 +1,8 @@
 ---
-title: Team colors tutorial
-sidebar_label: Team colors
+title: "Team colors tutorial"
+sidebar_label: "Team colors"
 sidebar_position: 2
+description: "Color a chart by team with palette and team_colors, including leagues without official colors."
 ---
 
 # Team colors

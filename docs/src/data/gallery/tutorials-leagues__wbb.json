@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "wbb",
+  "label": "Women's college basketball",
+  "position": 23,
+  "page": "tutorials/leagues/wbb.md",
+  "items": [
+    {
+      "title": "Women's efficiency landscape",
+      "alt": "Logos of the 36 best women's teams placed by adjusted offense and defense",
+      "image": "/img/gallery/tutorials/leagues/wbb_7.png",
+      "anchor": "2-the-efficiency-landscape-of-the-top-36"
+    },
+    {
+      "title": "Shot chart on a college court",
+      "alt": "Made and missed field goals of the leading women's scorer on an NCAA half court in her team's colors",
+      "image": "/img/gallery/tutorials/leagues/wbb_15.png",
+      "anchor": "6-a-shot-chart-on-a-college-court"
+    },
+    {
+      "title": "AP poll bump chart",
+      "alt": "Weekly AP rank lines of the final women's top 8 in team colors, logos at the finish",
+      "image": "/img/gallery/tutorials/leagues/wbb_23.png",
+      "anchor": "10-the-ap-poll-week-by-week"
+    }
+  ]
+}

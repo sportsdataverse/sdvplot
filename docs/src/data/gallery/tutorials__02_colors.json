@@ -1,0 +1,15 @@
+{
+  "section": "tutorials",
+  "stem": "02_colors",
+  "label": "Team colors",
+  "position": 2,
+  "page": "tutorials/02_colors.md",
+  "items": [
+    {
+      "title": "Team colors in a seaborn bar chart",
+      "alt": "Bar chart of EPA per play for KC, BUF, PHI and DET, each bar in its team's primary color.",
+      "image": "/img/gallery/tutorials/02_colors_4.png",
+      "anchor": "a-palette-for-seaborn"
+    }
+  ]
+}
