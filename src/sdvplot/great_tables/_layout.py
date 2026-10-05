@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import copy
 import dataclasses
 import datetime
 import functools
@@ -25,83 +24,13 @@ import polars as pl
 from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
-# private great_tables API: the column/row resolvers its own methods use (pinned by test_private_great_tables_api)
-from great_tables._locations import resolve_cols_c, resolve_rows_i
-
-from sdvplot._contrast import contrast, hex6, mix, on_color
+from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
-from sdvplot._tables import row_positions
+from sdvplot.great_tables._cells import _columns, _frame, _row_indices
+from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
+from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id
 
-_STYLE_KEYS = (
-    "font",
-    "size",
-    "color",
-    "weight",
-    "italic",
-    "spacing",
-    "transform",
-    "align",
-    "line_height",
-    "margin_top",
-    "margin_bottom",
-    "padding_top",
-    "padding_bottom",
-)
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
-
-
-def _check_gt(gt: object) -> None:
-    """sdvplotR's ``.check_gt``: every public function takes a GT, never raw data."""
-    if not isinstance(gt, GT):
-        raise TypeError(f"gt must be a great_tables.GT, not {type(gt).__name__}; wrap a data frame with GT(df) first")
-
-
-def _style(default: Mapping[str, Any], user: Mapping[str, Any] | None) -> dict[str, Any]:
-    """A style dict (sdvplotR's ``*_style`` lists): the defaults with the caller's keys on top."""
-    user = dict(user or {})
-    unknown = sorted(set(user) - set(_STYLE_KEYS))
-    if unknown:
-        raise ValueError(f"unknown style key(s) {unknown}; the keys are {', '.join(_STYLE_KEYS)}")
-    return {**default, **user}
-
-
-def _css_len(value: Any) -> str:
-    """A number (numpy numbers included) reads as pixels; anything else is a CSS length already."""
-    return f"{value}px" if isinstance(value, numbers.Real) and not isinstance(value, bool) else str(value)
-
-
-def _style_css(s: Mapping[str, Any]) -> str:
-    """Inline CSS for a style dict (sdvplotR's ``.style_css`` with no font fallback, so text inherits the theme's)."""
-    out = []
-    if s.get("font") is not None:
-        out.append(f"font-family:'{s['font']}', sans-serif;")
-    plain = {"color": "color", "weight": "font-weight", "transform": "text-transform", "align": "text-align"}
-    lengths = {
-        "size": "font-size",
-        "spacing": "letter-spacing",
-        "margin_top": "margin-top",
-        "margin_bottom": "margin-bottom",
-        "padding_top": "padding-top",
-        "padding_bottom": "padding-bottom",
-    }
-    for key in _STYLE_KEYS:
-        value = s.get(key)
-        if value is None:
-            continue
-        if key in plain:
-            out.append(f"{plain[key]}:{value};")
-        elif key in lengths:
-            out.append(f"{lengths[key]}:{_css_len(value)};")
-        elif key == "italic" and value is True:
-            out.append("font-style:italic;")
-        elif key == "line_height":
-            out.append(f"line-height:{value};")
-    return "".join(out)
-
-
-def _fonts(*styles: Mapping[str, Any]) -> list[str]:
-    """The distinct Google font names across style dicts, in order."""
-    return list(dict.fromkeys(s["font"] for s in styles if s.get("font") is not None))
 
 
 def _with_fonts(gt: GT, fonts: list[str], location: Any) -> GT:
@@ -116,24 +45,6 @@ def _choice(name: str, value: str, options: tuple[str, ...]) -> str:
     if value not in options:
         raise ValueError(f"{name} must be one of {', '.join(map(repr, options))}, got {value!r}")
     return value
-
-
-def _columns(gt: GT, columns: Any) -> list[str]:
-    """The data columns a great_tables column selection names (``None`` selects every column)."""
-    return resolve_cols_c(data=gt, expr=columns)
-
-
-def _rows(gt: GT, rows: Any) -> list[int]:
-    """The 0-based row positions a great_tables row selection names (``None`` selects every row).
-
-    numpy integers count as positions: great_tables' resolver silently skips anything that is not an ``int``.
-    """
-    return [i for _, i in resolve_rows_i(gt, row_positions(rows))]
-
-
-def _frame(gt: GT) -> nw.DataFrame[Any]:
-    """The table's data (pandas or polars) as a narwhals frame."""
-    return nw.from_native(gt._tbl_data, eager_only=True)
 
 
 def _number(value: Any) -> float | None:
@@ -175,30 +86,6 @@ def _ramp(palette: list[str], t: float) -> str:
     return mix(palette[i], palette[i + 1], pos - i)
 
 
-def _record(gt: GT, name: str, value: Any) -> GT:
-    """A copy of ``gt`` carrying ``value`` as attribute ``name`` (``_sdvplot_scale``, ``_sdvplot_key``)."""
-    out = copy.copy(gt)
-    out.__dict__[name] = value
-    return out
-
-
-def _background(gt: GT) -> str:
-    """The table background as ``#rrggbb``; white when it is unset or not a hex color."""
-    try:
-        return hex6(str(gt._options.table_background_color.value))
-    except ValueError:
-        return "#ffffff"
-
-
-def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
-    """Muted but legible text: ``fg`` blended into ``bg`` until it clears ``target`` contrast."""
-    for step in range(12):
-        candidate = mix(bg, fg, (45 + 5 * step) / 100)
-        if contrast(candidate, bg) >= target:
-            return candidate
-    return fg
-
-
 def _text(value: Any) -> str | None:
     """A heading part (``str``, great_tables ``Html``/``Md`` or ``None``) as its text; ``None`` when empty."""
     text = getattr(value, "text", value)
@@ -220,15 +107,6 @@ def _in_header(gt: GT, block: str, fonts: list[str]) -> GT:
 
 _JUSTIFY = {"left": "flex-start", "right": "flex-end", "center": "center"}
 _RANK_PALETTE = ("#3D8B6E", "#9DC5A7", "#EDE0CC", "#DB9070", "#BE4D3A")
-
-
-def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id, assigning a random one when it has none (scoped CSS needs it)."""
-    table_id = gt._options.table_id.value
-    if table_id is None:
-        table_id = "".join(random.choices(string.ascii_lowercase, k=10))
-        gt = gt.with_id(table_id)
-    return gt, table_id
 
 
 def gt_title_header(
@@ -283,12 +161,13 @@ def gt_title_header(
     """
     _check_gt(gt)
     s_kicker = _style(
-        {"size": "0.75em", "weight": 700, "color": "#C84630", "transform": "uppercase", "spacing": "0.08em"},
+        "kicker_style",
         kicker_style,
+        {"size": "0.75em", "weight": 700, "color": "#C84630", "transform": "uppercase", "spacing": "0.08em"},
     )
-    s_title = _style({}, title_style)
-    s_subtitle = _style({}, subtitle_style)
-    s_date = _style({"size": "0.85em", "weight": 400, "color": "#8A8A8A"}, date_style)
+    s_title = _style("title_style", title_style)
+    s_subtitle = _style("subtitle_style", subtitle_style)
+    s_date = _style("date_style", date_style, {"size": "0.85em", "weight": 400, "color": "#8A8A8A"})
 
     kicker_html = "" if kicker is None else f'<div style="{_style_css(s_kicker)}margin-bottom:0.15em;">{kicker}</div>'
     title_full = f'{kicker_html}<div style="{_style_css(s_title)}">{title}</div>'
@@ -560,8 +439,8 @@ def gt_legend_continuous(
         raise ValueError(f"domain must be (low, high), got {domain!r}")
     lo, hi = float(domain[0]), float(domain[1])
 
-    s_title = _style({"size": "11px", "color": "#666666"}, title_style)
-    s_labels = _style({"size": "10px", "color": "#666666"}, labels_style)
+    s_title = _style("title_style", title_style, {"size": "11px", "color": "#666666"})
+    s_labels = _style("labels_style", labels_style, {"size": "10px", "color": "#666666"})
 
     if labels is None:
         texts = [f"{v:,.{digits}f}" for v in (lo, hi)]
@@ -718,9 +597,9 @@ def gt_legend_discrete(
 
     bg = _background(gt)
     ink = on_color(bg)
-    s_heading = _style({"size": 16, "weight": 600, "color": ink}, heading_style)
-    s_subtitle = _style({"size": 13, "weight": 400, "color": _secondary_on(bg, ink)}, subtitle_style)
-    s_label = _style({"size": 12, "color": ink}, label_style)
+    s_heading = _style("heading_style", heading_style, {"size": 16, "weight": 600, "color": ink})
+    s_subtitle = _style("subtitle_style", subtitle_style, {"size": 13, "weight": 400, "color": _secondary_on(bg, ink)})
+    s_label = _style("label_style", label_style, {"size": 12, "color": ink})
 
     edges = [mix(c, "#000000", 0.18) if border_color is None else border_color for c in colors]
     rims = [f"border:{border_width:g}px solid {e};" if border else "" for e in edges]
@@ -846,7 +725,7 @@ def gt_percentile_bar(
     cols = _columns(gt, columns)
     if not cols:
         return gt
-    keep = _rows(gt, rows)
+    keep = _row_indices(gt, rows)
     if not keep:
         warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
         return gt
@@ -1069,7 +948,7 @@ def gt_spotlight(
     """
     _check_gt(gt)
     _choice("if_none", if_none, ("warn", "dim", "ignore"))
-    focus = _rows(gt, rows)
+    focus = _row_indices(gt, rows)
     if not focus:
         if if_none == "dim" and dim_color is not None:
             return gt.tab_style(gst.text(color=dim_color), loc.body())
@@ -1166,7 +1045,7 @@ def gt_row_accent(
         colors = [None if k is None else lookup[k] for k in keys]
     fills = [na_color if c is None else c for c in colors]
 
-    keep = set(_rows(gt, rows))
+    keep = set(_row_indices(gt, rows))
     if not keep:
         warnings.warn("rows matched no rows; the table is unchanged", SdvplotWarning, stacklevel=2)
         return gt
@@ -1233,7 +1112,8 @@ def gt_outliers(
         threshold: The cutoff for ``"iqr"`` (default 1.5) and ``"sd"`` (default 3).
         bounds: ``(lower, upper)`` for ``"bounds"``; ``None`` on either side leaves it open.
         side: ``"both"``, ``"high"`` or ``"low"``.
-        fill: A fill behind flagged values.
+        fill: A hex fill behind flagged values (a translucent ``#rrggbbaa`` is drawn as given; the default text
+            color is read on what it shows over the table background).
         color: The flagged text color; defaults to a warning red, or the readable ink when the red fails 4.5:1 on
             ``fill``.
         bold: Bold flagged values.
@@ -1276,7 +1156,8 @@ def gt_outliers(
         warnings.warn("no numeric columns among columns; nothing to flag", SdvplotWarning, stacklevel=2)
         return gt
     if color is None:
-        color = "#B3261E" if fill is None or contrast("#B3261E", fill) >= 4.5 else on_color(fill)
+        shown = None if fill is None else solid(fill, _background(gt))  # fill goes to CSS as given
+        color = "#B3261E" if shown is None or contrast("#B3261E", shown) >= 4.5 else on_color(shown)
 
     flagged = False
     for col in numeric:

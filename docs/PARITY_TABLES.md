@@ -25,19 +25,19 @@ HTML bytes.
 
 | R function | gt feature | great_tables equivalent | decision |
 | --- | --- | --- | --- |
-| `gt_sdv_logos` | `text_transform(cells_body())` building `<img>` per cell | `GT.text_transform(loc.body(columns))`. Values are resolved when the function is called, from one render of the cell text (public API), and looked up at render | ported. Unknown values keep their text and warn once, when called. great_tables passes escaped text (`A&amp;M`), so it is unescaped before resolving, as in R |
+| `gt_sdv_logos` | `text_transform(cells_body())` building `<img>` per cell | `GT.text_transform(loc.body(columns))`. Values are resolved when the function is called, from one render of the cell text (public API), and looked up at render | ported. Unknown values keep their text and warn once, when called. great_tables passes escaped text (`A&amp;M`), so it is unescaped before resolving, as in R. `locations` takes `loc.body()`, `loc.stub()` and `loc.row_groups()`; R also takes `cells_column_labels()`, but great_tables' `text_transform` escapes column labels, so any other location is a `ValueError` (column labels: `gt_sdv_cols_label`). The same holds for `gt_sdv_wordmarks` and `gt_sdv_headshots` |
 | `gt_sdv_wordmarks` | same | same | ported. Adds `season=` (R has none) |
 | `gt_sdv_headshots` | `text_transform()` + `web_image()` | same as logos | ported. `id_system="espn"` by default for every league (R reads NFL ids as GSIS by default) |
 | `gt_sdv_cols_label` | `cols_label_with(fn)` returning `html()` | `cols_label_with()` reads the selection; `cols_label(cases={col: html(...)})` sets the images (great_tables escapes a text transform's output in labels) | ported. The column *names* are resolved, not labels set earlier. Columns that do not resolve keep their labels and warn |
 | `gt_merge_stack_team_color` | `fmt()` per data row, `cols_hide()` | `GT.fmt(fn, columns, rows=[i])` per data row, `cols_hide()`; rows read from `GT._tbl_data` (pinned by a test) | ported. Column arguments are strings (R takes bare names). The bottom line is in the team color, as in R |
-| `gt_theme_sdv` | `opt_table_font(google_font())`, `tab_style(cell_text())`, `tab_options()`, `opt_css()`, `.theme_scale_output()` | `opt_table_font(font=google_font("Lato"))`, `tab_style(style.text())`, `tab_options()`, `opt_css()` scoped to the table id (`with_id()`) | ported. Spanners are styled by CSS (`.gt_column_spanner`), because great_tables 1.0's `loc.spanner_labels()` needs explicit ids. great_tables 1.0 has no footnotes border or padding option. `density` scales the theme's own sizes and great_tables' default paddings; R also rescales px sizes set before the theme |
+| `gt_theme_sdv` | `opt_table_font(google_font())`, `tab_style(cell_text())`, `tab_options()`, `opt_css()`, `.theme_scale_output()` | `opt_table_font()` as the wave B themes (Lato over gt 1.3.0's `default_fonts()`), `tab_style(style.text())`, `tab_options()`, `opt_css()` scoped to the table id (`with_id()`) | ported. Spanners are styled by CSS (`.gt_column_spanner`), because great_tables 1.0's `loc.spanner_labels()` needs explicit ids. great_tables 1.0 has no footnotes border or padding option. `density` scales the theme's own sizes and great_tables' default paddings; R also rescales px sizes set before the theme |
 | `gt_theme_sdv_team` | same; colors from `sdv_team_colors()` | same; colors from `team_colors()`, ink and blending from `sdvplot._contrast` | ported. `league=` is required (R defaults `sport = "nfl"`). An unknown team raises `UnresolvedTeamError` |
 | `reactable_sdv_logos` | `colDef(cell = function(value, index))` | `reactable.Column(cell=fn(CellInfo), html=True)` | ported. Returns the `Column` (R returns the cell function); `id=` and other `Column` arguments are keywords. Adds `season=` and `include_name=`. `variant` takes sdvplot's variants (`"default"`, `"dark"`, named) |
 | `reactable_sdv_wordmarks` | same | same | ported, as logos |
 | `reactable_sdv_headshots` | same | same | ported. `id_system=` for `id_type=`; height 40 px as in R |
 | `reactable_sdv_cols_label` | a named list of `colDef(header = "<img>")` | `list[Column(id=name, name="", header="<img>", html=True)]` | ported. Column names that do not resolve are left out with one warning (R drops them silently) |
 | `reactable_sdv_team_color_bar` | `colDef(style = function(value, index, name))` returning CSS text | `Column(style=fn(CellInfo) -> dict)` | ported. `which=` for `type=`; `na_color` defaults to `#b3b3b3` (R's `grey70`) |
-| `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color |
+| `reactable_sdv_team_color_bg` | same, with `scales::alpha()` | same; the fill is `#rrggbbaa` | ported. `na_color` must be a hex color; `alpha` replaces any alpha it has, as `scales::alpha()` does |
 
 ## Wave B: table themes
 
@@ -65,14 +65,14 @@ HTML bytes.
 | `gt_theme_terminal` | monospaced readout, rule on every row | the same `tab_options` | ported |
 | `gt_theme_tier` | `style`: `"dark"` or anything else (light); row rules (as gtutils) | `"light"` or `"dark"`, else `ValueError`; as gtutils | ported (stricter) |
 | `gt_theme_tufte` | one hairline, italic labels | the same `tab_options` and `style.text(style="italic")` | ported |
-| `gt_theme_preview` | lays the panels out with `gt_grid()` (`ncol`, `file`, `...`) and returns the grid | returns `dict[str, GT]` keyed by theme name; `ncol`, `file` and `...` not ported (layout is wave D's `gt_grid`); `gt_theme_sdv_team` is shown with `league="nfl"` and no team, as R shows it | ported (dict instead of a grid) |
-| all 18 themes | `opt_table_font(font = list(google_font(x), default_fonts()))` | `opt_table_font(font=<gt 1.3.0's default_fonts()>)` then `opt_table_font(font=google_font(x))`; the import asks for every weight (great_tables' own import loads only 400, so 600/700 would be synthesized) | ported |
+| `gt_theme_preview` | lays the panels out with `gt_grid()` (`ncol`, `file`, `...`) and returns the grid | returns `dict[str, GT]` keyed by theme name; `ncol`, `file` and `...` not ported (layout is wave D's `gt_grid`); `gt_theme_sdv_team` is shown with `league="nfl"` and no team, as R shows it; `n` must be a positive whole number (R's `head(data, n)` takes any `n`: 0 shows no rows, -1 drops the last) | ported (dict instead of a grid; stricter `n`) |
+| all 18 themes | `opt_table_font(font = list(google_font(x), default_fonts()))` | `opt_table_font(font=[google_font(x), <gt 1.3.0's default_fonts()>, <the table's fonts>], add=False)`: the theme's fonts go in front, as in R, and fonts the caller set stay behind them; the import asks for every weight (great_tables' own import loads only 400, so 600/700 would be synthesized). R also stacks a second theme's fonts on the first's, so the first theme's font stays as a fallback; here the run of fonts the previous sdvplot theme put in front (recorded on the table) is taken out first (shared with `gt_theme_sdv`) | ported (re-theming swaps the theme fonts) |
 | all 18 themes | `cell_text(weight = 650)` | `style.text(weight=650)` (renders; great_tables types `weight` as keywords) | ported |
 | all 18 themes | `cells_column_spanners()` | `loc.spanner_labels(ids=<every spanner id>)` (great_tables raises without ids); skipped on a table without spanners | ported |
 | all 18 themes | `tab_options(footnotes.border.bottom.style = "none")` | no such option; great_tables' `.gt_footnotes` is already `border-bottom-style: none` | dropped (no-op) |
 | all 18 themes | `.theme_scale_output()` (density rescales a finished table: `_styles` text sizes and the size/padding options, gt's defaults included) | `_scale_output()` walks `GT._styles` and `GT._options` the same way; sizes match R on athletic, gtutils, kenpom, ncaa, pl, savant, sofa, tier at "compact" and "social" | ported |
-| all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())` | ported |
-| all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color raises `ValueError` naming the argument | ported (stricter) |
+| all 18 themes | `.table_id()` (reads or sets `table_id`) | `GT._options.table_id`, else `GT.with_id(random_id())`; an empty id gets a random one too (R keeps `""`, which scopes nothing). Every wave shares this one helper (`_marks._table_id`) | ported (stricter) |
+| all 18 themes | colors are passed to CSS unchecked | `hex6()`: a non-hex color, or a hex color with transparency, raises `ValueError` naming the argument | ported (stricter) |
 | all 18 themes | `...` to `tab_options()`, last | `**options` to `tab_options()`, last (great_tables' snake_case names) | ported |
 
 ## Wave C1: cell styling and formatting
@@ -119,7 +119,12 @@ All 17 functions keep sdvplotR's names, argument names, order and defaults, with
 `gt_object` is `gt`; an R style `list()` is a `dict` (default `None`), and an unknown style key raises `ValueError`
 (R ignores it); `columns`/`rows` take anything great_tables accepts (names, lists, polars selectors; 0-based positions,
 polars expressions, functions of a pandas frame) where R takes tidyselect and data-masked expressions with 1-based
-indices; colors that feed contrast or ramps must be hex (`#rgb`, `#rrggbb`), where R also takes color names; R's
+indices; colors that feed contrast or ramps must be opaque hex (`#rgb`, `#rrggbb`, or `#rgba`/`#rrggbbaa` with alpha
+`f`/`ff`), where R also takes color names and `col2rgb()` silently drops a translucent color's alpha. Here a
+translucent color is a `ValueError` where sdvplot draws a color it computes from it (palette stops, ramps, legend and
+tier swatches, theme accents), which would otherwise come out solid; a color passed to CSS as given and only measured
+for its ink (`gt_color_pills(na_color=)`, `gt_indicator_boxes()`'s colors, `gt_outliers(fill=)`) is drawn translucent,
+as in R, and its ink is read on what it shows over the table background (R measures it with the alpha dropped); R's
 `cli` warnings are `SdvplotWarning`, its aborts `ValueError`/`TypeError`.
 
 | R function | gt feature | great_tables equivalent | decision |

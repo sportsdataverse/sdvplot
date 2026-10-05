@@ -330,7 +330,7 @@ def reactable_sdv_team_color_bg(
     """
     a = check_alpha(alpha)
     _, colors = _row_colors(data, team_col, league, which, na_color)
-    fills = [f"{hex6(c)}{round(a * 255):02x}" for c in colors]
+    fills = [f"{hex6(c, drop_alpha=True)}{round(a * 255):02x}" for c in colors]  # alpha replaces any in na_color
 
     def fill(info: CellInfo) -> dict[str, str]:
         return {"background-color": fills[info.row_index]}

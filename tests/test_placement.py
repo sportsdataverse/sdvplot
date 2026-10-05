@@ -111,3 +111,9 @@ def test_place_headshots_use_player_ids():
     ]
     with pytest.warns(SdvplotWarning, match="with no headshot"):
         assert place([1.0], [2.0], ["not-an-id"], league="nfl", kind="headshot", id_system="espn") == []
+
+
+@pytest.mark.parametrize("warn", [True, False])
+def test_a_float_headshot_id_is_placed_under_its_integer_form_on_both_paths(warn):
+    (p,) = place([1.0], [2.0], [3139477.0], league="nfl", kind="headshot", id_system="espn", _warn=warn)
+    assert p.team_id == "3139477" and p.url.endswith("/3139477.png")

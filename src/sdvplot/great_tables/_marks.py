@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import html
 import warnings
 from collections.abc import Callable
@@ -12,17 +13,22 @@ from great_tables import GT, google_font, loc, px, random_id, style
 from great_tables import html as gt_html
 
 from sdvplot._colors import team_colors
-from sdvplot._contrast import contrast, mix, on_color
+from sdvplot._contrast import contrast, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot._placement import KINDS, _missing
 from sdvplot._resolve import one_team, resolve
 from sdvplot._tables import check_px, mark_html
 
 
-def _check_gt(gt: Any) -> None:
-    if not isinstance(gt, GT):
-        hint = "wrap the data in great_tables.GT() first" if hasattr(gt, "columns") else "build a table with GT()"
-        raise TypeError(f"gt must be a great_tables GT, not {type(gt).__name__}: {hint}")
+def _check_gt(gt: Any, arg: str = "gt") -> GT:
+    """sdvplotR's ``.check_gt``: every public table function takes a GT, never raw data; returns ``gt``."""
+    if isinstance(gt, GT):
+        return gt
+    if hasattr(gt, "columns"):
+        hint = "It looks like raw data: wrap it in great_tables.GT() first."
+    else:
+        hint = "Build a table with great_tables.GT() and pass that in."
+    raise TypeError(f"{arg} must be a great_tables GT, not {type(gt).__name__}. {hint}")
 
 
 def _cell_texts(gt: GT, locations: Any) -> list[str]:
@@ -57,6 +63,18 @@ def _image_cells(
     _check_gt(gt)
     h = check_px(height)
     locs = loc.body(columns) if locations is None else locations
+    for where in locs if isinstance(locs, list) else [locs]:
+        # the locations great_tables' text_transform reaches; it escapes column labels and ignores every other one
+        if not isinstance(where, (loc.body, loc.stub, loc.row_groups)):
+            hint = (
+                "; for marks in the column labels use gt_sdv_cols_label()"
+                if isinstance(where, loc.column_labels)
+                else ""
+            )
+            raise ValueError(
+                "locations must be loc.body(), loc.stub() or loc.row_groups(), or a list of them, "
+                f"not {type(where).__name__}{hint}"
+            )
     texts = _cell_texts(gt, locs)
     imgs = mark_html([html.unescape(t) for t in texts], league=league, kind=kind, height=h, season=season,
                      include_name=include_name, id_system=id_system)  # fmt: skip
@@ -86,8 +104,9 @@ def gt_sdv_logos(
             ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``, e.g. ``loc.stub()`` or
-            ``loc.row_groups()``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         include_name: Keep the cell's text after the logo.
         season: One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for
             today's.
@@ -97,7 +116,8 @@ def gt_sdv_logos(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+            holds another location.
 
     Example:
         ::
@@ -125,7 +145,9 @@ def gt_sdv_wordmarks(
         columns: The columns whose body cells become wordmarks. Ignored when ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         season: One season whose marks every cell shows; None for today's.
 
     Returns:
@@ -133,7 +155,8 @@ def gt_sdv_wordmarks(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels, or ``season`` is not one year.
+        ValueError: If ``height`` is not a positive number of pixels, ``season`` is not one year, or ``locations``
+            holds another location.
 
     Example:
         ::
@@ -159,7 +182,9 @@ def gt_sdv_headshots(
         columns: The columns of player ids. Ignored when ``locations`` is given (pass None).
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
-        locations: Any great_tables location instead of the body of ``columns``.
+        locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
+            list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
+            use ``gt_sdv_cols_label``.
         id_system: "espn" (ESPN athlete ids, any ESPN league) or "gsis" (NFL), as in ``headshot_url``.
 
     Returns:
@@ -167,7 +192,7 @@ def gt_sdv_headshots(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a positive number of pixels.
+        ValueError: If ``height`` is not a positive number of pixels, or ``locations`` holds another location.
 
     Example:
         ::
@@ -242,6 +267,7 @@ def gt_sdv_cols_label(
 
 
 def _constant(value: str) -> Callable[[Any], str]:
+    """A great_tables ``fmt`` function that ignores the cell and returns ``value`` (sdvplotR's ``.constant``)."""
     return lambda _: value
 
 
@@ -314,11 +340,63 @@ def gt_merge_stack_team_color(
 
 # --- themes (R/gt_theme_sdv.R) ---
 
-DENSITY = {  # sdvplotR's .theme_density(): type sizes and row padding per density
+DENSITY: dict[str, dict[str, int]] = {  # sdvplotR's .theme_density(): type sizes and row padding per density
     "comfortable": {"body": 14, "pad": 6, "title": 26, "subtitle": 15, "label": 10, "group": 11, "source": 11},
     "compact": {"body": 12, "pad": 3, "title": 22, "subtitle": 13, "label": 9, "group": 10, "source": 10},
     "social": {"body": 17, "pad": 9, "title": 34, "subtitle": 19, "label": 12, "group": 13, "source": 13},
 }
+
+
+def _density(density: str) -> dict[str, int]:
+    """The type and padding scale of ``density``; ValueError for an unknown one."""
+    if density not in DENSITY:
+        raise ValueError(f"density must be 'comfortable', 'compact' or 'social', not {density!r}")
+    return DENSITY[density]
+
+
+# gt::default_fonts() (gt 1.3.0): the fallback stack R puts under every theme font
+R_FONTS = (
+    "system-ui",
+    "Segoe UI",
+    "Roboto",
+    "Helvetica",
+    "Arial",
+    "sans-serif",
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji",
+)
+
+
+def _record(gt: GT, name: str, value: Any) -> GT:
+    """A copy of ``gt`` carrying ``value`` as attribute ``name`` (``_sdvplot_scale``, ``_sdvplot_key``,
+    ``_sdvplot_theme_fonts``); great_tables' own methods copy it along."""
+    out = copy.copy(gt)
+    out.__dict__[name] = value
+    return out
+
+
+def _table_font(gt: GT, font: Any, weight: Any = None) -> GT:
+    """R's ``opt_table_font(font = list(google_font(x), default_fonts()))`` for a theme's ``font`` (a GoogleFont).
+
+    As in R, the theme's fonts go in front of the table's, so fonts the caller set stay behind them (a browser falls
+    back font by font for each character it cannot draw, which is why gt lists emoji fonts after ``sans-serif``).
+    Unlike R, the run of fonts an earlier sdvplot theme put in front (recorded as ``_sdvplot_theme_fonts``) is taken
+    out first, so re-theming swaps it instead of stacking. great_tables writes each font once in the CSS.
+    """
+    ours = [font.get_font_name(), *R_FONTS]
+    fonts = list(gt._options.table_font_names.value)
+    earlier = list(gt.__dict__.get("_sdvplot_theme_fonts", ()))
+    at = next(
+        (i for i in range(len(fonts) - len(earlier) + 1) if earlier and fonts[i : i + len(earlier)] == earlier), None
+    )
+    if at is not None:  # still in the list (fonts the caller added since sit around it, untouched)
+        del fonts[at : at + len(earlier)]
+    out = gt.opt_table_font(font=[font, *R_FONTS, *fonts], add=False, weight=weight)
+    return _record(out, "_sdvplot_theme_fonts", ours)
+
+
 # great_tables' default paddings that sdvplotR's density also scales (gt has the same defaults)
 _DEFAULT_PADDING = {
     "row_group_padding": 8,
@@ -331,7 +409,8 @@ SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
 
 
 def _table_id(gt: GT) -> tuple[GT, str]:
-    """The table's id (the theme's CSS is scoped to it), assigning a random one when it has none."""
+    """The table's id, so CSS can be scoped to ``#id``, assigning a random one when it has none or an empty one
+    (sdvplotR's ``.table_id``; ``"#"`` alone would scope nothing)."""
     table_id = gt._options.table_id.value
     if table_id:
         return gt, str(table_id)
@@ -367,10 +446,22 @@ def _dark_palette() -> dict[str, str]:
     }
 
 
+def _background(gt: GT) -> str:
+    """The table background as ``#rrggbb``, a best-effort read for picking ink: a translucent hex shows over the
+    (assumed white) page, so it is blended onto white; white when it is unset or not a hex color (a CSS name)."""
+    try:
+        return solid(str(gt._options.table_background_color.value))
+    except ValueError:
+        return "#ffffff"
+
+
 def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
-    """Muted but legible: ``fg`` blended toward ``bg`` as far as still clears ``target`` contrast (sdvplotR)."""
-    for i in range(12):  # weights 0.45, 0.50, ..., 1.00 of fg
-        cand = mix(bg, fg, round(0.45 + 0.05 * i, 2))
+    """sdvplotR's ``.theme_secondary_on()``: muted but legible, ``fg`` blended toward ``bg`` as far as still clears
+    ``target`` contrast."""
+    for i in range(12):
+        # R's seq(0.45, 1, by = 0.05) is 0.45 + i * 0.05 unrounded (0.6000000000000001, ...): rounding the weight
+        # flips a channel's rounding for some colors
+        cand = mix(bg, fg, 0.45 + i * 0.05)
         if contrast(cand, bg) >= target:
             return cand
     return fg
@@ -378,9 +469,8 @@ def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:
 
 def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[str, Any]) -> GT:
     """sdvplotR's .sdv_theme_build(): fonts, styles, options and the scoped CSS, at ``density``."""
-    if density not in DENSITY:
-        raise ValueError(f"density must be one of {list(DENSITY)}, got {density!r}")
-    k = {role: DENSITY[density][role] / DENSITY["comfortable"][role] for role in DENSITY["comfortable"]}
+    d = _density(density)
+    k = {role: d[role] / DENSITY["comfortable"][role] for role in DENSITY["comfortable"]}
 
     def size(n: float, role: str) -> str:
         return f"{round(n * k[role], 1):g}px"
@@ -390,7 +480,7 @@ def _build_theme(gt: GT, pal: dict[str, str], density: str, tab_options: dict[st
     weight: Any = "800"  # CSS numeric weights; great_tables types only the keywords
     medium: Any = "500"
     gt = (
-        gt.opt_table_font(font=lato)
+        _table_font(gt, lato)
         .tab_style(style.text(font=chivo, weight=weight, size=size(22, "title"), color=pal["title"]), loc.title())
         .tab_style(
             style.text(font=lato, size=size(14, "subtitle"), color=pal.get("subtitle", pal["muted"])), loc.subtitle()

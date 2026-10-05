@@ -10,7 +10,7 @@ import great_tables  # noqa: E402
 from great_tables import GT  # noqa: E402
 
 import sdvplot.great_tables as sgt  # noqa: E402
-from sdvplot.great_tables import _themes  # noqa: E402
+from sdvplot.great_tables import _layout, _marks, _themes  # noqa: E402
 
 ROWS = {"conf": ["AFC West", "AFC West", "NFC West"], "team": ["LV", "KC", "LAR"], "w": [8, 15, 10], "l": [9, 2, 7]}
 # wave A's two themes are tested there; these are this module's
@@ -88,6 +88,17 @@ def test_adjust_luminance_keeps_white_where_r_returns_na():
 def test_secondary_on_matches_r(ground, ink, r):
     # sdvplotR .theme_secondary_on(); the last never clears 4.5:1, so it falls back to the ink
     assert _themes._secondary_on(ground, ink) == r.lower()
+
+
+@pytest.mark.parametrize("module", [_marks, _layout, _themes], ids=lambda m: m.__name__)
+@pytest.mark.parametrize(
+    ("ground", "ink", "r"),
+    # sdvplotR .theme_secondary_on() (R/utils-theme.R at f1c8efe, R 4.6.1), 2026-10-04. R's seq(0.45, 1, by = 0.05)
+    # weighs 0.6000000000000001 and 0.8500000000000001, not 0.6 and 0.85, and that rounds one channel the other way
+    [("#2587BE", "#000000", "#06141C"), ("#0A8F8E", "#000000", "#011515"), ("#EA410A", "#000000", "#230A01")],
+)
+def test_every_table_module_blends_muted_text_at_r_weights(module, ground, ink, r):
+    assert module._secondary_on(ground, ink) == r.lower()
 
 
 def test_scale_output_rescales_text_sizes_and_size_options():
@@ -479,9 +490,65 @@ def test_preview_rejects_bad_input():
         sgt.gt_theme_preview(pl.DataFrame(ROWS), density="cozy")
 
 
+@pytest.mark.parametrize("n", [0, -1, True, 2.5, "3", None])
+def test_preview_n_is_a_positive_whole_number_of_rows(n):
+    # R's utils::head(data, n) takes any n (-1 drops the last row, 0 none); a preview needs rows
+    with pytest.raises(ValueError, match=r"n must be a positive whole number of rows, got"):
+        sgt.gt_theme_preview(pl.DataFrame(ROWS), themes="gt_theme_kenpom", n=n)
+
+
+def test_preview_n_takes_a_numpy_integer():
+    np = pytest.importorskip("numpy")
+    html = sgt.gt_theme_preview(pl.DataFrame(ROWS), themes="gt_theme_kenpom", n=np.int64(1))["gt_theme_kenpom"]
+    assert "LV" in html.as_raw_html() and "KC" not in html.as_raw_html()
+
+
 def test_every_theme_has_a_ported_row_in_the_parity_table():
     text = (Path(__file__).resolve().parents[1] / "docs" / "PARITY_TABLES.md").read_text(encoding="utf-8")
     for name in [*THEMES, "gt_theme_preview", "pal_midnight"]:
         rows = [line for line in text.splitlines() if line.startswith(f"| `{name}` |")]
         assert rows, f"{name} has no row in docs/PARITY_TABLES.md"
         assert any(row.rstrip(" |").split("|")[-1].strip().startswith("ported") for row in rows), name
+
+
+DEFAULT_FONTS = GT(pl.DataFrame(ROWS))._options.table_font_names.value
+FONT_THEMES = [
+    n for n in [*THEMES, "gt_theme_sdv"] if getattr(sgt, n)(table())._options.table_font_names.value != DEFAULT_FONTS
+]
+
+
+@pytest.mark.parametrize("name", FONT_THEMES)
+def test_a_theme_replaces_the_table_font_list_rather_than_stacking_on_it(name):
+    theme = getattr(sgt, name)
+    once = theme(table())
+    fonts = once._options.table_font_names.value
+    css = table_font(once.as_raw_html()).split(", ")
+    assert len(css) == len(set(css))  # each font once in the CSS
+    assert theme(theme(table()))._options.table_font_names.value == fonts  # re-theming changes nothing
+    other = sgt.gt_theme_athletic if name == "gt_theme_kenpom" else sgt.gt_theme_kenpom
+    # the earlier theme's font is not left behind as the next one's fallback
+    assert theme(other(table()))._options.table_font_names.value == fonts
+    assert table_font(theme(other(table())).as_raw_html()) == table_font(once.as_raw_html())
+
+
+@pytest.mark.parametrize("name", FONT_THEMES)
+def test_a_font_the_caller_set_survives_the_theme_behind_its_fonts(name):
+    # as in R, where opt_table_font(add = TRUE) prepends the theme's fonts to the caller's
+    theme = getattr(sgt, name)
+    themed = theme(table().opt_table_font(font="Comic Neue"))
+    fonts = themed._options.table_font_names.value
+    theme_fonts = theme(table())._options.table_font_names.value
+    assert fonts[: fonts.index("Comic Neue")] == theme_fonts[: fonts.index("Comic Neue")]  # the theme's come first
+    assert fonts[fonts.index("Comic Neue") - 1] == "Noto Color Emoji"  # right after gt's default_fonts()
+    twice = sgt.gt_theme_kenpom(theme(table().opt_table_font(font="Comic Neue")))
+    assert (
+        twice._options.table_font_names.value
+        == sgt.gt_theme_kenpom(table().opt_table_font(font="Comic Neue"))._options.table_font_names.value
+    )  # a second theme swaps the first one's fonts, keeps the caller's
+
+
+def test_a_font_set_between_two_themes_survives_the_second():
+    between = sgt.gt_theme_kenpom(sgt.gt_theme_tufte(table()).opt_table_font(font="Comic Neue"))
+    direct = sgt.gt_theme_kenpom(table().opt_table_font(font="Comic Neue"))
+    assert between._options.table_font_names.value == direct._options.table_font_names.value
+    assert "EB Garamond" not in between._options.table_font_names.value  # tufte's font went with tufte
