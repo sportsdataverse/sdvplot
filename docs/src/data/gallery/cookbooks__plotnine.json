@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "plotnine",
+  "label": "plotnine",
+  "position": 2,
+  "page": "cookbooks/plotnine.md",
+  "items": [
+    {
+      "title": "WNBA points scored vs allowed in plotnine",
+      "alt": "plotnine scatter of WNBA points scored and allowed per game with team logos as points",
+      "image": "/img/gallery/cookbooks/plotnine_5.png",
+      "anchor": "1-logos-as-points"
+    },
+    {
+      "title": "NFL divisions faceted with logos in plotnine",
+      "alt": "Eight plotnine panels, one per NFL division, of offensive vs defensive EPA with team logos",
+      "image": "/img/gallery/cookbooks/plotnine_15.png",
+      "anchor": "6-facet-a-logo-plot"
+    }
+  ]
+}

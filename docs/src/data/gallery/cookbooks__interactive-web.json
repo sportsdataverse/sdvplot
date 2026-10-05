@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "interactive-web",
+  "label": "Interactive charts",
+  "position": 3,
+  "page": "cookbooks/interactive-web.md",
+  "items": [
+    {
+      "title": "MLB runs scored vs allowed, a Plotly chart exported to PNG",
+      "alt": "Plotly scatter of MLB runs scored and allowed per game with team logos, exported at 1200 by 675 pixels",
+      "image": "/img/gallery/cookbooks/interactive-web_23.png",
+      "anchor": "10-export-a-plotly-chart-as-a-png-for-social"
+    },
+    {
+      "title": "NHL goals for vs against, an Altair chart exported to PNG",
+      "alt": "Altair scatter of NHL goals for and against per game with team logos, exported with vl-convert",
+      "image": "/img/gallery/cookbooks/interactive-web_25.png",
+      "anchor": "11-export-an-altair-chart-as-a-png"
+    }
+  ]
+}

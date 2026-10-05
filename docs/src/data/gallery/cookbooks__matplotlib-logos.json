@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "matplotlib-logos",
+  "label": "Logos in matplotlib",
+  "position": 1,
+  "page": "cookbooks/matplotlib-logos.md",
+  "items": [
+    {
+      "title": "NFL offense vs defense with logos as points",
+      "alt": "Scatter of NFL offensive and defensive EPA per play with each team's logo as its marker",
+      "image": "/img/gallery/cookbooks/matplotlib-logos_5.png",
+      "anchor": "1-use-logos-as-scatter-points"
+    },
+    {
+      "title": "NHL Pacific Division goal differential with logos at the line ends",
+      "alt": "Cumulative goal differential lines for the eight Pacific Division teams, each ending in the team's logo",
+      "image": "/img/gallery/cookbooks/matplotlib-logos_11.png",
+      "anchor": "4-label-each-lines-last-point-with-a-logo"
+    }
+  ]
+}

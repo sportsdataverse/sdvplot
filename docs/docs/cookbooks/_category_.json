@@ -1,0 +1,9 @@
+{
+  "label": "Cookbooks",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/cookbooks",
+    "description": "Task-oriented guides, one plotting or table library or technique per page, across leagues."
+  }
+}

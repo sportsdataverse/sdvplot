@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "colors-and-themes",
+  "label": "Colors and themes",
+  "position": 5,
+  "page": "cookbooks/colors-and-themes.md",
+  "items": [
+    {
+      "title": "Every NFL team's primary and secondary color by division",
+      "alt": "Swatches of each NFL team's primary and secondary colors beside its logo, in eight division columns",
+      "image": "/img/gallery/cookbooks/colors-and-themes_3.png",
+      "anchor": "1-see-a-leagues-palette"
+    },
+    {
+      "title": "A shot-density map shaded in the Thunder's colors with PyPalettes",
+      "alt": "Hexbin density of Shai Gilgeous-Alexander's shots on a half court, shaded pale blue to Thunder blue to orange",
+      "image": "/img/gallery/cookbooks/colors-and-themes_15.png",
+      "anchor": "7-a-colormap-from-a-teams-colors-with-pypalettes"
+    }
+  ]
+}
