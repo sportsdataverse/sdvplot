@@ -240,3 +240,36 @@ def test_a_gzip_body_longer_than_its_content_length_is_not_truncated(cache, monk
     headers = {"Content-Length": "40", "Content-Encoding": "gzip"}
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body, headers)))
     assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == body
+
+
+def test_a_manifest_ext_that_climbs_out_of_the_cache_raises_and_writes_nothing(cache, monkeypatch, tmp_path):
+    from sdvplot import _images
+    from sdvplot._errors import UnsafeCachePathError
+
+    body = b"payload"
+    sha = hashlib.sha256(body).hexdigest()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    row = {"sha256": sha, "ext": "/../../../escaped.txt", "archive_url": "https://x/a"}
+    with pytest.raises(UnsafeCachePathError):
+        _images.mark_file(row)
+    assert not list(tmp_path.rglob("escaped*")) and not (cache / "images").exists()
+
+
+@pytest.mark.parametrize("sha", ["../" * 3 + "x", "A" * 64, "ab" * 31, "g" * 64])
+def test_a_malformed_manifest_sha_is_refused(cache, monkeypatch, sha):
+    from sdvplot import _images
+    from sdvplot._errors import UnsafeCachePathError
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession())
+    with pytest.raises(UnsafeCachePathError):
+        _images.mark_file({"sha256": sha, "ext": "png", "archive_url": "https://x/a"})
+
+
+def test_cache_path_refuses_a_relpath_outside_the_cache(cache):
+    from sdvplot._errors import UnsafeCachePathError
+
+    with pytest.raises(UnsafeCachePathError):
+        _cache.cache_path("../outside")
+    with pytest.raises(UnsafeCachePathError):
+        _cache.fetch_immutable("https://x/a", "images/../../outside.png", "0" * 64)
+    assert _cache.cache_path("images/ab/x.png").is_relative_to(cache.resolve())
