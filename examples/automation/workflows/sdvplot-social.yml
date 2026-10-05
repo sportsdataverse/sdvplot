@@ -1,0 +1,74 @@
+# A template: copy it to .github/workflows/sdvplot-social.yml in YOUR repository, and sdvplot_social.py to
+# scripts/sdvplot_social.py. It is not a workflow of the sdvplot repository (which never posts).
+#
+# Every Monday, and whenever you run it by hand, it makes the graphics, prints the would-be posts and uploads the
+# images as an artifact. It posts to Bluesky only when you ask it to (the `post` input of a manual run, or the
+# repository variable SDVPLOT_POST=true for the schedule) and the BSKY_HANDLE and BSKY_APP_PASSWORD secrets are set.
+# Use a Bluesky app password (Settings > Privacy and security > App passwords), never the account password.
+name: sdvplot-social
+
+on:
+  schedule:
+    - cron: "0 14 * * 1" # Mondays 14:00 UTC: the weekend's games are final
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "Post to Bluesky (otherwise a dry-run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdvplot-social
+  cancel-in-progress: false # never cut a posting run short
+
+jobs:
+  social:
+    runs-on: ubuntu-latest # ships Chrome, which the leaderboard tables render in
+    timeout-minutes: 30
+    env:
+      SCRIPT: scripts/sdvplot_social.py
+      PY: .venv/bin/python
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: "3.13"
+      - name: Install sdvplot and sportsdataverse
+        run: |
+          uv venv
+          uv pip install "sdvplot[mpl,tables] @ git+https://github.com/sportsdataverse/sdvplot" "sportsdataverse>=0.1.4"
+      - name: Make the graphics
+        # Each line adds its posts to out/<today>/manifest.json. Pick your leagues, stats and sizes.
+        run: |
+          set -euo pipefail
+          "$PY" "$SCRIPT" leaderboard --league nfl
+          "$PY" "$SCRIPT" leaderboard --league nfl --stat rushingYards --size landscape
+          "$PY" "$SCRIPT" gameday --league nfl
+      - name: Show the posts (dry-run)
+        run: |
+          for manifest in out/*/manifest.json; do "$PY" "$SCRIPT" post --manifest "$manifest"; done
+      - name: Upload the images and manifest
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdvplot-social
+          path: out/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Post to Bluesky
+        if: ${{ inputs.post || (github.event_name == 'schedule' && vars.SDVPLOT_POST == 'true') }}
+        env:
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
+        run: |
+          if [ -z "$BSKY_HANDLE" ] || [ -z "$BSKY_APP_PASSWORD" ]; then
+            echo "::warning::The BSKY_HANDLE and BSKY_APP_PASSWORD secrets are not set, so nothing was posted."
+            exit 0
+          fi
+          for manifest in out/*/manifest.json; do "$PY" "$SCRIPT" post --manifest "$manifest" --post; done
