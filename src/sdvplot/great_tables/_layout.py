@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import copy
 import dataclasses
 import datetime
 import functools
@@ -29,7 +28,7 @@ from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
-from sdvplot.great_tables._marks import _background, _check_gt, _secondary_on, _table_id
+from sdvplot.great_tables._marks import _background, _check_gt, _record, _secondary_on, _table_id
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -85,13 +84,6 @@ def _ramp(palette: list[str], t: float) -> str:
     pos = min(max(t, 0.0), 1.0) * (len(palette) - 1)
     i = min(int(pos), len(palette) - 2)
     return mix(palette[i], palette[i + 1], pos - i)
-
-
-def _record(gt: GT, name: str, value: Any) -> GT:
-    """A copy of ``gt`` carrying ``value`` as attribute ``name`` (``_sdvplot_scale``, ``_sdvplot_key``)."""
-    out = copy.copy(gt)
-    out.__dict__[name] = value
-    return out
 
 
 def _text(value: Any) -> str | None:

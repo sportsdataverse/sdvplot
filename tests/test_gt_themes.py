@@ -522,9 +522,33 @@ def test_a_theme_replaces_the_table_font_list_rather_than_stacking_on_it(name):
     theme = getattr(sgt, name)
     once = theme(table())
     fonts = once._options.table_font_names.value
-    assert len(fonts) == len(set(fonts))  # each font once
+    css = table_font(once.as_raw_html()).split(", ")
+    assert len(css) == len(set(css))  # each font once in the CSS
     assert theme(theme(table()))._options.table_font_names.value == fonts  # re-theming changes nothing
     other = sgt.gt_theme_athletic if name == "gt_theme_kenpom" else sgt.gt_theme_kenpom
     # the earlier theme's font is not left behind as the next one's fallback
     assert theme(other(table()))._options.table_font_names.value == fonts
     assert table_font(theme(other(table())).as_raw_html()) == table_font(once.as_raw_html())
+
+
+@pytest.mark.parametrize("name", FONT_THEMES)
+def test_a_font_the_caller_set_survives_the_theme_behind_its_fonts(name):
+    # as in R, where opt_table_font(add = TRUE) prepends the theme's fonts to the caller's
+    theme = getattr(sgt, name)
+    themed = theme(table().opt_table_font(font="Comic Neue"))
+    fonts = themed._options.table_font_names.value
+    theme_fonts = theme(table())._options.table_font_names.value
+    assert fonts[: fonts.index("Comic Neue")] == theme_fonts[: fonts.index("Comic Neue")]  # the theme's come first
+    assert fonts[fonts.index("Comic Neue") - 1] == "Noto Color Emoji"  # right after gt's default_fonts()
+    twice = sgt.gt_theme_kenpom(theme(table().opt_table_font(font="Comic Neue")))
+    assert (
+        twice._options.table_font_names.value
+        == sgt.gt_theme_kenpom(table().opt_table_font(font="Comic Neue"))._options.table_font_names.value
+    )  # a second theme swaps the first one's fonts, keeps the caller's
+
+
+def test_a_font_set_between_two_themes_survives_the_second():
+    between = sgt.gt_theme_kenpom(sgt.gt_theme_tufte(table()).opt_table_font(font="Comic Neue"))
+    direct = sgt.gt_theme_kenpom(table().opt_table_font(font="Comic Neue"))
+    assert between._options.table_font_names.value == direct._options.table_font_names.value
+    assert "EB Garamond" not in between._options.table_font_names.value  # tufte's font went with tufte

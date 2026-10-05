@@ -150,9 +150,11 @@
 - `gt_theme_preview(n=...)` takes only a positive whole number of rows (numpy integers included); 0, negative numbers,
   booleans, floats and strings raise `ValueError` instead of showing no rows, all but the last, one row or a polars
   error.
-- A table theme replaces the table's font list instead of prepending to it: a table themed twice no longer lists every
-  font twice, and a second theme no longer keeps the first one's font as its fallback (with `gt_theme_sdv`, directly
-  behind Lato). `gt_theme_sdv` and `gt_theme_sdv_team` fall back to gt's `default_fonts()`, as sdvplotR's do.
+- A table theme swaps out the fonts an earlier sdvplot theme put in front of the table's fonts instead of stacking on
+  them: a table themed twice no longer lists every font twice, and a second theme no longer keeps the first one's font
+  as its fallback (with `gt_theme_sdv`, directly behind Lato). Fonts you set with `opt_table_font()` stay, behind the
+  theme's, as in sdvplotR. `gt_theme_sdv` and `gt_theme_sdv_team` fall back to gt's `default_fonts()`, as sdvplotR's
+  do.
 - A translucent `#rgba`/`#rrggbbaa` color is refused (`ValueError`) where sdvplot draws the color it computes (palette
   stops and ramps, legend and tier swatches, theme accents), instead of being drawn solid with its alpha silently
   dropped; an opaque alpha (`f`/`ff`) is accepted and `#rgba` is now read. A color sdvplot passes to CSS as given and

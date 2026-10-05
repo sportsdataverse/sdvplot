@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import html
 import warnings
 from collections.abc import Callable
@@ -368,13 +369,32 @@ R_FONTS = (
 )
 
 
+def _record(gt: GT, name: str, value: Any) -> GT:
+    """A copy of ``gt`` carrying ``value`` as attribute ``name`` (``_sdvplot_scale``, ``_sdvplot_key``,
+    ``_sdvplot_theme_fonts``); great_tables' own methods copy it along."""
+    out = copy.copy(gt)
+    out.__dict__[name] = value
+    return out
+
+
 def _table_font(gt: GT, font: Any, weight: Any = None) -> GT:
     """R's ``opt_table_font(font = list(google_font(x), default_fonts()))`` for a theme's ``font`` (a GoogleFont).
 
-    R prepends to the table's font list; this replaces it, so a table themed twice, or by two themes, lists each font
-    once and keeps no earlier theme's font as a fallback (nothing after ``sans-serif`` in the stack is ever reached).
+    As in R, the theme's fonts go in front of the table's, so fonts the caller set stay behind them (a browser falls
+    back font by font for each character it cannot draw, which is why gt lists emoji fonts after ``sans-serif``).
+    Unlike R, the run of fonts an earlier sdvplot theme put in front (recorded as ``_sdvplot_theme_fonts``) is taken
+    out first, so re-theming swaps it instead of stacking. great_tables writes each font once in the CSS.
     """
-    return gt.opt_table_font(font=[font, *R_FONTS], add=False, weight=weight)
+    ours = [font.get_font_name(), *R_FONTS]
+    fonts = list(gt._options.table_font_names.value)
+    earlier = list(gt.__dict__.get("_sdvplot_theme_fonts", ()))
+    at = next(
+        (i for i in range(len(fonts) - len(earlier) + 1) if earlier and fonts[i : i + len(earlier)] == earlier), None
+    )
+    if at is not None:  # still in the list (fonts the caller added since sit around it, untouched)
+        del fonts[at : at + len(earlier)]
+    out = gt.opt_table_font(font=[font, *R_FONTS, *fonts], add=False, weight=weight)
+    return _record(out, "_sdvplot_theme_fonts", ours)
 
 
 # great_tables' default paddings that sdvplotR's density also scales (gt has the same defaults)
