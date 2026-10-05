@@ -17,6 +17,7 @@
     - [Fixed — tables follow-ups](#fixed--tables-follow-ups)
     - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
     - [Added — parity extras (title images, team tiers)](#added--parity-extras-title-images-team-tiers)
+    - [Documentation](#documentation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -216,3 +217,15 @@
   `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
   (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
   panel, is about the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.
+
+### Documentation
+
+- An automation example, `examples/automation/sdvplot_social.py`: social game-day graphics from live ESPN data through
+  sportsdataverse-py, for the NFL, college football, NBA, WNBA, MLB and NHL. `leaderboard` makes a season's leaders as
+  a great_tables table with headshots and logos; `gameday` makes final-score cards and a player-of-the-game card in
+  matplotlib. Images are 1080 x 1080 or 1200 x 675, in team colors with readable ink. With no games or leaders yet it
+  falls back to the most recent date or season and says so in the caption. Each run writes a manifest of images, alt
+  text, captions and hashtags; `post` publishes it to Bluesky over plain `requests` (a dry-run unless `--post`).
+  With it: a GitHub Actions template to copy (`examples/automation/workflows/sdvplot-social.yml`), a weekly dry-run in
+  sdvplot's CI (`.github/workflows/automation-example.yml`, which never posts), offline tests
+  (`tests/test_automation_example.py`) and the docs page *Social graphics* (`docs/docs/automation/index.md`).
