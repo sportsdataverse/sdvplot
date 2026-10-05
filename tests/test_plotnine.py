@@ -1,3 +1,5 @@
+import sys
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -10,7 +12,7 @@ import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 matplotlib.rcParams["figure.max_open_warning"] = 0
 import matplotlib.pyplot as plt  # noqa: E402
-from plotnine import aes, facet_wrap, geom_col, geom_point, ggplot  # noqa: E402
+from plotnine import aes, facet_wrap, geom_col, geom_point, ggplot, xlim  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.plotnine as sp9  # noqa: E402
@@ -42,7 +44,95 @@ def test_the_geom_draws_on_every_facet(mark_images):
     df = pd.DataFrame({"x": [1.0, 2.0], "y": [1.0, 2.0], "team": ["LV", "LAR"], "panel": ["a", "b"]})
     p = ggplot(df, aes("x", "y", team="team")) + sp9.geom_sdv_logos(league="nfl", height=0.2) + facet_wrap("panel")
     marks = sp9.drawn_marks(p)
-    assert sorted(m[0] for m in marks) == ["13", "14"] and all(m[3] == 0.2 for m in marks)
+    assert sorted(m[0] for m in marks) == ["13", "14"] and all(m[3] == pytest.approx(0.2) for m in marks)
+
+
+def _sdv_warnings(rec):
+    return [str(w.message) for w in rec if issubclass(w.category, SdvplotWarning)]
+
+
+def test_a_faceted_geom_warns_once_per_render_not_once_per_panel(mark_images):
+    df = pd.DataFrame({"x": [1.0, 2.0, 3.0, 4.0], "y": [1.0, 2.0, 3.0, 4.0], "team": ["LV", "XXX", "LAR", "YYY"],
+                       "panel": ["a", "a", "b", "b"]})  # fmt: skip
+    p = ggplot(df, aes("x", "y", team="team")) + sp9.geom_sdv_logos(league="nfl") + facet_wrap("panel")
+    with pytest.warns(SdvplotWarning) as rec:
+        marks = sp9.drawn_marks(p)
+    assert sorted(m[0] for m in marks) == ["13", "14"]
+    (msg,) = _sdv_warnings(rec)  # one warning naming the unknown teams of every panel
+    assert "'XXX'" in msg and "'YYY'" in msg
+
+
+def test_add_logos_on_a_faceted_plot_warns_once_per_render(mark_images):
+    # add_logos' data has no facet column, so plotnine draws the layer in every panel: still one warning
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "XXX"], league="nfl")
+    with pytest.warns(SdvplotWarning) as rec:
+        assert [m[0] for m in sp9.drawn_marks(p)] == ["13", "13"]
+    assert len(_sdv_warnings(rec)) == 1
+
+
+def test_drawing_leaves_the_process_wide_warning_filters_alone(mark_images, monkeypatch):
+    # warnings.catch_warnings swaps the interpreter's one filter list: another thread's warnings change with it
+    real, callers = warnings.catch_warnings, []
+
+    def spy(*a, **k):
+        callers.append(sys._getframe(1).f_globals.get("__name__", ""))
+        return real(*a, **k)
+
+    monkeypatch.setattr(warnings, "catch_warnings", spy)
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    bars = pd.DataFrame({"team": ["LV", "XXX", "LAR"] * 2, "v": [1, 2, 3] * 2, "g": list("aaabbb")})
+    for plot in (
+        sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "XXX"], league="nfl"),
+        sdvplot.axis_logos(ggplot(bars, aes("team", "v")) + geom_col() + facet_wrap("g"), "x", league="nfl"),
+    ):
+        with pytest.warns(SdvplotWarning):
+            plt.close(plot.draw())
+    assert [c for c in callers if c.startswith("sdvplot")] == []
+
+
+@pytest.mark.parametrize("dropped_by", ["na_rm", "xlim"])
+def test_rows_plotnine_drops_itself_do_not_warn(mark_images, dropped_by):
+    # na_rm=True silences a missing x, and xlim() removes an out-of-limits one: plotnine's call, not a skip of ours
+    x, extra, geom_kw = (
+        ([1.0, float("nan")], [], {"na_rm": True}) if dropped_by == "na_rm" else ([1.0, 5.0], [xlim(0, 2)], {})
+    )
+    p = ggplot(pd.DataFrame({"x": x, "y": [1.0, 2.0], "team": ["LV", "LAR"]}), aes("x", "y", team="team"))
+    p = p + sp9.geom_sdv_logos(league="nfl", **geom_kw)
+    for layer in extra:
+        p = p + layer
+    with warnings.catch_warnings(record=True) as rec:
+        warnings.simplefilter("always")
+        marks = sp9.drawn_marks(p)
+    assert [m[0] for m in marks] == ["13"] and _sdv_warnings(rec) == []
+
+
+def test_a_point_copied_into_every_panel_counts_once_in_the_warning(mark_images):
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_wordmarks(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "LAR"], league="nfl")  # no LAR wordmark
+    with pytest.warns(SdvplotWarning) as rec:
+        sp9.drawn_marks(p)
+    assert _sdv_warnings(rec) == ["skipped 1 point(s) with no wordmark archived: 'LAR'"]
+
+
+def test_a_season_per_team_follows_its_row_into_every_panel(mark_images):
+    # plotnine copies add_logos' rows into each panel; each copy keeps its own season (the Oakland mark for 2010)
+    p = _plot() + facet_wrap("g")
+    p.data = p.data.assign(g=["a", "b"])
+    p = sdvplot.add_logos(p, [10.0, 20.0], [-3.0, -7.0], ["LV", "LV"], league="nfl", season=[2010, 2021])
+    urls = [m[4] for m in sp9.drawn_marks(p)]
+    assert urls == ["https://cdn/3333.png", "https://cdn/1111.png"] * 2
+
+
+def test_axis_logos_on_a_faceted_plot_warn_once_per_render(mark_images):
+    bars = pd.DataFrame({"team": ["LV", "XXX", "LAR"] * 2, "v": [1, 2, 3] * 2, "g": list("aaabbb")})
+    p = sdvplot.axis_logos(ggplot(bars, aes("team", "v")) + geom_col() + facet_wrap("g"), "x", league="nfl")
+    with pytest.warns(SdvplotWarning) as rec:
+        assert sorted(m[0] for m in sp9.drawn_axis_marks(p, "x")) == ["13", "14"]
+    assert len(_sdv_warnings(rec)) == 1
 
 
 def test_the_geom_accepts_polars_data(mark_images):
@@ -256,8 +346,18 @@ def test_geom_from_path_warns_once_per_draw_and_reads_each_image_once_across_fac
     monkeypatch.setattr(_cache, "SESSION", session)
     (a,) = _pngs(tmp_path, "a.png")
     dead = "https://example.com/gone.png"
-    df = pd.DataFrame({"x": [1.0, 2.0, 1.0, 2.0], "y": [1.0] * 4, "img": [a, dead, a, dead], "f": list("ppqq")})
+    # the dead points differ (x 2 and 3): two points; identical points count once, as for the team geoms
+    df = pd.DataFrame({"x": [1.0, 2.0, 1.0, 3.0], "y": [1.0] * 4, "img": [a, dead, a, dead], "f": list("ppqq")})
     p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path() + facet_wrap("f")
     with pytest.warns(SdvplotWarning, match=r"skipped 2 point\(s\) whose image could not be read") as rec:
         assert [m[0] for m in sp9.drawn_marks(p)] == [a, a]
     assert len(rec) == 1 and len(session.calls) == 1
+
+
+def test_geom_from_path_leaves_a_missing_x_to_plotnine(tmp_path):
+    from plotnine.exceptions import PlotnineWarning
+
+    (a,) = _pngs(tmp_path, "a.png")
+    df = pd.DataFrame({"x": [1.0, None], "y": [1.0, 2.0], "img": [a, a]})
+    with pytest.warns(PlotnineWarning, match="Removed 1 rows"):  # plotnine's warning, and no SdvplotWarning
+        assert [m[0] for m in sp9.drawn_marks(ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path())] == [a]

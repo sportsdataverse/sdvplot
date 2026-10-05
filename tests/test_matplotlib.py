@@ -112,7 +112,7 @@ def test_axis_logos_hide_only_resolved_labels_and_make_room(mark_images):
     pad_before = ax.xaxis.get_major_ticks()[0].get_pad()
     with pytest.warns(SdvplotWarning):
         sdvplot.axis_logos(ax, "x", league="nfl", height=0.1)
-    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 2.0)]
+    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
     assert smpl.visible_axis_labels(ax, "x") == ["XXX"]
     assert ax.xaxis.get_major_ticks()[0].get_pad() > pad_before
 
@@ -121,7 +121,7 @@ def test_y_axis_logos(mark_images):
     _, ax = plt.subplots()
     ax.barh(["LV", "LAR"], [1, 2])
     sdvplot.axis_logos(ax, "y", league="nfl")
-    assert smpl.drawn_axis_marks(ax, "y") == [("13", 0.0), ("14", 1.0)]
+    assert smpl.drawn_axis_marks(ax, "y") == [("13", 0.0, pytest.approx(0.1)), ("14", 1.0, pytest.approx(0.1))]
     assert smpl.visible_axis_labels(ax, "y") == []
 
 
@@ -188,7 +188,7 @@ def test_axis_logos_skip_ticks_outside_the_view(mark_images):
     ax.bar(["LV", "LAR", "LAC"], [1, 2, 3])
     ax.set_xlim(-0.5, 1.5)  # LAC (no logo archived) sits outside the view: no image and no warning for it
     sdvplot.axis_logos(ax, "x", league="nfl")
-    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 1.0)]
+    assert [m[:2] for m in smpl.drawn_axis_marks(ax, "x")] == [("13", 0.0), ("14", 1.0)]
 
 
 def test_axis_logos_keep_a_configured_label_pad(mark_images):
@@ -239,7 +239,7 @@ def test_add_images_draws_local_paths_and_urls_at_their_height(tmp_path, cache):
     ax = _axes()
     out = smpl.add_images(ax, pl.Series([5.0, 20.0]), pl.Series([-3.0, -7.0]), pl.Series([a, b]), height=0.2)
     assert out is ax
-    assert smpl.drawn_marks(ax) == [(a, 5.0, -3.0, 0.2, a), (b, 20.0, -7.0, 0.2, b)]
+    assert smpl.drawn_marks(ax) == [(a, 5.0, -3.0, pytest.approx(0.2), a), (b, 20.0, -7.0, pytest.approx(0.2), b)]
     ax.figure.canvas.draw()
     ext = ax.artists[0].offsetbox.get_window_extent(ax.figure.canvas.get_renderer())
     assert ext.height / ax.bbox.height == pytest.approx(0.2, abs=1e-6) and ext.width / ext.height == pytest.approx(2)
@@ -303,3 +303,16 @@ def test_add_images_takes_one_path_an_uppercase_scheme_and_a_file_uri(tmp_path, 
     smpl.add_images(ax, 5, -5, Path(a))  # one point, as a pathlib.Path
     smpl.add_images(ax, [10, 15], [-5, -5], [upper, Path(a).as_uri()])
     assert [m[0] for m in smpl.drawn_marks(ax)] == [a, upper, Path(a).as_uri()]
+
+
+def test_add_images_warns_exactly_once_per_skip_reason_and_checks_height_at_the_call(tmp_path):
+    a = _png(tmp_path / "a.png")
+    ax = _axes()
+    with pytest.warns(SdvplotWarning) as rec:
+        smpl.add_images(ax, [1, None, 3, 4], [-1, -2, -3, -4], [a, a, str(tmp_path / "x.png"), str(tmp_path / "y.png")])
+    assert [str(w.message).split(": ")[0] for w in rec] == [
+        "skipped 1 point(s) with a missing x or y",
+        "skipped 2 point(s) whose image could not be read",
+    ]
+    with pytest.raises(ValueError, match="fraction of the plot height"):
+        smpl.add_images(object(), [], [], [], height=2)  # before the target or the points are looked at

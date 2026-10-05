@@ -8,7 +8,8 @@ module exposes add_logos, add_wordmarks, add_headshots and axis_logos, plus the 
 
 which returns one (team_id, x, y, height) or (team_id, x, y, height, url) tuple per image the adapter drew, in draw
 order. team_id is the canonical string id, x/y are the position values passed in (positional, never index labels),
-height is the fraction of the plot height the adapter used, and url the image source it drew.
+height is the fraction of the plot height the image was drawn at (measured, not the value asked for), and url the
+image source it drew.
 
 add_logos must return the object that was drawn on: the target itself when the library mutates in place
 (matplotlib), or the new object when it builds one (plotnine, altair, tables). The harness reads drawn_marks from

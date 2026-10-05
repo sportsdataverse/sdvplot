@@ -16,7 +16,7 @@ from typing import Any
 from sdvplot._errors import SdvplotWarning
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
-from sdvplot._resolve import _seasons, _unpack, resolve
+from sdvplot._resolve import _resolve_ids, _seasons, _unpack, resolve
 
 KINDS = ("logo", "wordmark", "headshot")
 
@@ -73,13 +73,17 @@ def place(
     kind: str = "logo",
     variant: str = "default",
     id_system: str = "auto",
+    _warn: bool = True,
 ) -> list[Placement]:
     """The marks to draw for each (x, y, team), in input order, skipping (with one warning per reason) the points
     whose team is unknown, whose x or y is missing, or that have no mark.
 
     ``x``, ``y`` and ``teams`` are read positionally (a pandas index is ignored). For ``kind="headshot"``, ``teams``
-    holds player ids and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``).
+    holds player ids and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``). ``_warn=False``
+    skips the same points without warning, for an adapter that already warned for them (no process-wide warning
+    filter is touched, so it is thread-safe).
     """
+    skipped = _warn_skipped if _warn else lambda reason, values: None
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {KINDS}, got {kind!r}")
     xs, _ = _unpack(x)
@@ -102,10 +106,13 @@ def place(
                 no_image.append(pid)
                 continue
             out.append(Placement(str(pid).strip(), xi, yi, url, None, None))
-        _warn_skipped("with no headshot", no_image)
+        skipped("with no headshot", no_image)
     else:
         seasons = _seasons(season, len(ts))
-        ids = resolve(ts, league, season=seasons, id_system=id_system)  # one warning for unknown values
+        if _warn:
+            ids = resolve(ts, league, season=seasons, id_system=id_system)  # one warning for unknown values
+        else:
+            ids, _ = _resolve_ids(ts, league, seasons, id_system)
         rows: dict[tuple[str, int | None], dict[str, Any] | None] = {}
         no_mark: list[Any] = []
         for xi, yi, raw, team_id, s in zip(xs, ys, ts, ids, seasons, strict=True):
@@ -123,15 +130,16 @@ def place(
             w, h = row.get("width"), row.get("height")
             aspect = float(w) / float(h) if w and h else None
             out.append(Placement(team_id, xi, yi, str(row["archive_url"]), aspect, row))
-        _warn_skipped(f"with no {kind} archived", no_mark)
-    _warn_skipped("with a missing x or y", missing_xy)
+        skipped(f"with no {kind} archived", no_mark)
+    skipped("with a missing x or y", missing_xy)
     return out
 
 
-def place_images(x: Any, y: Any, paths: Any) -> list[Placement]:
+def place_images(x: Any, y: Any, paths: Any, *, _warn: bool = True) -> list[Placement]:
     """``place`` for arbitrary images: one Placement per (x, y, path), keyed by the path (a local file or URL).
 
-    A null path is skipped silently (as a null team is); a missing x or y is skipped with one warning.
+    A null path is skipped silently (as a null team is); a missing x or y is skipped with one warning (none with
+    ``_warn=False``, as ``place``).
     """
     paths = os.fspath(paths) if isinstance(paths, os.PathLike) else paths  # one pathlib.Path is one point
     xs, ys, ps = _unpack(x)[0], _unpack(y)[0], _unpack(paths)[0]
@@ -146,5 +154,6 @@ def place_images(x: Any, y: Any, paths: Any) -> list[Placement]:
             missing_xy.append(path)
             continue
         out.append(Placement(str(path), xi, yi, str(path), None, None))
-    _warn_skipped("with a missing x or y", missing_xy)
+    if _warn:
+        _warn_skipped("with a missing x or y", missing_xy)
     return out
