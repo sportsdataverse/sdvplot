@@ -1,4 +1,4 @@
-# sdvplot
+# sdvplot <a href='https://sdvplot.sportsdataverse.org/'><img src='https://raw.githubusercontent.com/sportsdataverse/sdvplot/main/docs/static/img/sdvplot-logo.png' align="right" width="25%" min-width="120px" alt="sdvplot hex logo" /></a>
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Docs](https://img.shields.io/badge/docs-sdvplot.sportsdataverse.org-blue)](https://sdvplot.sportsdataverse.org)
