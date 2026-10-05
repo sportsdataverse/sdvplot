@@ -71,18 +71,18 @@ def _polygon_limits(ax: Any) -> Iterator[None]:
     from matplotlib.patches import Polygon
     from matplotlib.path import Path
 
-    walk = ax._update_patch_limits
+    straight = (Path.LINETO, Path.CLOSEPOLY)
+
+    walk = ax._update_patch_limits  # the Axes' own updater, or one set on it before this block
+    own = vars(ax).get("_update_patch_limits")
 
     def update(patch: Any) -> None:
         path, transform = patch.get_path(), patch.get_transform()
         codes, vertices = path.codes, path.vertices
-        straight = codes is None or (
-            codes[0] == Path.MOVETO and np.isin(codes[1:], (Path.LINETO, Path.CLOSEPOLY)).all()
-        )
         if not (
             isinstance(patch, Polygon)
-            and straight
             and len(vertices) > 1
+            and (codes is None or (codes[0] == Path.MOVETO and np.isin(codes[1:], straight).all()))
             and np.isfinite(vertices).all()
             and ax.name == "rectilinear"
             and transform.contains_branch(ax.transData)
@@ -96,7 +96,10 @@ def _polygon_limits(ax: Any) -> Iterator[None]:
     try:
         yield
     finally:
-        del ax._update_patch_limits
+        if own is None:
+            del ax._update_patch_limits
+        else:
+            ax._update_patch_limits = own
 
 
 def color_updates(sport: str, primary: str, secondary: str | None) -> dict[str, str]:

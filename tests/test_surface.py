@@ -147,3 +147,30 @@ def test_polygon_limits_are_matplotlibs_own():
         assert "_update_patch_limits" not in vars(ax)
         bounds.append(ax.dataLim.bounds)
     assert bounds[0] == bounds[1]
+
+
+def test_polygon_limits_send_an_empty_coded_path_to_matplotlib():
+    # an empty StepPatch has a codes array with nothing in it; reading codes[0] raised IndexError
+    from matplotlib.patches import StepPatch
+
+    _, ax = plt.subplots()
+    with _surface._polygon_limits(ax):
+        ax.add_patch(StepPatch([], [0]))
+
+
+def test_polygon_limits_restore_an_updater_the_axes_already_had():
+    _, ax = plt.subplots()
+    seen = []
+
+    def own(patch):
+        seen.append(patch)
+
+    ax._update_patch_limits = own
+    with _surface._polygon_limits(ax), _surface._polygon_limits(ax):  # nested: the outer override survives too
+        pass
+    assert vars(ax)["_update_patch_limits"] is own
+    with _surface._polygon_limits(ax):
+        from matplotlib.patches import Circle
+
+        ax.add_patch(Circle((0, 0), 1))  # not a polygon: the Axes' own updater gets it
+    assert len(seen) == 1
