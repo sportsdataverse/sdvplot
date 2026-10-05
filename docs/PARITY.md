@@ -55,8 +55,12 @@ resolved abbreviation. The default `height`, 0.1, is about the largest height at
 `width = 0.075` npc). Differences: a tier with no `tier_desc` entry gets no label (sdvplotR shows "NA"); a null
 `tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and
 subtitle sit over the panel (sdvplotR: `plot.title.position = "plot"`, which the plotnine version keeps); there is
-no `season`. Addition: `theme="light"` draws on white with dark lines and text, for dark logos (Ohio State,
-Texas A&M, Penn State) that vanish on sdvplotR's dark background, the only one it has; `"dark"` is the default.
+no `season`. `theme="light"` draws on white with dark lines and text, as sdvplotR's `theme = "light"` does (`"dark"`
+is the default in both). Addition: `variant`, default `"auto"`, draws the archive's `"dark"` logo variant on the dark
+theme and `"default"` on the light one; a team with no dark mark draws its default one. sdvplotR's `sdv_team_tiers()`
+draws every team's default logo on either theme, so dark logos (Toronto's, Iowa's, West Virginia's, Penn State's)
+nearly vanish on its dark background, and its docs point to `theme = "light"` instead; `variant="default"` reproduces
+sdvplotR's look. Bringing the dark variant to `sdv_team_tiers()` is a separate sdvplotR follow-up.
 
 **X4 `geom_from_path` / `add_images`.** Images are sized like sdvplot's logo verbs: `height` is a fraction of the
 panel (Axes) height, default 0.1, and the image keeps its aspect ratio. ggpath's `width`, `angle`, `hjust`, `vjust` and

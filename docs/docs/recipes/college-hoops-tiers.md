@@ -160,12 +160,14 @@ plt.show()
 
 </div>
 
-## 5. Fix the contrast
+## 5. Light or dark
 
-On the dark Tiermaker background, three logos almost vanish: Iowa's black hawk, Penn State's navy lion and Michigan
-State's dark green Spartan. Most college logos are drawn for a white page, so the fix is a light background:
-`theme="light"` draws the tiers on white with dark labels and lines. The logos go to full opacity too (`alpha=1`);
-the default 0.8 softens them against the dark background but washes them out on white.
+On the dark Tiermaker background, `team_tiers` draws each school's dark-background logo (its default
+`variant="auto"`), so Iowa's hawk is gold, Michigan State's Spartan white and Penn State's lion outlined instead of
+fading into the background. A light background suits a page or feed that is white anyway: `theme="light"` draws the
+tiers on white with dark labels and lines, and each school's usual logo. The logos go to full opacity too
+(`alpha=1`); the default 0.8 softens them against the dark background but washes them out on white. The exports
+below use the light one.
 
 ```python
 fig = tier_list(alpha=1, theme="light")

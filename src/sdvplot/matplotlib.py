@@ -792,6 +792,7 @@ def team_tiers(
     no_line_below_tier: Any = None,
     devel: bool = False,
     theme: Literal["dark", "light"] = "dark",
+    variant: str = "auto",
 ) -> Figure:
     """A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme.
 
@@ -812,8 +813,12 @@ def team_tiers(
             figure.
         no_line_below_tier: A tier number, or several, with no separator line below.
         devel: Draw each team as text instead of its logo (fast, and needs no download).
-        theme: "dark" (sdvplotR's: a near-black background) or "light" (white, for dark logos such as Ohio State's,
-            Texas A&M's or Penn State's, which vanish on dark).
+        theme: "dark" (sdvplotR's: a near-black background) or "light" (white).
+        variant: The logo variant: "auto" (the default) draws the archive's "dark" variant, a mark made for dark
+            backgrounds, on the dark theme and "default" on the light one; a team with no dark mark draws its
+            default one, with no warning. Any other value ("default", "dark" or a named variant from ``marks()``)
+            is drawn on either theme, as ``add_logos`` draws it: ``variant="default"`` keeps the default logos on
+            the dark theme, as sdvplotR and sdvplot 0.1.0 draw them.
 
     Returns:
         matplotlib.figure.Figure: A new figure with one Axes; a team that does not resolve is skipped with one
@@ -821,7 +826,8 @@ def team_tiers(
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown.
+        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown; unless
+            ``devel=True``, if ``variant`` is a name no mark in the archive has.
         ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``theme`` is not "dark" or
             "light".
         OfflineError: Unless ``devel=True``, if the logo manifest or a mark's image is neither cached nor downloadable
@@ -845,8 +851,11 @@ def team_tiers(
             # Draft it as text first, then add logos:
             fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
 
-            # Dark logos on a white background:
+            # A white background:
             fig = team_tiers(df, "cfb", theme="light")
+
+            # The default logos on the dark background, as sdvplotR draws them:
+            fig = team_tiers(df, "nfl", variant="default")
 
     See Also:
         sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
@@ -856,7 +865,7 @@ def team_tiers(
 
     t = _tiers.prepare(
         data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
-        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier, theme=theme, variant=variant,
     )  # fmt: skip
     fig, ax = plt.subplots(layout="constrained", facecolor=t.bg)
     ax.set_facecolor(t.bg)
@@ -872,7 +881,7 @@ def team_tiers(
         for x, y, label in zip(t.x, t.y, t.labels, strict=True):
             ax.text(x, y, label, color=t.text, ha="center", va="center")
     else:
-        placements = place(t.x, t.y, t.team_ids, league=league, id_system="team_id")
+        placements = place(t.x, t.y, t.team_ids, league=league, variant=t.variant, id_system="team_id")
         _draw_placements(ax, placements, height=t.height, alpha=t.alpha)
     anchor: Text | None = None  # the subtitle sits on the panel, the title on the subtitle, both left-aligned
     size = ax.title.get_fontproperties().get_size_in_points()

@@ -16,7 +16,7 @@ from matplotlib.text import Annotation  # noqa: E402
 
 import sdvplot.matplotlib as smpl  # noqa: E402
 from sdvplot import _tiers  # noqa: E402
-from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot._errors import InputError, SdvplotWarning  # noqa: E402
 from sdvplot._tiers import prepare  # noqa: E402
 
 
@@ -344,3 +344,40 @@ def test_plotnine_tiers_light_theme(mark_images):
     assert texts["NFL Team Tiers"] == t.text and texts["data"] == t.muted
     devel = sp9.team_tiers(_frame(tier_no=[1], team=["LV"]), "nfl", theme="light", devel=True).draw().axes[0]
     assert {to_hex(x.get_color()) for x in devel.texts} == {t.text}
+
+
+# ---- variant ------------------------------------------------------------------------------------------------------
+
+LV_DEFAULT, LV_DARK, LAR_DEFAULT = "https://cdn/1111.png", "https://cdn/2222.png", "https://cdn/6666.png"
+ADAPTERS = pytest.mark.parametrize("adapter", ["matplotlib", "plotnine"])
+
+
+def _drawn_urls(adapter, **kwargs):
+    """{team_id: archive url} of the logos drawn for LV (the fixture archives a "dark" mark) and LAR (it has none)."""
+    data = _frame(tier_no=[1, 1], team=["LV", "LAR"])
+    if adapter == "plotnine":
+        sp9 = _sp9()
+        marks = sp9._drawn_marks(sp9.team_tiers(data, "nfl", **kwargs))
+    else:
+        marks = smpl._drawn_marks(smpl.team_tiers(data, "nfl", **kwargs).axes[0])
+    return {m[0]: m[-1] for m in marks}
+
+
+@ADAPTERS
+def test_tiers_auto_variant_draws_dark_marks_on_the_dark_theme_and_default_on_light(mark_images, adapter):
+    assert _drawn_urls(adapter)["13"] == LV_DARK
+    assert _drawn_urls(adapter, theme="light")["13"] == LV_DEFAULT
+
+
+@ADAPTERS
+def test_tiers_auto_variant_draws_a_team_without_a_dark_mark_in_its_default(mark_images, adapter):
+    # conftest makes SdvplotWarning an error, so a skipped team or a warning about the fallback fails here
+    assert _drawn_urls(adapter) == {"13": LV_DARK, "14": LAR_DEFAULT}
+
+
+@ADAPTERS
+def test_tiers_pass_an_explicit_variant_through(mark_images, adapter):
+    assert _drawn_urls(adapter, variant="default") == {"13": LV_DEFAULT, "14": LAR_DEFAULT}  # sdvplotR's look
+    assert _drawn_urls(adapter, theme="light", variant="dark") == {"13": LV_DARK, "14": LAR_DEFAULT}
+    with pytest.raises(InputError, match="unknown variant"):
+        _drawn_urls(adapter, variant="no_such_variant")
