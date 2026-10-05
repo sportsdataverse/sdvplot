@@ -4375,7 +4375,7 @@ gt = gt_title_header(GT(pl.DataFrame({"team": ["LV"]})), "Week 5", subtitle="Pow
 gt_watermark(
     gt: great_tables.gt.GT,
     text: str | None = None,
-    image: str | pathlib._local.Path | None = None,
+    image: str | pathlib.Path | None = None,
     opacity: float = 0.06,
     size: str = '60%',
     position: str = 'center',
@@ -4395,7 +4395,7 @@ Put a faint text or image watermark behind the table body.
 |---|---|---|
 | `gt` | `great_tables.gt.GT` | The table. |
 | `text` | `str \| None` | Text to draw as the watermark (an inline SVG, so ``font`` must be a font the viewer has). |
-| `image` | `str \| pathlib._local.Path \| None` | Instead of ``text``, a PNG, JPEG, SVG or GIF file, embedded as a ``data:`` URI. |
+| `image` | `str \| pathlib.Path \| None` | Instead of ``text``, a PNG, JPEG, SVG or GIF file, embedded as a ``data:`` URI. |
 | `opacity` | `float` | How faint the watermark is, 0 to 1. |
 | `size` | `str` | The watermark's size relative to the table body, as a CSS background size. |
 | `position` | `str` | Where it sits, as a CSS background position (``"center"``, ``"right bottom"``). |

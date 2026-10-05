@@ -121,13 +121,46 @@ def _cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
+# Python 3.13 moved pathlib.Path into pathlib._local: render the public path, so pages do not change with the Python
+# that generates them (the drift gate runs on 3.10-3.13)
+_PRIVATE_MODULES = (("typing.", ""), ("pathlib._local.", "pathlib."))
+
+
+def _pep604(text: str) -> str:
+    """``Union[a, b]`` and ``Optional[a]`` as ``a | b`` and ``a | None``: 3.10 prints a union with ``Any`` (not yet a
+    class) as ``Union[...]`` where 3.11+ prints the ``|`` form."""
+    for name, extra in (("Union[", []), ("Optional[", ["None"])):
+        while (i := text.find(name)) != -1 and not (i and (text[i - 1].isalnum() or text[i - 1] in "_.")):
+            j = start = i + len(name)
+            depth, parts = 1, []
+            while depth:
+                c = text[j]
+                if c == "[":
+                    depth += 1
+                elif c == "]":
+                    depth -= 1
+                elif c == "," and depth == 1:
+                    parts.append(text[start:j].strip())
+                    start = j + 1
+                j += 1
+            parts.append(text[start : j - 1].strip())
+            text = text[:i] + " | ".join(parts + extra) + text[j:]
+    return text
+
+
+def _public(text: str) -> str:
+    for private, public in _PRIVATE_MODULES:
+        text = text.replace(private, public)
+    return _pep604(text)
+
+
 def _annotation(ann: object) -> str:
-    return inspect.formatannotation(ann).replace("typing.", "")
+    return _public(inspect.formatannotation(ann))
 
 
 def _signature(name: str, sig: inspect.Signature) -> str:
     """``name(params) -> ret`` on one line, or one parameter per line when that is longer than SIG_WIDTH."""
-    one = f"{name}{sig}".replace("typing.", "")
+    one = _public(f"{name}{sig}")
     if len(one) <= SIG_WIDTH:
         return one
     kinds = inspect.Parameter
@@ -138,7 +171,7 @@ def _signature(name: str, sig: inspect.Signature) -> str:
             i == 0 or params[i - 1].kind not in (kinds.KEYWORD_ONLY, kinds.VAR_POSITIONAL)
         ):
             parts.append("*")
-        parts.append(str(p).replace("typing.", ""))
+        parts.append(_public(str(p)))
         if p.kind is kinds.POSITIONAL_ONLY and (
             i + 1 == len(params) or params[i + 1].kind is not kinds.POSITIONAL_ONLY
         ):

@@ -388,3 +388,25 @@ def test_an_embed_function_must_list_offline_error_in_raises(monkeypatch):
     _scratch(monkeypatch, embeds=embeds)
     errors = gd.check_submodules()
     assert errors == ["sdvplot.scratch.embeds: takes embed= but Raises: does not list OfflineError"]
+
+
+def test_a_type_renders_under_its_public_module_on_every_python():
+    """Python 3.13 moved pathlib.Path into pathlib._local; a page must not change with the Python that renders it."""
+    import pathlib
+
+    assert gd._annotation(pathlib.Path) == "pathlib.Path"
+    assert gd._annotation(str | pathlib.Path | None) == "str | pathlib.Path | None"
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Union[collections.abc.Callable[[Any], Any], Any]", "collections.abc.Callable[[Any], Any] | Any"),
+        ("Optional[dict[str, int]]", "dict[str, int] | None"),
+        ("list[Union[int, str]] | None", "list[int | str] | None"),
+        ("MyUnion[int, str]", "MyUnion[int, str]"),
+    ],
+)
+def test_unions_render_in_the_pipe_form_on_every_python(text, expected):
+    """3.10 prints a union with Any as Union[...]; the pages use the | form 3.11+ prints."""
+    assert gd._public(text) == expected
