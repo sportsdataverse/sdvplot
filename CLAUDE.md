@@ -183,9 +183,11 @@ by variant first, then season within each variant, then source rank.
 - `_daemon_pipe_readers` in `tests/conftest.py` makes logistro's pipe readers (kaleido's Chrome stderr, through
   choreographer) daemon threads, so a Chrome that will not close cannot hang pytest after its summary. Drop it once
   choreographer closes the pipe in a `finally` (its `browser_async.close` / `browser_sync.close`; 1.4.0 does not).
-- great_tables' notebook repr marks its own cell rules `!important`, and every rule under VS Code and Positron
-  (`VSCODE_PID`, `POSITRON_VERSION`). So the `sdvplot.great_tables` helpers write their inline borders and fills (and
-  the text color paired with a fill) through `important()`, and `gt_color_ranks` warns where VS Code or Positron
+- great_tables' notebook repr marks every rule of its stylesheet `!important` only under VS Code and Positron
+  (`VSCODE_PID`, `POSITRON_VERSION`: `infer_render_env_defaults()["all_important"]`); Jupyter, Quarto, Databricks,
+  `as_raw_html()` and the docs pages have none. Agent shells inherit `VSCODE_PID`, so state the env when you measure
+  CSS precedence. The `sdvplot.great_tables` helpers write their inline borders and fills (and the text color paired
+  with a fill) through `important()`, which wins in every env, and `gt_color_ranks` warns where VS Code or Positron
   stripes would cover its fills (`tests/test_gt_repr_important.py`).
 
 ## Docstring standard
