@@ -1,0 +1,21 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "pwhl",
+  "label": "PWHL",
+  "position": 41,
+  "page": "tutorials/leagues/pwhl.md",
+  "items": [
+    {
+      "title": "PWHL leaders card with player photos",
+      "alt": "The PWHL's top five in points and in goals for 2025-26, with player photos and team logos",
+      "image": "/img/gallery/tutorials/leagues/pwhl_13.png",
+      "anchor": "4-a-leaders-card-with-player-photos"
+    },
+    {
+      "title": "PWHL Walter Cup game shot map",
+      "alt": "Every shot and goal of the 2026 Walter Cup-clinching game on a rink, each team's logo in its attacking half",
+      "image": "/img/gallery/tutorials/leagues/pwhl_22.png",
+      "anchor": "8-the-game-that-decided-the-walter-cup"
+    }
+  ]
+}
