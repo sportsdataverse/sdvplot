@@ -213,7 +213,7 @@ def _check_alpha(rule: str, verb: str, draw: Callable[[float], Any]) -> None:
         _fail(rule, f"alpha={bad} must raise ValueError from {verb} (alpha is an opacity in [0, 1])")
 
 
-def check_adapter_contract(
+def check_adapter_contract(  # noqa: C901 - one short block per contract rule, run in order (R0 to R9)
     adapter: ModuleType,
     make_target: Callable[[], Any],
     *,

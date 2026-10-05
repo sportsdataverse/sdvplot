@@ -797,7 +797,7 @@ def _cutline_svg(text: str, color: str, size: float) -> str:
     return "data:image/svg+xml;charset=utf-8," + quote(svg, safe="")
 
 
-def gt_cutline(
+def gt_cutline(  # noqa: C901 - most branches validate its ten arguments; great_tables splits are parked
     gt: GT,
     after: int | Sequence[int],
     label: str | Sequence[str | None] | None = None,

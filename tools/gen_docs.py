@@ -138,7 +138,7 @@ def _signature(name: str, sig: inspect.Signature) -> str:
     return f"{name}(\n" + "".join(f"    {x},\n" for x in parts) + f"){ret}"
 
 
-def render_function(name: str, fn: object, position: int) -> tuple[str, list[str]]:
+def render_function(name: str, fn: object, position: int) -> tuple[str, list[str]]:  # noqa: C901 - a section each
     raw = inspect.getdoc(fn) or ""
     doc = docstring_parser.parse(raw, style=docstring_parser.DocstringStyle.GOOGLE)
     try:  # the package uses `from __future__ import annotations`; resolve them so pages show types, not strings
