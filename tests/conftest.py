@@ -342,6 +342,8 @@ _NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
     "tests/test_compat_matrix.py::test_every_test_the_compatibility_page_names_exists": "docs",
     "tests/test_gt_themes.py::test_every_theme_has_a_ported_row_in_the_parity_table": "docs",
     "tests/test_real_index.py::test_espn_team_endpoint_abbreviations_never_name_another_team": "data-raw",
+    "tests/test_real_index.py::test_espn_colors_from_another_sport_come_only_from_school_keyed_leagues": "data-raw",
+    "tests/test_real_index.py::test_logo_colors_agree_with_published_ones_where_both_exist": "data-raw",
     "tests/test_sdvplotr_parity.py": "data-raw",
     "tests/test_repo_files.py::test_sdv_py_dotfiles_exist_and_parse": "CLAUDE.md",
     "tests/test_repo_files.py::test_docs_changelog_mirrors_the_root_changelog": "docs",

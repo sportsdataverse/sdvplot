@@ -37,6 +37,18 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
+  leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
+  ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in
+  another ESPN sport, through the same school id at the same location or, for college baseball and softball (which
+  number their teams apart from the school), a unique exact name and location. The other 1,364 carry the two dominant
+  colors of their archived logo, flagged `color_source="logo"` because no source publishes them (`teamcolors` was
+  surveyed and not used: GPL data from 2020 that adds 5 teams). Two scoreboard-only men's college hockey teams, with no
+  logo and no ESPN color, keep a fallback. ESPN's stand-in colors (black alone, or black with its stock red) no longer
+  count as a team's: 417 college teams that showed them now show their school's ESPN colors (119) or their logo's
+  (298). A secondary equal to its primary is dropped (5 teams). `tools/fetch_sources.py --colors-only` refreshes the
+  two new snapshots, `data-raw/espn_colors.csv` and `data-raw/logo_colors.csv`.
+
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
 

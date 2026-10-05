@@ -55,7 +55,8 @@ img = sdvplot.logo_image("LV", "nfl", size=128)                # a PIL image
 Colors work in any library that takes a `{value: color}` mapping, for example seaborn:
 `sns.barplot(data=df, x="team", y="epa", hue="team", palette=sdvplot.palette("nfl", teams=df["team"]))`.
 
-Colors marked `color_source="fallback"` are placeholders, not team colors.
+Colors marked `color_source="logo"` are derived from the team's archived logo where no source publishes its colors;
+`color_source="fallback"` ones are placeholders, not team colors.
 
 ## Environment variables
 
