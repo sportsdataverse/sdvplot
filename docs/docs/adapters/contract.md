@@ -5,9 +5,9 @@ sidebar_label: The adapter contract
 
 # The adapter contract
 
-An adapter draws sdvplot's marks with one plotting or table library. Adapters arrive in later sub-projects: the
-matplotlib family, then the web family, then tables. The core release defines the contract they all meet, and it ships
-with no adapters registered. This page is for the people writing them.
+An adapter draws sdvplot's marks with one plotting or table library. sdvplot registers adapters for matplotlib,
+seaborn, plotnine, great_tables, Plotly, Altair, Bokeh, HoloViews, Folium and pygal, and each meets the contract on
+this page. This page is for the people writing a new one.
 
 ## The verbs
 

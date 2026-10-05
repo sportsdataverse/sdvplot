@@ -1,0 +1,49 @@
+{
+  "install": "pip install git+https://github.com/sportsdataverse/sdvplot",
+  "sample": "import sdvplot\n\nsdvplot.resolve([\"KC\", \"Kansas City Chiefs\", 12], \"nfl\")\nsdvplot.palette(\"nfl\", teams=[\"KC\", \"SF\"])\nsdvplot.team_colors([\"LAL\", \"BOS\"], \"nba\")\nsdvplot.team_colors(\"NYY\", \"mlb\", which=\"secondary\")",
+  "output": "['12', '12', '12']\n{'KC': '#e31837', 'SF': '#aa0000'}\n['#552583', '#008348']\n'#c4ced4'",
+  "swatches": [
+    {
+      "league": "NFL",
+      "team": "KC",
+      "name": "Kansas City Chiefs",
+      "primary": "#e31837",
+      "secondary": "#ffb612"
+    },
+    {
+      "league": "NFL",
+      "team": "SF",
+      "name": "San Francisco 49ers",
+      "primary": "#aa0000",
+      "secondary": "#b3995d"
+    },
+    {
+      "league": "NBA",
+      "team": "LAL",
+      "name": "Los Angeles Lakers",
+      "primary": "#552583",
+      "secondary": "#fdb927"
+    },
+    {
+      "league": "NBA",
+      "team": "BOS",
+      "name": "Boston Celtics",
+      "primary": "#008348",
+      "secondary": "#ffffff"
+    },
+    {
+      "league": "MLB",
+      "team": "NYY",
+      "name": "New York Yankees",
+      "primary": "#132448",
+      "secondary": "#c4ced4"
+    },
+    {
+      "league": "MLB",
+      "team": "LAD",
+      "name": "Los Angeles Dodgers",
+      "primary": "#005a9c",
+      "secondary": "#ffffff"
+    }
+  ]
+}

@@ -33,12 +33,17 @@ pip install "sdvplot[mpl]"
 | `[bokeh]` | bokeh |
 | `[holoviews]` | holoviews |
 | `[tables]` | great_tables |
+| `[reactable]` | reactable |
 | `[folium]` | folium |
 | `[surfaces]` | sportypy and mplsoccer |
+| `[plottable]` | plottable |
+| `[pygal]` | pygal |
 | `[all]` | every extra above |
 
-In this core release only `[svg]` changes what sdvplot can do. The other extras install the library that its adapter
-needs, and the adapters arrive in later releases (see [the roadmap](#roadmap)).
+`[svg]` lets `logo_image()` rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`,
+`[holoviews]`, `[tables]`, `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that
+library's plots, tables and maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]`
+is for `surface()`, and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
 
 ## Quick example
 
@@ -67,18 +72,3 @@ img = sdvplot.logo_image("LV", "nfl", size=128)             # a 128x128 PIL imag
 - [API reference](reference/index.md): every public function.
 - Tutorials: executed notebooks, starting with the [quickstart](tutorials/01_quickstart.md).
 - [For adapter authors](adapters/contract.md): the contract every plotting adapter meets.
-
-## Roadmap
-
-sdvplot ships as five sub-projects:
-
-1. **Core** (this release): team identity, colors, logo selection, headshot URLs, the cache and the bundled index.
-2. **matplotlib family**: matplotlib, seaborn and plotnine layers, axis logos, and bridges to sportypy, mplsoccer and
-   plottable.
-3. **Web family**: Plotly, Altair, Bokeh, HoloViews and Folium.
-4. **Tables**: great_tables helpers.
-5. **Long tail**: pygal, and other libraries as they add image marks.
-
-Until the adapters land, `add_logos()` and the other plotting verbs raise `UnsupportedTargetError`. The core functions
-already work with any library: pass `palette()` to seaborn or Plotly, and `logo_url()` or `logo_image()` to whatever draws
-the image.

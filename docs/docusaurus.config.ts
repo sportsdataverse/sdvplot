@@ -401,32 +401,26 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {
-              label: 'Docs',
-              to: '/docs/intro',
-            },
+            {label: 'Get started', to: '/docs/intro'},
+            {label: 'API reference', to: '/docs/reference/'},
+            {label: 'Tutorials', to: '/docs/category/tutorials'},
           ],
         },
         {
           title: 'Community',
           items: [
-            {
-              label: 'Twitter (Author)',
-              href: 'https://twitter.com/saiemgilani',
-            },
-            {
-              label: 'Twitter (SportsDataverse)',
-              href: 'https://twitter.com/sportsdataverse',
-            },
+            {label: 'GitHub', href: 'https://github.com/sportsdataverse/sdvplot'},
+            {label: 'Bluesky', href: 'https://bsky.app/profile/sportsdataverse.org'},
+            {label: 'X', href: 'https://x.com/SportsDataverse'},
           ],
         },
         {
-          title: 'More',
+          title: 'SportsDataverse',
           items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/sportsdataverse/sdvplot',
-            },
+            {label: 'sportsdataverse.org', href: 'https://sportsdataverse.org'},
+            {label: 'sdvplotR', href: 'https://sdvplotR.sportsdataverse.org'},
+            {label: 'sdv-py', href: 'https://py.sportsdataverse.org'},
+            {label: 'Data status', href: 'https://sportsdataverse.org/status'},
           ],
         },
       ],

@@ -22,11 +22,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Without wrapping, the two button--lg links total ~470px and cannot fit a
-     phone. `.heroBanner` sets `overflow: hidden`, so instead of scrolling they
-     were silently CLIPPED -- at 320px each lost ~80px, leaving "etting Started"
-     and "Ecosystem & philosoph". Wrap them and let a long label break across
-     lines rather than spill past its own border. */
+  /* Without wrapping, the two button--lg links cannot fit a phone side by side, and `.heroBanner`'s
+     `overflow: hidden` would clip them instead of scrolling. Wrap them and let a long label break
+     across lines rather than spill past its own border. */
   flex-wrap: wrap;
   gap: 0.75rem;
 }
@@ -39,6 +37,85 @@
   white-space: normal;
 }
 
+.section {
+  padding: 2rem 0 0;
+}
+
+/* two figures to a row on a wide screen, one on a phone; each PNG keeps its aspect ratio */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+  gap: 1.5rem;
+}
+
+.figure {
+  margin: 0;
+}
+
+.figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: var(--ifm-global-radius);
+}
+
+.figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chips {
+  display: flex;
+  height: 2.5rem;
+}
+
+/* a hairline edge, so a white or near-page-color team color still shows as a chip */
+.chip {
+  flex: 1;
+  border: 1px solid var(--ifm-toc-border-color);
+}
+
+.chip:first-child {
+  border-radius: var(--ifm-global-radius) 0 0 var(--ifm-global-radius);
+}
+
+.chip:last-child {
+  border-left: 0;
+  border-radius: 0 var(--ifm-global-radius) var(--ifm-global-radius) 0;
+}
+
+.swatchName {
+  font-weight: 600;
+}
+
+.swatchMeta {
+  font-size: 0.875rem;
+}
+
+/* the two hex codes as plain text: no inline-code chip */
+.swatchHex {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 0.875rem;
+}
+
 .features {
   display: flex;
   align-items: center;
@@ -46,45 +123,17 @@
   width: 100%;
 }
 
-.featureImage {
-  height: 200px;
-  width: 200px;
+.feature {
+  margin-bottom: var(--ifm-spacing-vertical);
 }
 
-.funcs {
-  margin-bottom: 80px;
+.card {
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
 }
 
-.funcSet {
-  margin-bottom: 32px;
-}
-
-.funcSetHeading {
-  margin-bottom: 8px;
-}
-
-.funcSetItems {
-  columns: 2;
-}
-@media screen and (min-width: 500px) {
-  .funcSetItems {
-    columns: 3;
-  }
-}
-@media screen and (min-width: 750px) {
-  .funcSetItems {
-    columns: 4;
-  }
-}
-@media screen and (min-width: 966px) {
-  .funcSetItems {
-    columns: 5;
-  }
-}
-
-
-.funcSetItem {
-  display: block;
-  margin-bottom: 8px;
-  margin-right: 8px;
+.cardTitle {
+  margin-bottom: 0.5rem;
 }

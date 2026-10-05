@@ -1,5 +1,5 @@
 """Generate the API reference pages (docs/docs/reference/) from sdvplot's public docstrings, and the site's data files
-(docs/src/data/): the reference sidebar.
+(docs/src/data/): the reference sidebar and the home page's code sample, its output and the palette swatches.
 
 Usage: uv run python tools/gen_docs.py [--out DIR] [--data-out DIR] [--check]
 
@@ -19,6 +19,7 @@ import textwrap
 from pathlib import Path
 
 import docstring_parser
+import polars as pl
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -26,7 +27,7 @@ import sdvplot  # noqa: E402
 
 OUT = ROOT / "docs" / "docs" / "reference"
 DATA = ROOT / "docs" / "src" / "data"
-DATA_FILES = ["reference_sidebar.json"]
+DATA_FILES = ["reference_sidebar.json", "home.json"]
 SECTIONS = [
     ("Teams", ["resolve", "suggest", "teams"]),
     ("Colors", ["palette", "team_colors"]),
@@ -36,6 +37,17 @@ SECTIONS = [
 ]
 ERRORS = ["SdvplotWarning", "UnresolvedTeamError", "OfflineError", "OptionalDependencyError", "UnsupportedTargetError"]
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
+# The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
+# never typed), and two-color swatches for six teams in three leagues, from palette().
+# Not on PyPI yet: switch to "pip install sdvplot" after the first release.
+HOME_INSTALL = "pip install git+https://github.com/sportsdataverse/sdvplot"
+HOME_SAMPLE = [
+    'sdvplot.resolve(["KC", "Kansas City Chiefs", 12], "nfl")',
+    'sdvplot.palette("nfl", teams=["KC", "SF"])',
+    'sdvplot.team_colors(["LAL", "BOS"], "nba")',
+    'sdvplot.team_colors("NYY", "mlb", which="secondary")',
+]
+HOME_TEAMS = [("nfl", "KC"), ("nfl", "SF"), ("nba", "LAL"), ("nba", "BOS"), ("mlb", "NYY"), ("mlb", "LAD")]
 
 
 def _section(text: str, header: str) -> str | None:
@@ -187,6 +199,30 @@ def sidebar_items() -> list[dict[str, object]]:
     return items
 
 
+def home_data() -> dict[str, object]:
+    """The home page's install line, code sample, the sample's output (one repr per line) and swatches."""
+    ns: dict[str, object] = {"sdvplot": sdvplot}
+    output = []
+    for line in HOME_SAMPLE:
+        exec(f"_ = {line}", ns)  # the sample's own text is what runs
+        output.append(repr(ns["_"]))
+    swatches = []
+    for league, team in HOME_TEAMS:
+        team_id = sdvplot.resolve(team, league)
+        name = sdvplot.teams(league).filter(pl.col("team_id") == team_id)["name"][0]
+        primary = sdvplot.palette(league, teams=[team])[team]
+        secondary = sdvplot.palette(league, "secondary", teams=[team])[team]
+        swatches.append(
+            {"league": league.upper(), "team": team, "name": name, "primary": primary, "secondary": secondary}
+        )
+    return {
+        "install": HOME_INSTALL,
+        "sample": "import sdvplot\n\n" + "\n".join(HOME_SAMPLE),
+        "output": "\n".join(output),
+        "swatches": swatches,
+    }
+
+
 def _write_json(path: Path, obj: object) -> None:
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
@@ -227,6 +263,7 @@ def render(out_dir: Path, data_dir: Path) -> list[str]:
     (out_dir / "errors.md").write_text(_errors_page(pos), encoding="utf-8", newline="\n")
     (out_dir / "index.md").write_text("\n".join(index).rstrip() + "\n", encoding="utf-8", newline="\n")
     _write_json(data_dir / "reference_sidebar.json", sidebar_items())
+    _write_json(data_dir / "home.json", home_data())
     return errors
 
 

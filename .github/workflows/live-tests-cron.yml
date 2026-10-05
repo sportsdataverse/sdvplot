@@ -22,7 +22,7 @@ jobs:
     outputs:
       pytest_status: ${{ steps.run-pytest.outcome }}
       render_status: ${{ steps.render.outcome }}
-      render_failed: ${{ steps.render.outputs.failed }}
+      render_failed: ${{ steps.render.outputs.failed || steps.figures.outputs.failed }}
       has_changes: ${{ steps.tutorial-changes.outputs.has_changes }}
     steps:
       - uses: actions/checkout@v5
@@ -75,12 +75,25 @@ jobs:
           if ! uv run --frozen python tools/render_notebooks.py 2>&1 | tee render-notebooks.log; then
             echo "failed=1" >> "$GITHUB_OUTPUT"
           fi
+      - name: Draw the home page figures
+        # tools/home_figures.py redraws the home page's PNGs with the matplotlib adapter (live logos and headshots)
+        # and their alt text. It writes nothing unless every figure drew, so a failure keeps the committed set;
+        # the failure is recorded for the drift issue like the render's, and its log goes in the same file.
+        id: figures
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        env:
+          SDVPLOT_LIVE_TESTS: "1"
+        run: |
+          set -o pipefail
+          if ! uv run --frozen python tools/home_figures.py 2>&1 | tee -a render-notebooks.log; then
+            echo "failed=1" >> "$GITHUB_OUTPUT"
+          fi
       - name: Detect tutorial changes
         id: tutorial-changes
         if: ${{ !cancelled() && steps.render.outcome == 'success' }}
         # git status, not git diff: a new notebook renders an untracked page.
         run: |
-          if [ -n "$(git status --porcelain -- docs/docs/tutorials)" ]; then
+          if [ -n "$(git status --porcelain -- docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json)" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Upload rendered tutorials
@@ -88,7 +101,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: rendered-tutorials
-          path: docs/docs/tutorials
+          # several paths: the artifact keeps them relative to their common parent, docs/
+          path: |
+            docs/docs/tutorials
+            docs/static/img/home
+            docs/src/data/home_figures.json
           if-no-files-found: error
           retention-days: 7
       - name: Upload notebook render log
@@ -128,31 +145,31 @@ jobs:
       actions: write # dispatch the checks on the refresh PR (GITHUB_TOKEN pushes trigger no workflows)
     steps:
       - uses: actions/checkout@v5
-      - name: Download the rendered tutorials
+      - name: Download the rendered tutorials and home figures
         uses: actions/download-artifact@v8
         with:
           name: rendered-tutorials
-          path: docs/docs/tutorials
+          path: docs
       - name: Open / update the refresh PR
         # main is PR-only, so push a refresh branch and open/update a PR.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -z "$(git status --porcelain -- docs/docs/tutorials)" ]; then
-            echo "No tutorial changes to publish."
+          if [ -z "$(git status --porcelain -- docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json)" ]; then
+            echo "No tutorial or home figure changes to publish."
             exit 0
           fi
           branch="auto/tutorials-refresh"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add docs/docs/tutorials
-          git commit -m "docs(tutorials): refresh executed notebook pages"
+          git add docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json
+          git commit -m "docs(tutorials): refresh executed notebook pages and home figures"
           git push -f origin "$branch"
           if [ -z "$(gh pr list --head "$branch" --state open --json number -q '.[0].number')" ]; then
             gh pr create --head "$branch" --base main \
-              --title "docs(tutorials): weekly refresh of executed notebook pages" \
-              --body "Automated re-execution + render of \`examples/notebooks/\` to \`docs/docs/tutorials/\` by \`render_notebooks.py\` (live-tests-cron). Review the output diffs and merge to refresh the rendered tutorials."
+              --title "docs(tutorials): weekly refresh of executed notebook pages and home figures" \
+              --body "Automated re-execution + render of \`examples/notebooks/\` to \`docs/docs/tutorials/\` by \`render_notebooks.py\`, and the home page figures by \`tools/home_figures.py\` (live-tests-cron). Review the output diffs and merge to refresh them."
           fi
           # A push made with GITHUB_TOKEN starts no workflows, so dispatch the checks
           # that guard the rendered pages; their runs attach to the PR's head commit.

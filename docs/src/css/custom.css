@@ -6,3 +6,11 @@
 .sdv-signature code {
   white-space: pre-wrap;
 }
+
+/* The generated category page (Tutorials) sets its own 3rem title; on a phone doc titles are 2rem. Doc pages
+   match this selector too and already use 2rem there. */
+@media (max-width: 996px) {
+  .docs-doc-page main header > h1 {
+    --ifm-h1-font-size: 2rem;
+  }
+}

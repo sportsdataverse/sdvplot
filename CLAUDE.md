@@ -52,7 +52,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_errors.py`, `_versions.py` | `SdvplotWarning` and the error types; `versions()` |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
-`export_sdvplotr.R`). `docs/` is the Docusaurus site; `docs/COMPATIBILITY.md` (outside the site's pages) is the
+`home_figures.py`, `export_sdvplotr.R`). `docs/` is the Docusaurus site; `docs/COMPATIBILITY.md` (outside the site's pages) is the
 gallery compatibility matrix, kept true by `tests/test_compat_matrix.py`. `data-raw/` is the committed input to the
 index.
 
@@ -74,8 +74,9 @@ uv run pre-commit run --all-files           # `pre-commit install` refuses when 
 | File | Regenerate | Check |
 | --- | --- | --- |
 | `src/sdvplot/data/*` | `uv run python tools/build_index.py` (after `tools/fetch_sources.py` for new sources) | `--check` |
-| `docs/docs/reference/**` | `uv run python tools/gen_docs.py` | `--check` |
-| `docs/docs/tutorials/**` | `uv run python tools/render_notebooks.py` | none |
+| `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
+| `docs/docs/tutorials/**`, `docs/static/notebooks/*.ipynb` | `uv run python tools/render_notebooks.py` (network) | `tests/test_notebooks.py` (the notebook copies) |
+| `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` |
 | `docs/src/pages/CHANGELOG.md` | copy of `CHANGELOG.md` (pre-commit hook) | tests |
 | `data-raw/sdvplotr_*.csv` | `Rscript tools/export_sdvplotr.R` | rebuild the index |
 

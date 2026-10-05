@@ -1,0 +1,30 @@
+[
+  {
+    "name": "nhl-decades",
+    "alt": "NHL team logos stacked by decade: 1910s: MTL, TOR; 1920s: BOS, CHI, DET, NYR; 1960s: DAL, LA, PHI, PIT, STL; 1970s: BUF, VAN, CGY, NYI, NJ, WSH; 1980s: CAR, COL, EDM, WPG; 1990s: SJ, OTT, TB, ANA, FLA, UTAH, NSH; 2000s: CBJ, MIN; 2010s: VGK; 2020s: SEA.",
+    "caption": "add_logos() as scatter points: NHL teams, stacked by the decade their archived logos begin (marks()).",
+    "width": 960,
+    "height": 600
+  },
+  {
+    "name": "afc-colors",
+    "alt": "Bar chart of the contrast ratio between each AFC team's primary and secondary color, lowest first: MIA 1.5, TEN 1.7, NYJ 1.7, BUF 1.9, HOU 2.3, NE 2.7, KC 2.7, LAC 2.8, JAX 3.2, BAL 3.7, CLE 4.5, DEN 4.7, IND 6.0, CIN 6.2, LV 9.1, PIT 12.0.",
+    "caption": "Bars in each AFC team's two colors from palette(), their contrast ratio as the height, and axis_logos() on the axis.",
+    "width": 960,
+    "height": 600
+  },
+  {
+    "name": "montreal-eras",
+    "alt": "The 8 Montreal Canadiens logos in the archive, in order, first used in 1918, 1920, 1922, 1926, 1933, 1948, 1957, 2000.",
+    "caption": "One add_logos() call with season=: the mark Montreal used each season, from the logo archive.",
+    "width": 960,
+    "height": 600
+  },
+  {
+    "name": "headshots",
+    "alt": "ESPN headshots of Patrick Mahomes (NFL), Nikola Jokic (NBA), A'ja Wilson (WNBA), Mike Trout (MLB), Connor McDavid (NHL).",
+    "caption": "add_headshots() with ESPN athlete ids, one player from each of five leagues.",
+    "width": 960,
+    "height": 600
+  }
+]
