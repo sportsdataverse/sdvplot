@@ -13,6 +13,7 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import math
+import numbers
 import re
 from typing import Any
 
@@ -1840,7 +1841,7 @@ def gt_theme_preview(
         data: A pandas or polars DataFrame, or a ``GT`` (its data is used).
         themes: Theme function names (e.g. "gt_theme_kenpom"); None shows every ``gt_theme_*`` in
             ``sdvplot.great_tables``, sorted.
-        n: How many rows of ``data`` each table shows.
+        n: How many rows of ``data`` each table shows: a positive whole number (numpy integers count).
         density: The density passed to every theme that takes one, so the tables compare; None leaves each theme at
             its own default.
 
@@ -1849,7 +1850,8 @@ def gt_theme_preview(
 
     Raises:
         TypeError: ``data`` is not a DataFrame or a ``GT``.
-        ValueError: ``data`` has no rows, a name in ``themes`` is not a theme, or ``density`` is not a scale.
+        ValueError: ``data`` has no rows, a name in ``themes`` is not a theme, ``n`` is not a positive whole number,
+            or ``density`` is not a scale.
 
     Example:
         ::
@@ -1873,6 +1875,8 @@ def gt_theme_preview(
         raise TypeError(f"data must be a pandas or polars DataFrame or a GT, not {type(data).__name__}") from None
     if len(frame) == 0:
         raise ValueError("data has no rows")
+    if isinstance(n, bool) or not isinstance(n, numbers.Integral) or n < 1:
+        raise ValueError(f"n must be a positive whole number of rows, got {n!r}")
     if density is not None:
         _density(density)
     available = sorted(name for name in sgt.__all__ if name.startswith("gt_theme_") and name != "gt_theme_preview")
@@ -1880,7 +1884,7 @@ def gt_theme_preview(
     missing = [name for name in names if name not in available]
     if missing:
         raise ValueError(f"No such theme: {', '.join(missing)}. Themes: {', '.join(available)}")
-    rows = frame.head(n).to_native()
+    rows = frame.head(int(n)).to_native()
     out = {}
     for name in names:
         fn = getattr(sgt, name)

@@ -490,6 +490,19 @@ def test_preview_rejects_bad_input():
         sgt.gt_theme_preview(pl.DataFrame(ROWS), density="cozy")
 
 
+@pytest.mark.parametrize("n", [0, -1, True, 2.5, "3", None])
+def test_preview_n_is_a_positive_whole_number_of_rows(n):
+    # R's utils::head(data, n) takes any n (-1 drops the last row, 0 none); a preview needs rows
+    with pytest.raises(ValueError, match=r"n must be a positive whole number of rows, got"):
+        sgt.gt_theme_preview(pl.DataFrame(ROWS), themes="gt_theme_kenpom", n=n)
+
+
+def test_preview_n_takes_a_numpy_integer():
+    np = pytest.importorskip("numpy")
+    html = sgt.gt_theme_preview(pl.DataFrame(ROWS), themes="gt_theme_kenpom", n=np.int64(1))["gt_theme_kenpom"]
+    assert "LV" in html.as_raw_html() and "KC" not in html.as_raw_html()
+
+
 def test_every_theme_has_a_ported_row_in_the_parity_table():
     text = (Path(__file__).resolve().parents[1] / "docs" / "PARITY_TABLES.md").read_text(encoding="utf-8")
     for name in [*THEMES, "gt_theme_preview", "pal_midnight"]:

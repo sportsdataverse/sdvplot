@@ -146,3 +146,6 @@
   column labels.
 - A headshot whose ESPN player id was read through a float (pandas stores `[3139477, None]` as floats, so the cell reads
   `3139477.0`) carries `3139477` in its alt text and team attribute, in every adapter; the URL was already right.
+- `gt_theme_preview(n=...)` takes only a positive whole number of rows (numpy integers included); 0, negative numbers,
+  booleans, floats and strings raise `ValueError` instead of showing no rows, all but the last, one row or a polars
+  error.
