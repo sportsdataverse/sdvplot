@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "mbb",
+  "label": "Men's college basketball",
+  "position": 22,
+  "page": "tutorials/leagues/mbb.md",
+  "items": [
+    {
+      "title": "Tempo against efficiency, top 25 logos",
+      "alt": "Scatter of 365 men's teams' adjusted tempo against efficiency margin, with logos for the 25 best",
+      "image": "/img/gallery/tutorials/leagues/mbb_7.png",
+      "anchor": "2-tempo-against-efficiency-with-logos-for-the-top-25"
+    },
+    {
+      "title": "Power conferences, offense and defense",
+      "alt": "Five plotnine panels, one per power conference, of adjusted offense against defense with team logos",
+      "image": "/img/gallery/tutorials/leagues/mbb_11.png",
+      "anchor": "4-the-power-conferences-one-panel-each-plotnine"
+    },
+    {
+      "title": "Men's scoring leaders with headshots",
+      "alt": "Bar chart of the ten leading men's scorers in team colors, with headshots and team logos",
+      "image": "/img/gallery/tutorials/leagues/mbb_21.png",
+      "anchor": "9-scoring-leaders-with-headshots"
+    }
+  ]
+}
