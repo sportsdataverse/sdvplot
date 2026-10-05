@@ -10,7 +10,8 @@ out as plain `"#rrggbb"` strings, so no plotting library needs an adapter for th
 
 ## `palette()`
 
-`palette(league, teams=None, *, which="primary", season=None)` returns a `{team: "#hex"}` dict.
+`palette(league, teams=None, *, which="primary", season=None, id_system="auto", strict=False)` returns a
+`{team: "#hex"}` dict.
 
 **With `teams`,** the keys are your own values, exactly as you passed them. That way the dict matches a seaborn `hue`
 column or a Plotly color column without any renaming:
@@ -31,7 +32,8 @@ sns.barplot(data=df, x="team", y="wins", hue="team", palette=sdvplot.palette("nf
 ```
 
 **Without `teams`,** you get the whole league, keyed by canonical abbreviation. A team with no abbreviation is keyed by
-its `team_id`, as in the OHL:
+its `team_id`, as in the OHL, and so is a team whose abbreviation another team of the league shares (with one
+`SdvplotWarning` naming the shared abbreviations):
 
 ```python
 nfl = sdvplot.palette("nfl")  # 32 entries: {'ATL': '#a71930', ...}
@@ -39,15 +41,18 @@ ohl = sdvplot.palette("ohl")  # 27 entries keyed by team_id: {'1': '#ba8748', ..
 ```
 
 Teams that do not resolve, or have no color of that kind, are left out of the dict. The usual `SdvplotWarning` names
-the values that did not resolve.
+the values that did not resolve; with `strict=True` they raise `UnresolvedTeamError` instead. `id_system` names the id
+system of `teams` when "auto" would read them as another one's (NHL stats ids need `id_system="nhl_id"`), as in
+[Team identity](identity.md).
 
 The same dict works elsewhere. With `p = sdvplot.palette("nfl", teams=...)`, pass `color_discrete_map=p` to Plotly
 Express, `alt.Scale(domain=list(p), range=list(p.values()))` to Altair, or the keys and values to Bokeh's `factor_cmap`.
 
 ## `team_colors()`
 
-`team_colors(league, teams, *, which="primary", season=None)` returns one color per value, in the container you passed
-(see [Team identity](identity.md#containers)). It returns `None` where a team does not resolve or has no color:
+`team_colors(league, teams, *, which="primary", season=None, id_system="auto", strict=False)` returns one color per
+value, in the container you passed (see [Team identity](identity.md#containers)). It returns `None` where a team does not
+resolve or has no color:
 
 ```python
 sdvplot.team_colors("nfl", ["KC", "SF"])  # ['#e31837', '#aa0000']
@@ -57,7 +62,7 @@ sdvplot.team_colors("nfl", "KC", which="secondary")  # '#ffb612'
 ## `which`
 
 `which="primary"` reads `color_primary`, and `which="secondary"` reads `color_secondary`. Any other value raises
-`ValueError`.
+`InputError` (a `ValueError`).
 
 ## `color_source`
 

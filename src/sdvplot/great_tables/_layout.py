@@ -1773,6 +1773,7 @@ def gt_wrap_labels(gt: GT, columns: Any = None, width: int = 12, balance: bool =
 
     Raises:
         TypeError: If ``gt`` is not a great_tables ``GT``.
+        ValueError: If ``columns`` names a column the table lacks.
 
     Example:
         ::

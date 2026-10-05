@@ -30,7 +30,7 @@ The bundled team index: one row per (league, team_id), with names, abbreviation,
 
 ## Raises
 
-- `ValueError`: If ``league`` is given and unknown.
+- `InputError`: (a ValueError) If ``league`` is given and is not a known league key.
 
 ## Example
 

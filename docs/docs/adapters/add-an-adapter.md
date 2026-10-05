@@ -39,20 +39,22 @@ object when it builds one. Give every public function a Google-style docstring w
 
 `sdvplot._placement` does the work every adapter shares, so the adapter only draws:
 
-- `check_height(height)` returns the height as a float, or raises `ValueError` unless it is in (0, 1]. It is a fraction
-  of the plot height.
-- `check_alpha(alpha)` returns the opacity as a float, or raises `ValueError` unless it is in [0, 1].
-- `place(x, y, teams, *, league, season=None, kind="logo", variant="default", id_system="auto")` returns one
-  `Placement` per mark to draw, in input order. It reads `x`, `y` and `teams` by position (a pandas index is ignored),
-  resolves the teams, and drops unknown teams and missing `x` or `y` with one `SdvplotWarning` per reason.
-  `kind` is `"logo"`, `"wordmark"` or `"headshot"`; for a headshot, `teams` holds player ids.
+- `check_height(height)` returns the height as a float, or raises `InputError` (a `ValueError`) unless it is in
+  (0, 1]. It is a fraction of the plot height.
+- `check_alpha(alpha)` returns the opacity as a float, or raises `InputError` (a `ValueError`) unless it is in [0, 1].
+- `place(x, y, teams, *, league, season=None, kind="logo", variant="default", id_system="auto", strict=False)` returns
+  one `Placement` per mark to draw, in input order. It reads `x`, `y` and `teams` by position (a pandas index is
+  ignored), resolves the teams, and drops unknown teams, teams with no mark archived, player ids with no headshot and
+  missing `x` or `y`, with one `SdvplotWarning` per reason (`strict=True` raises `UnresolvedTeamError` for an unknown
+  team instead). `kind` is `"logo"`, `"wordmark"` or `"headshot"`; for a headshot, `teams` holds player ids.
 - A `Placement` has `team_id` (the canonical id), `x`, `y`, `url` (the image), `aspect` (width over height, `None` for
   a headshot) and `mark` (the manifest row, `None` for a headshot).
 
 Call `check_height` and `check_alpha` first, in the verb, so a bad value raises when the verb is called and not later
-at render time. The web adapters also share three helpers from `sdvplot._web`: `axis_letter(axis)` (the "x"/"y" check an `axis_logos` verb starts with), `aspect(placement)` (the image's width over
-height, with the headshot ratio filled in) and `image_src(placement, embed=False)` (the URL, or a data URI with
-`embed=True`).
+at render time. The web adapters also share helpers from `sdvplot._web`: `axis_letter(axis)` (the "x"/"y" check an
+`axis_logos` verb starts with), `aspect(placement)` (the image's width over height, with the headshot ratio filled in),
+`image_src(placement, embed=False)` (the URL, or a data URI with `embed=True`) and `image_sources(placements,
+embed=False)` (`image_src` for each placement, reading each distinct image once).
 
 Here is a complete adapter for `newlib`. One `_add` does the work for the three `add_*` verbs:
 
@@ -276,7 +278,7 @@ def test_the_adapter_passes_the_contract(mark_images, headshot_images):
 
 `make_target` builds a fresh, empty target. If the library's empty target renders nothing, make one that holds a point
 at the contract's coordinates (as `tests/test_pygal.py` does). If `axis_logos` is supported, also pass
-`make_axis_target=lambda categories: ...`, which builds a target whose x axis shows those categories, in order.
+`make_axis_target=lambda categories: ...`, which builds a target whose x-axis shows those categories, in order.
 
 `check_adapter_contract(adapter, make_target, *, league="nfl", known=("LV", "LAR"), known_wordmarks=("LV", "LAC"),
 players=("3139477", "4241479"), make_axis_target=None)` needs pandas and polars. A broken rule raises an
@@ -331,8 +333,10 @@ uv run python tools/gen_docs.py
 uv run python tools/gen_docs.py --check
 ```
 
-`tests/test_submodule_examples.py` runs each docstring Example offline, on a cache seeded with every NFL team's logo
-and wordmark: an example that draws NFL teams runs to its end without a download.
+`tests/test_submodule_examples.py` runs every public function's docstring Example offline (each submodule's and the
+top-level functions'), on a cache seeded with every NFL team's logo and wordmark, a few ESPN headshots and the URL
+images the examples use: an example that draws NFL teams runs to its end without a download. An example that needs
+more gets it seeded there; one that needs a browser is listed in its `TOLERATED` table with a reason.
 
 ## 8. Changelog
 

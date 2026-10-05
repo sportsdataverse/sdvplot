@@ -134,6 +134,16 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Documentation: `sdvplot.matplotlib.add_images` and `title_image`, and `sdvplot.plotnine.geom_from_path` and
   `title_image`, say an image URL must be https. They said "http or https", but an http URL is refused with
   `UnsafeDownloadError`.
+- Documentation: every public function's docstring names the error classes the code can raise since the API freeze:
+  `InputError` for the shared checks (heights, alpha, league, id system, season, variant; it said `ValueError`),
+  `UnsupportedTargetError` for a target an adapter cannot draw on (it said `TypeError`), and each download error a
+  function can meet (`OfflineError`, `DownloadError`, `IntegrityError`, `UnsafeDownloadError`, `UnsafeCachePathError`,
+  and `OptionalDependencyError` for an SVG mark without the `svg` extra), with the ones a plotnine layer, a reactable
+  column or a plottable column raises when it is drawn marked as such. The 17 top-level functions' examples now run
+  offline in `tests/test_submodule_examples.py`, as the submodules' do. The concept and adapter pages say what the code
+  does: the cache's `urlimages/` directory, shared downloads and `UnsafeDownloadError` (not an `OfflineError`);
+  `id_system` and `strict` on `palette()`, `team_colors()` and `logo_url()`; the MLB Stats API codes whose team a
+  season does change (`KCA`, `WAS`, `SEA`, `MIL`), where the page said no code's did; the libraries each extra installs.
 - Issue templates: the bug report asks for the plotting or table library and the league, and takes the whole
   `sdvplot.versions()` output; the feature request lists every top-level function, the submodule helpers, new
   adapters and new leagues; the wrong-team template, now also for wrong colors, picks the league from a list and asks

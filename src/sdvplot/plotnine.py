@@ -150,7 +150,17 @@ class geom_sdv_logos(_geom_sdv_marks):
 
     Raises:
         TypeError: If ``league`` is missing.
-        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range (when the layer is built); when the plot
+            is drawn, if ``league``, ``id_system`` or ``variant`` is unknown, or a season is not a year or is outside
+            the seasons sdvplot knows for the league.
+        OfflineError: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: When the plot is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -184,7 +194,17 @@ class geom_sdv_wordmarks(_geom_sdv_marks):
 
     Raises:
         TypeError: If ``league`` is missing.
-        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range (when the layer is built); when the plot
+            is drawn, if ``league``, ``id_system`` or ``variant`` is unknown, or a season is not a year or is outside
+            the seasons sdvplot knows for the league.
+        OfflineError: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: When the plot is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -220,7 +240,12 @@ class geom_sdv_headshots(_geom_sdv_marks):
 
     Raises:
         TypeError: If ``league`` is missing.
-        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range (when the layer is built); when the plot
+            is drawn, if ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+        OfflineError: When the plot is drawn, if a headshot, or with ``id_system="gsis"`` the nflverse player table, is
+            neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
 
     Example:
         ::
@@ -258,7 +283,8 @@ class geom_from_path(_geom_sdv_marks):
         image, a failed download) are skipped with one SdvplotWarning when the plot is drawn; SVG is not read.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range (when the layer is built).
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range (when the layer is built). An image that
+            cannot be read or downloaded is skipped with a warning when the plot is drawn, not raised.
 
     Example:
         ::
@@ -468,7 +494,19 @@ def add_logos(
         ggplot: A new plot with a ``geom_sdv_logos`` layer; ``target`` is unchanged.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If the inputs differ in length.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a plotnine ggplot.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, or ``season`` is not a year (or a list
+            whose length does not match the teams); when the plot is drawn, if ``league``, ``id_system`` or ``variant``
+            is unknown, or a season is not a year or is outside the seasons sdvplot knows for the league.
+        OfflineError: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: When the plot is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -523,7 +561,19 @@ def add_wordmarks(
         ggplot: A new plot with a ``geom_sdv_wordmarks`` layer.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If the inputs differ in length.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a plotnine ggplot.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range, or ``season`` is not a year (or a list
+            whose length does not match the teams); when the plot is drawn, if ``league``, ``id_system`` or ``variant``
+            is unknown, or a season is not a year or is outside the seasons sdvplot knows for the league.
+        OfflineError: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: When the plot is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -574,7 +624,14 @@ def add_headshots(
         ggplot: A new plot with a ``geom_sdv_headshots`` layer.
 
     Raises:
-        ValueError: If ``height`` or ``alpha`` is out of range, or the inputs differ in length.
+        ValueError: If the inputs differ in length.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a plotnine ggplot.
+        InputError: (a ValueError) If ``height`` or ``alpha`` is out of range; when the plot is drawn, if ``league`` has
+            no ESPN headshots or ``id_system`` is not valid for it.
+        OfflineError: When the plot is drawn, if a headshot, or with ``id_system="gsis"`` the nflverse player table, is
+            neither cached nor downloadable (a DownloadError, also an OSError, for an HTTP error status).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
 
     Example:
         ::
@@ -655,7 +712,19 @@ def axis_logos(
         ggplot: A new plot; labels that are not teams stay as text, with one SdvplotWarning when drawn.
 
     Raises:
-        ValueError: If ``axis`` is not "x"/"y" or ``height`` is out of range.
+        ValueError: If ``axis`` is not "x"/"y".
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a plotnine ggplot.
+        InputError: (a ValueError) If ``height`` is out of range or ``mark_type`` is not "logo"/"wordmark"; when the
+            plot is drawn, if ``league``, ``id_system`` or ``variant`` is unknown, or a season is not a year or is
+            outside the seasons sdvplot knows for the league.
+        OfflineError: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable
+            (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it
+            sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark
+            would put the file outside the cache directory.
+        OptionalDependencyError: When the plot is drawn, if a mark is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -736,9 +805,19 @@ def title_image(
         ``title_image`` added to the same plot replaces the first.
 
     Raises:
-        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        TypeError: If ``league`` is given and ``image`` is not one team.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1, or ``league`` is given and it
+            is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
         ValueError: If ``side`` is not "left"/"right".
-        OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
+        OfflineError: If ``league`` is given and the team's logo (or the logo manifest) is neither cached nor
+            downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError
+            when it sends a file that does not match the manifest's sha256, or one PIL cannot decode). An image by URL
+            or path that cannot be read is skipped with a warning instead.
+        UnsafeDownloadError: (an OSError) If ``league`` is given and a download is refused: larger than the byte cap,
+            past the deadline, or redirected away from https.
+        UnsafeCachePathError: (a ValueError) If ``league`` is given and the manifest's sha256 or extension for the logo
+            would put the file outside the cache directory.
+        OptionalDependencyError: If ``league`` is given, the logo is an SVG and the ``svg`` extra is not installed.
 
     Example:
         ::
@@ -799,8 +878,17 @@ def team_tiers(
 
     Raises:
         TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
-        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, ``height``/``alpha`` is
-            out of range, or ``theme`` is not "dark" or "light".
+        InputError: (a ValueError) If ``height``/``alpha`` is out of range, or ``league`` is unknown.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``theme`` is not "dark" or
+            "light".
+        OfflineError: Unless ``devel=True``, when the plot is drawn, if the logo manifest or a logo is neither cached
+            nor downloadable (a DownloadError, also an OSError, for an HTTP error status; an IntegrityError for a file
+            that does not match the manifest's sha256, or one PIL cannot decode).
+        UnsafeDownloadError: (an OSError) Unless ``devel=True``, when the plot is drawn, if a download is refused.
+        UnsafeCachePathError: (a ValueError) Unless ``devel=True``, when the plot is drawn, if the manifest's sha256 or
+            extension for a logo would put the file outside the cache directory.
+        OptionalDependencyError: Unless ``devel=True``, when the plot is drawn, if a logo is an SVG and the ``svg``
+            extra is not installed.
 
     Example:
         ::
@@ -907,8 +995,10 @@ def scale_color_sdv(
         scale: A plotnine color scale.
 
     Raises:
-        ValueError: If ``which`` is not "primary" or "secondary" (an ``InputError``).
-        UnresolvedTeamError: With ``strict=True``, when the plot is drawn and a value does not resolve.
+        InputError: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league``
+            or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the
+            league.
+        UnresolvedTeamError: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
     Example:
         ::
@@ -954,8 +1044,10 @@ def scale_fill_sdv(
         scale: A plotnine fill scale.
 
     Raises:
-        ValueError: If ``which`` is not "primary" or "secondary" (an ``InputError``).
-        UnresolvedTeamError: With ``strict=True``, when the plot is drawn and a value does not resolve.
+        InputError: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league``
+            or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the
+            league.
+        UnresolvedTeamError: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
     Example:
         ::

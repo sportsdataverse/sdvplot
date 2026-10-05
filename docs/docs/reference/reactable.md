@@ -62,9 +62,10 @@ the team's mark.
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``mark_type`` is not "logo"/"wordmark".
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a column name does not resolve.
+- `InputError`: (a ValueError) If ``mark_type`` is not "logo"/"wordmark", ``height`` is not a number of pixels of at least 1, ``league``, ``id_system`` or ``variant`` is unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a column name does not resolve.
+- `OfflineError`: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) If the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -123,7 +124,9 @@ A reactable column that shows each cell's player id as the player's headshot.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1; when the ``Reactable`` is built, if ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
+- `OfflineError`: When the ``Reactable`` is built, if ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, for an HTTP error status).
+- `UnsafeDownloadError`: (an OSError) When the ``Reactable`` is built, if ``id_system`` is "gsis" and the player table download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -190,8 +193,10 @@ A reactable column that shows each cell's team as its logo.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year or is outside the seasons sdvplot knows for the league; when the ``Reactable`` is built, if ``league``, ``id_system`` or ``variant`` is unknown.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
+- `OfflineError`: When the ``Reactable`` is built, if the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) When the ``Reactable`` is built, if the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 
@@ -258,8 +263,9 @@ A reactable column whose cells hold a bar in the row's team color, as long as th
 
 ### Raises
 
-- `ValueError`: If ``team_col`` is not a column of ``data``, ``which`` is not "primary"/"secondary", or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``which`` is not "primary"/"secondary".
+- `ValueError`: If ``team_col`` is not a column of ``data``.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -326,8 +332,9 @@ A reactable column whose cells are filled with the row's team color, mostly tran
 
 ### Raises
 
-- `ValueError`: If ``team_col`` is not a column of ``data``, ``which`` is not "primary"/"secondary", ``alpha`` is outside [0, 1], ``na_color`` is not a hex color, or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
+- `InputError`: (a ValueError) If ``alpha`` is outside [0, 1], ``league`` or ``id_system`` is unknown, or ``which`` is not "primary"/"secondary".
+- `ValueError`: If ``team_col`` is not a column of ``data``, or ``na_color`` is not a hex color.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -394,8 +401,10 @@ A reactable column that shows each cell's team as its wordmark.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
-- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
+- `InputError`: (a ValueError) If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year or is outside the seasons sdvplot knows for the league; when the ``Reactable`` is built, if ``league``, ``id_system`` or ``variant`` is unknown.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
+- `OfflineError`: When the ``Reactable`` is built, if the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, when the CDN answers with an error status).
+- `UnsafeDownloadError`: (an OSError) When the ``Reactable`` is built, if the manifest download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 
 ### Example
 

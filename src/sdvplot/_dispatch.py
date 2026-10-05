@@ -107,7 +107,8 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
         *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
             ``teams`` (the team values to draw), in that order. For a table: ``columns`` (the columns whose cells
             become marks).
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (one season or one per team).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (for a plot one season or one
+            per team, for a table one season).
             For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and
             ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30).
 
@@ -115,11 +116,22 @@ def add_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
 
     Raises:
-        UnsupportedTargetError: If no adapter is registered for ``target``'s library.
-        OptionalDependencyError: If the adapter's optional extra is not installed.
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for ``target``'s library, or the adapter
+            cannot draw on this kind of ``target`` (a pygal Bar chart, a folium FeatureGroup).
+        OptionalDependencyError: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a
+            raster adapter draws is an SVG and the ``svg`` extra is not installed.
         TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
-        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
-            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
+        InputError: (a ValueError) If a value is out of range: a plot ``height`` outside (0, 1] or ``alpha`` outside [0,
+            1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's); or
+            ``league``, ``id_system``, ``variant`` or ``season`` is not one sdvplot knows.
+        ValueError: If the adapter's own checks fail (inputs of different lengths, an axis it cannot place on); its page
+            lists them.
+        UnresolvedTeamError: (a ValueError) If a table adapter is given ``strict=True`` and a value does not resolve.
+        OfflineError: If a download the adapter needs (the logo manifest, a mark's image, a headshot) fails and no
+            cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file
+            that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -158,7 +170,8 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
         *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
             ``teams`` (the team values to draw), in that order. For a table: ``columns`` (the columns whose cells
             become marks).
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (one season or one per team).
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``season`` (for a plot one season or one
+            per team, for a table one season).
             For a plot, also ``height`` (a fraction of the plot height, in (0, 1]), ``alpha`` (opacity, 0 to 1) and
             ``variant`` (a mark variant, as in ``logo_url``); for a table, ``height`` is in pixels (default 30).
 
@@ -166,11 +179,22 @@ def add_wordmarks(target: Any, *args: Any, **kwargs: Any) -> Any:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
 
     Raises:
-        UnsupportedTargetError: If no adapter is registered for ``target``'s library.
-        OptionalDependencyError: If the adapter's optional extra is not installed.
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for ``target``'s library, or the adapter
+            cannot draw on this kind of ``target`` (a pygal Bar chart, a folium FeatureGroup).
+        OptionalDependencyError: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a
+            raster adapter draws is an SVG and the ``svg`` extra is not installed.
         TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
-        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
-            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
+        InputError: (a ValueError) If a value is out of range: a plot ``height`` outside (0, 1] or ``alpha`` outside [0,
+            1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's); or
+            ``league``, ``id_system``, ``variant`` or ``season`` is not one sdvplot knows.
+        ValueError: If the adapter's own checks fail (inputs of different lengths, an axis it cannot place on); its page
+            lists them.
+        UnresolvedTeamError: (a ValueError) If a table adapter is given ``strict=True`` and a value does not resolve.
+        OfflineError: If a download the adapter needs (the logo manifest, a mark's image, a headshot) fails and no
+            cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file
+            that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -216,11 +240,21 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
         object: The drawn-on plot or table: ``target`` itself, or the new object the adapter built.
 
     Raises:
-        UnsupportedTargetError: If no adapter is registered for ``target``'s library.
-        OptionalDependencyError: If the adapter's optional extra is not installed.
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for ``target``'s library, or the adapter
+            cannot draw on this kind of ``target`` (a pygal Bar chart, a folium FeatureGroup).
+        OptionalDependencyError: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a
+            raster adapter draws is an SVG and the ``svg`` extra is not installed.
         TypeError: If the adapter does not take an argument given (a table takes no ``x``, ``y``, ``alpha``).
-        ValueError: If a value is out of range: a plot ``height`` outside (0, 1], or a table ``height`` below 1
-            pixel (a fraction such as 0.1 is a plot's unit, not a table's).
+        InputError: (a ValueError) If a value is out of range: a plot ``height`` outside (0, 1] or ``alpha`` outside [0,
+            1], or a table ``height`` below 1 pixel (a fraction such as 0.1 is a plot's unit, not a table's); or
+            ``league`` has no ESPN headshots or ``id_system`` is not valid for it.
+        ValueError: If the adapter's own checks fail (inputs of different lengths, an axis it cannot place on); its page
+            lists them.
+        OfflineError: If a download the adapter needs (the logo manifest, a mark's image, a headshot) fails and no
+            cached copy exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file
+            that does not match the manifest's sha256. Which downloads an adapter makes is on its page.
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -249,23 +283,34 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     the object that was drawn on: ``target`` itself when the library mutates in place, a new object otherwise. The
     adapters that draw axis logos (matplotlib, plotnine, Plotly and Altair) all take ``axis_logos(target, axis, *,
     league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")``, and Plotly and Altair
-    also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no axis logos: there it raises TypeError.
+    also take ``embed``. Bokeh, HoloViews, folium, pygal and great_tables have no axis logos: there it raises
+    UnsupportedTargetError (a TypeError).
 
     Args:
         target: The plot object. Its type picks the adapter.
         *args: Passed to the adapter: ``axis`` (which axis' tick labels to replace, ``"x"`` or ``"y"``).
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season or one per
-            team, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1),
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season for every
+            label, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1),
             and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``.
 
     Returns:
         object: The drawn-on plot: ``target`` itself, or the new object the adapter built.
 
     Raises:
-        UnsupportedTargetError: If no adapter is registered for ``target``'s library.
-        OptionalDependencyError: If the adapter's optional extra is not installed.
-        TypeError: If ``target``'s library has no axis logos (Bokeh, HoloViews, folium, pygal, great_tables).
-        ValueError: If ``height`` is outside (0, 1].
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for ``target``'s library, its library has no
+            axis logos (Bokeh, HoloViews, folium, pygal, great_tables), or the adapter cannot draw on this kind of
+            ``target``.
+        OptionalDependencyError: (a ModuleNotFoundError) If the adapter's optional extra is not installed, or a mark a
+            raster adapter draws is an SVG and the ``svg`` extra is not installed.
+        InputError: (a ValueError) If ``height`` is outside (0, 1], or ``league``, ``id_system``, ``mark_type``,
+            ``variant`` or ``season`` is not one sdvplot knows.
+        ValueError: If ``axis`` is not "x"/"y", or the axis is not one the adapter can read team labels from (its page
+            lists the cases).
+        OfflineError: If a download the adapter needs (the logo manifest, a mark's image) fails and no cached copy
+            exists: a DownloadError (also an OSError) for an HTTP error status, an IntegrityError for a file that does
+            not match the manifest's sha256. Which downloads an adapter makes is on its page.
+        UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::

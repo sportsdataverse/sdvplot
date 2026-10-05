@@ -243,7 +243,14 @@ def check_adapter_contract(  # noqa: C901 - one short block per contract rule, r
 
     Raises:
         AssertionError: Naming the broken rule ("rule N: ..."), when the adapter breaks it.
-        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for the library of ``make_target()``'s object
+            (register the adapter before checking it).
+        InputError: (a ValueError) If ``league`` is unknown.
+        OfflineError: If the logo manifest, which the checks read for the expected marks, is neither cached nor
+            downloadable (a DownloadError, also an OSError, when the CDN answers with an error status). A download error
+            inside an adapter call is reported as the AssertionError of the rule that made the call.
+        UnsafeDownloadError: (an OSError) If the manifest download is refused: larger than the byte cap, past the
+            deadline, or redirected away from https.
 
     Example:
         ::
@@ -510,7 +517,12 @@ def check_table_adapter_contract(
 
     Raises:
         AssertionError: Naming the broken rule ("rule T<n>: ..."), when the adapter breaks it.
-        OfflineError: If a mark's image is neither cached nor downloadable (the checks draw real marks).
+        InputError: (a ValueError) If ``league`` is unknown.
+        OfflineError: If the logo manifest, which the checks read for the expected marks, is neither cached nor
+            downloadable (a DownloadError, also an OSError, when the CDN answers with an error status). A download error
+            inside an adapter call is reported as the AssertionError of the rule that made the call.
+        UnsafeDownloadError: (an OSError) If the manifest download is refused: larger than the byte cap, past the
+            deadline, or redirected away from https.
 
     Example:
         ::

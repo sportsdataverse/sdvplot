@@ -137,9 +137,14 @@ def gt_sdv_logos(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system``
-            is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-        UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
+        InputError: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is
+            unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+        ValueError: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a value does not resolve.
+        OfflineError: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an
+            OSError, when the CDN answers with an error status).
+        UnsafeDownloadError: (an OSError) If the manifest download is refused: larger than the byte cap, past the
+            deadline, or redirected away from https.
 
     Example:
         ::
@@ -197,9 +202,14 @@ def gt_sdv_wordmarks(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system``
-            is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
-        UnresolvedTeamError: If ``strict=True`` and a value does not resolve.
+        InputError: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` or ``id_system`` is
+            unknown, or ``season`` is not one year or is outside the seasons sdvplot knows for the league.
+        ValueError: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a value does not resolve.
+        OfflineError: If the logo manifest cannot be downloaded and no cached copy exists (a DownloadError, also an
+            OSError, when the CDN answers with an error status).
+        UnsafeDownloadError: (an OSError) If the manifest download is refused: larger than the byte cap, past the
+            deadline, or redirected away from https.
 
     Example:
         ::
@@ -245,8 +255,13 @@ def gt_sdv_headshots(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``columns`` names a column the table
-            lacks, or ``locations`` holds another location.
+        InputError: (a ValueError) If ``height`` is not a number of pixels of at least 1, ``league`` has no ESPN
+            headshots, or ``id_system`` is not valid for ``league``.
+        ValueError: If ``columns`` names a column the table lacks, or ``locations`` holds another location.
+        OfflineError: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no cached copy
+            exists (a DownloadError, also an OSError, when GitHub answers with an error status).
+        UnsafeDownloadError: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger
+            than the byte cap, past the deadline, or redirected away from https.
 
     Example:
         ::
@@ -302,10 +317,15 @@ def gt_sdv_cols_label(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        InputError: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot".
-        ValueError: If ``height`` is not a number of pixels of at least 1, ``id_system`` is unknown, or ``season``
-            is not one year.
-        UnresolvedTeamError: If ``strict=True`` and a column name does not resolve.
+        InputError: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot", ``height`` is not a number
+            of pixels of at least 1, ``league`` or ``id_system`` is unknown (for headshots: ``league`` has no ESPN
+            headshots, or ``id_system`` is not valid for it), or ``season`` is not one year or is outside the seasons
+            sdvplot knows for the league.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a column name does not resolve.
+        OfflineError: If the logo manifest (logos and wordmarks), or for "gsis" headshots the nflverse player table,
+            cannot be downloaded and no cached copy exists (a DownloadError, also an OSError, for an HTTP error status).
+        UnsafeDownloadError: (an OSError) If that download is refused: larger than the byte cap, past the deadline, or
+            redirected away from https.
 
     Example:
         ::
@@ -382,9 +402,9 @@ def gt_merge_stack_team_color(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
-        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``id_system`` is
-            unknown.
-        UnresolvedTeamError: If ``strict=True`` and a team does not resolve.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown.
+        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
     Example:
         ::
@@ -493,10 +513,12 @@ SDV_HORIZON = "linear-gradient(90deg, #3346F0, #7FE6DC)"
 
 
 def important(*styles: Any) -> Any:
-    """great_tables cell styles as one inline rule with every declaration ``!important``. The notebook repr marks
-    great_tables' own cell rules ``!important`` (``td, th {border-style: none}``, the stub's and row groups'
-    ``background-color``), and a stylesheet ``!important`` beats a plain inline style: without this, a border or fill
-    shows in a saved image and not in Jupyter."""
+    """great_tables cell styles as one inline rule with every declaration ``!important``. In VS Code and Positron
+    notebooks (great_tables' ``_repr_html_`` finds ``VSCODE_PID`` or ``POSITRON_VERSION`` and turns on its
+    ``all_important``), every declaration of great_tables' own stylesheet is ``!important`` (``td, th {border-style:
+    none}``, the stub's, row groups' and stripes' ``background-color``), and a stylesheet ``!important`` beats a plain
+    inline style: without this, a border or fill shows in Jupyter, Quarto, Databricks and a saved image but not in VS
+    Code or Positron. Elsewhere the repr's stylesheet has no ``!important`` at all."""
     rule = "".join(s._to_html_style() for s in styles)
     return style.css(rule=" ".join(f"{d.strip()} !important;" for d in rule.split(";") if d.strip()))
 
@@ -731,8 +753,9 @@ def gt_theme_sdv_team(
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT, or ``team`` is not one value.
-        UnresolvedTeamError: If ``team`` does not resolve to one team of ``league``.
-        ValueError: If ``density`` or ``id_system`` is unknown.
+        InputError: (a ValueError) If ``team`` is given and ``league`` or ``id_system`` is unknown.
+        UnresolvedTeamError: (a ValueError) If ``team`` does not resolve to one team of ``league``.
+        ValueError: If ``density`` is unknown.
 
     Example:
         ::
