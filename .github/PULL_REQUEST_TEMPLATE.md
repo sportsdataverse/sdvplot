@@ -35,7 +35,7 @@ tests should pass without it.
 - [ ] `uv run mypy src` clean
 - [ ] `uv run python tools/build_index.py --check` reports the index is current
 - [ ] `uv run python tools/gen_docs.py --check` reports the reference is current
-- [ ] `CHANGELOG.md` updated under `## Unreleased`
+- [ ] `CHANGELOG.md` updated under `## [Unreleased]`
 
 ## Breaking changes
 

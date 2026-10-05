@@ -284,7 +284,11 @@ def test_fetch_games_gives_up_with_no_data(monkeypatch):
 def test_fetch_leaders_falls_back_a_season_and_says_so(monkeypatch):
     try:
         from sportsdataverse.errors import NoDataError
-    except Exception as e:  # not installed (examples group), or its xgboost cannot load libomp (macOS runners)
+    except (ImportError, OSError) as e:  # not installed (examples group), or a native library fails to load
+        pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
+    except Exception as e:
+        if type(e).__name__ != "XGBoostError":  # xgboost without libomp (macOS runners); anything else is a real break
+            raise
         pytest.skip(f"sportsdataverse is unavailable: {type(e).__name__}")
 
     ref = "http://x/seasons/{y}/{kind}/{i}?lang=en"
