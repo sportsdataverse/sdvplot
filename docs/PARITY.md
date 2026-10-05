@@ -76,17 +76,17 @@ data's range is not brought into view.
 
 ## Team index
 
-sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`),
-except where a dated source disagrees: sdvplotR's keys have no seasons, so a key that a dated alias gives another
-team is dropped.
+sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`):
+4,232 of 4,241, every miss a key sdvplot cannot pin to one team. sdvplotR's keys have no seasons, so a key that a dated
+source gives another team earlier starts the season after that team's last; a value given without a season means its
+current holder. Two MLB codes show the rule:
 
-- **`KCA` (MLB).** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics, so sdvplot
-  resolves it to the Athletics in every season; sdvplotR follows Lahman, whose `KCA` is the Royals. The Royals'
-  internal MLB Stats teamCode `kca` is not an alias either.
-- **`WAS` (MLB).** The MLB Stats API's abbreviation for the Senators of 1901-60 (now the Twins) and of 1961-71 (the
-  Rangers); sdvplotR maps it to the Nationals (`WSH`). With a season in either range sdvplot picks that franchise;
-  without one, or in another season, it is ambiguous (`None` and one `SdvplotWarning`). Use `WSH` or `WSN` for the
-  Nationals.
+- **`KCA`.** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics; the API's Royals
+  teamCode `kca`, Lahman and sdvplotR use it for the Royals from 1968. sdvplot gives 1955-67 to the Athletics and
+  every other season, and no season, to the Royals.
+- **`WAS`.** The MLB Stats API's abbreviation for the Senators of 1901-60 (now the Twins) and 1961-71 (the Rangers),
+  and the Nationals' teamCode `was` from 2005 (Lahman and sdvplotR agree). Those seasons go to those franchises; no
+  season, or any other, goes to the Nationals.
 
 Known gaps in the archive (recorded, not invented):
 

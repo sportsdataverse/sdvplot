@@ -24,13 +24,7 @@ KNOWN_GAPS = {
     # ESPN's teams list has no UTRGV, so its abbreviation names no team in sdvplot
     ("cfb", "UTRGV"),
     ("cfb", "TEXAS-RIO GRANDE VALLEY"),
-    # the MLB Stats API's WAS is the Senators of 1901-60 (now the Twins) and of 1961-71 (the Rangers); sdvplotR's
-    # WAS -> WSH (the Nationals) has no season, so without one sdvplot cannot pick (docs/PARITY.md)
-    ("mlb", "WAS"),
 }
-# Keys sdvplot deliberately sends elsewhere (docs/PARITY.md): the MLB Stats API and Baseball-Reference give KCA to
-# the 1955-67 Kansas City Athletics (now the Athletics); sdvplotR follows Lahman's KCA, the Royals
-DIVERGES = {("mlb", "KCA"): "11"}
 
 
 def _csv(name):
@@ -51,7 +45,7 @@ def test_abbr_mapping_keys_resolve_like_their_canonical_abbreviation():
                 agree += 1
             elif g is None:
                 gaps.add((lg, key))
-            elif DIVERGES.get((lg, key)) != g:
+            else:
                 wrong.append((lg, key, g, w))
     assert wrong == []
     assert gaps <= KNOWN_GAPS, sorted(gaps - KNOWN_GAPS)

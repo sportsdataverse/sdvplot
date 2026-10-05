@@ -37,7 +37,7 @@
 - A download cache (`SDVPLOT_CACHE_DIR`, `SDVPLOT_CACHE_TTL`) with `clear_cache()`.
 - The adapter registry and contract harness (`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos`, `sdvplot.testing`).
 - A bundled index of 5,877 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
-- sdvplotR parity: 99.7% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,230 of 4,241 checked; `docs/PARITY.md` lists the deliberate differences).
+- sdvplotR parity: 99.8% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,232 of 4,241 checked).
 
 ### Added — repository standards
 
@@ -250,15 +250,19 @@
 
 - MLB historical codes are season-dated and reach their franchise. A new snapshot, `data-raw/mlbstats_history.csv`
   (the MLB Stats API's teams for every season since 1901; its team ids are franchise ids), dates each abbreviation
-  and teamCode by the seasons the API used it: `KCA` is the 1955-67 Kansas City Athletics (the Athletics) and never
-  the Royals, `PHA`, `BSN`, `BRO`, `NYG`, `SLB`, `WS1`/`WS2`, `MON`, `CAL`, `ANA`, `FLA` and `OAK` reach today's
-  team, and `WAS` is the Twins' Senators to 1960 and the Rangers' 1961-71. A teamCode or fileCode that spells another
-  franchise's abbreviation (the Royals' teamCode `kca`) is dropped. Baseball-Reference/sportsipy MLB codes now go
-  through that history instead of today's team names, which sent the 1901 Milwaukee Brewers (`MLA`) to today's
-  Brewers and the 1872 Washington Nationals to today's Nationals; `PHA`, `KCA`, `MLN`, `SEP`, `WSH` (1901-60),
-  `WSA` and the rest now resolve. An ESPN abbreviation another franchise held first starts the season after it (`MIL`
-  from 1966, `SEA` from 1970, `WSH` from 1961), so `MIL` in 1960 is the Milwaukee Braves. An sdvplotR key that a dated alias gives another team drops, so `KCA` diverges
-  from sdvplotR (Lahman's Royals) and `WAS` without a season is ambiguous (`docs/PARITY.md`).
+  and teamCode by the seasons the API used it. `KCA` is the Kansas City Athletics in 1955-67 and the Royals otherwise
+  (the Royals' teamCode `kca` from 1968). `WAS` is the Twins' Senators to 1960, the Rangers' 1961-71 and otherwise the
+  Nationals (teamCode `was` from 2005). `PHA`, `BSN`, `BRO`, `NYG`, `SLB`, `WS1`/`WS2`, `MON`, `CAL`, `ANA`, `FLA`
+  and `OAK` reach today's team. A teamCode or fileCode is dropped only over seasons that overlap another franchise's
+  run of the same abbreviation. Baseball-Reference/sportsipy MLB codes now go through that history instead of today's
+  team names, which sent the 1901 Milwaukee Brewers (`MLA`) to today's Brewers and the 1872 Washington Nationals to
+  today's Nationals; `PHA`, `KCA`, `MLN`, `SEP`, `WSH` (1901-60), `WSA` and the rest now resolve. An ESPN
+  abbreviation or sdvplotR key another franchise held first starts the season after it (`MIL` from 1966, `SEA` from
+  1970, `WSH` from 1961; sdvplotR's `KCA` from 1968), so `MIL` in 1960 is the Milwaukee Braves.
+- `resolve()` without a season reads a reused code as its current holder: the team whose range covers the latest
+  season in the index, then any. A season no alias covers falls back the same way before ranges are ignored.
+  Measured over every alias of every league, undated and in each season 1870-2026, the only answers that change are
+  the MLB eras above; a code only one team ever held, and every other league, answer as before.
 - ESPN's college baseball and softball abbreviations resolve. ESPN's teams list gives NC State `NCST` and Missouri
   `MIZZ`, while its per-team endpoint, scoreboards and standings use `NCSU`, `MIZ`, `UCR`, `KENN` and about 120 others;
   a new snapshot, `data-raw/espn_abbrs.csv`, keeps the per-team abbreviations. One the list gives another team stays

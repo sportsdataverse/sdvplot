@@ -56,24 +56,43 @@ def _lookup(league: str) -> dict[str, dict[str, Candidates]]:
 _index.on_reload(_lookup.cache_clear)
 
 
+@functools.cache
+def _latest(league: str) -> int | None:
+    """The latest season any of the league's id-system aliases names (a range's end, else its start); None if none
+    is dated. A value given without a season is read in this season first: the code's current holder."""
+    a = _index.alias_table().filter((pl.col("league") == league) & (pl.col("id_system") != "mark"))
+    latest = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+    return None if latest is None else int(latest)
+
+
+_index.on_reload(_latest.cache_clear)
+
+
 def _covers(lo: int | None, hi: int | None, season: int) -> bool:
     return (lo is None or season >= lo) and (hi is None or season <= hi)
 
 
-def _match(key: str, season: int | None, systems: Sequence[str], table: dict[str, dict[str, Candidates]]) -> Any:
+def _match(
+    key: str,
+    season: int | None,
+    systems: Sequence[str],
+    table: dict[str, dict[str, Candidates]],
+    latest: int | None = None,
+) -> Any:
     """The team_id for one key, None if unknown, _AMBIGUOUS if the deciding system names several teams.
 
     With a season, a first pass only considers aliases whose range covers it, so a reused code such as "LA" goes
-    to the team that used it that season; a second pass ignores ranges, so a unique code still resolves when the
-    season is outside its range (a modern abbreviation used on old data)."""
-    for in_season in (True, False) if season is not None else (False,):
+    to the team that used it that season. Then, or first without a season, a pass reads the ``latest`` season, so a
+    code two franchises used (KCA: the 1955-67 Kansas City Athletics, the Royals since) means its current holder.
+    A last pass ignores ranges, so a unique code still resolves when no range covers the season (a modern
+    abbreviation used on old data)."""
+    for when in [*(s for s in dict.fromkeys((season, latest)) if s is not None), None]:
         for system in systems:
             cands = table.get(system, {}).get(key)
             if not cands:
                 continue
-            if in_season:
-                assert season is not None
-                cands = [c for c in cands if _covers(c[1], c[2], season)]
+            if when is not None:
+                cands = [c for c in cands if _covers(c[1], c[2], when)]
                 if not cands:
                     continue
             ids = {c[0] for c in cands}
@@ -175,7 +194,8 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
             ``id_system="nhl_id"`` for them (NHL tri-codes such as "NJD" resolve under "auto").
         league: The SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different teams in
             different leagues.
-        season: One season for all values, or one per value. Picks the right team for a reused code.
+        season: One season for all values, or one per value. Picks the right team for a reused code; without one,
+            a reused code means its current holder (KCA: the Royals, not the 1955-67 Kansas City Athletics).
         id_system: "auto" (try the priority order) or one system name.
         strict: Raise UnresolvedTeamError instead of warning when a value does not resolve.
 
@@ -223,7 +243,7 @@ def _resolve_ids(
     why ("unknown" or "ambiguous"). The caller decides whether to warn."""
     _index.check_league(league)
     systems = _systems(id_system)
-    table = _lookup(league)
+    table, latest = _lookup(league), _latest(league)
     out: list[str | None] = []
     unresolved: dict[str, str] = {}
     memo: dict[tuple[str, int | None], Any] = {}
@@ -233,7 +253,7 @@ def _resolve_ids(
             out.append(None)
             continue
         if (key, s) not in memo:
-            memo[(key, s)] = _match(key, s, systems, table)
+            memo[(key, s)] = _match(key, s, systems, table, latest)
         hit = memo[(key, s)]
         if hit is None or hit is _AMBIGUOUS:
             unresolved[str(value)] = "ambiguous" if hit is _AMBIGUOUS else "unknown"

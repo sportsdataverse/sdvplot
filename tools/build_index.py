@@ -35,6 +35,12 @@ FALLBACK = [
 ]
 
 
+# A row's range (valid_from, valid_to) meets another's (_from, _to); null is unbounded on that side
+OVERLAPS = (pl.col("_from").is_null() | pl.col("valid_to").is_null() | (pl.col("_from") <= pl.col("valid_to"))) & (
+    pl.col("_to").is_null() | pl.col("valid_from").is_null() | (pl.col("_to") >= pl.col("valid_from"))
+)
+
+
 def _csv(raw: Path, name: str) -> pl.DataFrame:
     return pl.read_csv(raw / name, infer_schema_length=0)  # all text: ids keep their exact form
 
@@ -230,16 +236,7 @@ def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame
         .with_columns(key)
         .join(shared, on=["league", "_key"], how="anti")
     )
-    # sdvplotR's keys have no seasons: one a dated alias gives to another team (KCA, the 1955-67 Kansas City
-    # Athletics in the MLB Stats API and Baseball-Reference, the Royals in sdvplotR) cannot say which era it means
-    dated = aliases.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
-    clash = (
-        out.join(dated.select("league", key, pl.col("team_id").alias("_other")), on=["league", "_key"])
-        .filter(pl.col("_other") != pl.col("team_id"))
-        .select("league", "_key")
-    )
-    out = out.join(clash.unique(), on=["league", "_key"], how="anti")
-    return _alias(out, pl.col("league"), "sdvplotr", "value")
+    return _alias(out, pl.col("league"), "sdvplotr", "value")  # date_reused_codes dates a key another team held
 
 
 def mark_aliases(
@@ -292,17 +289,14 @@ def mark_aliases(
     # R25: a row with a range takes the dated (relocation) aliases over that range, else any alias over it; a row
     # without one takes the current alias (open-ended), else any. A key whose rows still name several teams gets none.
     has_range = pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null()
-    overlaps = (pl.col("_from").is_null() | pl.col("valid_to").is_null() | (pl.col("_from") <= pl.col("valid_to"))) & (
-        pl.col("_to").is_null() | pl.col("valid_from").is_null() | (pl.col("_to") >= pl.col("valid_from"))
-    )
     dated = pl.col("_from").is_not_null() | pl.col("_to").is_not_null()
-    preferred = pl.when(has_range).then(dated & overlaps).otherwise(pl.col("_to").is_null())
+    preferred = pl.when(has_range).then(dated & OVERLAPS).otherwise(pl.col("_to").is_null())
     via = (
         m.join(lookup, on=["league", "id_system", "_key"])
         # R40: an abbreviation-keyed ESPN logo outside the NFL maps only through a dated (curated relocation) alias,
         # never a current espn_abbr: a code a current team now holds would otherwise re-create the R36 tie
         .filter((pl.col("id_system") != "espn_abbr") | dated)
-        .filter(pl.when(has_range).then(overlaps).otherwise(True) & (preferred | ~preferred.any().over("_row")))
+        .filter(pl.when(has_range).then(OVERLAPS).otherwise(True) & (preferred | ~preferred.any().over("_row")))
     )
     # R36: a mark reached through a relocation alias (one that ends) carries that alias's range; identity rows,
     # current abbreviations and the NHL crosswalk carry none
@@ -470,7 +464,7 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
         parts += _sr_aliases(_csv(raw, "sr_codes.csv"), espn, franchises)
     parts.append(nhl_aliases(_csv(raw, "nhl_teams.csv"), espn))
     known = teams.select("league", "team_id")
-    a = date_reused_codes(
+    a = (
         pl.concat([p.cast(ALIAS_SCHEMA) for p in parts], how="vertical")
         .drop_nulls(["value", "team_id"])
         .join(known, on=["league", "team_id"], how="semi")
@@ -478,6 +472,7 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     if (raw / "sdvplotr_abbr_mapping.csv").exists():  # last: its keys go through the aliases above
         sdvr = sdvplotr_aliases(_csv(raw, "sdvplotr_abbr_mapping.csv"), _csv(raw, "sdvplotr_historical.csv"), a)
         a = pl.concat([a, sdvr.cast(ALIAS_SCHEMA)])
+    a = date_reused_codes(a)
     mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
     _report_marks(mk)
     mark = mk.filter(pl.col("n") == 1).select(
@@ -499,13 +494,10 @@ def espn_extra_aliases(extra: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
     e = extra.with_columns(key, pl.col("valid_from", "valid_to").cast(pl.Int32))
     other = e.select("league", "_key", pl.col("team_id").alias("_other"), pl.col("valid_from").alias("_from"),
                      pl.col("valid_to").alias("_to"))  # fmt: skip
-    overlaps = (pl.col("_from").is_null() | pl.col("valid_to").is_null() | (pl.col("_from") <= pl.col("valid_to"))) & (
-        pl.col("_to").is_null() | pl.col("valid_from").is_null() | (pl.col("_to") >= pl.col("valid_from"))
-    )
     clash = pl.concat(
         [
             e.join(holders, on=["league", "_key"]).select("league", "_key", "team_id", "_other"),
-            e.join(other, on=["league", "_key"]).filter(overlaps).select("league", "_key", "team_id", "_other"),
+            e.join(other, on=["league", "_key"]).filter(OVERLAPS).select("league", "_key", "team_id", "_other"),
         ]
     ).filter(pl.col("_other") != pl.col("team_id"))
     e = e.join(clash.select("league", "_key", "team_id").unique(), on=["league", "_key", "team_id"], how="anti")
@@ -525,11 +517,13 @@ def espn_extra_aliases(extra: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
 
 
 def date_reused_codes(a: pl.DataFrame) -> pl.DataFrame:
-    """An undated ESPN abbreviation that a dated alias gives another team (MIL: the Braves 1953-65 in the MLB Stats
-    API; WSH: Baseball-Reference's first Senators, 1901-60) starts the season after that team's last, so a season of
-    the earlier era goes to the earlier team; the code without a season still means today's team."""
+    """An undated ESPN abbreviation or sdvplotR key that a dated alias gives another team (MIL: the Braves 1953-65 in
+    the MLB Stats API; WSH: Baseball-Reference's first Senators, 1901-60; sdvplotR's KCA, the 1955-67 Kansas City
+    Athletics') starts the season after that team's last, so a season of the earlier era goes to the earlier team;
+    the code without a season still means today's team."""
     key = _norm(pl.col("value")).alias("_key")
-    current = (pl.col("id_system") == "espn_abbr") & pl.col("valid_from").is_null() & pl.col("valid_to").is_null()
+    undated = pl.col("valid_from").is_null() & pl.col("valid_to").is_null()
+    current = pl.col("id_system").is_in(["espn_abbr", "sdvplotr"]) & undated
     since = (
         a.filter((pl.col("id_system") != "espn_abbr") & pl.col("valid_to").is_not_null())
         .select("league", key, pl.col("team_id").alias("_other"), "valid_to")
@@ -561,14 +555,23 @@ def mlb_aliases(big: pl.DataFrame, franchises: pl.DataFrame) -> pl.DataFrame:
     """MLB Stats API codes of the big-league teams. Abbreviations and teamCodes carry the seasons the API used them,
     so a reused code goes to the franchise that held it that season (WAS: the Senators who became the Twins to 1960,
     the ones who became the Rangers 1961-71). teamCode and fileCode are the API's internal keys: one that spells an
-    abbreviation the API gave another franchise (the Royals' teamCode "kca", the 1955-67 Kansas City Athletics' KCA)
-    is dropped, so a published abbreviation never names a team that only used it as a key."""
-    owners = franchises.select(_norm(pl.col("abbreviation")).alias("_key"), pl.col("team_id").alias("_owner")).unique()
+    abbreviation the API gave another franchise in a season the key's own range covers is dropped, so a published
+    abbreviation never names a team that only used it as a key that season. A key that only follows the other run
+    keeps its dates: the Royals' "kca" from 1968 (the Kansas City Athletics' KCA ends in 1967), the Nationals' "was"
+    from 2005. A fileCode has no range, so it meets every run."""
+    owners = franchises.select(
+        _norm(pl.col("abbreviation")).alias("_key"),
+        pl.col("team_id").alias("_owner"),
+        pl.col("valid_from").alias("_from"),
+        pl.col("valid_to").alias("_to"),
+    ).unique()
+    big = big.with_columns(pl.lit(None, pl.Int32).alias("valid_from"), pl.lit(None, pl.Int32).alias("valid_to"))
 
     def keys_only(df: pl.DataFrame, col: str) -> pl.DataFrame:
         k = df.with_columns(_norm(pl.col(col)).alias("_key"))
-        clash = k.join(owners, on="_key").filter(pl.col("_owner") != pl.col("team_id")).select("_key", "team_id")
-        return k.join(clash.unique(), on=["_key", "team_id"], how="anti")
+        clash = k.join(owners, on="_key").filter((pl.col("_owner") != pl.col("team_id")) & OVERLAPS)
+        return k.join(clash.select(col, "team_id", "valid_from").unique(), on=[col, "team_id", "valid_from"],
+                      how="anti", nulls_equal=True)  # fmt: skip
 
     def dated(df: pl.DataFrame, col: str) -> pl.DataFrame:
         return df.select(

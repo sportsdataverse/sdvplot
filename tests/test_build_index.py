@@ -311,13 +311,23 @@ def test_mlb_stats_codes_are_dated_and_a_team_code_never_shadows_an_abbreviation
             ("pha", "11", 1901, 1954),
             ("KCA", "11", 1955, 1967),
             ("kc1", "11", 1955, 1967),
+            ("kca", "7", 1968, None),  # the Royals' teamCode spells the Athletics' KCA, but only after it
             ("OAK", "11", 1968, 2024),
             ("oak", "11", 1968, 2024),
         ],
         key=str,
-    )  # the Royals' teamCode "kca" spells the Kansas City Athletics' abbreviation: dropped
-    sdvr = aliases.filter(pl.col("id_system") == "sdvplotr").select("value", "team_id").rows()
-    assert sdvr == [("KCR", "7")]  # sdvplotR's undated KCA -> KC yields to the dated KCA
+    )
+    sdvr = aliases.filter(pl.col("id_system") == "sdvplotr").select("value", "team_id", "valid_from").rows()
+    assert sorted(sdvr) == [("KCA", "7", 1968), ("KCR", "7", None)]  # sdvplotR's KCA starts after the Athletics'
+
+
+def test_a_team_code_that_overlaps_another_franchises_abbreviation_is_dropped(tmp_path):
+    raw = _raw(tmp_path)
+    _royals_and_athletics(raw)
+    _add(raw, "mlbstats_history.csv", "118,KC,pha,Kansas City Royals,1950,1950")  # made up: in a PHA season
+    _, aliases, _ = bi.build(raw)
+    pha = aliases.filter((pl.col("id_system") == "mlbstats") & (pl.col("value") == "pha"))
+    assert pha.select("team_id", "valid_from", "valid_to").rows() == [("11", 1901, 1954)]  # the Royals' 1950 "pha": no
 
 
 def _add(raw, name, line):
@@ -414,12 +424,15 @@ def test_a_current_espn_code_another_team_held_earlier_starts_after_it():
         ("mlb", "mlbstats", "MIL", "8", 1970, None),
         ("mlb", "espn_abbr", "KC", "7", None, None),  # nobody else's: untouched
         ("wnba", "espn_abbr", "DET", "3", 1998, 2009),  # already dated: untouched
+        ("mlb", "sdvplotr", "KCA", "7", None, None),  # sdvplotR's keys follow the same rule
+        ("mlb", "mlbstats", "KCA", "11", 1955, 1967),
     ]
     a = pl.DataFrame(rows, schema=_index.ALIAS_SCHEMA, orient="row")
-    got = bi.date_reused_codes(a).filter(pl.col("id_system") == "espn_abbr")
+    got = bi.date_reused_codes(a).filter(pl.col("id_system").is_in(["espn_abbr", "sdvplotr"]))
     assert sorted(got.select("value", "valid_from", "valid_to").rows()) == [
         ("DET", 1998, 2009),
         ("KC", None, None),
+        ("KCA", 1968, None),
         ("MIL", 1966, None),
     ]
 
