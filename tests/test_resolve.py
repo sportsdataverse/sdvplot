@@ -101,3 +101,23 @@ def test_no_season_means_the_current_holder_then_any():
     assert _match("kca", 1960, ("mlbstats",), table, latest=2026) == "11"
     assert _match("kca", 1930, ("mlbstats",), table, latest=2026) == "7"  # a season nobody used it: the holder now
     assert _match("pha", None, ("mlbstats",), table, latest=2026) == "11"  # no current holder: any season
+
+
+@pytest.mark.parametrize(
+    ("code", "season", "team_id"),
+    [("STL", 2015, "14"), ("LA", 2016, "14"), ("OAK", 2019, "13"), ("LV", 2020, "13"), ("LA", 1994, "13")],
+)
+def test_an_alias_range_includes_both_of_its_end_seasons(code, season, team_id):
+    """A dated alias covers its first and its last season: the relocation years themselves."""
+    assert resolve(code, "nfl", season=season, id_system="nflverse") == team_id
+
+
+@pytest.mark.parametrize(
+    ("lo", "hi", "season", "covered"),
+    [(2016, None, 2016, True), (2016, None, 2015, False), (None, 2015, 2015, True), (None, 2015, 2016, False),
+     (1982, 1994, 1982, True), (1982, 1994, 1995, False), (None, None, 1900, True)],
+)  # fmt: skip
+def test_covers_is_inclusive_at_both_ends(lo, hi, season, covered):
+    from sdvplot._resolve import _covers
+
+    assert _covers(lo, hi, season) is covered

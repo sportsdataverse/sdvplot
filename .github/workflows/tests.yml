@@ -1,5 +1,6 @@
 # Offline tests on 3.10-3.13 (Linux, with branch coverage), Windows + macOS, a lowest-direct-versions job, the sdist's own
-# tests, and the built wheel with no extras (3.10 + 3.14); live tests (real network) on main and manual runs only.
+# tests, and the built wheel with no extras (3.10 + 3.14); live tests (real network) on manual runs
+# (and weekly in live-tests-cron).
 name: tests
 
 on:
@@ -15,7 +16,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # a PR's new push supersedes its last run; a run on main is the merge's only test record, so it is never cancelled
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:
   contents: read
 
@@ -141,8 +143,9 @@ jobs:
 
   live:
     name: pytest (live, py3.13)
-    # Live endpoints are third-party and flaky; a PR author cannot act on an outage.
-    if: github.event_name != 'pull_request'
+    # Live endpoints are third-party and flaky: an outage must not turn main red. Manual runs only here; the weekly
+    # live-tests-cron workflow runs them on a schedule and opens the refresh PR.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
