@@ -60,7 +60,8 @@ def test_the_xy_adapter_passes_the_contract(mark_images, headshot_images):
 
 
 def test_a_datetime_chart_passes_the_contract(mark_images, headshot_images):
-    check_adapter_contract(spg, make_target=lambda: pygal.DateTimeLine(show_legend=False))
+    # an empty chart renders no plot, so no marks: give it pygal's own dots at the contract's points
+    check_adapter_contract(spg, make_target=lambda: _chart(pygal.DateTimeLine))
 
 
 def test_logos_sit_on_pygals_own_dots_at_their_height(mark_images):

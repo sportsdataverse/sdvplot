@@ -202,11 +202,27 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
         sdv-py: https://py.sportsdataverse.org/
     """
     _index.check_league(league)
+    _systems(id_system)
+    items, wrap = _unpack(values)
+    out, unresolved = _resolve_ids(items, league, _seasons(season, len(items)), id_system)
+    if unresolved:
+        _report(unresolved, league, strict)
+    return wrap(out)
+
+
+def _systems(id_system: str) -> tuple[str, ...]:
     if id_system != "auto" and id_system not in PRIORITY + EXPLICIT_ONLY:
         raise ValueError(f"unknown id_system {id_system!r}; use 'auto' or one of {list(PRIORITY + EXPLICIT_ONLY)}")
-    systems = PRIORITY if id_system == "auto" else (id_system,)
-    items, wrap = _unpack(values)
-    seasons = _seasons(season, len(items))
+    return PRIORITY if id_system == "auto" else (id_system,)
+
+
+def _resolve_ids(
+    items: list[Any], league: str, seasons: list[int | None], id_system: str
+) -> tuple[list[str | None], dict[str, str]]:
+    """resolve() without the report: the ids (None where a value does not resolve), and each unresolved value with
+    why ("unknown" or "ambiguous"). The caller decides whether to warn."""
+    _index.check_league(league)
+    systems = _systems(id_system)
     table = _lookup(league)
     out: list[str | None] = []
     unresolved: dict[str, str] = {}
@@ -224,9 +240,7 @@ def resolve(values: Any, league: str, season: Any = None, id_system: str = "auto
             out.append(None)
         else:
             out.append(hit)
-    if unresolved:
-        _report(unresolved, league, strict)
-    return wrap(out)
+    return out, unresolved
 
 
 def suggest(value: Any, league: str, n: int = 5) -> list[tuple[str, str]]:

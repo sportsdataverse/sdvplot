@@ -112,7 +112,7 @@ def test_axis_logos_hide_only_resolved_labels_and_make_room(mark_images):
     pad_before = ax.xaxis.get_major_ticks()[0].get_pad()
     with pytest.warns(SdvplotWarning):
         sdvplot.axis_logos(ax, "x", league="nfl", height=0.1)
-    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 2.0)]
+    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0, pytest.approx(0.1)), ("14", 2.0, pytest.approx(0.1))]
     assert smpl.visible_axis_labels(ax, "x") == ["XXX"]
     assert ax.xaxis.get_major_ticks()[0].get_pad() > pad_before
 
@@ -121,7 +121,7 @@ def test_y_axis_logos(mark_images):
     _, ax = plt.subplots()
     ax.barh(["LV", "LAR"], [1, 2])
     sdvplot.axis_logos(ax, "y", league="nfl")
-    assert smpl.drawn_axis_marks(ax, "y") == [("13", 0.0), ("14", 1.0)]
+    assert smpl.drawn_axis_marks(ax, "y") == [("13", 0.0, pytest.approx(0.1)), ("14", 1.0, pytest.approx(0.1))]
     assert smpl.visible_axis_labels(ax, "y") == []
 
 
@@ -188,7 +188,7 @@ def test_axis_logos_skip_ticks_outside_the_view(mark_images):
     ax.bar(["LV", "LAR", "LAC"], [1, 2, 3])
     ax.set_xlim(-0.5, 1.5)  # LAC (no logo archived) sits outside the view: no image and no warning for it
     sdvplot.axis_logos(ax, "x", league="nfl")
-    assert smpl.drawn_axis_marks(ax, "x") == [("13", 0.0), ("14", 1.0)]
+    assert [m[:2] for m in smpl.drawn_axis_marks(ax, "x")] == [("13", 0.0), ("14", 1.0)]
 
 
 def test_axis_logos_keep_a_configured_label_pad(mark_images):

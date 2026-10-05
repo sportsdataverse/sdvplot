@@ -15,10 +15,10 @@ from plotnine.geoms.geom import geom
 
 from sdvplot._colors import _column, team_colors
 from sdvplot._marks import _check_mark_type
-from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._resolve import _unpack
-from sdvplot.matplotlib import axis_logos as _mpl_axis_logos
-from sdvplot.matplotlib import draw_placements
+from sdvplot._placement import Placement, check_alpha, check_height, place
+from sdvplot._resolve import _seasons, _unpack
+from sdvplot.matplotlib import _axis_logos as _mpl_axis_logos
+from sdvplot.matplotlib import _in_view, draw_placements
 from sdvplot.matplotlib import drawn_axis_marks as _mpl_drawn_axis_marks
 from sdvplot.matplotlib import drawn_marks as _mpl_drawn_marks
 from sdvplot.matplotlib import visible_axis_labels as _mpl_visible_axis_labels
@@ -42,7 +42,7 @@ class _geom_sdv_marks(geom):
 
     _kind = "logo"
     _id_aes = "team"
-    DEFAULT_AES: dict[str, Any] = {}
+    DEFAULT_AES: dict[str, Any] = {"season": None}  # optional: one season per row, which plotnine copies with the row
     REQUIRED_AES = {"x", "y", "team"}
     DEFAULT_PARAMS = _MARK_PARAMS
 
@@ -54,19 +54,34 @@ class _geom_sdv_marks(geom):
         kwargs.setdefault("show_legend", False)
         super().__init__(mapping, data, **kwargs)
 
-    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
-        data = coord.transform(data, panel_params)
+    def _place(self, data: pd.DataFrame, x: list[Any], y: list[Any], *, warn: bool) -> list[Placement]:
         p = self.params
-        placements = place(
-            data["x"].tolist(), data["y"].tolist(), data[self._id_aes].tolist(), league=p["league"],
-            season=p["season"], kind=self._kind, variant=p["variant"], id_system=p["id_system"],
-        )  # fmt: skip
-        draw_placements(ax, placements, height=float(p["height"]), alpha=float(p["alpha"]))
+        # the season= parameter, else the season aesthetic (a column, so each panel's copy of a row keeps its season)
+        season = p["season"] if p["season"] is not None or "season" not in data else data["season"].tolist()
+        return place(x, y, data[self._id_aes].tolist(), league=p["league"], season=season, kind=self._kind,
+                     variant=p["variant"], id_system=p["id_system"], _warn=warn)  # fmt: skip
+
+    def setup_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Once per layer and render: place every panel's rows together, so an unknown team or a missing mark warns
+        once, and a point plotnine copies into every panel counts once. At zero positions: x and y are plotnine's to
+        check, after this (``na_rm``, scale limits, its own "Removed rows" warning), so they never warn here."""
+        # ponytail: two identical points (same x, y and team) in one panel also count once
+        rows = data.drop(columns="PANEL", errors="ignore").drop_duplicates()  # a row plotnine copies to every panel
+        zeros = [0.0] * len(rows)
+        self._place(rows, zeros, zeros, warn=True)
+        return data
+
+    def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
+        # setup_data already warned for this layer's rows in every panel, so each panel places its rows quietly
+        data = coord.transform(data, panel_params)
+        placements = self._place(data, data["x"].tolist(), data["y"].tolist(), warn=False)
+        draw_placements(ax, placements, height=float(self.params["height"]), alpha=float(self.params["alpha"]))
 
 
 class geom_sdv_logos(_geom_sdv_marks):
     """Team logos at (x, y): ``aes(x=..., y=..., team=...)``, plus ``league=`` and optional ``season``, ``height``
-    (fraction of the panel height), ``alpha``, ``variant`` and ``id_system``.
+    (fraction of the panel height), ``alpha``, ``variant`` and ``id_system``. For a season per row, map it instead:
+    ``aes(..., season="season")`` (a ``season=`` parameter wins over the mapping).
 
     Example:
         ::
@@ -108,11 +123,12 @@ class geom_sdv_headshots(_geom_sdv_marks):
     DEFAULT_PARAMS = {**_MARK_PARAMS, "id_system": "espn"}
 
 
-def _frame(x: Any, y: Any, ids: Any, column: str) -> pd.DataFrame:
+def _frame(x: Any, y: Any, ids: Any, column: str, season: Any = None) -> pd.DataFrame:
+    """The layer data: one row per point, with its season, so plotnine's per-panel copies of a row keep it."""
     xs, ys, ts = _unpack(x)[0], _unpack(y)[0], _unpack(ids)[0]
     if not len(xs) == len(ys) == len(ts):
         raise ValueError(f"x, y and teams must have the same length, got {len(xs)}, {len(ys)} and {len(ts)}")
-    return pd.DataFrame({"x": xs, "y": ys, column: ts})
+    return pd.DataFrame({"x": xs, "y": ys, column: ts, "season": pd.Series(_seasons(season, len(ts)), dtype=object)})
 
 
 def add_logos(
@@ -155,8 +171,8 @@ def add_logos(
             p2 = sdvplot.add_logos(p, [0.2], [0.48], ["KC"], league="nfl")
     """
     layer = geom_sdv_logos(
-        aes("x", "y", team="team"), data=_frame(x, y, teams, "team"), inherit_aes=False, league=league,
-        season=season, height=height, alpha=alpha, variant=variant, id_system=id_system,
+        aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
+        league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
     return target + layer
 
@@ -200,8 +216,8 @@ def add_wordmarks(
             p2 = sdvplot.add_wordmarks(p, [0.2], [0.48], ["KC"], league="nfl")
     """
     layer = geom_sdv_wordmarks(
-        aes("x", "y", team="team"), data=_frame(x, y, teams, "team"), inherit_aes=False, league=league,
-        season=season, height=height, alpha=alpha, variant=variant, id_system=id_system,
+        aes("x", "y", team="team", season="season"), data=_frame(x, y, teams, "team", season), inherit_aes=False,
+        league=league, height=height, alpha=alpha, variant=variant, id_system=id_system,
     )  # fmt: skip
     return target + layer
 
@@ -267,8 +283,14 @@ class _AxisLogos:
         return gg
 
     def draw(self, figure: Figure) -> None:
+        # every panel's labels are placed together first, so each skip reason warns once, not once per panel
+        kw = self.kw
+        labels = list(dict.fromkeys(lab for ax in figure.axes for lab in _in_view(ax, self.axis)[1]))
+        zeros = [0.0] * len(labels)
+        place(zeros, zeros, labels, league=kw["league"], season=kw["season"], kind=kw["mark_type"],
+              variant=kw["variant"], id_system=kw["id_system"])  # fmt: skip
         for ax in figure.axes:
-            _mpl_axis_logos(ax, self.axis, **self.kw)
+            _mpl_axis_logos(ax, self.axis, **kw, warn=False)
 
 
 def axis_logos(
@@ -390,8 +412,9 @@ def drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
         plt.close(fig)
 
 
-def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float]]:
-    """Test hook: draw the plot, then (team_id, tick position) for each axis image on the first panel."""
+def drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: draw the plot, then (team_id, tick position, measured height) for each axis image on the first
+    panel."""
     import matplotlib.pyplot as plt
 
     fig = _drawn(target)

@@ -587,16 +587,18 @@ def drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     return out
 
 
-def drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float]]:
-    """Test hook: (team_id, category position) for each image on ``axis``, in tick order."""
+def drawn_axis_marks(chart: Any, axis: str) -> list[tuple[str, float, float]]:
+    """Test hook: (team_id, category position, height) for each image on ``axis``, in tick order; height = image px /
+    chart px."""
     letter = _letter(axis)
     spec = chart.to_dict()
     unit, enc = _unit(spec, letter)
     cats = _categories(spec, unit, enc)
+    ref = _chart_height(spec)
     marks = []
     for layer in _named(chart, f"sdvplot_axis_{letter}"):
         key = _key(getattr(layer.encoding, letter).to_dict()["field"])
-        marks += [(r[TEAM], float(cats.index(r[key]))) for r in layer.data.values]
+        marks += [(r[TEAM], float(cats.index(r[key])), layer.mark.height / ref) for r in layer.data.values]
     return sorted(marks, key=lambda m: m[1])
 
 
