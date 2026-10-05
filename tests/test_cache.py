@@ -13,6 +13,11 @@ from sdvplot import _cache, _manifest
 from sdvplot._errors import DownloadError, IntegrityError, OfflineError, SdvplotWarning, UnsafeDownloadError
 from tests.conftest import FIXTURE, FakeResponse, FakeSession, in_threads, slow_download
 
+# How far past a 1.5 s deadline a download may end and still count as on time: scheduling slack on a loaded runner
+# (a full Windows run took 1.39 s past it). A cut that waited for the uncapped 5 s connect or 60 s read timeout
+# instead of the deadline still fails.
+ON_TIME = 3.0
+
 
 def test_first_fetch_downloads_and_records_the_etag(cache, monkeypatch):
     s = FakeSession(FakeResponse(200, b"a,b\n1,2\n", {"ETag": '"v1"', "Last-Modified": "Wed, 01 Oct 2026"}))
@@ -550,7 +555,7 @@ def test_a_drip_fed_body_hits_the_deadline_on_time(server, monkeypatch):
     start = time.monotonic()
     with pytest.raises(UnsafeDownloadError, match="exceeded"):
         _cache._download(base + "/", None, 10_000_000)
-    assert time.monotonic() - start < 1.5 + 1
+    assert time.monotonic() - start < 1.5 + ON_TIME
 
 
 def test_no_read_waits_past_the_time_left(cache, monkeypatch):
@@ -586,7 +591,7 @@ def test_drip_fed_headers_hit_the_deadline_on_time(server, monkeypatch):
     start = time.monotonic()
     with pytest.raises(UnsafeDownloadError, match="exceeded"):
         _cache._download(base + "/", None, 1000)
-    assert time.monotonic() - start < 1.5 + 1
+    assert time.monotonic() - start < 1.5 + ON_TIME
 
 
 def test_a_stalled_tls_handshake_hits_the_deadline_on_time(monkeypatch):
@@ -603,7 +608,7 @@ def test_a_stalled_tls_handshake_hits_the_deadline_on_time(monkeypatch):
     try:
         with pytest.raises(UnsafeDownloadError, match="exceeded"):
             _cache._download(f"https://127.0.0.1:{srv.getsockname()[1]}/", None, 1000)
-        assert time.monotonic() - start < 1.5 + 1
+        assert time.monotonic() - start < 1.5 + ON_TIME
     finally:
         srv.close()
         for conn in accepted:
