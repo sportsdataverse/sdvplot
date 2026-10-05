@@ -68,6 +68,7 @@ GALLERY_IMG = STATIC / "img" / "gallery"
 GALLERY_DATA = ROOT / "docs" / "src" / "data" / "gallery"  # one sidecar per notebook with gallery cells
 GALLERY_PAGE = DOCS_DIR / "gallery.md"
 GITHUB_NB = "https://github.com/sportsdataverse/sdvplot/blob/main/examples/notebooks"
+Files = dict[Path, bytes]  # a render's files, staged until all of it has succeeded (_swap_in)
 DEFAULT_TIMEOUT = 600  # seconds per cell
 FRAME_HEIGHT = 480  # px, an iframe's height until its page reports one (or for good, without JavaScript)
 THUMB_WIDTH = 640  # px, the widest a gallery thumbnail gets
@@ -328,18 +329,17 @@ def _stable_ids(html: str, name: str) -> str:
     return html
 
 
-def _frame(book: Notebook, name: str, html: str, title: str) -> str:
-    """Write one output's standalone page and return the iframe that shows it."""
+def _frame(book: Notebook, name: str, html: str, title: str, files: Files) -> str:
+    """Stage one output's standalone page in ``files`` and return the iframe that shows it."""
     dest = book.outputs_dir / f"{name}.html"
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(_normalize(_stable_ids(html, name)), encoding="utf-8", newline="\n")
+    files[dest] = _normalize(_stable_ids(html, name)).encode()
     src = "/" + dest.relative_to(STATIC).as_posix()
     return f'<iframe class="sdv-frame" src="{src}" title="{title}" height="{FRAME_HEIGHT}" loading="lazy"></iframe>'
 
 
-def _output(out, book: Notebook, cell_index: int, index: int, widgets: dict | None = None) -> str | None:
-    """One cell output as markdown: images to <stem>_files/, interactive output to a framed page, markdown (frames)
-    as is, text in a fence."""
+def _output(out, book: Notebook, cell_index: int, index: int, widgets: dict | None, files: Files) -> str | None:
+    """One cell output as markdown: images to <stem>_files/ and interactive output to a framed page (both staged in
+    ``files``), markdown (frames) as is, text in a fence."""
     data = out.get("data", {})
     name = f"{cell_index}_{index}"
     if out.get("output_type") == "stream":
@@ -347,27 +347,28 @@ def _output(out, book: Notebook, cell_index: int, index: int, widgets: dict | No
         return _fence(text, "text") if text.strip() else None  # a bare print() draws no empty block
     if "image/png" in data:
         rel = f"{book.stem}_files/{book.stem}_{name}.png"
-        dest = book.page_dir / rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(base64.b64decode(data["image/png"]))
+        files[book.page_dir / rel] = base64.b64decode(data["image/png"])
         return f"![png]({rel})"
     if PLOTLY in data:
-        return _frame(book, name, _page_html(_plotly_html(data[PLOTLY])), "Interactive Plotly figure")
+        return _frame(book, name, _page_html(_plotly_html(data[PLOTLY])), "Interactive Plotly figure", files)
     if vl := next((m for m in data if VEGALITE.fullmatch(m)), None):
-        return _frame(book, name, _page_html(_vegalite_html(data[vl])), "Interactive Vega-Lite chart")
+        return _frame(book, name, _page_html(_vegalite_html(data[vl])), "Interactive Vega-Lite chart", files)
     if WIDGET_VIEW in data and widgets:
         head = WIDGET_HEAD
         if any(m.get("state", {}).get("_module") == "reactable" for m in widgets.get("state", {}).values()):
-            from importlib.resources import files  # reactable-py's styles, which a notebook gets from embed_css()
+            from importlib.resources import files as package_files  # the styles a notebook gets from embed_css()
 
-            head += f"<style>{files('reactable').joinpath('static/reactable-py.esm.css').read_text('utf-8')}</style>\n"
-        return _frame(book, name, _page_html(_widget_html(data[WIDGET_VIEW], widgets), head), "Interactive widget")
+            css = package_files("reactable").joinpath("static/reactable-py.esm.css").read_text("utf-8")
+            head += f"<style>{css}</style>\n"
+        html = _page_html(_widget_html(data[WIDGET_VIEW], widgets), head)
+        return _frame(book, name, html, "Interactive widget", files)
     if "text/html" in data:
+        html = data["text/html"]
         if HOLOVIEWS_EXEC in data:
-            return _frame(book, name, _page_html(data["text/html"], _bokeh_head(True)), "Interactive HoloViews figure")
+            return _frame(book, name, _page_html(html, _bokeh_head(True)), "Interactive HoloViews figure", files)
         if BOKEH_EXEC in data:
-            return _frame(book, name, _page_html(data["text/html"], _bokeh_head(False)), "Interactive Bokeh figure")
-        return _frame(book, name, _page_html(data["text/html"]), "HTML output")
+            return _frame(book, name, _page_html(html, _bokeh_head(False)), "Interactive Bokeh figure", files)
+        return _frame(book, name, _page_html(html), "HTML output", files)
     if "text/markdown" in data:
         return data["text/markdown"].strip("\n")
     if "text/plain" in data:
@@ -375,15 +376,13 @@ def _output(out, book: Notebook, cell_index: int, index: int, widgets: dict | No
     return None
 
 
-def _to_markdown(nb, book: Notebook) -> str:
-    """Render an (executed) notebook node to a markdown body string.
+def _to_markdown(nb, book: Notebook, files: Files) -> str:
+    """Render an (executed) notebook node to a markdown body string, staging its figures and framed pages in
+    ``files`` for ``_swap_in``.
 
     Markdown cells are copied, code cells become ```python fences, and each code cell's outputs sit in one
     ``<div class="sdv-output">`` (styled by the shared theme) so output never reads as more input. The blank lines
     around the fences are what let CommonMark parse markdown inside the HTML block."""
-    # no orphaned figures or framed pages when cells move
-    shutil.rmtree(book.page_dir / f"{book.stem}_files", ignore_errors=True)
-    shutil.rmtree(book.outputs_dir, ignore_errors=True)
     widgets = nb.metadata.get("widgets", {}).get(WIDGET_STATE)
     parts: list[str] = []
     for ci, cell in enumerate(nb.cells):
@@ -391,7 +390,9 @@ def _to_markdown(nb, book: Notebook) -> str:
             parts.append(cell.source)
         elif cell.get("cell_type") == "code":
             parts.append(_fence(cell.source, "python"))
-            outs = [md for oi, o in enumerate(cell.get("outputs", [])) if (md := _output(o, book, ci, oi, widgets))]
+            outs = [
+                md for oi, o in enumerate(cell.get("outputs", [])) if (md := _output(o, book, ci, oi, widgets, files))
+            ]
             if outs:
                 parts.append('<div class="sdv-output">\n\n' + "\n\n".join(outs) + "\n\n</div>")
     return "\n\n".join(parts) + "\n"
@@ -503,14 +504,11 @@ def _slug(text: str) -> str:
     return re.sub(r"[^\w\- ]", "", text).replace(" ", "-")
 
 
-def _gallery_items(nb, book: Notebook, meta: dict) -> list[dict]:
-    """Thumbnail each ``gallery``-tagged cell's first PNG; return the cards, each linked to the heading above it."""
+def _gallery_items(nb, book: Notebook, meta: dict, files: Files) -> list[dict]:
+    """Thumbnail each ``gallery``-tagged cell's first PNG (staged in ``files``); return the cards, each linked to the
+    heading above it."""
     from PIL import Image
 
-    thumbs = GALLERY_IMG / book.section.dir
-    for old in thumbs.glob(f"{book.stem}_*.png"):
-        if re.fullmatch(re.escape(book.stem) + r"_\d+\.png", old.name):
-            old.unlink()
     seen: dict[str, int] = {}
     heading, anchor, items = "", "", []
     for ci, cell in enumerate(nb.cells):
@@ -536,9 +534,10 @@ def _gallery_items(nb, book: Notebook, meta: dict) -> list[dict]:
         img = Image.open(io.BytesIO(base64.b64decode(png)))
         if img.width > THUMB_WIDTH:
             img = img.resize((THUMB_WIDTH, round(img.height * THUMB_WIDTH / img.width)), Image.Resampling.LANCZOS)
-        dest = thumbs / f"{book.stem}_{ci}.png"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        img.save(dest, optimize=True)
+        dest = GALLERY_IMG / book.section.dir / f"{book.stem}_{ci}.png"
+        buf = io.BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        files[dest] = buf.getvalue()
         card = cell.get("metadata", {}).get("sdvplot_gallery", {})
         title = card.get("title") or heading or meta["label"]
         items.append(
@@ -634,6 +633,19 @@ def _prune(books: list[Notebook]) -> None:
             copy.unlink()
 
 
+def _swap_in(book: Notebook, files: Files) -> None:
+    """Replace a notebook's previous figures, framed pages and thumbnails (no orphans when cells move) with its staged
+    files, and write the rest of them."""
+    shutil.rmtree(book.page_dir / f"{book.stem}_files", ignore_errors=True)
+    shutil.rmtree(book.outputs_dir, ignore_errors=True)
+    for old in (GALLERY_IMG / book.section.dir).glob(f"{book.stem}_*.png"):
+        if re.fullmatch(re.escape(book.stem) + r"_\d+\.png", old.name):
+            old.unlink()
+    for path, data in files.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+
+
 def render(book: Notebook, *, execute: bool = True) -> None:
     """Execute (unless told not to) and render one notebook: its page, outputs, notebook copy and gallery sidecar."""
     import nbformat
@@ -643,13 +655,12 @@ def render(book: Notebook, *, execute: bool = True) -> None:
     if execute:
         _execute(nb, meta["timeout"])
     _clean_outputs(nb)
-    body = _notebook_links(_fix_links(_to_markdown(nb, book), book), book)
-    book.page.parent.mkdir(parents=True, exist_ok=True)
-    copy = STATIC_NB / f"{book.key}.ipynb"
-    copy.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(book.src, copy)
-    book.page.write_text(_normalize(_frontmatter(meta, book.section) + body), encoding="utf-8", newline="\n")
-    items = _gallery_items(nb, book, meta)
+    files: Files = {}
+    body = _notebook_links(_fix_links(_to_markdown(nb, book, files), book), book)
+    items = _gallery_items(nb, book, meta, files)
+    files[book.page] = _normalize(_frontmatter(meta, book.section) + body).encode()
+    files[STATIC_NB / f"{book.key}.ipynb"] = book.src.read_bytes()
+    _swap_in(book, files)  # only once everything rendered: a failure above leaves the previous render whole
     if items:
         page = book.page.relative_to(DOCS_DIR).as_posix()
         entry = {"section": book.section.dir, "stem": book.stem, "label": meta["label"], "position": meta["position"]}

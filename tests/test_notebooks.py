@@ -64,6 +64,14 @@ def _book(site, key="cookbooks/t"):
     return rn.Notebook(site / "nb" / (folder or ".") / f"{stem}.ipynb", rn.SECTIONS[folder or "."])
 
 
+def _md(nb, book):
+    """The page body, with its staged figures and framed pages swapped in as render() does."""
+    files: dict = {}
+    body = rn._to_markdown(nb, book, files)
+    rn._swap_in(book, files)
+    return body
+
+
 # --- the committed notebooks and pages --------------------------------------------------------------------------
 
 
@@ -202,14 +210,14 @@ def test_a_cells_outputs_sit_in_one_sdv_output_block_after_its_code(site):
         new_output("stream", name="stdout", text="hi\n"),
         new_output("execute_result", data={"text/plain": "1"}, execution_count=1),
     )
-    assert rn._to_markdown(nb, _book(site)) == (
+    assert _md(nb, _book(site)) == (
         '# T\n\n```python\nx\n```\n\n<div class="sdv-output">\n\n```text\nhi\n```\n\n```text\n1\n```\n\n</div>\n'
     )
 
 
 def test_an_empty_print_draws_no_output_block(site):
     nb = _notebook(new_output("stream", name="stdout", text="\n"))
-    assert "sdv-output" not in rn._to_markdown(nb, _book(site))
+    assert "sdv-output" not in _md(nb, _book(site))
 
 
 def test_a_polars_frame_becomes_a_table_while_a_pandas_frame_and_a_series_stay_text(site):  # RF 5
@@ -227,7 +235,7 @@ def test_a_polars_frame_becomes_a_table_while_a_pandas_frame_and_a_series_stay_t
         new_output("execute_result", data={"text/plain": "shape: (1,)\nSeries: 'a' [i64]"}, execution_count=3),
     )
     rn._clean_outputs(nb)
-    body = rn._to_markdown(nb, _book(site))
+    body = _md(nb, _book(site))
     assert "\n\n| a |\n|---|\n| 1 |\n\n" in body
     assert "```text\n   a\n0  1\n```" in body
     assert "```text\nshape: (1,)\nSeries: 'a' [i64]\n```" in body
@@ -242,7 +250,7 @@ def test_an_image_output_is_written_once_under_the_page_files(site):
     book = _book(site, "01_t")
     (site / "docs" / "tutorials" / "01_t_files").mkdir(parents=True)
     (site / "docs" / "tutorials" / "01_t_files" / "01_t_9_0.png").write_bytes(b"stale")
-    body = rn._to_markdown(_notebook(new_output("display_data", data={"image/png": _png(), "text/plain": "<F>"})), book)
+    body = _md(_notebook(new_output("display_data", data={"image/png": _png(), "text/plain": "<F>"})), book)
     assert "![png](01_t_files/01_t_1_0.png)" in body and "<F>" not in body
     assert sorted(p.name for p in (site / "docs" / "tutorials" / "01_t_files").iterdir()) == ["01_t_1_0.png"]
 
@@ -254,7 +262,7 @@ def _framed(site, *outputs, widgets=None):
         nb.metadata["widgets"] = {rn.WIDGET_STATE: widgets}
     rn._clean_outputs(nb)
     book = _book(site)
-    body = rn._to_markdown(nb, book)
+    body = _md(nb, book)
     pages = {p.name: p.read_text(encoding="utf-8") for p in sorted(book.outputs_dir.glob("*.html"))}
     return body, pages
 
@@ -319,7 +327,7 @@ def test_a_real_altair_chart_embeds_with_the_svg_renderer(site):
     nb = new_notebook(cells=[new_code_cell(code)])
     rn._execute(nb, 120)
     rn._clean_outputs(nb)
-    body = rn._to_markdown(nb, _book(site))
+    body = _md(nb, _book(site))
     assert 'src="/outputs/cookbooks/t/0_0.html" title="HTML output"' in body
     page = (site / "static" / "outputs" / "cookbooks" / "t" / "0_0.html").read_text(encoding="utf-8")
     assert '"mark": {"type": "image"' in page
@@ -341,7 +349,7 @@ def test_bokeh_joins_its_div_and_script_and_loads_bokehjs(site):
     rn._clean_outputs(nb)
     assert nb.cells[0].outputs == []  # the extension-loading cell shows nothing
     assert len(nb.cells[1].outputs) == 1
-    body = rn._to_markdown(nb, _book(site))
+    body = _md(nb, _book(site))
     assert body.count("<iframe") == 1 and 'title="Interactive Bokeh figure"' in body
     page = (site / "static" / "outputs" / "cookbooks" / "t" / "1_0.html").read_text(encoding="utf-8")
     assert '<div id="p1" data-root-id="p2"></div>\n<script type="text/javascript">\nembed()\n</script>' in page
@@ -546,7 +554,7 @@ def test_a_tagged_cell_gives_a_thumbnail_and_a_card_linked_to_its_heading(site):
 def test_a_card_without_a_title_takes_its_heading(site):
     path = _gallery_nb(site, "recipes/r", label="R")
     nb = nbformat.read(path, as_version=4)
-    items = rn._gallery_items(nb, _book(site, "recipes/r"), {"label": "R"})
+    items = rn._gallery_items(nb, _book(site, "recipes/r"), {"label": "R"}, {})
     assert [(i["title"], i["alt"], i["anchor"]) for i in items] == [("Bars", "Bars", "2-bars")]
 
 
@@ -593,6 +601,35 @@ def test_a_failed_notebook_keeps_its_page_and_fails_the_run(site):
     nbformat.write(nb, site / "nb" / "01_a.ipynb")
     assert rn.main(["--no-execute"]) == 1
     assert (site / "docs" / "tutorials" / "01_a.md").read_text(encoding="utf-8") == page
+
+
+@pytest.mark.parametrize("step", ["_fix_links", "_slug"])  # after the outputs are made; inside the gallery step
+def test_a_render_that_fails_late_leaves_the_previous_page_and_every_file_it_uses(site, monkeypatch, step):
+    path = _gallery_nb(site, "recipes/r", title="R", label="R")
+    nb = nbformat.read(path, as_version=4)
+    framed = new_code_cell("table()")
+    framed.outputs = [new_output("display_data", data={"text/html": "<table><tr><td>KC</td></tr></table>"})]
+    nb.cells.append(framed)
+    nbformat.write(nb, path)
+    assert rn.main(["--no-execute"]) == 0
+    page = (site / "docs" / "recipes" / "r.md").read_text(encoding="utf-8")
+    sidecar = (site / "data" / "gallery" / "recipes__r.json").read_text(encoding="utf-8")
+    nb.cells.insert(1, new_markdown_cell("A new paragraph: every output after it gets a new name."))
+    nbformat.write(nb, path)
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("late failure")
+
+    monkeypatch.setattr(rn, step, boom)
+    assert rn.main(["--no-execute"]) == 1
+    assert (site / "docs" / "recipes" / "r.md").read_text(encoding="utf-8") == page
+    assert (site / "data" / "gallery" / "recipes__r.json").read_text(encoding="utf-8") == sidecar
+    used = re.findall(r"\]\((r_files/[^)]+)\)", page) + re.findall(r'src="/(outputs/[^"]+)"', page)
+    assert len(used) == 3  # two figures and the framed table
+    for rel in used:
+        assert (site / "docs" / "recipes" / rel).is_file() or (site / "static" / rel).is_file(), rel
+    for item in json.loads(sidecar)["items"]:
+        assert (site / "static" / item["image"].lstrip("/")).is_file(), item["image"]
 
 
 def test_a_deleted_notebook_loses_its_page_outputs_copy_and_cards(site):
