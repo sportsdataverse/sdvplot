@@ -166,17 +166,17 @@ def _unpack_series(values: Any) -> tuple[list[Any], Callable[[list[Any]], Any]]:
     return s.to_list(), wrap_result
 
 
-def _seasons(season: Any, n: int) -> list[int | None]:
+def _seasons(season: Any, n: int, league: str | None = None) -> list[int | None]:
     one, season = _scalar(season)
     if one or _is_na(season):
-        return [norm_season(season)] * n
+        return [norm_season(season, league)] * n  # the league's own bounds: one error naming them
     try:
         items, _ = _unpack(season)
     except TypeError:  # _unpack's message names values; this is the season argument
         raise InputError(f"season must be a year, or one per team, got {type(season).__name__}") from None
     if len(items) != n:
         raise InputError(f"season has {len(items)} values but there are {n} teams")
-    return [norm_season(s) for s in items]
+    return [norm_season(s, league) for s in items]
 
 
 def _report(unresolved: dict[str, str], league: str, strict: bool) -> None:
@@ -274,7 +274,7 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
     _index.check_league(league)
     _systems(id_system)
     items, wrap = _unpack(values)
-    out, unresolved = _resolve_ids(items, league, _seasons(season, len(items)), id_system)
+    out, unresolved = _resolve_ids(items, league, _seasons(season, len(items), league), id_system)
     if unresolved:
         _report(unresolved, league, strict)
     return wrap(out)

@@ -23,7 +23,7 @@ with requires_extra("pygal"):
 from sdvplot._colors import team_colors
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
-from sdvplot._types import Which
+from sdvplot._types import IdSystem, Which
 from sdvplot._web import aspect, image_src
 
 _SUPPORTS_AXIS_LOGOS = False
@@ -319,7 +319,16 @@ def axis_logos(chart: Any, axis: str, **kwargs: Any) -> Any:
     raise UnsupportedTargetError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
 
 
-def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any = None, **style_kwargs: Any) -> Style:
+def team_style(
+    teams: Any,
+    *,
+    league: str,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+    **style_kwargs: Any,
+) -> Style:
     """A pygal Style whose series colors are the teams' colors, in the order the series are added.
 
     A team that does not resolve keeps pygal's default color for its position (with one SdvplotWarning), so the
@@ -331,6 +340,10 @@ def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any
         league: The SDV league key, e.g. "nfl".
         which: "primary" or "secondary".
         season: One season, or one per team.
+        id_system: The id system of ``teams``: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL
+            stats ids, which ``"auto"`` never tries.
+        strict: Raise ``UnresolvedTeamError`` for a team that does not resolve, instead of keeping pygal's default
+            color for it with one ``SdvplotWarning``.
         **style_kwargs: Any other ``pygal.style.Style`` option (``background``, ``font_family``, ...).
 
     Returns:
@@ -338,6 +351,7 @@ def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any
 
     Raises:
         ValueError: If ``league`` is unknown or ``which`` is not "primary"/"secondary".
+        UnresolvedTeamError: With ``strict=True``, for a team that does not resolve.
 
     Example:
         ::
@@ -354,7 +368,9 @@ def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any
         pygal styles: https://www.pygal.org/en/stable/documentation/styles.html
     """
     defaults = Style.colors
-    colors = team_colors(league, _unpack(teams)[0], which=which, season=season)  # a bare "KC" is one team
+    colors = team_colors(  # a bare "KC" is one team
+        league, _unpack(teams)[0], which=which, season=season, id_system=id_system, strict=strict
+    )
     return Style(colors=tuple(c or defaults[i % len(defaults)] for i, c in enumerate(colors)), **style_kwargs)
 
 

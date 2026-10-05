@@ -57,6 +57,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- `sdvplot.plotnine.scale_color_sdv` / `scale_fill_sdv` take `which`, `season` and `na_value` by keyword only (as
+  `palette()` and `team_colors()` do), and they and `sdvplot.pygal.team_style` take `id_system` and `strict`:
+  `scale_color_sdv("nhl", id_system="nhl_id")` reads NHL stats ids, which `"auto"` reads as ESPN ids and colored as
+  other teams without a word. A season before the league's first is reported with the league's own range in the first
+  error (`season 1850 ... for nfl (1920 to ...)`), not the index's and then the league's on a retry.
+
 - Team colors for the 3,636 teams that had only placeholder colors: all of soccer, MiLB, cricket, the HockeyTech
   leagues, college hockey, the PHF, AAF, USFL and XFL, and the college teams ESPN's lists give none. 2,270 now carry
   ESPN's colors (`color_source="espn"`): its per-team endpoint by ESPN id, and for a college team its school's colors in

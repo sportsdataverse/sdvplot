@@ -581,8 +581,11 @@ p = ggplot(df, aes("epa", "sr", team="team")) + geom_sdv_wordmarks(league="nfl",
 ```python
 scale_color_sdv(
     league: str,
+    *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     na_value: str = 'grey',
     **kwargs: Any,
 ) -> Any
@@ -599,6 +602,8 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
 
@@ -608,7 +613,8 @@ A discrete color scale that maps each team value (any id system) to its team col
 
 ### Raises
 
-- `ValueError`: If ``which`` is not "primary" or "secondary".
+- `ValueError`: If ``which`` is not "primary" or "secondary" (an ``InputError``).
+- `UnresolvedTeamError`: With ``strict=True``, when the plot is drawn and a value does not resolve.
 
 ### Example
 
@@ -633,8 +639,11 @@ p = ggplot(df, aes("epa", "sr", color="team")) + geom_point() + scale_color_sdv(
 ```python
 scale_fill_sdv(
     league: str,
+    *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     na_value: str = 'grey',
     **kwargs: Any,
 ) -> Any
@@ -651,6 +660,8 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_fill_manual``. |
 
@@ -660,7 +671,8 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 
 ### Raises
 
-- `ValueError`: If ``which`` is not "primary" or "secondary".
+- `ValueError`: If ``which`` is not "primary" or "secondary" (an ``InputError``).
+- `UnresolvedTeamError`: With ``strict=True``, when the plot is drawn and a value does not resolve.
 
 ### Example
 
