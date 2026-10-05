@@ -4,6 +4,7 @@
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
     - [Changed](#changed)
+    - [Fixed](#fixed)
   - [[0.1.0] - 2026-10-05](#010---2026-10-05)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
@@ -24,7 +25,7 @@
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
       - [Release hardening](#release-hardening-1)
-    - [Fixed](#fixed)
+    - [Fixed](#fixed-1)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
       - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
@@ -46,6 +47,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   Iowa's no longer fade into the near-black background. A team with no dark mark draws its default one, with no
   warning; the light theme still draws the default logos. Pass `variant="default"` for the old look (sdvplotR's), or
   any variant `add_logos` takes.
+
+### Fixed
+
+- Coordinates, teams and seasons accept a `range`: `add_logos(ax, range(1, 8), ...)` raised a `TypeError` that named
+  `resolve()` though the bad value was `x`. A container sdvplot cannot read now raises a `TypeError` that names no one
+  function: `expected a scalar, list, tuple, range, numpy array or a pandas/polars Series, got dict`.
 
 ## [0.1.0] - 2026-10-05
 
