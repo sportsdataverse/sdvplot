@@ -59,7 +59,8 @@ def test_a_validator_rejection_keeps_the_old_copy(cache, monkeypatch):
     _cache.fetch_cached("https://x/m.csv", "m.csv")
 
     def reject(body):
-        raise ValueError("missing columns")
+        if body != b"good":
+            raise ValueError("missing columns")
 
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"bad")))
     with pytest.warns(SdvplotWarning):
@@ -300,3 +301,116 @@ def test_a_bmp_manifest_row_is_accepted(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
     path = _images.mark_file({"sha256": sha, "ext": "bmp", "archive_url": "https://x/a"})
     assert path.name == f"{sha}.bmp" and path.read_bytes() == body
+
+
+# --- bounded downloads ---------------------------------------------------------------------------------------------
+
+
+def test_a_body_over_the_byte_cap_is_refused_and_not_cached(cache, monkeypatch):
+    from sdvplot._errors import UnsafeDownloadError
+
+    body = b"x" * 100
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    with pytest.raises(UnsafeDownloadError):
+        _cache.fetch_immutable("https://x/a.png", "images/ab/a.png", hashlib.sha256(body).hexdigest(), max_bytes=10)
+    assert not (cache / "images" / "ab" / "a.png").exists()
+
+
+def test_a_declared_content_length_over_the_cap_is_refused_before_reading(cache, monkeypatch):
+    resp = FakeResponse(200, b"x", {"Content-Length": "999999999"})
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(resp))
+    with pytest.raises(OfflineError, match="limit"):
+        _cache.fetch_cached("https://x/m.csv", "m.csv", max_bytes=1000)
+    assert not (cache / "m.csv").exists()
+
+
+def test_a_drip_fed_download_stops_at_the_total_deadline(cache, monkeypatch):
+    from sdvplot._errors import UnsafeDownloadError
+
+    clock = iter([0.0] + [10_000.0] * 50)
+    monkeypatch.setattr(_cache.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x" * 200000)))
+    with pytest.raises(UnsafeDownloadError, match="exceeded"):
+        _cache.fetch_immutable("https://x/a.png", "images/ab/a.png", "0" * 64)
+
+
+def test_a_redirect_off_https_is_refused_without_requesting_the_http_url(cache, monkeypatch):
+    from sdvplot._errors import UnsafeDownloadError
+
+    s = FakeSession(FakeResponse(302, b"", {"Location": "http://evil/m.csv"}), FakeResponse(200, b"pwned"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    with pytest.raises(OfflineError):  # fetch_cached reports any refusal as offline with no cached copy
+        _cache.fetch_cached("https://x/m.csv", "m.csv")
+    assert [c[0] for c in s.calls] == ["https://x/m.csv"]
+    with pytest.raises(UnsafeDownloadError):
+        _cache._download("http://x/m.csv", None, 10)
+
+
+def test_an_https_redirect_is_followed(cache, monkeypatch):
+    s = FakeSession(FakeResponse(301, b"", {"Location": "/moved.csv"}), FakeResponse(200, b"ok"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"ok"
+    assert [c[0] for c in s.calls] == ["https://x/m.csv", "https://x/moved.csv"]
+
+
+# --- cache self-heal -----------------------------------------------------------------------------------------------
+
+
+def test_a_corrupt_immutable_file_is_deleted_and_downloaded_again(cache, monkeypatch):
+    body = b"real image bytes"
+    sha = hashlib.sha256(body).hexdigest()
+    rel = f"images/{sha[:2]}/{sha}.png"
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    path = _cache.fetch_immutable("https://x/a.png", rel, sha)
+    path.write_bytes(body[:5])  # a partial file left behind
+    _cache._intact.clear()  # a new process
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, body)))
+    assert _cache.fetch_immutable("https://x/a.png", rel, sha).read_bytes() == body
+
+
+def test_a_cached_file_that_fails_its_validator_is_refetched(cache, monkeypatch):
+    def parse(b):
+        if not b.startswith(b"a,b"):
+            raise ValueError("not a csv")
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"a,b\n1,2\n", {"ETag": '"v1"'})))
+    path = _cache.fetch_cached("https://x/m.csv", "m.csv", validate=parse)
+    path.write_bytes(b"garbage")
+    _cache._intact.clear()
+    s = FakeSession(FakeResponse(200, b"a,b\n3,4\n"))
+    monkeypatch.setattr(_cache, "SESSION", s)
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv", validate=parse).read_bytes() == b"a,b\n3,4\n"
+    assert "If-None-Match" not in s.calls[0][1]  # the stale ETag went with the corrupt copy
+
+
+def test_an_empty_cached_file_is_refetched(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"data")))
+    path = _cache.fetch_cached("https://x/m.csv", "m.csv")
+    path.write_bytes(b"")
+    _cache._intact.clear()
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"data")))
+    assert _cache.fetch_cached("https://x/m.csv", "m.csv").read_bytes() == b"data"
+
+
+# --- clear_cache ---------------------------------------------------------------------------------------------------
+
+
+def test_clear_cache_also_clears_the_url_image_cache(cache, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x")))
+    _cache.fetch_cached("https://x/h.png", "urlimages/ab/abc")
+    assert (cache / "urlimages" / "ab" / "abc").exists()
+    _cache.clear_cache()
+    assert not (cache / "urlimages").exists()
+
+
+def test_clear_cache_never_deletes_a_folder_sdvplot_did_not_create(cache, monkeypatch):
+    mine = cache / "images"
+    mine.mkdir(parents=True)
+    (mine / "keep.txt").write_text("my data")
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, b"x"), FakeResponse(200, b"x")))
+    _cache.fetch_cached("https://x/m.csv", "manifest/m.csv")  # sdvplot creates (and marks) manifest/ only
+    _cache.fetch_cached("https://x/i", "images/ab/i")  # writes into the user's images/, which stays unmarked
+    with pytest.warns(SdvplotWarning):
+        _cache.clear_cache()
+    assert (mine / "keep.txt").exists()
+    assert not (cache / "manifest").exists()

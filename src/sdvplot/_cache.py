@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
@@ -10,19 +11,26 @@ import time
 import warnings
 from collections.abc import Callable
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 import platformdirs
 import requests
 
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeCachePathError
+from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeCachePathError, UnsafeDownloadError
 
 CACHE_ENV = "SDVPLOT_CACHE_DIR"
 TTL_ENV = "SDVPLOT_CACHE_TTL"
 DEFAULT_TTL_DAYS = 7.0
-CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse")
+CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse", "urlimages")
+MARKER = ".sdvplot-cache"  # written into a subdirectory sdvplot created; clear_cache only deletes marked ones
+MAX_BYTES = 50 * 1024 * 1024  # default body cap (the nflverse players parquet is the largest download)
+IMAGE_MAX_BYTES = 25 * 1024 * 1024
+DEADLINE_SECONDS = 120.0  # total wall-clock budget for one download (the (5, 60) timeout is per socket read)
+MAX_REDIRECTS = 5
 SESSION = requests.Session()
 SESSION.headers["User-Agent"] = "sdvplot (+https://github.com/sportsdataverse/sdvplot)"
 _warned: set[str] = set()
+_intact: set[str] = set()  # cached files already checked this process
 
 
 def cache_dir() -> Path:
@@ -61,9 +69,24 @@ def read_meta(relpath: str) -> dict | None:
         return None
 
 
+def _mark_new_subdir(path: Path) -> None:
+    """When this write creates one of the cache subdirectories, mark it as ours (an existing folder is never marked)."""
+    try:
+        root = cache_dir().resolve()
+        sub = path.resolve().relative_to(root).parts[0]
+    except (ValueError, IndexError):
+        return
+    subdir = root / sub
+    if sub in CACHE_SUBDIRS and not subdir.exists():
+        subdir.mkdir(parents=True, exist_ok=True)
+        with contextlib.suppress(OSError):
+            (subdir / MARKER).write_bytes(b"")
+
+
 def atomic_write(path: Path, data: bytes) -> None:
     """Write to a temp file beside the target, then rename: a reader never sees a partial file."""
     _check_contained(path.resolve(), str(path))
+    _mark_new_subdir(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.urandom(8).hex()}.part")
     # mode 0o666 with the kernel applying the umask: world-readable like any file, and the process umask is never
@@ -91,10 +114,67 @@ def _offline_message(url: str) -> str:
     )
 
 
-def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None) -> Path:
+def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.Response, bytes]:
+    """GET url with a byte cap, a total deadline and https-only redirects (followed by hand, so a hop to http is never
+    requested). Raises UnsafeDownloadError when refused; requests errors propagate."""
+    deadline = time.monotonic() + DEADLINE_SECONDS
+    for _ in range(MAX_REDIRECTS + 1):
+        if urlsplit(url).scheme != "https":
+            raise UnsafeDownloadError(f"refusing to download {url}: not https")
+        r = SESSION.get(url, headers=headers, timeout=(5, 60), stream=True, allow_redirects=False)
+        try:
+            if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("Location"):
+                url = urljoin(url, r.headers["Location"])
+                continue
+            declared = r.headers.get("Content-Length")
+            if declared is not None and declared.isdigit() and int(declared) > max_bytes:
+                raise UnsafeDownloadError(f"{url}: {declared} bytes exceeds the {max_bytes} byte limit")
+            if r.status_code >= 400 or r.status_code == 304:
+                return r, b""
+            chunks, size = [], 0
+            for chunk in r.iter_content(65536):
+                size += len(chunk)
+                if size > max_bytes:
+                    raise UnsafeDownloadError(f"{url}: body exceeds the {max_bytes} byte limit")
+                if time.monotonic() > deadline:
+                    raise UnsafeDownloadError(f"{url}: download exceeded {DEADLINE_SECONDS:.0f} s")
+                chunks.append(chunk)
+            return r, b"".join(chunks)
+        finally:
+            r.close()
+    raise UnsafeDownloadError(f"{url}: more than {MAX_REDIRECTS} redirects")
+
+
+def _heal(path: Path, validate: Callable[[bytes], object] | None, sha256: str | None = None) -> bool:
+    """True when the cached file is intact (checked once per process); a corrupt or empty one is deleted."""
+    key = str(path)
+    if key in _intact:
+        return True
+    try:
+        data = path.read_bytes()
+        if not data:
+            raise ValueError("empty file")
+        if sha256 is not None and hashlib.sha256(data).hexdigest() != sha256:
+            raise ValueError("sha256 mismatch")
+        if validate is not None:
+            validate(data)
+    except Exception:  # any read or validator error means the cached copy cannot be trusted
+        with contextlib.suppress(OSError):
+            path.unlink()
+            _meta_path(path).unlink(missing_ok=True)
+        return False
+    _intact.add(key)
+    return True
+
+
+def fetch_cached(
+    url: str, relpath: str, *, validate: Callable[[bytes], object] | None = None, max_bytes: int = MAX_BYTES
+) -> Path:
     """A cached copy of url, refreshed when older than the TTL (a 304 just renews it). On any failure (network,
     truncation, a validate() rejection) the previous copy is kept and used with one warning."""
     path = cache_path(relpath)
+    if path.exists() and not _heal(path, validate):
+        pass  # a corrupt cached file was deleted: fall through to a fresh download
     meta = read_meta(relpath) or {}
     if path.exists() and time.time() - meta.get("fetched_at", 0) < ttl_seconds():
         return path
@@ -102,13 +182,12 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] 
         return path
     headers = {"If-None-Match": meta["etag"]} if path.exists() and meta.get("etag") else {}
     try:
-        r = SESSION.get(url, headers=headers, timeout=(5, 60))
+        r, body = _download(url, headers, max_bytes)
         if r.status_code == 304 and path.exists():
             # a failed meta write lands in the except below, which keeps the cached copy with one warning
             atomic_write(_meta_path(path), json.dumps({**meta, "fetched_at": time.time()}).encode())
             return path
         r.raise_for_status()
-        body = r.content
         declared = r.headers.get("Content-Length")
         if (
             declared is not None
@@ -134,6 +213,7 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] 
             "fetched_at": time.time(),
         }
         atomic_write(_meta_path(path), json.dumps(new_meta).encode())
+        _intact.add(str(path))
     except (OSError, ValueError) as e:
         if path.exists():
             _warn_once(url, f"could not refresh {url} ({e}); using the cached copy")
@@ -142,13 +222,14 @@ def fetch_cached(url: str, relpath: str, *, validate: Callable[[bytes], object] 
     return path
 
 
-def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
-    """A content-addressed file: downloaded once, checked against its sha256, never refreshed."""
+def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMAGE_MAX_BYTES) -> Path:
+    """A content-addressed file: downloaded once, checked against its sha256, never refreshed. A cached copy that no
+    longer matches its sha256 (corrupt, truncated) is deleted and downloaded again."""
     path = cache_path(relpath)
-    if path.exists():
+    if path.exists() and _heal(path, None, sha256):
         return path
     try:
-        r = SESSION.get(url, timeout=(5, 60))
+        r, body = _download(url, None, max_bytes)
         r.raise_for_status()
     except requests.HTTPError as e:
         if e.response is not None and e.response.status_code < 500:
@@ -156,17 +237,20 @@ def fetch_immutable(url: str, relpath: str, sha256: str) -> Path:
         raise OfflineError(f"{_offline_message(url)} ({e})") from e
     except requests.RequestException as e:
         raise OfflineError(f"{_offline_message(url)} ({e})") from e
-    digest = hashlib.sha256(r.content).hexdigest()
+    digest = hashlib.sha256(body).hexdigest()
     if digest != sha256:
         raise OSError(f"{url}: sha256 {digest} does not match the manifest ({sha256}); not cached")
-    atomic_write(path, r.content)
+    atomic_write(path, body)
+    _intact.add(str(path))
     return path
 
 
 def clear_cache() -> None:
-    """Delete everything sdvplot has cached (manifest, images, rasters, nflverse).
+    """Delete everything sdvplot has cached (manifest, images, rasters, nflverse, URL images such as headshots).
 
-    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set.
+    The next call that needs a mark downloads it again. The cache directory is ``SDVPLOT_CACHE_DIR`` when set. Only
+    subdirectories sdvplot created (they hold a ``.sdvplot-cache`` marker) are removed; a folder of your own with the
+    same name, or a cache from before the marker existed, is left alone with a warning.
 
     Returns:
         None: Nothing; the cache subdirectories are removed.
@@ -185,6 +269,11 @@ def clear_cache() -> None:
     root = cache_dir()
     for subdir in CACHE_SUBDIRS:
         path = root / subdir
-        if path.exists():
+        if not path.exists():
+            continue
+        if (path / MARKER).exists():
             shutil.rmtree(path)
+        else:
+            warnings.warn(f"{path} was not created by sdvplot; left in place", SdvplotWarning, stacklevel=2)
     _warned.clear()
+    _intact.clear()
