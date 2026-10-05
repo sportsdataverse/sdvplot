@@ -8,34 +8,37 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-import numpy as np
-import pandas as pd
-from matplotlib.figure import Figure
-from plotnine import (
-    aes,
-    element_blank,
-    element_rect,
-    element_text,
-    geom_text,
-    ggplot,
-    labs,
-    scale_color_manual,
-    scale_fill_manual,
-    scale_x_continuous,
-    scale_y_reverse,
-    theme_minimal,
-)
-from plotnine import theme as p9_theme  # team_tiers takes a `theme` argument
-from plotnine._utils import remove_missing
-from plotnine.geoms import geom_hline, geom_vline
-from plotnine.geoms.geom import geom
+from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
+
+with requires_extra("plotnine"):
+    import numpy as np
+    import pandas as pd
+    from matplotlib.figure import Figure
+    from plotnine import (
+        aes,
+        element_blank,
+        element_rect,
+        element_text,
+        geom_text,
+        ggplot,
+        labs,
+        scale_color_manual,
+        scale_fill_manual,
+        scale_x_continuous,
+        scale_y_reverse,
+        theme_minimal,
+    )
+    from plotnine import theme as p9_theme  # team_tiers takes a `theme` argument
+    from plotnine._utils import remove_missing
+    from plotnine.geoms import geom_hline, geom_vline
+    from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
-from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
+from sdvplot._types import Which
 from sdvplot.matplotlib import (
     _add_title_image,
     _align,
@@ -455,7 +458,7 @@ def add_logos(
         y: The points' y positions, the same length as ``x``.
         teams: The team for each point, in any id system ``resolve()`` understands.
         league: The SDV league key, e.g. "nfl".
-        season: One season for every point.
+        season: One season, or one per point, to pick each team's mark for that era.
         height: The logo height as a fraction of the panel height, in (0, 1].
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
@@ -510,7 +513,7 @@ def add_wordmarks(
         y: The points' y positions, the same length as ``x``.
         teams: The team for each point.
         league: The SDV league key, e.g. "nfl".
-        season: One season for every point.
+        season: One season, or one per point, to pick each team's wordmark for that era.
         height: The wordmark height as a fraction of the panel height, in (0, 1].
         alpha: Opacity, 0 to 1.
         variant: "default", "dark", or a named variant from ``marks()``.
@@ -733,7 +736,8 @@ def title_image(
         ``title_image`` added to the same plot replaces the first.
 
     Raises:
-        ValueError: If ``side`` is not "left"/"right" or ``height`` is not a positive number.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        ValueError: If ``side`` is not "left"/"right".
         OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:
@@ -850,7 +854,7 @@ def team_tiers(
     )
 
 
-def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
+def _scale(kind: Any, league: str, which: Which, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
     _column(which)  # "primary" / "secondary", else ValueError now rather than when the plot is drawn
 
     class _TeamScale(kind):
@@ -868,7 +872,7 @@ def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwarg
 
 
 def scale_color_sdv(
-    league: str, which: str = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
+    league: str, which: Which = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
 ) -> Any:
     """A discrete color scale that maps each team value (any id system) to its team color.
 
@@ -903,7 +907,7 @@ def scale_color_sdv(
 
 
 def scale_fill_sdv(
-    league: str, which: str = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
+    league: str, which: Which = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
 ) -> Any:
     """A discrete fill scale that maps each team value (any id system) to its team color.
 

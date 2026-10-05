@@ -37,7 +37,7 @@ It never picks one for you: similar names can be different teams ("Bethany (KS)"
 
 ## Raises
 
-- `ValueError`: If ``league`` is unknown.
+- `InputError`: (a ValueError) If ``league`` is unknown, or ``n`` is not an int of at least 1.
 
 ## Example
 

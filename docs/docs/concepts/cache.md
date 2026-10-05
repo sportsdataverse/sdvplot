@@ -41,7 +41,7 @@ row whose `archive_url` is not one is dropped, and an nflverse headshot that is 
 player gets their ESPN headshot), each with one `SdvplotWarning`.
 
 Images are named by their sha256. sdvplot downloads each one once, checks the hash and keeps it. A file whose hash does
-not match is not cached.
+not match is not cached: sdvplot raises `IntegrityError`.
 
 ## Working offline
 
@@ -53,6 +53,10 @@ not match is not cached.
   OfflineError: could not download <url> and there is no cached copy; connect once, or point SDVPLOT_CACHE_DIR at a
   directory that has one (...)
   ```
+
+  When the server answered with an error status (a 4xx or 5xx response), the error is a `DownloadError`, an
+  `OfflineError` that is also an `OSError`. `except sdvplot.OfflineError` catches every case; `except
+  sdvplot.SdvplotError` catches every error sdvplot raises.
 
 To work offline, call the functions you need once while connected, or copy a filled cache directory to the machine and
 point `SDVPLOT_CACHE_DIR` at it.

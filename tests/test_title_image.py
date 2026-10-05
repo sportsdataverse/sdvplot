@@ -16,7 +16,7 @@ from PIL import Image  # noqa: E402
 
 import sdvplot.matplotlib as smpl  # noqa: E402
 from sdvplot import _cache  # noqa: E402
-from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot._errors import InputError, SdvplotWarning  # noqa: E402
 from tests.conftest import seed_image  # noqa: E402
 
 URL = "https://example.com/banner.png"
@@ -111,9 +111,10 @@ def test_bad_side_or_height_raise(mark_images):
     _, ax = plt.subplots()
     with pytest.raises(ValueError, match="side"):
         smpl.title_image(ax, "LV", league="nfl", side="top")
-    for bad in (0, -3, float("nan"), "15"):
-        with pytest.raises(ValueError, match="height"):
+    for bad in (0, 0.1, 0.99, -3, float("nan"), "15"):  # S1: under 1 point is a typo for a fraction, not a size
+        with pytest.raises(InputError, match="height is the image height in points"):
             smpl.title_image(ax, "LV", league="nfl", height=bad)
+    smpl.title_image(ax, "LV", league="nfl", height=1)
 
 
 def test_an_empty_title_still_places_the_image(mark_images):
@@ -168,8 +169,9 @@ def test_plotnine_title_image_checks_arguments_and_resolves_when_built(mark_imag
     _, sp9 = _sp9()
     with pytest.raises(ValueError, match="side"):
         sp9.title_image("LV", league="nfl", side="top")
-    with pytest.raises(ValueError, match="height"):
-        sp9.title_image("LV", league="nfl", height=0)
+    for bad in (0, 0.1):
+        with pytest.raises(InputError, match="height is the image height in points"):
+            sp9.title_image("LV", league="nfl", height=bad)
     with pytest.warns(SdvplotWarning) as rec:
         sp9.title_image("XXX", "No logo", league="nfl")
     assert len(rec) == 1

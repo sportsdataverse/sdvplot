@@ -13,9 +13,11 @@ import numbers
 import re
 from typing import Any
 
-import altair as alt
+from sdvplot._errors import UnsupportedTargetError, requires_extra
 
-from sdvplot._errors import UnsupportedTargetError
+with requires_extra("altair"):
+    import altair as alt
+
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._web import aspect, axis_letter, image_sources
 

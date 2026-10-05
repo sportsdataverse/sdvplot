@@ -123,3 +123,32 @@ def test_team_color_bg_is_a_translucent_team_fill(kind):
         reactable_sdv_team_color_bg(df, "team", league="nfl", alpha=2)
     with pytest.raises(ValueError, match="'club' not found"):
         reactable_sdv_team_color_bg(df, "club", league="nfl")
+
+
+# S11: the helpers that resolve teams take resolve()'s id_system and strict ("LV" is no "name": strict raises only if
+# both arrive at the resolver). The cell functions run when the Reactable is built.
+def test_image_columns_pass_id_system_and_strict_to_the_resolver(manifest):
+    for helper in (reactable_sdv_logos, reactable_sdv_wordmarks):
+        col = helper(league="nfl", id="team", id_system="name", strict=True)
+        with pytest.raises(sdvplot.UnresolvedTeamError, match="'LV'"):
+            col.cell(CellInfo("LV", 0, "team"))
+        assert "<img" in helper(league="nfl", id="team", id_system="espn_abbr", strict=True).cell(
+            CellInfo("LV", 0, "team")
+        )
+
+
+def test_cols_label_and_team_colors_pass_id_system_and_strict(manifest):
+    df = pd.DataFrame({"team": ["LV"], "LV": [1]})
+    for call in (
+        lambda **kw: reactable_sdv_cols_label(df[["LV"]], league="nfl", **kw),
+        lambda **kw: reactable_sdv_team_color_bar(df, "team", league="nfl", id="LV", **kw),
+        lambda **kw: reactable_sdv_team_color_bg(df, "team", league="nfl", id="LV", **kw),
+    ):
+        with pytest.raises(sdvplot.UnresolvedTeamError, match="'LV'"):
+            call(id_system="name", strict=True)
+        call(id_system="espn_abbr", strict=True)
+
+
+def test_cols_label_rejects_an_unknown_mark_type_with_an_input_error():  # N2
+    with pytest.raises(sdvplot.InputError, match="mark_type must be 'logo' or 'wordmark'"):
+        reactable_sdv_cols_label(pd.DataFrame({"LV": [1]}), league="nfl", mark_type="x")

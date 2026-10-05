@@ -6,6 +6,7 @@ import collections
 import contextlib
 import hashlib
 import io
+import numbers
 import re
 import threading
 from pathlib import Path
@@ -14,18 +15,18 @@ from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import InputError, OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._errors import InputError, IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
-from sdvplot._types import MarkType
+from sdvplot._types import IdSystem, MarkType
 
 if TYPE_CHECKING:
     from PIL import Image
 
 DEFAULT_SVG_SIZE = 512
-# An SVG is rasterized at most MAX_SIZE pixels on its longest side: 4096 x 4096 RGBA is 64 MiB, DECODED_BUDGET // 4,
-# the largest image the decoded cache keeps. resvg allocates the canvas before Pillow's bomb guard sees it, so the
-# size and the aspect ratio are checked before rendering.
+# The largest longest side an image is rendered at: 4096 x 4096 RGBA is 64 MiB, DECODED_BUDGET // 4, the largest image
+# the decoded cache keeps. resvg allocates the whole canvas before Pillow's bomb guard sees it (a far larger one aborted
+# the process), so an SVG's size and aspect ratio are checked before rendering.
 MAX_SIZE = 4096
 MAX_ASPECT = 64  # an SVG more than 64 times longer than it is wide is refused
 _PROBE = 1024  # the box of the probe render that measures an SVG's aspect ratio
@@ -97,6 +98,8 @@ def logo_image(
     variant: str = "default",
     mark_type: MarkType = "logo",
     size: int | None = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> Image.Image | None:
     """The team's mark as a PIL image (downloaded once, then cached).
 
@@ -106,7 +109,11 @@ def logo_image(
         season: A season year; None picks the current mark.
         variant: "default", "dark", or a named variant from ``marks()``.
         mark_type: "logo" or "wordmark".
-        size: The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512).
+        size: The longest side in pixels, an int from 1 to 4096. Rasters are only scaled down; SVGs are rasterized at
+            it (default 512).
+        id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when the team does not resolve.
 
     Returns:
         PIL.Image.Image | None: The image, or None when the team does not resolve or has no mark.
@@ -115,17 +122,19 @@ def logo_image(
         TypeError: If ``team`` is not a single value.
         OptionalDependencyError: If the mark is an SVG and the ``svg`` extra is not installed.
         OfflineError: If the download fails and no cached copy exists.
+        DownloadError: (an OfflineError and an OSError) If the CDN answers with an error status (a 4xx or 5xx
+            response) and no cached copy exists.
+        IntegrityError: (a DownloadError) If the download does not match the manifest's sha256, or is not an image
+            PIL can decode.
         UnsafeDownloadError: (an OSError) If the download is refused: larger than the byte cap, past the deadline, or
             redirected away from https.
         UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for the mark would put the file
             outside the cache directory.
-        requests.HTTPError: If the CDN refuses the file (a 4xx response).
-        OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
-            (``PIL.UnidentifiedImageError`` subclasses OSError).
-        InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
-            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
-        ValueError: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide, or
-            ``size`` is over 4096 for an SVG.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark",
+            ``variant`` is a name no mark in the archive has, ``season`` is not a year or is outside the seasons
+            sdvplot knows for the league, or ``size`` is not an int from 1 to 4096.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and the team does not resolve.
+        ValueError: If an SVG cannot be parsed; an ``InputError`` if it is more than 64 times longer than it is wide.
 
     Example:
         ::
@@ -141,7 +150,11 @@ def logo_image(
     """
     _check_mark_type(mark_type)
     _check_variant(variant, league)
-    team_id = resolve(one_team(team, "logo_image"), league, season=season)
+    if size is not None and (
+        isinstance(size, bool) or not isinstance(size, numbers.Integral) or not 1 <= size <= MAX_SIZE
+    ):
+        raise InputError(f"size is the longest side in pixels, an int from 1 to {MAX_SIZE}, got {size!r}")
+    team_id = resolve(one_team(team, "logo_image"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)
@@ -166,7 +179,10 @@ def _decode_mark(sha: str, ext: str, url: str, size: int | None) -> Image.Image:
     path = mark_file({"sha256": sha, "ext": ext, "archive_url": url})
     if ext == "svg":
         return _rasterize(path, sha, size or DEFAULT_SVG_SIZE, ext)
-    img: Image.Image = Image.open(path)
+    try:
+        img: Image.Image = Image.open(path)
+    except Image.UnidentifiedImageError as e:  # the archive's own file, sha-checked: the archive is wrong
+        raise IntegrityError(f"{url}: not an image PIL can decode ({e})") from e
     img.load()
     if size is not None:
         img = img.copy()

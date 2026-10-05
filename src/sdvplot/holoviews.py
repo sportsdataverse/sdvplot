@@ -8,10 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
-import holoviews as hv
+from sdvplot._errors import UnsupportedTargetError, requires_extra
+
+with requires_extra("holoviews"):
+    import holoviews as hv
 
 from sdvplot import bokeh as _bokeh
-from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._web import image_sources
 

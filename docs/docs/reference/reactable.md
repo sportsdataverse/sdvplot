@@ -30,6 +30,8 @@ reactable_sdv_cols_label(
     height: Any = 30,
     season: Any = None,
     mark_type: str = 'logo',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     **column_kwargs: Any,
 ) -> list[reactable.models.Column]
 ```
@@ -50,6 +52,8 @@ the team's mark.
 | `height` | `Any` | The image height in pixels. |
 | `season` | `Any` | One season whose marks to show; None for today's. |
 | `mark_type` | `str` | "logo" or "wordmark". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the column names, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a column name does not resolve. |
 | `**column_kwargs` | `Any` | Passed to every ``reactable.Column``. |
 
 ### Returns
@@ -58,7 +62,9 @@ the team's mark.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``mark_type`` is not "logo"/"wordmark", or ``season`` is not one year.
+- `InputError`: (a ValueError) If ``mark_type`` is not "logo"/"wordmark".
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a column name does not resolve.
 
 ### Example
 
@@ -154,6 +160,8 @@ reactable_sdv_logos(
     default_img: str | None = None,
     season: Any = None,
     include_name: bool = False,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     **column_kwargs: Any,
 ) -> reactable.models.Column
 ```
@@ -172,6 +180,8 @@ A reactable column that shows each cell's team as its logo.
 | `default_img` | `str \| None` | An image URL for values that do not resolve; None keeps their text. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
 | `include_name` | `bool` | Keep the cell's text after the logo. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the column's values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError (when the ``Reactable`` is built) instead of warning when a value does not resolve. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``: ``id`` (the data column, required by reactable), ``name``, ``width``, ... |
 
 ### Returns
@@ -180,7 +190,8 @@ A reactable column that shows each cell's team as its logo.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
 
 ### Example
 
@@ -214,9 +225,11 @@ reactable_sdv_team_color_bar(
     team_col: str,
     *,
     league: str,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     max_value: float | None = None,
     na_color: str = '#b3b3b3',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     **column_kwargs: Any,
 ) -> reactable.models.Column
 ```
@@ -232,9 +245,11 @@ A reactable column whose cells hold a bar in the row's team color, as long as th
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (each row's team is read from it). |
 | `team_col` | `str` | The column of ``data`` holding the teams. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary" team color. |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `max_value` | `float \| None` | The value that fills the whole cell; None for the column's maximum. |
 | `na_color` | `str` | The CSS color for teams that do not resolve or have no color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``; ``id`` names the styled column. |
 
 ### Returns
@@ -243,7 +258,8 @@ A reactable column whose cells hold a bar in the row's team color, as long as th
 
 ### Raises
 
-- `ValueError`: If ``team_col`` is not a column of ``data``, or ``which`` is not "primary"/"secondary".
+- `ValueError`: If ``team_col`` is not a column of ``data``, ``which`` is not "primary"/"secondary", or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -277,9 +293,11 @@ reactable_sdv_team_color_bg(
     team_col: str,
     *,
     league: str,
-    which: str = 'primary',
+    which: Literal['primary', 'secondary'] = 'primary',
     alpha: float = 0.15,
     na_color: str = '#b3b3b3',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     **column_kwargs: Any,
 ) -> reactable.models.Column
 ```
@@ -295,9 +313,11 @@ A reactable column whose cells are filled with the row's team color, mostly tran
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (each row's team is read from it). |
 | `team_col` | `str` | The column of ``data`` holding the teams. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `which` | `str` | "primary" or "secondary" team color. |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `alpha` | `float` | The fill's opacity, 0 to 1. |
 | `na_color` | `str` | The hex color for teams that do not resolve or have no color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``; ``id`` names the styled column. |
 
 ### Returns
@@ -306,7 +326,8 @@ A reactable column whose cells are filled with the row's team color, mostly tran
 
 ### Raises
 
-- `ValueError`: If ``team_col`` is not a column of ``data``, ``which`` is not "primary"/"secondary", ``alpha`` is outside [0, 1], or ``na_color`` is not a hex color.
+- `ValueError`: If ``team_col`` is not a column of ``data``, ``which`` is not "primary"/"secondary", ``alpha`` is outside [0, 1], ``na_color`` is not a hex color, or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -343,6 +364,8 @@ reactable_sdv_wordmarks(
     default_img: str | None = None,
     season: Any = None,
     include_name: bool = False,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
     **column_kwargs: Any,
 ) -> reactable.models.Column
 ```
@@ -361,6 +384,8 @@ A reactable column that shows each cell's team as its wordmark.
 | `default_img` | `str \| None` | An image URL for values that do not resolve; None keeps their text. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
 | `include_name` | `bool` | Keep the cell's text after the wordmark. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the column's values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError (when the ``Reactable`` is built) instead of warning when a value does not resolve. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column`` (``id`` is required by reactable). |
 
 ### Returns
@@ -369,7 +394,8 @@ A reactable column that shows each cell's team as its wordmark.
 
 ### Raises
 
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, or ``season`` is not one year.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve, when the ``Reactable`` is built.
 
 ### Example
 

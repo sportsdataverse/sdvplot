@@ -331,3 +331,15 @@ def test_add_images_warns_exactly_once_per_skip_reason_and_checks_height_at_the_
     ]
     with pytest.raises(ValueError, match="fraction of the plot height"):
         smpl.add_images(object(), [], [], [], height=2)  # before the target or the points are looked at
+
+
+def test_a_very_wide_mark_is_decoded_within_max_size(monkeypatch):
+    """512 px tall is asked for, but never a longest side past MAX_SIZE (a wordmark wider than 8:1)."""
+    from sdvplot import matplotlib as smpl
+    from sdvplot._images import MAX_SIZE
+
+    seen = []
+    monkeypatch.setattr(smpl, "load_mark_image", lambda mark, size=None: seen.append(size) or Image.new("RGBA", (8, 1)))
+    p = type("P", (), {"mark": {"sha256": "0" * 64}, "url": None, "aspect": 20.0})()
+    smpl._image(p)
+    assert seen == [MAX_SIZE]

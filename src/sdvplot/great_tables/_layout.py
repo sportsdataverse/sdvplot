@@ -111,6 +111,7 @@ _RANK_PALETTE = ("#3D8B6E", "#9DC5A7", "#EDE0CC", "#DB9070", "#BE4D3A")
 def gt_title_header(
     gt: GT,
     title: str,
+    *,
     subtitle: str | None = None,
     kicker: str | None = None,
     date: datetime.date | str | None = None,
@@ -184,6 +185,7 @@ def gt_title_header(
 def gt_set_font(
     gt: GT,
     font_family: str,
+    *,
     from_google_font: bool = True,
     weight: str | int | None = None,
     style: str | None = None,
@@ -259,6 +261,7 @@ def _watermark_svg(text: str, color: str, opacity: float, angle: float, font: st
 def gt_watermark(
     gt: GT,
     text: str | None = None,
+    *,
     image: str | Path | None = None,
     opacity: float = 0.06,
     size: str = "60%",
@@ -327,6 +330,7 @@ def gt_watermark(
 def gt_legend_continuous(
     gt: GT,
     columns: Any = None,
+    *,
     palette: Sequence[str] | None = None,
     domain: Sequence[float] | None = None,
     reverse: bool | None = None,
@@ -505,6 +509,7 @@ def gt_legend_continuous(
 def gt_legend_discrete(
     gt: GT,
     key_info: Any = None,
+    *,
     heading: str | None = None,
     subtitle: str | None = None,
     label_placement: str = "outside",
@@ -647,6 +652,7 @@ def gt_legend_discrete(
 def gt_percentile_bar(
     gt: GT,
     columns: Any,
+    *,
     rows: Any = None,
     domain: Sequence[float] = (0, 100),
     scale: str | float = "auto",
@@ -800,6 +806,7 @@ def gt_tiers(
     gt: GT,
     levels: Mapping[str, str] | Sequence[str],
     colors: Sequence[str] | None = None,
+    *,
     style: str = "dark",
     img_height: str = "55px",
     tier_column: str = "tier",
@@ -895,6 +902,7 @@ def _append(text: str, suffix: str) -> str:
 def gt_spotlight(
     gt: GT,
     rows: Any,
+    *,
     columns: Any = None,
     fill: str | None = None,
     text_color: str | None = None,
@@ -983,6 +991,7 @@ def gt_spotlight(
 def gt_row_accent(
     gt: GT,
     column: Any,
+    *,
     palette: Mapping[str, str] | Sequence[str] | None = None,
     rows: Any = None,
     width: float = 4,
@@ -1089,6 +1098,7 @@ def _limits(method: str, values: list[float], threshold: float, bounds: Sequence
 def gt_outliers(
     gt: GT,
     columns: Any,
+    *,
     method: str = "iqr",
     threshold: float | None = None,
     bounds: Sequence[float | None] | None = None,
@@ -1196,6 +1206,7 @@ def gt_significance(
     gt: GT,
     columns: Any,
     p_columns: Any,
+    *,
     levels: Sequence[float] = (0.01, 0.05, 0.1),
     symbols: Sequence[str] = ("***", "**", "*"),
     superscript: bool = True,
@@ -1274,6 +1285,7 @@ def gt_significance(
 def gt_marginalia(
     gt: GT,
     columns: Any,
+    *,
     width: float | str | None = 220,
     label: str | None = "",
     italic: bool = True,
@@ -1351,6 +1363,7 @@ _SCALE_NAMES = {
 def gt_scale_note(
     gt: GT,
     columns: Any,
+    *,
     divisor: float = 1000,
     note: str | None = None,
     where: str = "source_note",
@@ -1456,6 +1469,7 @@ def _social_icon(key: str, fill: str, height: str) -> str:
 def gt_social_tag(
     gt: GT,
     accounts: Mapping[str, str],
+    *,
     caption: str | None = None,
     stack: bool = False,
     separator: str = " | ",
@@ -1565,6 +1579,7 @@ def _side_by_side(parts: list[Any]) -> Any:
 
 def gt_snake(
     gt: GT,
+    *,
     n_cols: int = 2,
     rows_per_col: int | None = None,
     gap: float = 20,

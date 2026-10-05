@@ -8,7 +8,9 @@ from sdvplot._colors import palette, team_colors
 from sdvplot._court import court_coords
 from sdvplot._dispatch import add_headshots, add_logos, add_wordmarks, axis_logos
 from sdvplot._errors import (
+    DownloadError,
     InputError,
+    IntegrityError,
     OfflineError,
     OptionalDependencyError,
     SdvplotDeprecationWarning,
@@ -33,7 +35,9 @@ except _PackageNotFoundError:  # running from a source tree without installation
     __version__ = "0.0.0"
 
 __all__ = [
+    "DownloadError",
     "InputError",
+    "IntegrityError",
     "OfflineError",
     "OptionalDependencyError",
     "SdvplotDeprecationWarning",

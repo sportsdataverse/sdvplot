@@ -12,18 +12,20 @@ import sys
 from collections.abc import Callable
 from typing import Any, Literal
 
-import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-from matplotlib.text import Text
-from matplotlib.ticker import FixedFormatter, FixedLocator
-from matplotlib.transforms import Affine2D, Bbox, Transform
-from PIL import Image
+from sdvplot._errors import InputError, OfflineError, UnsupportedTargetError, requires_extra, warn
+
+with requires_extra("mpl"):
+    import numpy as np
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+    from matplotlib.text import Text
+    from matplotlib.ticker import FixedFormatter, FixedLocator
+    from matplotlib.transforms import Affine2D, Bbox, Transform
+    from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._errors import OfflineError, UnsupportedTargetError, warn
-from sdvplot._images import load_mark_image, load_path_image, load_url_image, logo_image
+from sdvplot._images import MAX_SIZE, load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -84,8 +86,9 @@ def _target_axes(target: Any) -> Axes:
 def _image(p: Placement) -> np.ndarray:
     if p.mark is None:
         return _rgba_array(load_url_image(p.url))
-    # decoded no bigger than drawn: half the archive is 4096 px (64 MiB each decoded); a wide mark keeps its full height
-    size = round(_MAX_IMAGE_HEIGHT * max(1.0, p.aspect or 1.0))
+    # decoded no bigger than drawn: half the archive is 4096 px (64 MiB each decoded); a wide mark keeps its full
+    # height, up to the longest side sdvplot renders (a mark wider than 8:1 is drawn from a 4096 px decode)
+    size = min(MAX_SIZE, round(_MAX_IMAGE_HEIGHT * max(1.0, p.aspect or 1.0)))
     return _rgba_array(load_mark_image(p.mark, size))
 
 
@@ -200,6 +203,9 @@ def add_logos(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``teams`` differ in length, the target
             has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -267,6 +273,9 @@ def add_wordmarks(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
             several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -321,6 +330,9 @@ def add_headshots(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, the inputs differ in length, the target has
             several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -411,6 +423,7 @@ def add_images(
     Raises:
         ValueError: If ``height`` or ``alpha`` is out of range, ``x``/``y``/``paths`` differ in length, the target
             has several Axes, or the target is a Cartopy GeoAxes and ``transform`` is None.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
 
     Example:
         ::
@@ -484,6 +497,9 @@ def axis_logos(
 
     Raises:
         ValueError: If ``axis`` is not "x"/"y", ``height`` is out of range, or the target has several Axes.
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
+        OfflineError: If a mark's image is neither cached nor downloadable (a DownloadError or IntegrityError when
+            the CDN refuses it or sends the wrong file).
 
     Example:
         ::
@@ -611,11 +627,12 @@ class _TitleImage(AnnotationBbox):
 
 
 def _check_title_image(side: Any, height: Any) -> float:
-    """``height`` as a float, or ValueError unless ``side`` is "left"/"right" and ``height`` is a positive number."""
+    """``height`` as a float, or ValueError unless ``side`` is "left"/"right" (InputError unless ``height`` is a number
+    of points of at least 1)."""
     if side not in ("left", "right"):
         raise ValueError(f"side must be 'left' or 'right', got {side!r}")
-    if not _real(height) or height <= 0:
-        raise ValueError(f"height is the image height in points, > 0, got {height!r}")
+    if not _real(height) or height < 1:
+        raise InputError(f"height is the image height in points (1/72 inch), at least 1, got {height!r}")
     return float(height)
 
 
@@ -687,8 +704,8 @@ def title_image(
         path that cannot be read gives one SdvplotWarning and the title without it.
 
     Raises:
-        ValueError: If ``side`` is not "left"/"right", ``height`` is not a positive number, or the target has several
-            Axes.
+        InputError: (a ValueError) If ``height`` is not a number of points of at least 1.
+        ValueError: If ``side`` is not "left"/"right", or the target has several Axes.
         OfflineError: If a team's logo cannot be downloaded and is not cached (as in ``add_logos``).
 
     Example:

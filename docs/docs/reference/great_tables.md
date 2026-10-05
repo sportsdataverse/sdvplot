@@ -157,6 +157,8 @@ add_logos(
     locations: Any = None,
     include_name: bool = False,
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -179,6 +181,8 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `include_name` | `bool` | Keep the cell's text after the logo. |
 | `season` | `Any` | One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for today's. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
 
@@ -187,7 +191,8 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ### Example
 
@@ -225,6 +230,8 @@ add_wordmarks(
     height: Any = 30,
     locations: Any = None,
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -242,6 +249,8 @@ Show each cell's team as its wordmark in a great_tables table.
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
 
@@ -250,7 +259,8 @@ Show each cell's team as its wordmark in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ### Example
 
@@ -328,6 +338,7 @@ except TypeError:
 ```python
 gt_538_caption(
     gt: great_tables.gt.GT,
+    *,
     top_caption: str | None = None,
     bottom_caption: str | None = None,
     rule_color: str | None = None,
@@ -446,6 +457,7 @@ gt_bold_rows(GT(df), rows=pl.col("mpg") > 20, highlight_color="#FFF3B0")
 gt_border_bars_bottom(
     gt: great_tables.gt.GT,
     colors: str | collections.abc.Sequence[str],
+    *,
     bar_height: float = 10,
     bar_width: str = '100%',
     bar_align: str = 'center',
@@ -531,6 +543,7 @@ gt_border_bars_bottom(GT(df), "#22223B", text="Source: ESPN", bar_height=28)
 gt_border_bars_top(
     gt: great_tables.gt.GT,
     colors: str | collections.abc.Sequence[str],
+    *,
     bar_height: float = 10,
     bar_width: str = '100%',
     bar_align: str = 'center',
@@ -673,6 +686,7 @@ gt_border_grid(GT(df), color="#BBBBBB", weight=2, include_labels=True)
 gt_color_pills(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     rows: Any = None,
     palette: collections.abc.Sequence[str] = ('#C84630', '#5DA271'),
     fill_type: str = 'continuous',
@@ -762,6 +776,7 @@ gt_color_pills(GT(df), "hp", fill_type="rank", domain=(1, 6), digits=0)
 gt_color_ranks(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     rows: Any = None,
     palette: collections.abc.Sequence[str] = ('#3D8B6E', '#9DC5A7', '#EDE0CC', '#DB9070', '#BE4D3A'),
     domain: collections.abc.Sequence[float] | None = None,
@@ -830,6 +845,7 @@ gt_color_ranks(GT(ranked), ["off_rank", "def_rank"])
 gt_color_results(
     gt: great_tables.gt.GT,
     result_column: Any = 'result',
+    *,
     win_color: str = '#5DA271',
     loss_color: str = '#C84630',
     tie_color: str | None = None,
@@ -892,6 +908,7 @@ gt_color_results(GT(games), result_column="result")
 ```python
 gt_column_subheaders(
     gt: great_tables.gt.GT,
+    *,
     heading_color: str = 'black',
     subtitle_color: str = '#808080',
     heading_weight: str = 'bold',
@@ -960,6 +977,7 @@ gt_column_subheaders(GT(df), hp={"heading": "Horsepower", "subtitle": "HP"}, hea
 gt_cutline(
     gt: great_tables.gt.GT,
     after: int | collections.abc.Sequence[int],
+    *,
     label: str | collections.abc.Sequence[str | None] | None = None,
     color: str = '#A6081A',
     weight: float = 2,
@@ -1033,6 +1051,7 @@ gt_delta(
     gt: great_tables.gt.GT,
     from_: Any,
     to: Any,
+    *,
     column_label: str = 'Change',
     percent: bool = False,
     decimals: int = 1,
@@ -1158,6 +1177,7 @@ gt_fmt_rank(GT(standings), "place", superscript=False)
 gt_fmt_tally(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     separator: str = '-',
     label: str | None = None,
     share: bool = False,
@@ -1229,6 +1249,7 @@ gt_fmt_tally(GT(league), ["w", "d", "l"], label="W-D-L")
 ```python
 gt_grid(
     tables: collections.abc.Sequence[great_tables.gt.GT] | collections.abc.Mapping[Any, great_tables.gt.GT] | None = None,
+    *,
     ncol: int = 2,
     labels: Any = None,
     label_style: collections.abc.Mapping[str, Any] | None = None,
@@ -1375,6 +1396,7 @@ gt_highlight_cells(
     gt: great_tables.gt.GT,
     columns: Any,
     condition: collections.abc.Callable[[Any], Any] | Any,
+    *,
     fill: str = '#FFF3B0',
     text_color: str | None = None,
     bold: bool = False,
@@ -1434,6 +1456,7 @@ gt_highlight_cells(GT(cor_df, rowname_col="var"), ["mpg", "hp"], lambda s: s > 0
 gt_highlight_na(
     gt: great_tables.gt.GT,
     columns: Any = None,
+    *,
     fill: str | None = '#F0F0F0',
     text_color: str | None = None,
     bold: bool = False,
@@ -1499,6 +1522,7 @@ gt_highlight_na(GT(df), ["ozone", "solar"], missing_text="not recorded", italic=
 gt_indicator_boxes(
     gt: great_tables.gt.GT,
     columns: Any = None,
+    *,
     key_columns: Any = None,
     indicator_vals: collections.abc.Sequence[float] = (0, 1),
     indicator_rule: collections.abc.Callable[..., Any] | None = None,
@@ -1582,6 +1606,7 @@ gt_indicator_boxes(GT(roster), key_columns="player", show_text=True, border_colo
 gt_legend_continuous(
     gt: great_tables.gt.GT,
     columns: Any = None,
+    *,
     palette: collections.abc.Sequence[str] | None = None,
     domain: collections.abc.Sequence[float] | None = None,
     reverse: bool | None = None,
@@ -1681,6 +1706,7 @@ gt = gt_legend_continuous(gt, title="Percentile")   # palette and domain come fr
 gt_legend_discrete(
     gt: great_tables.gt.GT,
     key_info: Any = None,
+    *,
     heading: str | None = None,
     subtitle: str | None = None,
     label_placement: str = 'outside',
@@ -1759,6 +1785,7 @@ gt = gt_legend_discrete(GT(pl.DataFrame({"game": ["@ KC"]})), {"Home": "#cce7f5"
 gt_marginalia(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     width: float | str | None = 220,
     label: str | None = '',
     italic: bool = True,
@@ -1828,6 +1855,8 @@ gt_merge_stack_team_color(
     font_size_top: float = 14,
     font_size_bottom: float = 12,
     color: str = 'black',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -1847,6 +1876,8 @@ Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom
 | `font_size_top` | `float` | The top line's font size in pixels. |
 | `font_size_bottom` | `float` | The bottom line's font size in pixels. |
 | `color` | `str` | The top line's CSS color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 
 ### Returns
 
@@ -1855,7 +1886,8 @@ Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``id_system`` is unknown.
+- `UnresolvedTeamError`: If ``strict=True`` and a team does not resolve.
 
 ### Example
 
@@ -1881,6 +1913,7 @@ gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl")
 gt_outliers(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     method: str = 'iqr',
     threshold: float | None = None,
     bounds: collections.abc.Sequence[float | None] | None = None,
@@ -1945,6 +1978,7 @@ gt = gt_outliers(GT(df), "pts", symbol="†", note=True)
 gt_percentile_bar(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     rows: Any = None,
     domain: collections.abc.Sequence[float] = (0, 100),
     scale: str | float = 'auto',
@@ -2032,6 +2066,7 @@ gt = gt_percentile_bar(GT(df), "pct", na_label="Not qualified")
 gt_row_accent(
     gt: great_tables.gt.GT,
     column: Any,
+    *,
     palette: collections.abc.Mapping[str, str] | collections.abc.Sequence[str] | None = None,
     rows: Any = None,
     width: float = 4,
@@ -2095,6 +2130,7 @@ gt_save_batch(
     group: str,
     fn: collections.abc.Callable[[Any, Any], great_tables.gt.GT],
     file: str,
+    *,
     dir: str | os.PathLike[str],
     match_width: bool = True,
     bg: str = 'white',
@@ -2165,6 +2201,7 @@ gt_save_batch(cars, "cyl", build, "cars-{group}.png", dir="out")
 gt_save_crop(
     data: great_tables.gt.GT,
     file: str | os.PathLike[str] | None = None,
+    *,
     bg: str = 'white',
     whitespace: int = 50,
     zoom: float = 2,
@@ -2232,6 +2269,7 @@ gt_save_crop(GT(df), "table.png", bg="#FBFAF7", width=900)
 gt_scale_note(
     gt: great_tables.gt.GT,
     columns: Any,
+    *,
     divisor: float = 1000,
     note: str | None = None,
     where: str = 'source_note',
@@ -2295,7 +2333,8 @@ gt_sdv_cols_label(
     height: Any = 30,
     season: Any = None,
     mark_type: str = 'logo',
-    id_system: str = 'espn',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] | Literal['espn', 'gsis'] | NoneType = None,
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -2313,7 +2352,8 @@ Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...
 | `height` | `Any` | The image height in pixels. |
 | `season` | `Any` | One season whose marks to show; None for today's. |
 | `mark_type` | `str` | "logo", "wordmark", or "headshot" (the column names are player ids). |
-| `id_system` | `str` | For ``mark_type="headshot"``: "espn" or "gsis", as in ``headshot_url``. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] \| Literal['espn', 'gsis'] \| NoneType` | The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means "auto"; NHL stats ids need "nhl_id"), for headshots "espn" or "gsis" as in ``headshot_url`` (None means "espn"). |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team. |
 
 ### Returns
 
@@ -2322,7 +2362,9 @@ Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``mark_type`` is unknown, or ``season`` is not one year.
+- `InputError`: (a ValueError) If ``mark_type`` is not "logo", "wordmark" or "headshot".
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``id_system`` is unknown, or ``season`` is not one year.
+- `UnresolvedTeamError`: If ``strict=True`` and a column name does not resolve.
 
 ### Example
 
@@ -2416,6 +2458,8 @@ gt_sdv_logos(
     locations: Any = None,
     include_name: bool = False,
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -2438,6 +2482,8 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `include_name` | `bool` | Keep the cell's text after the logo. |
 | `season` | `Any` | One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for today's. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
 
@@ -2446,7 +2492,8 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ### Example
 
@@ -2484,6 +2531,8 @@ gt_sdv_wordmarks(
     height: Any = 30,
     locations: Any = None,
     season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
 ) -> great_tables.gt.GT
 ```
 
@@ -2501,6 +2550,8 @@ Show each cell's team as its wordmark in a great_tables table.
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
 
@@ -2509,7 +2560,8 @@ Show each cell's team as its wordmark in a great_tables table.
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
-- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `ValueError`: If ``height`` is not a number of pixels of at least 1, ``season`` is not one year, ``id_system`` is unknown, ``columns`` names a column the table lacks, or ``locations`` holds another location.
+- `UnresolvedTeamError`: If ``strict=True`` and a value does not resolve.
 
 ### Example
 
@@ -2541,6 +2593,7 @@ gt_sdv_wordmarks(GT(df), "team", league="nfl")
 gt_set_font(
     gt: great_tables.gt.GT,
     font_family: str,
+    *,
     from_google_font: bool = True,
     weight: str | int | None = None,
     style: str | None = None,
@@ -2592,6 +2645,7 @@ gt_significance(
     gt: great_tables.gt.GT,
     columns: Any,
     p_columns: Any,
+    *,
     levels: collections.abc.Sequence[float] = (0.01, 0.05, 0.1),
     symbols: collections.abc.Sequence[str] = ('***', '**', '*'),
     superscript: bool = True,
@@ -2655,6 +2709,7 @@ gt = gt_significance(GT(df).fmt_number("est"), "est", "p")
 ```python
 gt_snake(
     gt: great_tables.gt.GT,
+    *,
     n_cols: int = 2,
     rows_per_col: int | None = None,
     gap: float = 20,
@@ -2763,6 +2818,7 @@ wide = gt_snake_align(pl.DataFrame({"hot": [True, False, True]}), n_cols=2)   # 
 gt_social_crop(
     data: great_tables.gt.GT,
     file: str | os.PathLike[str] | None = None,
+    *,
     aspect_ratio: str | float = '1:1',
     bg: str = 'white',
     whitespace: int = 60,
@@ -2833,6 +2889,7 @@ gt_social_crop(GT(df), "post.png", aspect_ratio="4:5", bg="#0C0D10")
 gt_social_tag(
     gt: great_tables.gt.GT,
     accounts: collections.abc.Mapping[str, str],
+    *,
     caption: str | None = None,
     stack: bool = False,
     separator: str = ' | ',
@@ -2896,6 +2953,7 @@ gt = gt_social_tag(GT(pl.DataFrame({"team": ["LV"]})), {"gh": "sportsdataverse",
 gt_spotlight(
     gt: great_tables.gt.GT,
     rows: Any,
+    *,
     columns: Any = None,
     fill: str | None = None,
     text_color: str | None = None,
@@ -2959,6 +3017,7 @@ gt = gt_spotlight(GT(df), pl.col("team") == "KC", accent_color="#E31837")
 ```python
 gt_stack_tables(
     tables: collections.abc.Sequence[great_tables.gt.GT] | collections.abc.Mapping[Any, great_tables.gt.GT] | None = None,
+    *,
     gap: float = 16,
     align: str = 'center',
     title: Any = None,
@@ -3902,6 +3961,7 @@ gt_theme_sdv_team(
     *,
     league: str,
     density: str = 'comfortable',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     **tab_options: Any,
 ) -> great_tables.gt.GT
 ```
@@ -3922,6 +3982,7 @@ primary too light to read on white gives way to the SportsDataverse navy for the
 | `team` | `Any` | One team (an abbreviation, name or provider id); None for the SportsDataverse navy and cyan. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `density` | `str` | "comfortable", "compact" or "social", as in ``gt_theme_sdv``. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `**tab_options` | `Any` | Passed to ``GT.tab_options`` last, so they override the theme. |
 
 ### Returns
@@ -3932,7 +3993,7 @@ primary too light to read on white gives way to the SportsDataverse navy for the
 
 - `TypeError`: If ``gt`` is not a great_tables GT, or ``team`` is not one value.
 - `UnresolvedTeamError`: If ``team`` does not resolve to one team of ``league``.
-- `ValueError`: If ``density`` is unknown.
+- `ValueError`: If ``density`` or ``id_system`` is unknown.
 
 ### Example
 
@@ -4250,6 +4311,7 @@ gt_tiers(
     gt: great_tables.gt.GT,
     levels: collections.abc.Mapping[str, str] | collections.abc.Sequence[str],
     colors: collections.abc.Sequence[str] | None = None,
+    *,
     style: str = 'dark',
     img_height: str = '55px',
     tier_column: str = 'tier',
@@ -4309,6 +4371,7 @@ gt = gt_tiers(GT(df), {"S": "#C84630", "A": "#5DA271"})
 gt_title_header(
     gt: great_tables.gt.GT,
     title: str,
+    *,
     subtitle: str | None = None,
     kicker: str | None = None,
     date: datetime.date | str | None = None,
@@ -4375,6 +4438,7 @@ gt = gt_title_header(GT(pl.DataFrame({"team": ["LV"]})), "Week 5", subtitle="Pow
 gt_watermark(
     gt: great_tables.gt.GT,
     text: str | None = None,
+    *,
     image: str | pathlib.Path | None = None,
     opacity: float = 0.06,
     size: str = '60%',

@@ -75,6 +75,8 @@ def adapter_for(target: Any) -> ModuleType:
         )
     try:
         return importlib.import_module(adapter.module)
+    except OptionalDependencyError:
+        raise  # the adapter module's requires_extra already named the extra
     except ModuleNotFoundError as e:
         # Only a missing adapter module or target library (ModuleNotFoundError) means "extra not installed";
         # any other ImportError (a broken transitive import inside the adapter) is a real bug: surface it unchanged.
