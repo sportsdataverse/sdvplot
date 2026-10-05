@@ -145,6 +145,10 @@ jobs:
       actions: write # dispatch the checks on the refresh PR (GITHUB_TOKEN pushes trigger no workflows)
     steps:
       - uses: actions/checkout@v5
+      - name: Clear the generated paths
+        # the artifact holds these paths whole, as the live job left them; extracting over the checkout alone would
+        # keep a tutorial figure or home PNG the generators deleted (a moved cell, a removed figure)
+        run: rm -rf docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json
       - name: Download the rendered tutorials and home figures
         uses: actions/download-artifact@v8
         with:
