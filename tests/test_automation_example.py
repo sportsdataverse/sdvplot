@@ -403,8 +403,29 @@ def test_a_group_50_that_is_not_division_one_is_an_error_not_a_guess(monkeypatch
     monkeypatch.setattr(social, "espn", lambda lg, name: {"season_group": _group("wbb", "NCAA Division II")}[name])
     monkeypatch.setattr(social, "current_season", lambda lg: (2026, True))
     social.d1_group.cache_clear()
-    with pytest.raises(social.NoData, match="ESPN group 50 is 'NCAA Division II' for wbb 2026, not NCAA Division I"):
-        social.fetch_leaders("wbb", "pointsPerGame")
+    with pytest.raises(social.NoData, match="ESPN group 50 is 'NCAA Division II' for wbb 2024, not NCAA Division I"):
+        social.fetch_leaders("wbb", "pointsPerGame")  # every season tried, the last one's mismatch reported
+
+
+def test_a_season_whose_group_50_is_not_division_one_falls_back_to_an_earlier_season(monkeypatch):
+    _sdv_or_skip()
+    ref = "http://x/seasons/2025/{kind}/{i}?lang=en"
+    rows = [{"value": 20.0, "displayValue": "20.0", "athlete": {"$ref": ref.format(kind="athletes", i="7")},
+             "team": {"$ref": ref.format(kind="teams", i="2509")}}]  # fmt: skip
+    leaders = {"categories": [{"name": "pointsPerGame", "displayName": "Points Per Game", "leaders": rows}]}
+
+    def season_group(season, season_type, group_id, return_parsed):
+        return _group("wbb", "NCAA Division II" if season == 2026 else "NCAA Division I")(
+            season, season_type, group_id, return_parsed
+        )
+
+    fns = {"season_group": season_group, "player_core": lambda athlete_id, return_parsed: {"displayName": "X"}}
+    monkeypatch.setattr(social, "espn", lambda lg, name: fns[name])
+    monkeypatch.setattr(social, "current_season", lambda lg: (2026, True))
+    monkeypatch.setattr(social.requests, "get", lambda url, timeout: _Resp(leaders))
+    social.d1_group.cache_clear()
+    frame, meta = social.fetch_leaders("wbb", "pointsPerGame", top=1)
+    assert meta["season"] == 2025 and frame["team_id"].to_list() == ["2509"]
 
 
 def test_college_score_cards_keep_games_between_two_division_one_teams(monkeypatch):

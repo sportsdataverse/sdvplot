@@ -173,10 +173,14 @@ def fetch_leaders(
 
     current, in_progress = current_season(league)
     wanted = season or current
+    mismatch = None  # a season whose ESPN group 50 is not Division I: try the next, and report it if none has leaders
     for year in (wanted, wanted - 1, wanted - 2):
         try:
             cats = season_leaders(league, year)
         except NoDataError:  # ESPN has no regular-season leaders (or no Division I group) for that year (yet)
+            continue
+        except NoData as e:
+            mismatch = e
             continue
         cat = next((c for c in cats if c["name"].lower() == stat.lower()), None)
         if cats and cat is None:
@@ -184,7 +188,7 @@ def fetch_leaders(
         if cat and cat.get("leaders"):
             break
     else:
-        raise NoData(f"no {league} {stat} leaders for {wanted} or the two seasons before it")
+        raise mismatch or NoData(f"no {league} {stat} leaders for {wanted} or the two seasons before it")
 
     rows = cat["leaders"][:top]
     ids = [_ref_id(r.get("athlete"), "athletes") for r in rows]
