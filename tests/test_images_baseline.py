@@ -65,3 +65,20 @@ def test_baseline_plotnine_facets(mark_images):
         + p9.theme(figure_size=(4, 2), strip_text=p9.element_blank())
     )
     return p.draw()
+
+
+@COMPARE
+def test_baseline_court_coords_half_court():
+    pytest.importorskip("sportypy")
+    from pathlib import Path
+
+    import polars as pl
+
+    raw = pl.read_csv(Path(__file__).parent / "fixtures" / "nba_shotchartdetail_2023.csv")  # real shots (README)
+    shots = sdvplot.court_coords(raw, x="loc_x", y="loc_y")
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+    sdvplot.surface("nba", ax=ax, display_range="defense")
+    made = shots["shot_made_flag"] == 1
+    ax.scatter(shots["court_x"].filter(made), shots["court_y"].filter(made), s=14, c="#1a9850", zorder=50)
+    ax.scatter(shots["court_x"].filter(~made), shots["court_y"].filter(~made), s=14, c="#d73027", marker="x", zorder=50)
+    return fig
