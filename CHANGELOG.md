@@ -46,6 +46,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   segment of sportypy's 10,000-point circle polygons as a Bezier curve to find the data limits (~1.3 M segments per
   rink); for a polygon those limits are its vertices, so they now come from the vertices in one call. The drawn PNG
   and the Axes' data limits are byte-for-byte the same.
+- `gt_theme_kenpom` no longer wipes cell fills. Its row bands were `!important` cell fills, so theming a table after
+  `data_color`, `tab_style(style.fill(...))` or `gt_color_results` replaced their fills, and a plain fill applied after
+  the theme lost to them. The bands are now a table-scoped stylesheet rule on the data rows as drawn, which every cell
+  fill shows over, in either order and in the notebook repr (`docs/PARITY_TABLES.md` records the divergence).
 
 ## [0.1.0] - Unreleased
 

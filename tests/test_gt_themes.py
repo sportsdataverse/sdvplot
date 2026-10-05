@@ -380,7 +380,10 @@ def test_gtutils():
 
 def test_kenpom_bands_rows_and_hides_its_spanner_row():
     html = sgt.gt_theme_kenpom(table()).as_raw_html()
-    assert "background-color: #F2FAFD" in cell(html, "LV") and "background-color: #e5ecf9" in cell(html, "KC")
+    # a stylesheet rule, not a cell style: odd data rows as drawn (group headings skipped) pale, even rows blue
+    assert "background-color" not in cell(html, "LV") and "background-color" not in cell(html, "KC")
+    assert f"#tid {KENPOM_ROWS.format('odd')} {{ background-color: #F2FAFD; }}" in html
+    assert f"#tid {KENPOM_ROWS.format('even')} {{ background-color: #e5ecf9; }}" in html
     assert "color: #02b" in cell(html, "team") and "background-color: #c3d9ff" in cell(html, "team")
     # sdvplotR's hidden spanner over every column, stacked here over the table's own "Record" spanner
     assert '<span class="gt_column_spanner"><span class="sdvplot-hidden-spanner"></span></span>' in html
@@ -391,7 +394,30 @@ def test_kenpom_bands_rows_and_hides_its_spanner_row():
     assert [s.spanner_id for s in twice._spanners].count("toss_out_spanner_dev") == 1
     # R's seq(2, 1, 2) errors on a one-row table; the port bands its only row
     one = sgt.gt_theme_kenpom(table(pl.DataFrame(ROWS).head(1))).as_raw_html()
-    assert "background-color: #F2FAFD" in cell(one, "LV")
+    assert f"#tid {KENPOM_ROWS.format('odd')} {{ background-color: #F2FAFD; }}" in one
+
+
+KENPOM_ROWS = ".gt_table_body > tr:nth-child({} of :not(.gt_group_heading_row)) > td.gt_row:not(.gt_summary_row, .gt_grand_summary_row)"
+
+
+@pytest.mark.parametrize("order", ["fill, then theme", "theme, then fill"])
+@pytest.mark.parametrize(
+    "fill",
+    [
+        lambda gt: gt.tab_style(great_tables.style.fill(color="#FF00FF"), great_tables.loc.body(columns="w")),
+        lambda gt: gt.data_color(columns="w", palette=["#FF00FF", "#FF00FF"]),
+        lambda gt: sgt.gt_color_results(gt, "res", win_color="#FF00FF", loss_color="#FF00FF"),
+    ],
+    ids=["tab_style", "data_color", "gt_color_results"],
+)
+def test_kenpom_bands_leave_cell_fills_alone(fill, order):
+    # the bands were !important cell fills: themed after a fill they replaced it, and a plain fill after them lost
+    base = table(pl.DataFrame({**ROWS, "res": ["L", "W", "W"]}))
+    gt = sgt.gt_theme_kenpom(fill(base)) if order == "fill, then theme" else fill(sgt.gt_theme_kenpom(base))
+    for html in (gt.as_raw_html(), gt.as_raw_html(all_important=True)):  # the second is the notebook repr's
+        style = cell(html, "15")
+        assert "#ff00ff" in style.lower() and "#e5ecf9" not in style and "#F2FAFD" not in style
+        assert f"{KENPOM_ROWS.format('even')} {{ background-color: #e5ecf9; }}" in html  # no !important
 
 
 def test_ncaa():

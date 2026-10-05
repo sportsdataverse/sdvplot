@@ -97,3 +97,22 @@ def test_render_batch_matches_widths(tmp_path):
     df = pl.DataFrame({"g": ["short", "a much longer group value"], "v": [1, 2]})
     paths = gt_save_batch(df, "g", lambda d, v: GT(d).tab_header(title=str(v)), "t-{group}.png", tmp_path, quiet=True)
     assert len({size(p)[0] for p in paths}) == 1
+
+
+@pytest.mark.render
+@pytest.mark.parametrize("all_important", [False, True], ids=["as_raw_html", "notebook repr"])
+@pytest.mark.parametrize("theme_first", [False, True])
+def test_render_kenpom_bands_rows_and_leaves_a_fill_on_top(tmp_path, all_important, theme_first):
+    df = pl.DataFrame({"team": ["LV", "LAR", "LAC", "KC"], "conf": ["W", "W", "W", "W"], "wins": [10, 8, 5, 15]})
+
+    def fill(gt):
+        return gt.data_color(columns="wins", palette=["#FF00FF", "#FF00FF"])
+
+    gt = GT(df, groupname_col="conf", id="kp")
+    gt = fill(sgt.gt_theme_kenpom(gt)) if theme_first else sgt.gt_theme_kenpom(fill(gt))
+    html = gt.as_raw_html(make_page=True, all_important=all_important)
+    import nokap
+
+    with Image.open(nokap.from_html(html, tmp_path / "kp.png", selector="#kp table")) as im:
+        colors = {c for _, c in im.convert("RGB").getcolors(1 << 20)}
+    assert {MAGENTA, (0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)} <= colors  # the fill and both bands
