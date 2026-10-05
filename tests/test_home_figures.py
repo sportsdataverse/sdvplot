@@ -98,3 +98,7 @@ def test_an_image_that_cannot_be_fetched_fails_the_run_and_writes_nothing(monkey
         assert hf.main() == 1
     assert [p.name for p in img.glob("*")] == ["removed-figure-light.png"]  # the committed set is untouched
     assert manifest.read_text() == "[]\n"
+
+
+def test_the_committed_manifest_matches_the_figures_in_tools():
+    assert [(f["name"], f["caption"]) for f in _figures()] == [(n, c) for n, c, _ in hf.FIGURES]
