@@ -101,6 +101,6 @@ repos:
         name: mypy (pre-push)
         entry: uv run --frozen mypy
         language: system
-        files: ^src/sdvplot/.*\.py$
+        files: ^(src/sdvplot/.*|tests/test_types)\.py$
         pass_filenames: false
         stages: [pre-push]
