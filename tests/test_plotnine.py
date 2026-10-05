@@ -215,3 +215,18 @@ def test_a_mean_line_over_team_bars():
     df = pd.DataFrame({"team": ["LV", "LAR", "LAC"], "epa": [0.1, 0.2, 0.6]})
     fig = (ggplot(df, aes("team", "epa", y0="epa")) + geom_col() + sp9.geom_mean_lines()).draw()
     assert _ref_lines(fig) == [([], [pytest.approx(0.3)])]
+
+
+@pytest.mark.parametrize(("na_rm", "expected"), [(True, [([5.0], [])]), (False, [([], [])])])
+def test_reference_lines_drop_values_outside_the_scale_limits_like_ggplot2(na_rm, expected):
+    from plotnine import scale_x_continuous
+    from plotnine.exceptions import PlotnineWarning
+
+    # R 4.6.1 / ggpath 1.1.1: x0 is a position aesthetic, so 30 (outside the limits) is NA before the mean: na.rm=TRUE
+    # draws the line at mean(1, 10, 2, 4, 8) = 5 and na.rm=FALSE draws no vertical line
+    df = pd.DataFrame({"x": [1.0, 10, 30, 2, 4, 8], "y": [1.0, 2, 3, 4, 5, 6]})
+    p = (ggplot(df, aes("x", "y", x0="x")) + geom_point() + scale_x_continuous(limits=(0, 20))
+         + sp9.geom_mean_lines(na_rm=na_rm))  # fmt: skip
+    with pytest.warns(PlotnineWarning):  # geom_point drops the point outside the limits, as ggplot2 does
+        fig = p.draw()
+    assert _ref_lines(fig) == expected

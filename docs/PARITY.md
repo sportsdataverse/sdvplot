@@ -44,9 +44,11 @@ with `na_rm=False` a panel whose values include a missing one draws no line on t
 ignores missing values. Per-panel values match ggpath 1.1.1 on the same real rows faceted by shot zone
 (`tests/fixtures/ggpath_ref_lines.csv`). Differences: `alpha` defaults to 1 (plotnine has no `NA` alpha; an 8-digit
 hex color keeps its own alpha either way); one line is drawn per panel, in the first row's aesthetics (ggpath
-overplots one line per row, so an `alpha` below 1 darkens with the row count there); `x0`/`y0` are transformed by the
-position scales, as ggplot2 does, but not trained into them, so a reference value outside the plotted data's range is
-not brought into view.
+overplots one line per row, so an `alpha` below 1 darkens with the row count there). As in ggplot2, where they are
+position aesthetics, `x0`/`y0` go through each panel's position scale before the mean: a log scale averages the logs,
+and values outside the scale's limits become missing (so `na_rm=True` leaves them out, and `na_rm=False` draws no line).
+Unlike ggplot2 they do not train the scale, so a reference value outside the plotted data's range is not brought into
+view.
 
 ## Recipes
 

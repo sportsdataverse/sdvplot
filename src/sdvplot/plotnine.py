@@ -170,11 +170,17 @@ class _geom_ref_lines(geom):
         super().__init__(mapping, data, **kwargs)
 
     def draw_layer(self, data: pd.DataFrame, layout: Any, coord: Any) -> None:
-        # x0/y0 are position aesthetics in ggplot2, so a log scale averages the logs; plotnine does not know them,
-        # so transform them with the position scales here (the data's x scale, also under coord_flip)
-        for ae, scales in (("x0", layout.panel_scales_x), ("y0", layout.panel_scales_y)):
-            if ae in data and scales:
-                data = data.assign(**{ae: scales[0].transform(data[ae])})
+        # x0/y0 are position aesthetics in ggplot2: each panel's position scale transforms them (a log scale averages
+        # the logs) and censors those outside its limits to NA before the mean. plotnine does not know them, so do
+        # both here, panel by panel (free scales differ).
+        data = data.copy()
+        for ae, which in (("x0", "x"), ("y0", "y")):
+            if ae not in data:
+                continue
+            data[ae] = data[ae].astype(float)
+            for panel, rows in data.groupby("PANEL", observed=True).groups.items():
+                sc = getattr(layout.get_scales(panel), which)
+                data.loc[rows, ae] = sc.map(sc.transform(data.loc[rows, ae].to_numpy()))
         super().draw_layer(data, layout, coord)
 
     def draw_panel(self, data: pd.DataFrame, panel_params: Any, coord: Any, ax: Any) -> None:
