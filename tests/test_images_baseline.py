@@ -77,6 +77,16 @@ def test_baseline_title_image(mark_images):
 
 
 @COMPARE
+def test_baseline_team_tiers(mark_images):
+    from sdvplot.matplotlib import team_tiers
+
+    df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
+    fig = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2)  # no text to drift
+    fig.set_size_inches(4, 3)
+    return fig
+
+
+@COMPARE
 def test_baseline_plotnine_title_image(mark_images):
     p9 = pytest.importorskip("plotnine")
     from sdvplot.plotnine import title_image
@@ -89,4 +99,16 @@ def test_baseline_plotnine_title_image(mark_images):
         + p9.theme_void()
         + p9.theme(figure_size=(4, 2))
     )
+    return p.draw()
+
+
+@COMPARE
+def test_baseline_plotnine_team_tiers(mark_images):
+    pytest.importorskip("plotnine")
+    import plotnine as p9
+
+    from sdvplot.plotnine import team_tiers
+
+    df = pd.DataFrame({"tier_no": [1, 1, 2, 3, 3], "team": ["LV", "LAR", "LV", "LAR", "LV"]})
+    p = team_tiers(df, "nfl", title="", subtitle="", tier_desc={}, no_line_below_tier=2) + p9.theme(figure_size=(4, 3))
     return p.draw()

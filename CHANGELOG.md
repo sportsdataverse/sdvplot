@@ -133,3 +133,8 @@
   sdvplotR's `ggtitle_image()`, an image beside the title. The image is a team's logo when `league=` is given (an
   unknown team warns once and keeps the title) or any image by URL or local path; `height` is in points, `side` is
   `"left"` or `"right"`, and the image and title are aligned together as the title is.
+- `team_tiers()` in `sdvplot.matplotlib` (a Figure) and `sdvplot.plotnine` (a ggplot): sdvplotR's `sdv_team_tiers()`
+  tier list on its dark theme, from a pandas or polars frame with `tier_no` and `team` (optional `tier_rank`), with
+  `presort`, `tier_desc`, `no_line_below_tier` and `devel=True` (team text, no downloads). One shared preparation
+  (`sdvplot._tiers`) ranks, wraps the tier labels and sets the limits for both. The default logo height, 0.1 of the
+  panel, is the largest at which 32 logos in 5 tiers neither overlap nor leave the panel at the default figure size.

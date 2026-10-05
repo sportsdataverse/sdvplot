@@ -21,6 +21,7 @@ from matplotlib.ticker import FixedFormatter, FixedLocator
 from matplotlib.transforms import Affine2D, Bbox
 from PIL import Image
 
+from sdvplot import _tiers
 from sdvplot._images import load_mark_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, check_alpha, check_height, place
 
@@ -561,6 +562,107 @@ def title_image(
     if source is not None:
         add_title_image(container, text, source, side, h, lambda: _align(text.get_horizontalalignment()))
     return target
+
+
+def team_tiers(
+    data: Any,
+    league: str,
+    *,
+    title: str | None = None,
+    subtitle: str | None = _tiers.SUBTITLE,
+    caption: str | None = None,
+    tier_desc: dict[Any, str] | None = None,
+    presort: bool = False,
+    alpha: float = 0.8,
+    height: float | None = None,
+    no_line_below_tier: Any = None,
+    devel: bool = False,
+) -> Figure:
+    """A tier list: each team's logo in its tier's row, tier 1 on top, on sdvplotR's dark Tiermaker theme.
+
+    Args:
+        data: A pandas or polars DataFrame with ``tier_no`` (1 is the top tier) and ``team`` (any id system
+            ``resolve()`` understands), and optionally ``tier_rank``, the position within the tier; without it, teams
+            keep their order in ``data``.
+        league: The SDV league key, e.g. "nfl".
+        title: The title; None gives "{LEAGUE} Team Tiers", "" none.
+        subtitle: The subtitle; None or "" for none.
+        caption: The caption, bottom right; None for none.
+        tier_desc: Each tier's label, keyed by tier number; None gives sdvplotR's (1 "Elite" ... 5 "What are they
+            doing?"). Labels wrap at 15 characters; a tier without one gets none.
+        presort: Sort teams alphabetically within each tier (ignores ``tier_rank``).
+        alpha: Logo opacity, 0 to 1.
+        height: Logo height as a fraction of the panel height; None gives 0.1, the largest two-decimal height at
+            which 32 logos in 5 tiers (7, 7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in
+            figure.
+        no_line_below_tier: A tier number, or several, with no separator line below.
+        devel: Draw each team as text instead of its logo (fast, and needs no download).
+
+    Returns:
+        matplotlib.figure.Figure: A new figure with one Axes; a team that does not resolve is skipped with one
+        SdvplotWarning, keeping its slot.
+
+    Raises:
+        TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``height``/``alpha`` is
+            out of range.
+
+    Example:
+        ::
+
+            import pandas as pd
+            from sdvplot.matplotlib import team_tiers
+
+            df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
+            fig = team_tiers(df, "nfl")
+
+        Draft it as text first, then add logos::
+
+            fig = team_tiers(df, "nfl", devel=True, no_line_below_tier=1)
+
+    See Also:
+        sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
+        sdvplot.plotnine.team_tiers: the same as a plotnine ggplot.
+    """
+    import matplotlib.pyplot as plt
+
+    t = _tiers.prepare(
+        data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier,
+    )  # fmt: skip
+    fig, ax = plt.subplots(layout="constrained", facecolor=_tiers.BG)
+    ax.set_facecolor(_tiers.BG)
+    for y in t.lines:
+        ax.axhline(y, color=_tiers.LINES, linewidth=0.8)
+    ax.set_xlim(t.xlim)
+    ax.set_ylim(t.ylim[1], t.ylim[0])  # tier 1 on top
+    ax.set_xticks([])
+    ax.set_yticks(t.breaks, t.break_labels, color="white", fontweight="bold")
+    ax.tick_params(length=0)
+    ax.spines[:].set_visible(False)
+    if devel:
+        for x, y, label in zip(t.x, t.y, t.labels, strict=True):
+            ax.text(x, y, label, color="white", ha="center", va="center")
+    else:
+        placements = place(t.x, t.y, t.team_ids, league=league, id_system="team_id")
+        draw_placements(ax, placements, height=t.height, alpha=t.alpha)
+    anchor: Text | None = None  # the subtitle sits on the panel, the title on the subtitle, both left-aligned
+    styles: list[tuple[str | None, dict[str, Any]]] = [
+        (t.subtitle, {"color": _tiers.MUTED}),
+        (t.title, {"color": "white", "fontweight": "bold"}),
+    ]
+    for text, style in styles:
+        if not text:
+            continue
+        if anchor is None:
+            anchor = ax.set_title(text, loc="left", **style)
+        else:
+            anchor = ax.annotate(text, (0, 1), xycoords=anchor, xytext=(0, 4), textcoords="offset points",
+                                 va="bottom", fontsize="large", **style)  # fmt: skip
+    if t.caption:
+        ax.annotate(t.caption, (1, 0), xycoords="axes fraction", xytext=(0, -6), textcoords="offset points",
+                    ha="right", va="top", color=_tiers.MUTED, fontsize="small")  # fmt: skip
+    return fig
 
 
 def drawn_title_images(target: Any) -> list[tuple[str, str]]:

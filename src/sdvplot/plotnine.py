@@ -13,15 +13,23 @@ import pandas as pd
 from matplotlib.figure import Figure
 from plotnine import (
     aes,
+    element_blank,
+    element_rect,
     element_text,
+    geom_hline,
+    geom_text,
     ggplot,
     labs,
     scale_color_manual,
     scale_fill_manual,
+    scale_x_continuous,
+    scale_y_reverse,
     theme,
+    theme_minimal,
 )
 from plotnine.geoms.geom import geom
 
+from sdvplot import _tiers
 from sdvplot._colors import _column, team_colors
 from sdvplot._errors import SdvplotWarning
 from sdvplot._marks import _check_mark_type
@@ -400,6 +408,98 @@ def title_image(
         sdvplot.matplotlib.title_image: the same for matplotlib.
     """
     return _TitleImage(image, title, league, season, side, height)
+
+
+def team_tiers(
+    data: Any,
+    league: str,
+    *,
+    title: str | None = None,
+    subtitle: str | None = _tiers.SUBTITLE,
+    caption: str | None = None,
+    tier_desc: dict[Any, str] | None = None,
+    presort: bool = False,
+    alpha: float = 0.8,
+    height: float | None = None,
+    no_line_below_tier: Any = None,
+    devel: bool = False,
+) -> ggplot:
+    """A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on sdvplotR's dark theme.
+
+    Args:
+        data: A pandas or polars DataFrame with ``tier_no`` (1 is the top tier) and ``team`` (any id system
+            ``resolve()`` understands), and optionally ``tier_rank``, the position within the tier; without it, teams
+            keep their order in ``data``.
+        league: The SDV league key, e.g. "nfl".
+        title: The title; None gives "{LEAGUE} Team Tiers", "" none.
+        subtitle: The subtitle; None or "" for none.
+        caption: The caption; None for none.
+        tier_desc: Each tier's label, keyed by tier number; None gives sdvplotR's (1 "Elite" ... 5 "What are they
+            doing?"). Labels wrap at 15 characters; a tier without one gets none.
+        presort: Sort teams alphabetically within each tier (ignores ``tier_rank``).
+        alpha: Logo opacity, 0 to 1.
+        height: Logo height as a fraction of the panel height; None gives 0.1, the largest two-decimal height at
+            which 32 logos in 5 tiers (7, 7, 6, 6, 6) neither overlap nor leave the panel at the default 6.4 x 4.8 in
+            figure.
+        no_line_below_tier: A tier number, or several, with no separator line below.
+        devel: Draw each team as text instead of its logo (fast, and needs no download).
+
+    Returns:
+        ggplot: The plot; a team that does not resolve is skipped with one SdvplotWarning, keeping its slot.
+
+    Raises:
+        TypeError: If ``data`` is not a DataFrame, or ``tier_no``/``tier_rank`` hold non-numbers.
+        ValueError: If ``data`` lacks ``tier_no`` or ``team``, has no row with a tier, or ``height``/``alpha`` is
+            out of range.
+
+    Example:
+        ::
+
+            import pandas as pd
+            from sdvplot.plotnine import team_tiers
+
+            df = pd.DataFrame({"tier_no": [1, 1, 2, 3], "team": ["KC", "BUF", "BAL", "NYJ"]})
+            p = team_tiers(df, "nfl", caption="data: nflverse")
+
+        Draft it as text first::
+
+            p = team_tiers(df, "nfl", devel=True)
+
+    See Also:
+        sdvplotR sdv_team_tiers(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_tiers.html ;
+        sdvplot.matplotlib.team_tiers: the same as a matplotlib Figure.
+    """
+    t = _tiers.prepare(
+        data, league, title=title, subtitle=subtitle, caption=caption, tier_desc=tier_desc, presort=presort,
+        alpha=alpha, height=height, no_line_below_tier=no_line_below_tier,
+    )  # fmt: skip
+    frame = pd.DataFrame({"x": t.x, "y": t.y, "team": t.team_ids, "label": t.labels})
+    if devel:
+        marks: Any = geom_text(aes(label="label"), color="white")
+    else:
+        marks = geom_sdv_logos(aes(team="team"), league=league, id_system="team_id", height=t.height, alpha=t.alpha)
+    texts = {"title": t.title, "subtitle": t.subtitle, "caption": t.caption}
+    return (
+        ggplot(frame, aes("x", "y"))
+        + geom_hline(yintercept=t.lines, color=_tiers.LINES)
+        + marks
+        + scale_x_continuous(limits=t.xlim, expand=(0, 0))
+        + scale_y_reverse(limits=t.ylim, breaks=t.breaks, labels=t.break_labels, expand=(0, 0))
+        + labs(**{k: v for k, v in texts.items() if v})
+        + theme_minimal(base_size=11.5)
+        + theme(
+            plot_title=element_text(color="white", weight="bold"),
+            plot_subtitle=element_text(color=_tiers.MUTED),
+            plot_caption=element_text(color=_tiers.MUTED, ha="right"),
+            plot_title_position="plot",
+            axis_text_x=element_blank(),
+            axis_text_y=element_text(color="white", weight="bold", size=11.5 * 0.8 * 1.1),  # sdvplotR: rel(1.1)
+            axis_title=element_blank(),
+            panel_grid=element_blank(),
+            plot_background=element_rect(fill=_tiers.BG, color=_tiers.BG),
+            panel_background=element_rect(fill=_tiers.BG, color=_tiers.BG),
+        )
+    )
 
 
 def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
