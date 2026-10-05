@@ -15,7 +15,9 @@ on:
         default: "true"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # a PR's runs share one group (a new push supersedes the last); each push to main gets its own, so it is never
+  # cancelled or replaced while it waits
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   # a PR's new push supersedes its last run; a run on main is the merge's only test record, so it is never cancelled
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 permissions:

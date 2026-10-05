@@ -160,6 +160,8 @@ implicit_reexport = true
 [tool.coverage.run]
 branch = true
 source_pkgs = ["sdvplot"]
+# a test runs a temporary module as sdvplot.newmod (tests/test_gen_docs.py): not package source, gone after the run
+omit = ["*/pytest-of-*/*"]
 
 [tool.coverage.report]
 # Set just under the measured total (96% line+branch on the offline suite); raise it as tests land.
