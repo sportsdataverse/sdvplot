@@ -8,7 +8,6 @@ import json
 import os
 import shutil
 import time
-import warnings
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -16,7 +15,7 @@ from urllib.parse import urljoin, urlsplit
 
 import platformdirs
 
-from sdvplot._errors import OfflineError, SdvplotWarning, UnsafeCachePathError, UnsafeDownloadError
+from sdvplot._errors import OfflineError, UnsafeCachePathError, UnsafeDownloadError, warn
 
 if TYPE_CHECKING:
     import requests
@@ -123,7 +122,7 @@ def atomic_write(path: Path, data: bytes) -> None:
 def _warn_once(key: str, message: str) -> None:
     if key not in _warned:
         _warned.add(key)
-        warnings.warn(message, SdvplotWarning, stacklevel=4)
+        warn(message)
 
 
 def _offline_message(url: str) -> str:
@@ -315,11 +314,7 @@ def clear_cache() -> None:
         if owned or (path / MARKER).exists():
             shutil.rmtree(path)
         else:
-            warnings.warn(
-                f"{path} was not created by sdvplot, so it was left in place; delete it by hand if it is a cache",
-                SdvplotWarning,
-                stacklevel=2,
-            )
+            warn(f"{path} was not created by sdvplot, so it was left in place; delete it by hand if it is a cache")
     _warned.clear()
     _intact.clear()
     for clear in MEMORY_CACHES:

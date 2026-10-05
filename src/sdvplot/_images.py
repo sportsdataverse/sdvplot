@@ -8,15 +8,14 @@ import hashlib
 import io
 import re
 import threading
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 from urllib.request import url2pathname
 
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable
-from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsafeCachePathError
-from sdvplot._marks import _check_mark_type, select_mark
+from sdvplot._errors import OptionalDependencyError, UnsafeCachePathError, warn
+from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
 from sdvplot._types import MarkType
 
@@ -110,7 +109,8 @@ def logo_image(
         requests.HTTPError: If the CDN refuses the file (a 4xx response).
         OSError: If the download does not match the manifest's sha256, or is not an image PIL can decode
             (``PIL.UnidentifiedImageError`` subclasses OSError).
-        InputError: (a ValueError) If ``league`` is unknown or ``mark_type`` is not "logo"/"wordmark".
+        InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
+            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
         ValueError: If an SVG cannot be parsed.
 
     Example:
@@ -126,12 +126,13 @@ def logo_image(
         sdv-py: https://py.sportsdataverse.org/
     """
     _check_mark_type(mark_type)
+    _check_variant(variant, league)
     team_id = resolve(one_team(team, "logo_image"), league, season=season)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)
     if row is None:
-        warnings.warn(f"no {mark_type} archived for {team!r} ({league})", SdvplotWarning, stacklevel=2)
+        warn(f"no {mark_type} archived for {team!r} ({league})")
         return None
     return load_mark_image(row, size)
 

@@ -15,7 +15,6 @@ import numbers
 import re
 import sys
 import tempfile
-import warnings
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from os import PathLike
@@ -27,7 +26,7 @@ import narwhals as nw
 from great_tables import GT
 from PIL import Image, ImageChops, ImageColor
 
-from sdvplot._errors import SdvplotWarning
+from sdvplot._errors import warn
 from sdvplot.great_tables._marks import _check_gt
 
 _GRAVITY = ("center", "north", "south", "east", "west", "northwest", "northeast", "southwest", "southeast")
@@ -403,9 +402,7 @@ def gt_save_batch(
         _pad(img, bg, pad).save(path, quality=_JPEG_QUALITY)
         paths.append(path)
     if failed:
-        warnings.warn(
-            f"{len(failed)} group(s) failed and were skipped:\n" + "\n".join(failed), SdvplotWarning, stacklevel=2
-        )
+        warn(f"{len(failed)} group(s) failed and were skipped:\n" + "\n".join(failed))
     if not quiet:
         print(f"Wrote {len(paths)} file(s) to {dir}", file=sys.stderr)
     return paths

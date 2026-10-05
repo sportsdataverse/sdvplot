@@ -4,6 +4,7 @@
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
     - [Changed](#changed)
+    - [Fixed](#fixed)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
     - [Added](#added)
@@ -22,7 +23,7 @@
     - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
-    - [Fixed](#fixed)
+    - [Fixed](#fixed-1)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
       - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
@@ -39,6 +40,24 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 - Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
   the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
+
+### Fixed
+
+- A season outside the seasons sdvplot knows for the league is an `InputError` (a `ValueError`) naming the bounds,
+  wherever a season is taken. The first season is the league's earliest dated alias in the bundled index (1920 for the
+  NFL, 1947 for the NBA, 1997 for the WNBA, 2020 for the XFL; 1871, MLB's, for a league whose history is not dated), the
+  last is next year. `logo_url("OAK", "nfl", season=1900)` and `resolve(..., season=20)` used to resolve silently. A
+  split season such as `"2020-21"` gets a hint (pass the ending year), and a season of the wrong type (a `pd.Timestamp`)
+  is a `TypeError` that names `season` rather than the team values.
+- A `variant` that no mark in the archive has (a typo, or not a string) is an `InputError` listing the league's
+  variants; it used to fall back to the default mark without a word. A variant the team lacks still falls back, as
+  before.
+- Warnings point at the caller's line: they walk out of sdvplot's frames instead of using fixed `stacklevel`s, which
+  named `_colors.py`, `_placement.py` and other sdvplot files whenever the call went through more than one function.
+- A misspelled column name is the same `ValueError` on pandas and polars (`column(s) ['teamz'] not in the table; its
+  columns are [...]`) in every great_tables helper that takes columns: the `gt_sdv_*` marks (their
+  `locations=loc.body(...)` too), `gt_percentile_bar`, `gt_wrap_labels`, `gt_color_pills` and the rest, through the one
+  column resolver they share. pandas used to match nothing silently and polars raised its own `ColumnNotFoundError`.
 
 ## [0.1.0] - Unreleased
 
