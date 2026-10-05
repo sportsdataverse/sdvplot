@@ -13,6 +13,7 @@
     - [Added — web family](#added--web-family)
     - [Added — long tail (pygal, Cartopy, gallery compatibility)](#added--long-tail-pygal-cartopy-gallery-compatibility)
     - [Added — tables wave C2 (legends, layout and annotation)](#added--tables-wave-c2-legends-layout-and-annotation)
+    - [Added — parity extras (court coordinates, images by path, reference lines)](#added--parity-extras-court-coordinates-images-by-path-reference-lines)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -126,3 +127,15 @@
 - `gt_legend_continuous()` with no arguments draws the scale that `gt_percentile_bar`, `gt_color_ranks` or
   `gt_color_pills` colored with; `gt_legend_discrete()` draws the key `gt_tiers` used.
 - `docs/PARITY_TABLES.md` lists every difference from sdvplotR for these functions.
+
+### Added — parity extras (court coordinates, images by path, reference lines)
+
+- `sdvplot.court_coords()`: stats.nba.com / stats.wnba.com legacy shot locations (`LOC_X`/`LOC_Y`, `x_legacy`/`y_legacy`)
+  to the court frame sportypy and `surface("nba")` draw, on pandas or polars, the port of sdvplotR's
+  `sdv_court_coords()`; bit-identical to it on real `shotchartdetail` rows.
+- `sdvplot.matplotlib.add_images()` and `sdvplot.plotnine.geom_from_path()`: any image by local path or URL at (x, y),
+  sized like the logo verbs, the port of ggpath's `geom_from_path()`; unreadable images are skipped with one warning.
+- `sdvplot.plotnine.geom_mean_lines()` and `geom_median_lines()`: per-panel reference lines, the ports of ggpath's,
+  matching its values on real data.
+- `docs/PARITY.md` maps the remaining sdvplotR exports to sdvplot functions or recipes; `tools/export_parity_extras.R`
+  exports the sdvplotR and ggpath oracles the parity tests read.
