@@ -15,6 +15,7 @@ from __future__ import annotations
 import io
 import json
 import sys
+import warnings
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,7 @@ import polars as pl  # noqa: E402
 
 import sdvplot  # noqa: E402
 from sdvplot._contrast import contrast  # noqa: E402
+from sdvplot._errors import SdvplotWarning  # noqa: E402
 
 IMG = ROOT / "docs" / "static" / "img" / "home"
 DATA = ROOT / "docs" / "src" / "data" / "home_figures.json"
@@ -186,14 +188,28 @@ def draw(fn: Callable[[Any, str], str], mode: str) -> tuple[bytes, str]:
 def main() -> int:
     files: dict[str, bytes] = {}
     manifest = []
-    for name, caption, fn in FIGURES:
-        for mode in MODES:
-            png, alt = draw(fn, mode)
-            files[f"{name}-{mode}.png"] = png
-        manifest.append(
-            {"name": name, "alt": alt, "caption": caption, "width": int(SIZE[0] * DPI), "height": int(SIZE[1] * DPI)}
-        )
-        print(f"drew {name}")
+    try:
+        with warnings.catch_warnings():
+            # an adapter skips an image it cannot fetch with only an SdvplotWarning: here that is a failed run, not
+            # a PNG with a logo missing
+            warnings.simplefilter("error", SdvplotWarning)
+            for name, caption, fn in FIGURES:
+                for mode in MODES:
+                    png, alt = draw(fn, mode)
+                    files[f"{name}-{mode}.png"] = png
+                manifest.append(
+                    {
+                        "name": name,
+                        "alt": alt,
+                        "caption": caption,
+                        "width": int(SIZE[0] * DPI),
+                        "height": int(SIZE[1] * DPI),
+                    }
+                )
+                print(f"drew {name}")
+    except Exception as e:  # noqa: BLE001 - nothing has been written yet: the committed set stays as it is
+        print(f"failed, nothing written: {type(e).__name__}: {e}", file=sys.stderr)
+        return 1
     IMG.mkdir(parents=True, exist_ok=True)
     for old in IMG.glob("*.png"):  # every file here is drawn by this script: drop those of removed figures
         old.unlink()

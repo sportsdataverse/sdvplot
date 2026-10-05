@@ -85,8 +85,9 @@ Generated files are never hand-edited. Change the source, regenerate, and commit
 | Generated file | Regenerate with | Drift check |
 | --- | --- | --- |
 | `src/sdvplot/data/*` (the bundled index) | `uv run python tools/fetch_sources.py`, then `uv run python tools/build_index.py` | `uv run python tools/build_index.py --check` |
-| `docs/docs/reference/**` (API reference) | `uv run python tools/gen_docs.py` | `uv run python tools/gen_docs.py --check` |
-| `docs/docs/tutorials/**` | `uv run python tools/render_notebooks.py` | none (refreshed weekly by `live-tests-cron`) |
+| `docs/docs/reference/**` (API reference), `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `uv run python tools/gen_docs.py --check` |
+| `docs/docs/tutorials/**`, `docs/static/notebooks/*.ipynb` | `uv run python tools/render_notebooks.py` | `tests/test_notebooks.py` (refreshed weekly by `live-tests-cron`) |
+| `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` (refreshed weekly by `live-tests-cron`) |
 | `docs/src/pages/CHANGELOG.md` | the pre-commit hook copies `CHANGELOG.md` | `uv run pre-commit run --all-files` |
 | `data-raw/sdvplotr_*.csv` (sdvplotR export) | `Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index afterwards |
 
