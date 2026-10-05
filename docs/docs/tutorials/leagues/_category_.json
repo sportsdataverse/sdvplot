@@ -1,0 +1,9 @@
+{
+  "label": "Tutorials by league",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "slug": "/category/tutorials-by-league",
+    "description": "Worked examples for each league: logos, colors, headshots and tables with real data."
+  }
+}

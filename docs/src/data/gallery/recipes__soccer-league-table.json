@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "soccer-league-table",
+  "label": "Soccer league table",
+  "position": 7,
+  "page": "recipes/soccer-league-table.md",
+  "items": [
+    {
+      "title": "Premier League final table with form pills",
+      "alt": "great_tables Premier League 2025-26 final table with club crests, results, colored form pills for the last five matches and colored bars marking European and relegation places",
+      "image": "/img/gallery/recipes/soccer-league-table_13.png",
+      "anchor": "6-export-for-the-newsletter-and-instagram"
+    }
+  ]
+}

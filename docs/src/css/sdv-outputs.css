@@ -1,0 +1,69 @@
+/* stylelint-disable docusaurus/copyright-header */
+/* sdvplot only: what tools/render_notebooks.py adds to the rendered notebook pages. The shared family theme
+   (sdv-theme.css) styles the .sdv-output block around them; this file only adds the frames and the gallery. */
+
+/* An interactive output (a standalone page under static/outputs/), sized by src/clientModules/sdvFrames.ts. The
+   framed page has its own white surface in both color modes, like a chart image. The edge is a ring, not a border:
+   a border would take its width out of the height the page reports and leave it a scrollbar. */
+.sdv-frame {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--ifm-leading);
+  border: 0;
+  border-radius: var(--ifm-global-radius);
+  box-shadow: 0 0 0 1px var(--ifm-toc-border-color);
+  background: #fff;
+}
+
+/* The gallery page: a grid of cards, each a markdown link holding a thumbnail and its caption. */
+.sdv-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+
+.sdv-gallery > p {
+  margin: 0;
+}
+
+.sdv-gallery a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-card-background-color);
+  color: var(--ifm-font-color-base);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.sdv-gallery a:hover {
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.sdv-gallery a:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.sdv-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border-radius: calc(var(--ifm-global-radius) / 2);
+  background: #fff;
+}
+
+.sdv-gallery br {
+  display: none;
+}
+
+.sdv-gallery small {
+  color: var(--ifm-font-color-secondary);
+  font-weight: 400;
+}

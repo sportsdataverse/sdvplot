@@ -11,10 +11,28 @@ permissions:
 concurrency:
   group: live-tests-cron
   cancel-in-progress: false
+env:
+  # Everything tools/render_notebooks.py and tools/home_figures.py write: the notebook pages of every section
+  # (with their figures and _category_.json), the framed interactive outputs, the gallery page, thumbnails and
+  # sidecars, the downloadable notebook copies, and the home page figures. One path per line.
+  GENERATED_PATHS: |-
+    docs/docs/tutorials
+    docs/docs/cookbooks
+    docs/docs/recipes
+    docs/docs/leaderboards
+    docs/docs/gallery.md
+    docs/static/outputs
+    docs/static/img/gallery
+    docs/src/data/gallery
+    docs/static/notebooks
+    docs/static/img/home
+    docs/src/data/home_figures.json
 jobs:
   live:
     name: pytest --live (ubuntu / py3.13)
     runs-on: ubuntu-latest
+    # Every notebook runs twice (nbmake, then the render), each live: ~30 notebooks at up to a few minutes each.
+    timeout-minutes: 240
     # Runs the tests and notebooks (project + third-party code), so it holds a read-only token:
     # any step can read a job's token from the runner, so write access lives in the jobs below.
     permissions:
@@ -57,10 +75,10 @@ jobs:
           SDVPLOT_LIVE_TESTS: "1"
         run: |
           set -o pipefail
-          uv run --frozen pytest --nbmake examples/notebooks/ -q -rN 2>&1 | tee pytest-notebooks.log
-      - name: Render notebook tutorials
-        # Re-execute the example notebooks and render them (with outputs) to
-        # docs/docs/tutorials/. Only from main: a dispatch from another branch would
+          uv run --frozen pytest --nbmake --nbmake-timeout=600 examples/notebooks/ -q -rN 2>&1 | tee pytest-notebooks.log
+      - name: Render the notebook pages
+        # Re-execute every example notebook (examples/notebooks/**) and render it, with its outputs, to its
+        # section's pages, framed outputs and gallery cards. Only from main: a dispatch from another branch would
         # otherwise build the refresh PR on top of that branch's unmerged commits.
         id: render
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
@@ -88,24 +106,22 @@ jobs:
           if ! uv run --frozen python tools/home_figures.py 2>&1 | tee -a render-notebooks.log; then
             echo "failed=1" >> "$GITHUB_OUTPUT"
           fi
-      - name: Detect tutorial changes
+      - name: Detect changes to the generated pages
         id: tutorial-changes
         if: ${{ !cancelled() && steps.render.outcome == 'success' }}
-        # git status, not git diff: a new notebook renders an untracked page.
+        # git status, not git diff: a new notebook renders untracked pages, outputs and thumbnails.
         run: |
-          if [ -n "$(git status --porcelain -- docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json)" ]; then
+          mapfile -t paths <<< "$GENERATED_PATHS"
+          if [ -n "$(git status --porcelain -- "${paths[@]}")" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Upload rendered tutorials
+      - name: Upload the generated pages
         if: ${{ !cancelled() && steps.tutorial-changes.outputs.has_changes == 'true' }}
         uses: actions/upload-artifact@v7
         with:
           name: rendered-tutorials
           # several paths: the artifact keeps them relative to their common parent, docs/
-          path: |
-            docs/docs/tutorials
-            docs/static/img/home
-            docs/src/data/home_figures.json
+          path: ${{ env.GENERATED_PATHS }}
           if-no-files-found: error
           retention-days: 7
       - name: Upload notebook render log
@@ -147,9 +163,11 @@ jobs:
       - uses: actions/checkout@v5
       - name: Clear the generated paths
         # the artifact holds these paths whole, as the live job left them; extracting over the checkout alone would
-        # keep a tutorial figure or home PNG the generators deleted (a moved cell, a removed figure)
-        run: rm -rf docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json
-      - name: Download the rendered tutorials and home figures
+        # keep a figure, framed output, thumbnail or home PNG the generators deleted (a moved cell, a removed figure)
+        run: |
+          mapfile -t paths <<< "$GENERATED_PATHS"
+          rm -rf "${paths[@]}"
+      - name: Download the generated pages and home figures
         uses: actions/download-artifact@v8
         with:
           name: rendered-tutorials
@@ -159,21 +177,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -z "$(git status --porcelain -- docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json)" ]; then
-            echo "No tutorial or home figure changes to publish."
+          mapfile -t paths <<< "$GENERATED_PATHS"
+          if [ -z "$(git status --porcelain -- "${paths[@]}")" ]; then
+            echo "No notebook page or home figure changes to publish."
             exit 0
           fi
           branch="auto/tutorials-refresh"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add docs/docs/tutorials docs/static/img/home docs/src/data/home_figures.json
+          for p in "${paths[@]}"; do
+            # a path neither on disk nor tracked (a section with no notebooks yet) would fail git add
+            if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" > /dev/null 2>&1; then git add -A -- "$p"; fi
+          done
           git commit -m "docs(tutorials): refresh executed notebook pages and home figures"
           git push -f origin "$branch"
           if [ -z "$(gh pr list --head "$branch" --state open --json number -q '.[0].number')" ]; then
             gh pr create --head "$branch" --base main \
               --title "docs(tutorials): weekly refresh of executed notebook pages and home figures" \
-              --body "Automated re-execution + render of \`examples/notebooks/\` to \`docs/docs/tutorials/\` by \`render_notebooks.py\`, and the home page figures by \`tools/home_figures.py\` (live-tests-cron). Review the output diffs and merge to refresh them."
+              --body "Automated re-execution + render of \`examples/notebooks/\` to the notebook pages, framed outputs and gallery by \`render_notebooks.py\`, and the home page figures by \`tools/home_figures.py\` (live-tests-cron). Review the output diffs and merge to refresh them."
           fi
           # A push made with GITHUB_TOKEN starts no workflows, so dispatch the checks
           # that guard the rendered pages; their runs attach to the PR's head commit.

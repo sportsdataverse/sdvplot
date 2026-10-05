@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "nfl-epa-scatter",
+  "label": "NFL EPA scatter",
+  "position": 1,
+  "page": "recipes/nfl-epa-scatter.md",
+  "items": [
+    {
+      "title": "NFL offense vs defense EPA, Super Bowl LX",
+      "alt": "Scatter of 2025 NFL offense and defense EPA per play with team logos; Seattle and New England highlighted, the other teams faded",
+      "image": "/img/gallery/recipes/nfl-epa-scatter_13.png",
+      "anchor": "6-export-at-social-sizes"
+    }
+  ]
+}

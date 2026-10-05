@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "nba",
+  "label": "NBA",
+  "position": 20,
+  "page": "tutorials/leagues/nba.md",
+  "items": [
+    {
+      "title": "NBA offense vs defense with logos",
+      "alt": "Scatter of NBA offensive vs defensive rating with each team's logo as its marker",
+      "image": "/img/gallery/tutorials/leagues/nba_6.png",
+      "anchor": "1-offense-vs-defense-with-logos"
+    },
+    {
+      "title": "NBA scoring leaders with headshots",
+      "alt": "Horizontal bars of points per game for the top ten scorers, each with a team logo and headshot",
+      "image": "/img/gallery/tutorials/leagues/nba_12.png",
+      "anchor": "4-a-scoring-leaderboard-with-headshots"
+    },
+    {
+      "title": "NBA shot chart on a team-colored court",
+      "alt": "Made and missed field goal attempts of the NBA scoring leader on a half court painted in his team colors",
+      "image": "/img/gallery/tutorials/leagues/nba_14.png",
+      "anchor": "5-a-shot-chart-on-a-team-colored-court"
+    }
+  ]
+}

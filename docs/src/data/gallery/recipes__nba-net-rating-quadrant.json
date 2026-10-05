@@ -1,0 +1,15 @@
+{
+  "section": "recipes",
+  "stem": "nba-net-rating-quadrant",
+  "label": "NBA net rating quadrant",
+  "position": 3,
+  "page": "recipes/nba-net-rating-quadrant.md",
+  "items": [
+    {
+      "title": "NBA offensive vs defensive rating by conference",
+      "alt": "plotnine scatter of 2025-26 NBA offensive and defensive ratings with team logos, faceted East and West, with conference average lines and net-rating diagonals",
+      "image": "/img/gallery/recipes/nba-net-rating-quadrant_15.png",
+      "anchor": "6-export-for-the-blog-and-for-instagram"
+    }
+  ]
+}
