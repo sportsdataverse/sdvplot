@@ -365,3 +365,20 @@ def test_team_colors_and_palette_read_nhl_stats_ids_when_named():  # S11: once w
         zip([1, 6, 10], devils_bruins_leafs, strict=True)
     )
     assert sdvplot.team_colors("nhl", [1, 6, 10]) != devils_bruins_leafs  # "auto" reads them as ESPN ids
+
+
+def test_the_plotnine_scales_and_pygal_style_read_nhl_stats_ids_when_named():  # re-audit F1
+    pytest.importorskip("plotnine")
+    pytest.importorskip("pygal")
+    from sdvplot.plotnine import scale_color_sdv, scale_fill_sdv
+    from sdvplot.pygal import team_style
+
+    devils_bruins_leafs = sdvplot.team_colors("nhl", ["NJD", "BOS", "TOR"])
+    ids = ["1", "6", "10"]
+    for scale in (scale_color_sdv, scale_fill_sdv):
+        assert scale("nhl", id_system="nhl_id").map(ids, limits=ids) == devils_bruins_leafs
+        with pytest.raises(TypeError):  # which is keyword-only, as in palette() and team_colors()
+            scale("nhl", "secondary")
+    assert list(team_style(ids, league="nhl", id_system="nhl_id").colors[:3]) == devils_bruins_leafs
+    with pytest.raises(sdvplot.UnresolvedTeamError):
+        team_style(["NOPE"], league="nhl", strict=True)
