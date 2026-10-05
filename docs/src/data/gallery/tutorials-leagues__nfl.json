@@ -1,0 +1,27 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "nfl",
+  "label": "NFL",
+  "position": 10,
+  "page": "tutorials/leagues/nfl.md",
+  "items": [
+    {
+      "title": "NFL offense vs defense EPA",
+      "alt": "Scatter of the 32 NFL teams' 2025 offensive and defensive EPA per play, each point drawn as the team logo",
+      "image": "/img/gallery/tutorials/leagues/nfl_3.png",
+      "anchor": "1-offense-vs-defense-epa-per-play"
+    },
+    {
+      "title": "NFL quarterback headshots",
+      "alt": "Bar chart of the top 16 NFL quarterbacks by 2025 EPA per dropback, bars in team colors, headshots at the bar ends",
+      "image": "/img/gallery/tutorials/leagues/nfl_13.png",
+      "anchor": "6-a-quarterback-leaderboard-with-headshots"
+    },
+    {
+      "title": "NFL team tiers",
+      "alt": "Tier list of the 32 NFL teams by 2025 net EPA per play, five rows of team logos on a dark background",
+      "image": "/img/gallery/tutorials/leagues/nfl_22.png",
+      "anchor": "10-team-tiers"
+    }
+  ]
+}
