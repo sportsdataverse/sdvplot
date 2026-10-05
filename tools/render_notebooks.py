@@ -89,7 +89,8 @@ def _output(out, stem: str, cell_index: int, index: int) -> str | None:
     """One cell output as markdown: images to <stem>_files/, markdown (frames) as is, text in a fence."""
     data = out.get("data", {})
     if out.get("output_type") == "stream":
-        return _fence(out.get("text", ""), "text")
+        text = out.get("text", "")
+        return _fence(text, "text") if text.strip() else None  # a bare print() draws no empty block
     if "image/png" in data:
         name = f"{stem}_files/{stem}_{cell_index}_{index}.png"
         dest = OUT_DIR / name

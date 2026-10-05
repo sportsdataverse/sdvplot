@@ -58,6 +58,12 @@ def test_a_cells_outputs_sit_in_one_sdv_output_block_after_its_code(tmp_path, mo
     )
 
 
+def test_an_empty_print_draws_no_output_block(tmp_path, monkeypatch):
+    monkeypatch.setattr(rn, "OUT_DIR", tmp_path)
+    nb = _notebook(new_output("stream", name="stdout", text="\n"))
+    assert "sdv-output" not in rn._to_markdown(nb, "t")
+
+
 def test_a_polars_frame_becomes_a_table_while_a_pandas_frame_and_a_series_stay_text(tmp_path, monkeypatch):  # RF 5
     monkeypatch.setattr(rn, "OUT_DIR", tmp_path)
     nb = _notebook(
