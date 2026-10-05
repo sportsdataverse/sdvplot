@@ -106,8 +106,18 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from PIL import Image
 
 img = OffsetImage(Image.open("label.png"), zoom=0.2)
-ax.add_artist(AnnotationBbox(img, (tick_x, 0), xycoords=ax.get_xaxis_transform(), box_alignment=(0.5, 1.0),
-                             xybox=(0, -4), boxcoords="offset points", frameon=False, annotation_clip=False))
+ax.add_artist(
+    AnnotationBbox(
+        img,
+        (tick_x, 0),
+        xycoords=ax.get_xaxis_transform(),
+        box_alignment=(0.5, 1.0),
+        xybox=(0, -4),
+        boxcoords="offset points",
+        frameon=False,
+        annotation_clip=False,
+    )
+)
 ```
 
 **X7 `team_reference`.** Identity and colors: `sdvplot.teams("nfl")` (`team_id`, `abbr`, `name`, `short_name`,

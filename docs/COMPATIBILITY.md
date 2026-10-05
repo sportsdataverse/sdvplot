@@ -82,7 +82,7 @@ geoplot with a `projection=` returns a `GeoAxes` too: use the same `transform=`.
 ### GeoPandas: logos at centroids
 
 ```python
-centers = gdf.to_crs(3857).centroid.to_crs(4326)   # centroids in a projected CRS, back to lon/lat
+centers = gdf.to_crs(3857).centroid.to_crs(4326)  # centroids in a projected CRS, back to lon/lat
 ax = gdf.plot(color="#dddddd")
 sdvplot.add_logos(ax, centers.x, centers.y, gdf["team"], league="nfl", height=0.1)
 ```
@@ -107,7 +107,9 @@ cmap = pypalettes.create_cmap(sdvplot.team_colors("nfl", ["KC", "BUF"]), cmap_ty
 ```python
 names = ["Kansas City Chiefs", "Buffalo Bills"]
 color = dict(zip(names, sdvplot.team_colors("nfl", names)))
-cloud = WordCloud(color_func=lambda word, **kw: color[word]).generate_from_frequencies({"Kansas City Chiefs": 3, "Buffalo Bills": 2})
+cloud = WordCloud(color_func=lambda word, **kw: color[word]).generate_from_frequencies(
+    {"Kansas City Chiefs": 3, "Buffalo Bills": 2}
+)
 ```
 
 ## Watch list: Reflex XY
