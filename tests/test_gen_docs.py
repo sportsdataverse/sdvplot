@@ -227,8 +227,7 @@ def test_the_sidebar_groups_follow_sections_and_list_every_page_once(tmp_path):
 @pytest.mark.real_index
 def test_the_home_sample_output_is_computed_from_the_sample():
     data = gd.home_data()
-    # not on PyPI yet: the git URL is what a visitor can install today
-    assert data["install"] == "pip install git+https://github.com/sportsdataverse/sdvplot"
+    assert data["install"] == "pip install sdvplot"
     assert data["sample"].splitlines() == ["import sdvplot", "", *gd.HOME_SAMPLE]
     assert data["output"].splitlines()[0] == "['12', '12', '12']"
     assert len(data["output"].splitlines()) == len(gd.HOME_SAMPLE)

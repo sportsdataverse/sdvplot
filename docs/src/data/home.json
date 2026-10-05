@@ -1,5 +1,5 @@
 {
-  "install": "pip install git+https://github.com/sportsdataverse/sdvplot",
+  "install": "pip install sdvplot",
   "sample": "import sdvplot\n\nsdvplot.resolve([\"KC\", \"Kansas City Chiefs\", 12], \"nfl\")\nsdvplot.palette(\"nfl\", teams=[\"KC\", \"SF\"])\nsdvplot.team_colors(\"nba\", [\"LAL\", \"BOS\"])\nsdvplot.team_colors(\"mlb\", \"NYY\", which=\"secondary\")",
   "output": "['12', '12', '12']\n{'KC': '#e31837', 'SF': '#aa0000'}\n['#552583', '#008348']\n'#c4ced4'",
   "swatches": [

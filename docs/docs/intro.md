@@ -14,14 +14,14 @@ It is the Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/
 ## Install
 
 ```bash
-pip install git+https://github.com/sportsdataverse/sdvplot
+pip install sdvplot
 ```
 
 The core needs only narwhals, polars, Pillow, platformdirs and requests (with urllib3 2.6 or later). Each extra adds the
 libraries for one feature:
 
 ```bash
-pip install "sdvplot[mpl] @ git+https://github.com/sportsdataverse/sdvplot"
+pip install "sdvplot[mpl]"
 ```
 
 | Extra | Adds |

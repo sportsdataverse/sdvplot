@@ -69,8 +69,7 @@ MODULE_SECTIONS = {
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
 # never typed), and two-color swatches for six teams in three leagues, from palette().
-# Not on PyPI yet: switch to "pip install sdvplot" after the first release.
-HOME_INSTALL = "pip install git+https://github.com/sportsdataverse/sdvplot"
+HOME_INSTALL = "pip install sdvplot"
 HOME_SAMPLE = [
     'sdvplot.resolve(["KC", "Kansas City Chiefs", 12], "nfl")',
     'sdvplot.palette("nfl", teams=["KC", "SF"])',
