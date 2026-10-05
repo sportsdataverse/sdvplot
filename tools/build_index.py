@@ -61,26 +61,32 @@ def _fallback(league: str, team_id: str, offset: int) -> str:
 
 
 def espn_teams(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-    """ESPN's teams list plus the teams its scoreboards use that the list lacks (data-raw/espn_unlisted_teams.csv), as
-    (all teams, the unlisted ones that are new, second ids). An unlisted id whose name and abbreviation are a listed
-    team's in the league is that team under a second id (women's college hockey's Minnesota State: 24059 beside
-    2364), returned as (league, team_id, espn_id); any other unlisted team (Delaware, 48) is a team of its own."""
+    """ESPN's teams list plus the teams its scoreboards use that the index would lack, missing from the list or from
+    the archive (data-raw/espn_unlisted_teams.csv), as (all ESPN teams, the snapshot's teams of their own, second
+    ids). A snapshot id whose name and abbreviation are a listed team's in the league is that team under a second id
+    (women's college hockey's Minnesota State: 24059 beside 2364), returned as (league, team_id, espn_id); any other
+    is a team of its own (Delaware, 48; SUNY Morrisville, 126813, listed but not archived). A listed team keeps its
+    list row."""
     listed = _csv(raw, "espn_teams.csv")
     path = raw / "espn_unlisted_teams.csv"
-    unlisted = _csv(raw, path.name) if path.exists() else listed.clear()
+    extra = _csv(raw, path.name) if path.exists() else listed.clear()
     keys = ["league", "display_name", "abbreviation"]
-    twins = unlisted.select(*keys, pl.col("team_id").alias("espn_id")).join(listed.select(*keys, "team_id"), on=keys)
-    assert not twins["espn_id"].is_duplicated().any(), f"an unlisted ESPN id matches several listed teams: {twins}"
-    new = unlisted.join(
-        twins.select("league", pl.col("espn_id").alias("team_id")), on=["league", "team_id"], how="anti"
+    twins = (
+        extra.select(*keys, pl.col("team_id").alias("espn_id"))
+        .join(listed.select(*keys, "team_id"), on=keys)
+        .filter(pl.col("espn_id") != pl.col("team_id"))
     )
-    return pl.concat([listed, new]), new, twins.select("league", "team_id", "espn_id")
+    assert not twins["espn_id"].is_duplicated().any(), f"an unlisted ESPN id matches several listed teams: {twins}"
+    own = extra.join(twins.select("league", pl.col("espn_id").alias("team_id")), on=["league", "team_id"], how="anti")
+    new = own.join(listed, on=["league", "team_id"], how="anti")
+    own = pl.concat([new, listed.join(own, on=["league", "team_id"], how="semi")])  # a listed team: its list row
+    return pl.concat([listed, new]), own, twins.select("league", "team_id", "espn_id")
 
 
 def build_teams(raw: Path) -> pl.DataFrame:
     all_espn, unlisted, _ = espn_teams(raw)
     base = _csv(raw, "manifest_teams.csv")
-    # an unlisted ESPN team the archive does not know is a team too (identity, no mark); its league's program
+    # a scoreboard team the archive does not know is a team too (identity, no mark); its league's program
     programs = base.group_by("league").agg(pl.col("program").unique())
     new = unlisted.join(base, on=["league", "team_id"], how="anti").join(programs, on="league")
     assert (new["program"].list.len() == 1).all(), f"no single program for {new['league'].unique().to_list()}"

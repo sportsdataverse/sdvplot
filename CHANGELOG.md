@@ -36,7 +36,7 @@
 - `headshot_url()`: ESPN athlete ids for NFL, NBA, WNBA, MLB, NHL and college football and basketball, plus NFL gsis ids through the nflverse player table.
 - A download cache (`SDVPLOT_CACHE_DIR`, `SDVPLOT_CACHE_TTL`) with `clear_cache()`.
 - The adapter registry and contract harness (`add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos`, `sdvplot.testing`).
-- A bundled index of 5,877 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
+- A bundled index of 5,879 teams across 28 leagues, rebuilt reproducibly from `data-raw/` by `tools/build_index.py`.
 - sdvplotR parity: 99.8% of sdvplotR's `clean_team_abbrs()` keys resolve to the same team (4,232 of 4,241 checked).
 
 ### Added — repository standards
@@ -281,8 +281,10 @@
 - Women's college hockey: ESPN's scoreboards use team ids its teams list lacks. A new snapshot,
   `data-raw/espn_unlisted_teams.csv`, keeps them: one whose name and abbreviation are a listed team's is that team's
   second ESPN id (Minnesota State's `24059` resolves to `2364`, not only by name), and any other is a team of its own
-  (Delaware, `48`, `DEL`). The archive has no Delaware mark, so its logo is `None` with a warning and its colors are
-  flagged `color_source="fallback"`; none is made up.
+  (Delaware, `48`, `DEL`). Men's college hockey adds the teams its scoreboards use that the archive lacks, listed by
+  ESPN or not (SUNY Morrisville, `126813`; Maryville, `132633`); the scan reads one month at a time, since a year of
+  men's games passes the scoreboard's 1,000-event cap. The archive has no mark for these teams, so their logos are
+  `None` with a warning and their colors are flagged `color_source="fallback"`; none is made up.
 - `team_tiers()` (matplotlib and plotnine) takes `theme="dark"` (the default, sdvplotR's) or `theme="light"`: dark
   logos such as Ohio State's, Texas A&M's and Penn State's vanished on the fixed dark background. The light theme's
   labels, lines, subtitle and caption meet WCAG contrast on white; sdvplotR has only the dark theme (`docs/PARITY.md`).

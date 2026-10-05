@@ -272,3 +272,9 @@ def test_womens_college_hockey_ids_espn_game_data_uses():  # ESPN scoreboards us
         (pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "mark") & (pl.col("team_id") == "48")
     )
     assert marks.height == 0  # the archive has no Delaware mark, and none is made up
+
+
+def test_mens_college_hockey_ids_espn_game_data_uses():  # SUNY Morrisville and Maryville play listed teams
+    assert sdvplot.resolve(["126813", "132633"], "ncaa_mhockey") == ["126813", "132633"]
+    assert sdvplot.resolve("Maryville (Mo) Saints", "ncaa_mhockey") == "132633"
+    assert sdvplot.resolve("SUNY Morrisville Mustangs", "ncaa_mhockey") == "126813"  # ESPN-listed, not archived

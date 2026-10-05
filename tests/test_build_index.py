@@ -502,3 +502,24 @@ def test_unlisted_espn_teams_are_a_second_id_or_a_new_team(tmp_path):
     espn = aliases.filter((pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "espn"))
     assert sorted(espn.select("value", "team_id").rows()) == [("2364", "2364"), ("24059", "2364"), ("48", "48")]
     assert aliases.filter((pl.col("id_system") == "mark") & (pl.col("team_id") == "48")).height == 0
+
+
+def test_a_scoreboard_team_espn_lists_but_the_archive_lacks_joins_the_index(tmp_path):
+    raw = _raw(tmp_path)
+    line = "ncaa_mhockey,126813,NYMS,SUNY Morrisville Mustangs,SUNY Morrisville,SUNY Morrisville,Mustangs,,"
+    _add(raw, "manifest_teams.csv", "ncaa_mhockey,2364,Minnesota State Mavericks,mens")
+    _add(
+        raw,
+        "espn_teams.csv",
+        "ncaa_mhockey,2364,MNST,Minnesota State Mavericks,Minnesota St,Minnesota State,Mavericks,,",
+    )
+    _add(raw, "espn_teams.csv", line)  # listed by ESPN, not in the archive manifest
+    (raw / "espn_unlisted_teams.csv").write_text(
+        "league,team_id,abbreviation,display_name,short_display_name,location,nickname,color,alternate_color\n"
+        "ncaa_mhockey,126813,SUNYM,SUNY Morrisville SUNY Morrisville,SUNY Morrisville,SUNY Morrisville,SUNY Morrisville,,\n"
+    )
+    teams, aliases, _ = bi.build(raw)
+    got = teams.filter(pl.col("team_id") == "126813").select("abbr", "name", "program").rows()
+    assert got == [("NYMS", "SUNY Morrisville Mustangs", "mens")]  # a listed team keeps its list row
+    espn = aliases.filter((pl.col("id_system") == "espn") & (pl.col("value") == "126813"))
+    assert espn["team_id"].to_list() == ["126813"]

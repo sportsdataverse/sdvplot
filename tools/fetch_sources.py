@@ -70,9 +70,13 @@ ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid
 # Leagues whose earlier seasons' codes the teams list no longer shows (UFL 2024-25's BIR, ARL; the defunct XFL's):
 # (sdv league, ESPN sport, ESPN league, first season, last season or None for the current year)
 ESPN_SEASON_LEAGUES = [("ufl", "football", "ufl", 2024, None), ("xfl", "football", "xfl", 2020, 2023)]
-# Leagues whose scoreboards use team ids the teams list lacks (women's college hockey: Minnesota State as 24059 beside
-# the listed 2364, and Delaware): espn_unlisted_teams.csv keeps those teams. Seasons as in ESPN_SEASON_LEAGUES.
-ESPN_UNLISTED_LEAGUES = [("ncaa_whockey", "hockey", "womens-college-hockey", 2025, None)]
+# Leagues whose scoreboards use teams the index would lack, missing from ESPN's teams list (women's college hockey:
+# Minnesota State as 24059 beside the listed 2364, Delaware) or from the archive (men's: SUNY Morrisville):
+# espn_unlisted_teams.csv keeps those teams. Seasons as in ESPN_SEASON_LEAGUES.
+ESPN_UNLISTED_LEAGUES = [
+    ("ncaa_whockey", "hockey", "womens-college-hockey", 2025, None),
+    ("ncaa_mhockey", "hockey", "mens-college-hockey", 2023, None),
+]
 ESPN_TEAM_COLUMNS = [
     "league",
     "team_id",
@@ -155,7 +159,7 @@ def fetch_espn_season_abbrs(s: requests.Session, host: str) -> list[dict]:
 
 
 def unlisted_team_ids(scoreboards: list[dict], listed: set[str]) -> list[str]:
-    """The team ids scoreboards use that the teams list lacks (ESPN's "TBD" placeholders, ids <= 0, aside)."""
+    """The team ids scoreboards use that ``listed`` lacks (ESPN's "TBD" placeholders, ids <= 0, aside)."""
     ids = {
         c["team"]["id"]
         for payload in scoreboards
@@ -165,16 +169,19 @@ def unlisted_team_ids(scoreboards: list[dict], listed: set[str]) -> list[str]:
     return sorted(i for i in ids if i.isdigit() and int(i) > 0 and i not in listed)
 
 
-def fetch_espn_unlisted_teams(s: requests.Session, host: str, espn: list[dict]) -> list[dict]:
-    """espn_teams.csv rows, from the per-team endpoint, for the ESPN_UNLISTED_LEAGUES teams unlisted_team_ids finds."""
+def fetch_espn_unlisted_teams(s: requests.Session, host: str, espn: list[dict], archived: list[dict]) -> list[dict]:
+    """espn_teams.csv rows, from the per-team endpoint, for the ESPN_UNLISTED_LEAGUES teams the scoreboards use that
+    ESPN's teams list (``espn``) or the archive (``archived``, manifest_team_rows) lacks."""
     rows = []
     for league, sport, el, first, last in ESPN_UNLISTED_LEAGUES:
         base = f"https://{host}/apis/site/v2/sports/{sport}/{el}"
-        boards = [
-            _get(s, f"{base}/scoreboard?dates={y}&limit=1000").json()
+        boards = [  # one month at a time: a year of men's college hockey passes the scoreboard's 1,000-event cap
+            _get(s, f"{base}/scoreboard?dates={y}{m:02d}&limit=1000").json()
             for y in range(first, (last or dt.date.today().year) + 1)
+            for m in range(1, 13)
         ]
         listed = {t["team_id"] for t in espn if t["league"] == league}
+        listed &= {t["team_id"] for t in archived if t["league"] == league}
         rows += [
             espn_team_row(league, _get(s, f"{base}/teams/{i}").json()["team"])
             for i in unlisted_team_ids(boards, listed)
@@ -340,7 +347,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
 
     text = _get(s, MANIFEST_URL, timeout=120).text
     manifest = list(csv.DictReader(io.StringIO(text)))
-    write("manifest_teams", manifest_team_rows(manifest), ["league", "team_id", "name", "program"])
+    archived = manifest_team_rows(manifest)
+    write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
 
     espn: list[dict] = []
@@ -360,7 +368,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         espn += got
     print(f"ESPN host used: {hosts[0]}")
     write("espn_teams", espn, ESPN_TEAM_COLUMNS)
-    write("espn_unlisted_teams", fetch_espn_unlisted_teams(s, hosts[0], espn), ESPN_TEAM_COLUMNS)
+    write("espn_unlisted_teams", fetch_espn_unlisted_teams(s, hosts[0], espn, archived), ESPN_TEAM_COLUMNS)
     abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0])
     write("espn_abbrs", abbrs, ESPN_ABBR_COLUMNS)
 
