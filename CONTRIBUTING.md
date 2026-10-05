@@ -105,7 +105,10 @@ Do not commit a `render_notebooks.py --no-execute` render: it overwrites the ren
   sections, and link its reference page. The `uv run python tools/gen_docs.py --check` gate enforces the standard
   and fails when the committed reference differs from the docstrings.
 - Warn instead of raising for an unresolved team (`SdvplotWarning`), unless the caller passed `strict=True`.
-- New adapters satisfy the contract in `sdvplot.testing` (`check_adapter_contract`).
+- New adapters satisfy the contract in `sdvplot.testing` (`check_adapter_contract`). The step-by-step checklist, from
+  the module to the changelog entry, is the docs page
+  [Add an adapter](https://sdvplot.sportsdataverse.org/docs/adapters/add-an-adapter)
+  (`docs/docs/adapters/add-an-adapter.md`).
 
 ## Notebooks
 

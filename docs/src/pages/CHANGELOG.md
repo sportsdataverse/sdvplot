@@ -3,6 +3,7 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+    - [Changed](#changed)
   - [[0.1.0] - Unreleased](#010---unreleased)
     - [Added](#added)
       - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
@@ -17,7 +18,7 @@
       - [Tables wave C2 (legends, layout and annotation)](#tables-wave-c2-legends-layout-and-annotation)
       - [Parity extras (court coordinates, images by path, reference lines)](#parity-extras-court-coordinates-images-by-path-reference-lines)
       - [Parity extras (title images, team tiers)](#parity-extras-title-images-team-tiers)
-    - [Changed](#changed)
+    - [Changed](#changed-1)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
     - [Fixed](#fixed)
@@ -32,6 +33,11 @@
 All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- Documentation: an "Add an adapter" guide for contributors (`docs/docs/adapters/add-an-adapter.md`), a checklist from
+  the adapter module to the changelog entry, with a worked example that passes `check_adapter_contract`.
 
 ## [0.1.0] - Unreleased
 

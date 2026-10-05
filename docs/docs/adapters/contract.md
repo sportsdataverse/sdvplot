@@ -7,7 +7,8 @@ sidebar_label: The adapter contract
 
 An adapter draws sdvplot's marks with one plotting or table library. sdvplot registers adapters for matplotlib,
 seaborn, plotnine, great_tables, Plotly, Altair, Bokeh, HoloViews, Folium and pygal, and each meets the contract on
-this page. This page is for the people writing a new one.
+this page. This page is for the people writing a new one; [Add an adapter](add-an-adapter.md) is the step-by-step
+checklist.
 
 ## The verbs
 
