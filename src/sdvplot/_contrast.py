@@ -49,3 +49,12 @@ def mix(a: str, b: str, t: float) -> str:
     ca, cb = hex6(a), hex6(b)
     out = [round(int(ca[i : i + 2], 16) * (1 - t) + int(cb[i : i + 2], 16) * t) for i in (1, 3, 5)]
     return "#" + "".join(f"{v:02x}" for v in out)
+
+
+def solid(color: str, background: str = "#ffffff") -> str:
+    """The opaque ``#rrggbb`` a hex color shows as over ``background``: a translucent ``#rgba``/``#rrggbbaa`` is
+    alpha-composited onto it, so its contrast can be measured; an opaque color is itself."""
+    opaque = hex6(color, drop_alpha=True)  # ValueError for anything but a hex color
+    c = str(color).strip().lstrip("#")
+    alpha = int(c[3] * 2, 16) / 255 if len(c) == 4 else int(c[6:], 16) / 255 if len(c) == 8 else 1.0
+    return mix(background, opaque, alpha)

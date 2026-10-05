@@ -158,3 +158,5 @@
   an opaque alpha (`f`/`ff`) is accepted and `#rgba` is now read. `reactable_sdv_team_color_bg` still replaces
   `na_color`'s alpha with its own `alpha`, as sdvplotR does, and color arguments passed straight to CSS still take
   any CSS color, named or translucent.
+- A translucent table background (`tab_options(table_background_color="#111111CC")`) is read as the color it shows
+  over the page when `gt_legend_discrete` and `gt_marginalia` pick their ink, so a near-black one gets light text.

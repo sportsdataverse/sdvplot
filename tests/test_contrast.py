@@ -1,6 +1,6 @@
 import pytest
 
-from sdvplot._contrast import contrast, hex6, luminance, mix, on_color
+from sdvplot._contrast import contrast, hex6, luminance, mix, on_color, solid
 
 
 @pytest.mark.parametrize(
@@ -56,3 +56,12 @@ def test_mix_interpolates_in_srgb():
     assert mix("#000000", "#ffffff", 0.5) == "#808080"
     with pytest.raises(ValueError):
         mix("#000000", "#ffffff", 1.5)
+
+
+@pytest.mark.parametrize(
+    ("color", "background", "want"),
+    [("#FFEB3B66", "#ffffff", "#fff7b1"), ("#111111CC", "#ffffff", "#414141"), ("#F008", "#000000", "#880000"),
+     ("#e31837", "#000000", "#e31837")],
+)  # fmt: skip
+def test_solid_is_the_color_a_translucent_hex_shows_as(color, background, want):
+    assert solid(color, background) == want

@@ -29,7 +29,7 @@ from sdvplot._contrast import contrast, hex6, mix, on_color
 from sdvplot._errors import SdvplotWarning
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
-from sdvplot.great_tables._marks import _check_gt, _secondary_on, _table_id
+from sdvplot.great_tables._marks import _background, _check_gt, _secondary_on, _table_id
 
 _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".gif": "image/gif"}
 
@@ -92,14 +92,6 @@ def _record(gt: GT, name: str, value: Any) -> GT:
     out = copy.copy(gt)
     out.__dict__[name] = value
     return out
-
-
-def _background(gt: GT) -> str:
-    """The table background as ``#rrggbb``; white when it is unset or not a hex color."""
-    try:
-        return hex6(str(gt._options.table_background_color.value))
-    except ValueError:
-        return "#ffffff"
 
 
 def _text(value: Any) -> str | None:

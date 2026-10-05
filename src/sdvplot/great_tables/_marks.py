@@ -12,7 +12,7 @@ from great_tables import GT, google_font, loc, px, random_id, style
 from great_tables import html as gt_html
 
 from sdvplot._colors import team_colors
-from sdvplot._contrast import contrast, mix, on_color
+from sdvplot._contrast import contrast, mix, on_color, solid
 from sdvplot._errors import SdvplotWarning
 from sdvplot._placement import KINDS, _missing
 from sdvplot._resolve import one_team, resolve
@@ -424,6 +424,15 @@ def _dark_palette() -> dict[str, str]:
         "group_bg": "#16305C",
         "horizon": SDV_HORIZON,
     }
+
+
+def _background(gt: GT) -> str:
+    """The table background as ``#rrggbb``, a best-effort read for picking ink: a translucent hex shows over the
+    (assumed white) page, so it is blended onto white; white when it is unset or not a hex color (a CSS name)."""
+    try:
+        return solid(str(gt._options.table_background_color.value))
+    except ValueError:
+        return "#ffffff"
 
 
 def _secondary_on(bg: str, fg: str, target: float = 4.5) -> str:

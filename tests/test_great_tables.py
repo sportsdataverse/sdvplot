@@ -368,3 +368,18 @@ def test_css_only_color_arguments_still_take_named_and_translucent_colors():
     """hex6 refuses a translucent color where a color is measured or blended; one passed straight to CSS is not."""
     for color in ("rebeccapurple", "#ff000080"):
         assert color in sgt.gt_border_grid(GT(pl.DataFrame({"w": [1]})), color=color).as_raw_html()
+
+
+TRANSLUCENT = "#FFEB3B66"  # 40% yellow: it shows as #fff7b1 on a white table, which wants black ink
+
+
+def test_a_translucent_table_background_is_read_as_it_shows_not_as_white():
+    # #111111CC is 80% near-black: over the page it shows as #414141, which wants white ink (main read it as #111111)
+    dark = GT(pl.DataFrame({"team": ["LV"], "note": ["Lost the starting QB"]})).tab_options(
+        table_background_color="#111111CC"
+    )
+    legend = sgt.gt_legend_discrete(dark, {"Home": "#ff0000"}, heading="Key").as_raw_html()
+    assert 'font-size:16px;color:#ffffff;font-weight:600;">Key<' in legend
+    notes = sgt.gt_marginalia(dark, "note").as_raw_html()
+    ink = re.search(r'style="[^"]*color: (#[0-9a-fA-F]{6})[^"]*"[^>]*>Lost the starting QB', notes).group(1)
+    assert _marks.contrast(ink, "#ffffff") < _marks.contrast(ink, "#000000")  # a light ink
