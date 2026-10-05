@@ -36,6 +36,7 @@ from sdvplot._errors import UnsupportedTargetError, warn
 from sdvplot._marks import _check_mark_type
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, place, place_images
 from sdvplot._resolve import _seasons, _unpack
+from sdvplot._types import Which
 from sdvplot.matplotlib import (
     _add_title_image,
     _align,
@@ -850,7 +851,7 @@ def team_tiers(
     )
 
 
-def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
+def _scale(kind: Any, league: str, which: Which, season: Any, na_value: str, kwargs: dict[str, Any]) -> Any:
     _column(which)  # "primary" / "secondary", else ValueError now rather than when the plot is drawn
 
     class _TeamScale(kind):
@@ -868,7 +869,7 @@ def _scale(kind: Any, league: str, which: str, season: Any, na_value: str, kwarg
 
 
 def scale_color_sdv(
-    league: str, which: str = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
+    league: str, which: Which = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
 ) -> Any:
     """A discrete color scale that maps each team value (any id system) to its team color.
 
@@ -903,7 +904,7 @@ def scale_color_sdv(
 
 
 def scale_fill_sdv(
-    league: str, which: str = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
+    league: str, which: Which = "primary", season: Any = None, na_value: str = "grey", **kwargs: Any
 ) -> Any:
     """A discrete fill scale that maps each team value (any id system) to its team color.
 

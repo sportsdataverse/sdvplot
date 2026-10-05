@@ -21,6 +21,7 @@ from sdvplot._colors import team_colors
 from sdvplot._errors import UnsupportedTargetError
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
+from sdvplot._types import Which
 from sdvplot._web import aspect, image_src
 
 _SUPPORTS_AXIS_LOGOS = False
@@ -316,7 +317,7 @@ def axis_logos(chart: Any, axis: str, **kwargs: Any) -> Any:
     raise UnsupportedTargetError("sdvplot.pygal does not draw axis logos: pygal axis labels are text nodes")
 
 
-def team_style(teams: Any, *, league: str, which: str = "primary", season: Any = None, **style_kwargs: Any) -> Style:
+def team_style(teams: Any, *, league: str, which: Which = "primary", season: Any = None, **style_kwargs: Any) -> Style:
     """A pygal Style whose series colors are the teams' colors, in the order the series are added.
 
     A team that does not resolve keeps pygal's default color for its position (with one SdvplotWarning), so the

@@ -338,3 +338,23 @@ def test_the_axis_logos_docstring_matches_the_adapters(module):
         assert key in raising.replace("_", "").lower(), module
         with pytest.raises(sdvplot.UnsupportedTargetError):
             mod.axis_logos(object(), "x", league="nfl")
+
+
+# S11: every function that resolves teams takes resolve()'s id_system and strict and passes them through. "LV" resolves
+# under "auto" (espn_abbr) but is no "name", so id_system="name" proves the id system arrives, and strict that it raises.
+TEAM_RESOLVERS = {  # the call, and what it returns for a team that does not resolve
+    "team_colors": (lambda **kw: sdvplot.team_colors("nfl", ["LV"], **kw), [None]),
+    "palette": (lambda **kw: sdvplot.palette("nfl", ["LV"], **kw), {}),
+    "logo_url": (lambda **kw: sdvplot.logo_url("LV", "nfl", **kw), None),
+    "logo_image": (lambda **kw: sdvplot.logo_image("LV", "nfl", **kw), None),
+}
+
+
+@pytest.mark.parametrize(("call", "unresolved"), TEAM_RESOLVERS.values(), ids=TEAM_RESOLVERS.keys())
+def test_team_resolving_functions_pass_id_system_and_strict_to_the_resolver(call, unresolved):
+    with pytest.raises(sdvplot.UnresolvedTeamError, match="'LV'"):
+        call(id_system="name", strict=True)
+    with pytest.warns(sdvplot.SdvplotWarning, match="did not resolve"):
+        assert call(id_system="name") == unresolved
+    with pytest.raises(sdvplot.InputError, match="unknown id_system"):
+        call(id_system="espnn")

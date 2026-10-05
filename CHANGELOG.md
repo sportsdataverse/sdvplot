@@ -42,6 +42,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - A deprecation helper, `sdvplot._deprecate` (`deprecate()` and `@deprecated_alias`), and its warning,
   `sdvplot.SdvplotDeprecationWarning` (a `FutureWarning` and a `SdvplotWarning`), with a deprecation policy in
   CONTRIBUTING.md: one minor release of warnings before a removal. Nothing is deprecated yet.
+- `id_system` and `strict` wherever a team is resolved, passed to the resolver as `resolve()` takes them:
+  `team_colors`, `palette`, `logo_url`, `logo_image`, the great_tables helpers `gt_sdv_logos`, `gt_sdv_wordmarks`,
+  `gt_sdv_cols_label` and `gt_merge_stack_team_color` (`gt_theme_sdv_team` takes `id_system`; it is always strict),
+  and the reactable helpers `reactable_sdv_logos`, `reactable_sdv_wordmarks`, `reactable_sdv_cols_label`,
+  `reactable_sdv_team_color_bar` and `reactable_sdv_team_color_bg`. NHL stats ids need it:
+  `team_colors("nhl", [1, 6, 10])` reads them as ESPN ids and returns the Bruins, Oilers and Canadiens without a
+  warning, while `team_colors("nhl", [1, 6, 10], id_system="nhl_id")` gives the Devils, Bruins and Leafs.
+  `gt_sdv_cols_label`'s `id_system` now defaults to None: "auto" for logos and wordmarks, "espn" for headshots.
+  `team_colors`'s `which` is typed `Which`, so `which="secondry"` is a type error, as it is for `palette`.
 - `sdvplot.typing`: the `Literal` types of the closed argument vocabularies (`IdSystem`, `HeadshotIdSystem`, `Which`,
   `MarkType`), for annotating code that keeps an argument in a variable (`which: Which = "primary"`).
 

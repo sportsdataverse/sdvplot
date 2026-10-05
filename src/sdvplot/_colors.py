@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, overload
 from sdvplot import _index
 from sdvplot._errors import InputError, warn
 from sdvplot._resolve import _seasons, _unpack, resolve
-from sdvplot._types import Which
+from sdvplot._types import IdSystem, Which
 
 if TYPE_CHECKING:
     import numpy as np
@@ -31,7 +31,15 @@ def _colors(league: str, column: str) -> dict[str, str]:
     return {tid: c for tid, c in t.select("team_id", column).iter_rows() if c}
 
 
-def palette(league: str, teams: Any = None, *, which: Which = "primary", season: Any = None) -> dict[Any, str]:
+def palette(
+    league: str,
+    teams: Any = None,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
     Without ``teams`` the keys are canonical abbreviations, or the team_id where a team has no abbreviation or shares
@@ -43,6 +51,9 @@ def palette(league: str, teams: Any = None, *, which: Which = "primary", season:
         teams: Team values to key the dict by; None returns the whole league.
         which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
+        id_system: The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
 
     Returns:
         dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out. Without ``teams``, a team
@@ -53,7 +64,9 @@ def palette(league: str, teams: Any = None, *, which: Which = "primary", season:
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
         InputError: (a ValueError) If ``league`` is not a known league key, ``which`` is not "primary"/"secondary", or
             ``teams`` holds "primary" or "secondary" (the slot goes in ``which=``).
-        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams), or ``id_system``
+            is unknown.
+        UnresolvedTeamError: If ``strict=True`` and a team does not resolve.
 
     Example:
         ::
@@ -82,7 +95,7 @@ def palette(league: str, teams: Any = None, *, which: Which = "primary", season:
             f'palette(league, teams=..., which="{slots[0]}")'
         )
     pairs = [p for p in dict.fromkeys(zip(values, _seasons(season, len(values)), strict=True)) if p[0] is not None]
-    ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs])
+    ids = resolve([v for v, _ in pairs], league, season=[s for _, s in pairs], id_system=id_system, strict=strict)
     out: dict[Any, str] = {}
     for (v, _), i in zip(pairs, ids, strict=True):
         if i is not None and i in colors:
@@ -90,29 +103,66 @@ def palette(league: str, teams: Any = None, *, which: Which = "primary", season:
     return out
 
 
-# resolve()'s container rule, and so its overloads (the last one's ignore included). which stays str here while the
-# adapters that forward it (pygal, plotnine, reactable) still take a str.
+# resolve()'s container rule, and so its overloads (the last one's ignore included).
 @overload
 def team_colors(
-    league: str, teams: str | bytes | int | float | None, *, which: str = "primary", season: Any = None
+    league: str,
+    teams: str | bytes | int | float | None,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> str | None: ...
 @overload
-def team_colors(league: str, teams: pl.Series, *, which: str = "primary", season: Any = None) -> pl.Series: ...
+def team_colors(
+    league: str,
+    teams: pl.Series,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> pl.Series: ...
 @overload
 def team_colors(
     league: str,
     teams: list[Any] | tuple[Any, ...] | np.ndarray[Any, Any],
     *,
-    which: str = "primary",
+    which: Which = "primary",
     season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> list[str | None]: ...
 @overload
-def team_colors(league: str, teams: pd.Series, *, which: str = "primary", season: Any = None) -> pd.Series: ...
+def team_colors(
+    league: str,
+    teams: pd.Series,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> pd.Series: ...
 @overload
 def team_colors(  # type: ignore[overload-cannot-match]
-    league: str, teams: Any, *, which: str = "primary", season: Any = None
+    league: str,
+    teams: Any,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> Any: ...
-def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any = None) -> Any:
+def team_colors(
+    league: str,
+    teams: Any,
+    *,
+    which: Which = "primary",
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in.
 
     Args:
@@ -120,6 +170,9 @@ def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any 
         teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
         which: "primary" or "secondary".
         season: One season, or one per team, for values reused across eras.
+        id_system: The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
 
     Returns:
         str | list | Series | None: The hex color for each team, None where a team does not resolve or has no color.
@@ -128,7 +181,9 @@ def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any 
         TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
         InputError: (a ValueError) If ``league`` is not a known league key (a list or Series there is the pre-0.1
             ``team_colors(teams, league)`` order) or ``which`` is not "primary"/"secondary".
-        ValueError: If ``season`` is not a year (or a list whose length does not match the teams).
+        ValueError: If ``season`` is not a year (or a list whose length does not match the teams), or ``id_system``
+            is unknown.
+        UnresolvedTeamError: If ``strict=True`` and a team does not resolve.
 
     Example:
         ::
@@ -137,6 +192,7 @@ def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any 
 
             sdvplot.team_colors("nfl", ["KC", "SF"])              # ['#e31837', '#aa0000']
             sdvplot.team_colors("nfl", "KC", which="secondary")   # '#ffb612'
+            sdvplot.team_colors("nhl", [1, 6, 10], id_system="nhl_id")   # NHL stats ids: Devils, Bruins, Leafs
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -146,5 +202,5 @@ def team_colors(league: str, teams: Any, *, which: str = "primary", season: Any 
     _index.check_league(league)
     colors = _colors(league, column)
     values, wrap = _unpack(teams)
-    ids = resolve(values, league, season=season)
+    ids = resolve(values, league, season=season, id_system=id_system, strict=strict)
     return wrap([colors.get(i) if i is not None else None for i in ids])

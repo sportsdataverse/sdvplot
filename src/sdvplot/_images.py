@@ -17,7 +17,7 @@ from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached
 from sdvplot._errors import IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
 from sdvplot._resolve import one_team, resolve
-from sdvplot._types import MarkType
+from sdvplot._types import IdSystem, MarkType
 
 if TYPE_CHECKING:
     from PIL import Image
@@ -84,6 +84,8 @@ def logo_image(
     variant: str = "default",
     mark_type: MarkType = "logo",
     size: int | None = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> Image.Image | None:
     """The team's mark as a PIL image (downloaded once, then cached).
 
@@ -94,6 +96,9 @@ def logo_image(
         variant: "default", "dark", or a named variant from ``marks()``.
         mark_type: "logo" or "wordmark".
         size: The longest side in pixels. Rasters are only scaled down; SVGs are rasterized at it (default 512).
+        id_system: The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
+            "nhl_id".
+        strict: Raise UnresolvedTeamError instead of warning when the team does not resolve.
 
     Returns:
         PIL.Image.Image | None: The image, or None when the team does not resolve or has no mark.
@@ -110,8 +115,10 @@ def logo_image(
             redirected away from https.
         UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for the mark would put the file
             outside the cache directory.
-        InputError: (a ValueError) If ``league`` is unknown, ``mark_type`` is not "logo"/"wordmark", ``variant`` is a
-            name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for the league.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, ``mark_type`` is not "logo"/"wordmark",
+            ``variant`` is a name no mark in the archive has, or ``season`` is outside the seasons sdvplot knows for
+            the league.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and the team does not resolve.
         ValueError: If an SVG cannot be parsed.
 
     Example:
@@ -128,7 +135,7 @@ def logo_image(
     """
     _check_mark_type(mark_type)
     _check_variant(variant, league)
-    team_id = resolve(one_team(team, "logo_image"), league, season=season)
+    team_id = resolve(one_team(team, "logo_image"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)
