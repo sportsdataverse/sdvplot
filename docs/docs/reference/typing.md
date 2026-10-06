@@ -31,7 +31,7 @@ AxisMarkType = Literal['logo', 'wordmark', 'headshot']
 <div class="sdv-signature">
 
 ```python
-HeadshotIdSystem = Literal['espn', 'gsis']
+HeadshotIdSystem = Literal['espn', 'gsis', 'league']
 ```
 
 </div>

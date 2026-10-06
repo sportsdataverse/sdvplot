@@ -248,7 +248,8 @@ def gt_sdv_headshots(
         locations: Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a
             list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels,
             use ``gt_sdv_cols_label``.
-        id_system: "espn" (ESPN athlete ids, any ESPN league) or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
 
     Returns:
         GT: A new table; ids without a headshot keep their text, with one SdvplotWarning now.
@@ -308,8 +309,8 @@ def gt_sdv_cols_label(
         season: One season whose marks to show; None for today's.
         mark_type: "logo", "wordmark", or "headshot" (the column names are player ids).
         id_system: The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means
-            "auto"; NHL stats ids need "nhl_id"), for headshots "espn" or "gsis" as in ``headshot_url`` (None means
-            "espn").
+            "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis" or "league" as in ``headshot_url``
+            (None means "espn").
         strict: Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team.
 
     Returns:

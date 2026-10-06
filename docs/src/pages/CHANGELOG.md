@@ -43,6 +43,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Headshots by the league's own player id: `id_system="league"` (sdvplotR's `id_type = "league"`) on `headshot_url`
+  and every headshot helper (`add_headshots` on every adapter, `geom_sdv_headshots`, `gt_sdv_headshots`,
+  `gt_sdv_cols_label(mark_type="headshot")`, `reactable_sdv_headshots`, `plottable.headshot_column`) draws an NBA or
+  WNBA Stats `PERSON_ID` (what nba_api, hoopR and wehoop return), an MLBAM id or an NHL API id from the league's CDN,
+  with sdvplotR's URL templates; for the NFL it is the gsis id. `"espn"` stays the default. A league without them is
+  an `InputError` naming the ones that have them, and a `DownloadError` from cdn.nba.com or cdn.wnba.com with a 403
+  says that those CDNs block datacenter and cloud IPs.
+- `surface("fiba")` draws a FIBA court (no team yet).
 - `sdvplot.plotnine.scale_color_sdv` and `scale_fill_sdv` take `alpha=`, an opacity applied to the team colors
   (sdvplotR's `alpha`); `na_value` is drawn as given. `scale_colour_sdv` is the British alias sdvplotR and plotnine
   both ship.
@@ -58,7 +66,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `tools/espn_soccer_y_gate.py`, the measurement behind the ESPN frame's y direction.
 - `axis_logos(..., mark_type="headshot")` draws player headshots as axis labels on matplotlib, plotnine, Plotly and
   Altair (the port of sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` and `element_sdv_headshot()`):
-  the tick labels are read as player ids (`id_system` `"espn"`, which `"auto"` means, or `"gsis"`), each headshot
+  the tick labels are read as player ids (`id_system` `"espn"`, which `"auto"` means, `"gsis"` or `"league"`), each headshot
   keeps its own aspect, an unknown id stays as text with one warning, and the adapters without axis logos raise
   `UnsupportedTargetError` as before. `sdvplot.typing.AxisMarkType` is the `Literal` of the three mark types. The
   matplotlib y-axis label pad now grows by the widest image's width, so wordmarks and headshots no longer overlap
@@ -66,6 +74,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- `surface("soccer")` draws a regulation 105 x 68 m pitch by default (it drew sportypy's 120 x 90 m maximum), the
+  frame `pitch_coords()` returns; `pitch_updates` still overrides it key by key.
 - `gt_merge_stack_team_color` keeps the bottom line readable (sdvplotR #55): the team's primary color when it clears
   4.5:1 contrast (WCAG AA) on the cell background, else the secondary, else the primary darkened (or lightened, on a
   dark table) until it does, so Missouri's gold (1.8:1 on white) reads on a white table and stays gold on a dark one.

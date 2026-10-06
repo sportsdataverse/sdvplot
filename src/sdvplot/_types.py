@@ -30,8 +30,9 @@ IdSystem = Literal[
     "name",
     "nhl_id",
 ]
-# headshot_url()'s id_system: ESPN athlete ids (any ESPN league) or nflverse gsis ids (nfl)
-HeadshotIdSystem = Literal["espn", "gsis"]
+# headshot_url()'s id_system: ESPN athlete ids (any ESPN league), nflverse gsis ids (nfl), or the league's own player
+# id (sdvplotR's id_type="league": nfl gsis, NBA / WNBA Stats PERSON_ID, MLBAM, NHL; _headshots.LEAGUE_HEADSHOT_URLS)
+HeadshotIdSystem = Literal["espn", "gsis", "league"]
 # palette()'s color slot: _colors._COLUMNS
 Which = Literal["primary", "secondary"]
 # logo_url() and logo_image()'s mark: _marks.MARK_TYPES

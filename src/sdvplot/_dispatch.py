@@ -231,8 +231,8 @@ def add_headshots(target: Any, *args: Any, **kwargs: Any) -> Any:
         *args: Passed to the adapter. For a plot: ``x``, ``y`` (positions in the target's own coordinates) and
             ``teams`` (the player ids to draw), in that order. For a table: ``columns`` (the columns whose cells
             become headshots).
-        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``id_system`` (``"espn"`` or
-            ``"gsis"``, as in ``headshot_url``). For a plot, also ``height`` (a fraction of the plot height, in
+        **kwargs: Passed to the adapter: ``league`` (the SDV league key) and ``id_system`` (``"espn"``, ``"gsis"`` or
+            ``"league"``, as in ``headshot_url``). For a plot, also ``height`` (a fraction of the plot height, in
             (0, 1]) and ``alpha`` (opacity, 0 to 1); for a table, ``height`` is in pixels (default 30). Headshots take
             no ``season`` or ``variant``.
 
@@ -292,8 +292,8 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
         **kwargs: Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season for every
             label, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1),
             and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``.
-            ``mark_type="headshot"`` reads the labels as player ids (``id_system`` "espn" or "gsis" as in
-            ``headshot_url``; "auto" means "espn") and draws their headshots at their own aspect, as sdvplotR's
+            ``mark_type="headshot"`` reads the labels as player ids (``id_system`` "espn", "gsis" or "league"
+            as in ``headshot_url``; "auto" means "espn") and draws their headshots at their own aspect, as sdvplotR's
             ``scale_*_sdv_headshots()``.
 
     Returns:

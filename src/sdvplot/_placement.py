@@ -90,16 +90,15 @@ def place(
     whose team is unknown, whose x or y is missing, or that have no mark.
 
     ``x``, ``y`` and ``teams`` are read positionally (a pandas index is ignored). For ``kind="headshot"``, ``teams``
-    holds player ids, ``season`` is ignored and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``;
-    ``"auto"`` means ``"espn"``); otherwise
-    ``strict=True`` raises UnresolvedTeamError for a team that does not resolve, as ``resolve`` does. ``_warn=False``
-    skips the same points without warning, for an adapter that already warned for them (no process-wide warning
-    filter is touched, so it is thread-safe).
+    holds player ids, ``season`` is ignored and ``id_system`` must be ``"espn"``, ``"gsis"`` or ``"league"`` (as in
+    ``headshot_url``; ``"auto"`` means ``"espn"``); otherwise ``strict=True`` raises UnresolvedTeamError for a team that
+    does not resolve, as ``resolve`` does. ``_warn=False`` skips the same points without warning, for an adapter that
+    already warned for them (no process-wide warning filter is touched, so it is thread-safe).
     """
     skipped = _warn_skipped if _warn else lambda reason, values: None
     check_kind(kind)
     if kind == "headshot" and id_system == "auto":
-        id_system = "espn"  # the axis verbs' default; a headshot id is an ESPN athlete id unless told "gsis"
+        id_system = "espn"  # the axis verbs' default; a headshot id is an ESPN athlete id unless told otherwise
     xs, _ = _unpack(x)
     ys, _ = _unpack(y)
     ts, _ = _unpack(teams)
@@ -120,9 +119,9 @@ def place(
             if url is None:
                 no_image.append(pid)
                 continue
-            # the id the URL was built from: headshot_url reads an espn id through norm_value, so an id that went
-            # through a float ("3139477.0") is 3139477; gsis ids are looked up as given
-            key = norm_value(pid) if id_system == "espn" else None
+            # the id the URL was built from: headshot_url reads an espn or league id through norm_value, so an id that
+            # went through a float ("3139477.0") is 3139477; gsis ids (nfl "gsis" or "league") are looked up as given
+            key = norm_value(pid) if id_system == "espn" or (id_system == "league" and league != "nfl") else None
             out.append(Placement(key or str(pid).strip(), xi, yi, url, None, None))
         skipped("with no headshot", no_image)
     else:

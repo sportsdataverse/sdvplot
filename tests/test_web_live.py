@@ -28,3 +28,17 @@ def test_archive_urls_serve_images_a_browser_can_load(league, team, tmp_path, mo
     r = requests.get(sdvplot.logo_url(team, league), timeout=30)
     assert r.status_code == 200
     assert r.headers["Content-Type"].startswith("image/")
+
+
+# the league-id CDNs (sdvplotR's league_headshot_url). cdn.nba.com and cdn.wnba.com answer 403 to datacenter IPs: on
+# CI that is the block, not a broken template, so it skips; from a residential connection it must be a 200 image.
+@pytest.mark.parametrize(
+    ("league", "player"), [("nba", "2544"), ("wnba", "1628932"), ("mlb", "660271"), ("nhl", "8478402")]
+)
+def test_league_id_headshot_cdns_serve_images(league, player):
+    url = sdvplot.headshot_url(player, league, id_system="league")
+    r = requests.get(url, timeout=30)
+    if r.status_code == 403:
+        pytest.skip(f"{url}: 403 (a datacenter or cloud IP; the CDN blocks them)")
+    assert r.status_code == 200
+    assert r.headers["Content-Type"].startswith("image/")

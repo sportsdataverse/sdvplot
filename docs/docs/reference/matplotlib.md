@@ -54,7 +54,7 @@ Draw each player's headshot centred on its (x, y) point of a matplotlib or seabo
 | `height` | `float` | The headshot height as a fraction of the Axes height, in (0, 1]. |
 | `alpha` | `float` | Opacity, 0 to 1. |
 | `zorder` | `float` | matplotlib drawing order. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 | `transform` | `Any` | The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform. A mark whose position falls outside the Axes is not drawn, whatever the transform. |
 
 ### Returns
@@ -336,7 +336,7 @@ not teams (or, with ``mark_type="headshot"``, not player ids with a headshot) st
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the Axes height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn" or "gsis" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn", "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `id_system` | `str` | The id system of the labels; "auto" tries each in order. |
 
 ### Returns

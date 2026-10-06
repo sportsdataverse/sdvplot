@@ -56,7 +56,7 @@ Draw each player's headshot centred on its (x, y) point of a Plotly figure.
 | `yref` | `str` | The y axis to place on. |
 | `layer` | `str` | "above" or "below" the traces. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 
@@ -275,7 +275,7 @@ to make room. Call it after adding the traces, so the axis has its categories.
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the plot area's height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn" or "gsis" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn", "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
 | `id_system` | `str` | The id system of the labels; "auto" tries each in order. |
 

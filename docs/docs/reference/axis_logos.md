@@ -29,7 +29,7 @@ UnsupportedTargetError (a TypeError).
 |---|---|
 | `target` | The plot object. Its type picks the adapter. |
 | `*args` | Passed to the adapter: ``axis`` (which axis' tick labels to replace, ``"x"`` or ``"y"``). |
-| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season for every label, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1), and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``. ``mark_type="headshot"`` reads the labels as player ids (``id_system`` "espn" or "gsis" as in ``headshot_url``; "auto" means "espn") and draws their headshots at their own aspect, as sdvplotR's ``scale_*_sdv_headshots()``. |
+| `**kwargs` | Passed to the adapter: ``league`` (the SDV league key, required), ``season`` (one season for every label, default ``None``), ``height`` (the mark's height as a fraction of the plot height, default 0.1), and ``variant``, ``mark_type`` and ``id_system`` as in ``logo_url`` and ``resolve``. ``mark_type="headshot"`` reads the labels as player ids (``id_system`` "espn", "gsis" or "league" as in ``headshot_url``; "auto" means "espn") and draws their headshots at their own aspect, as sdvplotR's ``scale_*_sdv_headshots()``. |
 
 ## Returns
 

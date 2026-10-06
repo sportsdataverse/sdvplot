@@ -30,7 +30,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
 | X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | `axis_logos(target, axis, *, league, mark_type="headshot", height=0.1, id_system="auto")` on matplotlib, plotnine, Plotly and Altair | ported (below) |
 | X13 | `include_conferences` (conference and league marks) | none | not ported yet: no conference rows in the team index or the archive mapping |
-| X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | none | not ported yet: `headshot_url` takes ESPN ids and NFL gsis ids |
+| X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | `headshot_url(..., id_system="league")` and every headshot helper | ported (below); the default id system still differs (`espn` for every league; R's NFL default is gsis) |
 | X15 | `sdv_pitch_coords()` | `sdvplot.pitch_coords(data, *, provider, x=None, y=None, flip=None, pitch_length=None, pitch_width=None)` | ported (below) |
 
 ## Ported
@@ -47,8 +47,7 @@ and wordmarks on a team axis reads the tick labels as player ids and draws each 
 (ESPN serves 600 x 436), on every adapter that draws axis logos (matplotlib, plotnine, Plotly, Altair; the others
 raise `UnsupportedTargetError` as for logos). An unknown id stays as text with one `SdvplotWarning`, as an unknown
 team does. Differences: one verb with `mark_type` instead of two scales; `id_system` is `"espn"` (the default, also
-what `"auto"` means) or `"gsis"` for the NFL, as `headshot_url` (sdvplotR defaults the NFL to GSIS ids and also
-takes league ids, X14); `height` is a fraction of the plot height, not `size` in points; on Plotly, numeric-looking
+what `"auto"` means), `"gsis"` or `"league"`, as `headshot_url` (sdvplotR defaults the NFL to GSIS ids); `height` is a fraction of the plot height, not `size` in points; on Plotly, numeric-looking
 player ids need the axis declared `type="category"`, as Plotly itself would otherwise draw a linear axis.
 
 **X15 `pitch_coords`.** One landmark table (`src/sdvplot/data/pitch_landmarks.csv`, byte-identical to sdvplotR's
@@ -96,6 +95,20 @@ ratio) as aesthetics, so each row can carry its own. `sdvplot.plotnine.geom_sdv_
 and centred, with one `height` parameter (a fraction of the panel height; `width` follows the aspect ratio) and `alpha`
 for the whole layer; they add `variant`, `id_system` and a `season=` parameter sdvplotR has not. The aesthetics are
 documented here and not ported: a tinted or rotated logo has not come up; port on demand.
+
+**X14 league-id headshots.** `id_system="league"` is sdvplotR's `id_type = "league"`: the player id the league's own
+API gives (an NBA or WNBA Stats `PERSON_ID`, as nba_api, hoopR and wehoop return it; an MLBAM id; an NHL API id; the
+NFL's gsis id, where it is the same as `id_system="gsis"`), drawn from the league's CDN with the URL templates of
+`league_headshot_url` (utils.R): `cdn.nba.com/headshots/nba/latest/260x190/{id}.png`, `cdn.wnba.com/headshots/wnba/
+latest/260x190/{id}.png`, `img.mlbstatic.com/.../v1/people/{id}/headshot/67/current.png` and
+`assets.nhle.com/mugs/nhl/latest/{id}.png`. Every headshot entry point takes it: `headshot_url`, `add_headshots` on
+every adapter, `geom_sdv_headshots`, `gt_sdv_headshots`, `gt_sdv_cols_label(mark_type="headshot")`,
+`reactable_sdv_headshots` and `plottable.headshot_column`. As in R, an unknown id gets the CDN's silhouette (no 404),
+and a league without league-id headshots (cfb, mbb, wbb) is an `InputError` naming the ones that have them. The
+remaining divergence is the default: `id_system="espn"` for every league, where R's NFL helpers read ids as gsis unless
+`id_type = "espn"`. cdn.nba.com and cdn.wnba.com answer 403 to datacenter and cloud IPs, so a raster adapter drawn on
+CI or a server raises `DownloadError` naming that cause (the web adapters link the URL and leave the fetch to the
+browser); the live test skips on a 403.
 
 **X11 `scale_color_sdv` / `scale_fill_sdv`.** `alpha` fades the team colors (sdvplotR applies `scales::alpha()`;
 sdvplot appends the alpha byte, `#rrggbbaa`) and leaves `na_value` as given, as R leaves `na.value`; `scale_colour_sdv`

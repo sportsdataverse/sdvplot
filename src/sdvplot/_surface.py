@@ -40,7 +40,10 @@ SURFACES: dict[str, tuple[str, str]] = {
     "ncaa_mhockey": ("hockey", "NCAARink"),
     "ncaa_whockey": ("hockey", "NCAARink"),
     "soccer": ("soccer", "FIFAPitch"),
+    "fiba": ("basketball", "FIBACourt"),
 }
+NO_TEAMS = frozenset({"fiba"})  # surfaces drawn without team identities (FIBA teams arrive with W5)
+SOCCER_PITCH = {"pitch_length": 105, "pitch_width": 68}  # sportypy's fifa default is FIFA's 120 x 90 m maximum
 SURFACE_BASE = {"basketball": "#d2ab6f", "football": "#196f0c", "hockey": "#ffffff"}  # sportyR's default colors
 _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
 _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font (data/surface_dimensions.json)
@@ -143,7 +146,8 @@ def surface(
     """Draw the league's playing surface with sportypy, in a team's colors.
 
     Args:
-        league: The SDV league key, e.g. "nfl", "nba", "nhl", "cfb", "soccer".
+        league: The SDV league key, e.g. "nfl", "nba", "nhl", "cfb", "soccer" (a 105 x 68 m pitch,
+            the frame pitch_coords() returns) or "fiba".
         team: A team to color the surface by (end zones, lane and apron, center line and boards); None for the plain
             surface.
         season: The season, for teams whose colors changed.
@@ -191,6 +195,10 @@ def surface(
             "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
         ) from e
     draw_kwargs = {k: sportypy_kwargs.pop(k) for k in _DRAW_KWARGS if k in sportypy_kwargs}
+    if team is not None and league in NO_TEAMS:
+        raise InputError(f"no team identities for {league!r} yet: draw the plain surface with team=None")
+    if league == "soccer":  # the regulation pitch pitch_coords() converts to; the caller's pitch_updates win
+        sportypy_kwargs["pitch_updates"] = {**SOCCER_PITCH, **sportypy_kwargs.get("pitch_updates", {})}
     if sport == "football" and not _has_font(_NUMBER_FONT):
         # sportypy numbers football fields in Clarendon-Regular, which it does not ship: matplotlib then logs "findfont:
         # Font family 'Clarendon-Regular' not found" for every number it measures and draws its default font anyway.
