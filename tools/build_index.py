@@ -233,7 +233,12 @@ def build_teams(raw: Path) -> pl.DataFrame:
     ).with_columns(  # a secondary is a second color: one equal to the primary is none
         pl.when(pl.col("color_secondary") != pl.col("color_primary")).then(pl.col("color_secondary"))
     )
-    t = t.with_columns(
+    return _fill_fallback(t).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+def _fill_fallback(t: pl.DataFrame) -> pl.DataFrame:
+    """The placeholder colors: a row with no primary takes both from the fixed palette (color_source "fallback")."""
+    return t.with_columns(
         pl.struct("league", "team_id", "color_primary")
         .map_elements(lambda r: r["color_primary"] or _fallback(r["league"], r["team_id"], 0), return_dtype=pl.String)
         .alias("color_primary"),
@@ -247,7 +252,53 @@ def build_teams(raw: Path) -> pl.DataFrame:
         )
         .alias("color_secondary"),
     )
-    return t.select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+# ESPN's conference names as sdvplotR's generate_logo_ref.R has them, where sdvplot's groups snapshot
+# (data-raw/groups_latest.csv, tools/fetch_sources.py) spells the same conference otherwise
+CONFERENCE_NAMES = {"Atlantic Sun Conference": "ASUN Conference", "Summit League": "The Summit League"}
+
+
+def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
+    """sdvplotR's conference and league rows (data-raw/sdvplotr_conferences.csv: the college conferences, the AFC, NFC
+    and the NFL, from tools/export_sdvplotr.R) as index rows whose ``program`` is "conference" or "league" (R's
+    ``type``), shown only by teams(include_conferences=True). The id is R's key, the conference's short name ("SEC",
+    "Big 12", "AFC"): never a number, so it meets no team id. ``conference_id`` is the group slug the league's team rows
+    carry for the same conference name, so a team joins its conference row on it (a retired conference, the WAC, has
+    none); ``conference`` is the row's own full name (null for the NFL itself). Colors are cbbplotR's through R
+    (``color_source`` "cbbplotR"), the placeholder rule where R has none (the AFC, NFC and NFL, the independents); a
+    secondary equal to the primary is none, as for teams. The rows get NO aliases: resolve() never answers a conference
+    key unless asked for it (cfb's "MAC" is the Mid-American Conference and Macalester)."""
+    path = raw / "sdvplotr_conferences.csv"
+    if not path.exists():
+        return teams.clear()
+    slugs = teams.select("league", pl.col("conference").alias("_conf"), "conference_id").drop_nulls().unique()
+    c = (
+        _csv(raw, path.name)
+        .with_columns(pl.col("team_name").replace(CONFERENCE_NAMES).alias("_conf"))
+        .join(slugs, left_on=["sport", "_conf"], right_on=["league", "_conf"], how="left")
+    )
+    primary, secondary = _hex("color1"), _hex("color2")
+    out = c.select(
+        pl.col("sport").alias("league"),
+        pl.col("team_abbr").alias("team_id"),
+        pl.col("team_abbr").alias("abbr"),
+        pl.col("team_name").alias("name"),
+        pl.col("team_short_name").alias("short_name"),
+        pl.lit(None, pl.String).alias("location"),
+        pl.col("type").alias("program"),
+        "conference_id",
+        pl.when(pl.col("type") == "conference").then(pl.col("team_name")).alias("conference"),
+        primary.alias("color_primary"),
+        pl.when(secondary != primary).then(secondary).alias("color_secondary"),
+        pl.when(primary.is_not_null()).then(pl.col("color_source")).otherwise(pl.lit("fallback")).alias("color_source"),
+    )
+    assert set(out["program"]) <= {"conference", "league"}, f"unknown row type in {path.name}: {set(out['program'])}"
+    unknown = out.join(teams.select("league").unique(), on="league", how="anti")["league"].to_list()
+    assert not unknown, f"{path.name} names a league with no teams: {unknown}"
+    assert not out.select("league", "team_id").is_duplicated().any(), f"{path.name} repeats a (sport, team_abbr)"
+    assert out.join(teams, on=["league", "team_id"], how="semi").height == 0, "a conference key is a team id"
+    return _fill_fallback(out).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
 
 
 def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
@@ -721,7 +772,8 @@ def stamp(teams: pl.DataFrame, aliases: pl.DataFrame) -> str:
 
 def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     teams = build_teams(raw)
-    aliases = build_aliases(raw, teams)
+    aliases = build_aliases(raw, teams)  # from the team rows only: a conference row is never a resolver candidate
+    teams = pl.concat([teams, conference_rows(raw, teams)])
     return teams, aliases, stamp(teams, aliases)
 
 

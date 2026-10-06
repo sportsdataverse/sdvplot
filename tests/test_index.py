@@ -1,6 +1,7 @@
 import polars as pl
 import pytest
 
+import sdvplot
 import sdvplot._index as idx
 
 
@@ -42,3 +43,16 @@ def test_the_index_directory_is_looked_up_once(monkeypatch):  # re-audit finding
 
     monkeypatch.setattr(idx.resources, "files", fail)
     idx.check_league("nfl")
+
+
+def test_conference_rows_are_opt_in():  # sdvplotR include_conferences: the fixture holds the AFC
+    assert "AFC" not in idx.teams("nfl")["team_id"].to_list() and idx.teams().height == 10
+    assert idx.teams("nfl", include_conferences=True)["team_id"].to_list() == ["13", "14", "24", "AFC"]
+    assert idx.teams(include_conferences=True).height == 11
+    assert idx.team_table().filter(pl.col("program").is_in(idx.NON_TEAM)).height == 0
+
+
+def test_a_conference_key_never_resolves_or_colors_as_a_team():
+    with pytest.warns(sdvplot.SdvplotWarning, match="'AFC'"):
+        assert sdvplot.resolve("AFC", "nfl") is None
+    assert "AFC" not in sdvplot.palette("nfl")

@@ -72,6 +72,22 @@ TEAMS = [
         "#bd9b60",
         "espn",
     ),
+    # sdvplotR's AFC row (program "conference"; the shipped index's values): every team listing leaves it out unless
+    # asked, and it has no alias
+    (
+        "nfl",
+        "AFC",
+        "AFC",
+        "American Football Conference",
+        "AFC",
+        None,
+        "conference",
+        "nfl:afc",
+        "American Football Conference",
+        "#9c755f",
+        "#bab0ac",
+        "fallback",
+    ),
     (
         "cfb",
         "333",
@@ -393,6 +409,7 @@ _NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
     "tests/test_real_index.py::test_espn_team_endpoint_abbreviations_never_name_another_team": "data-raw",
     "tests/test_real_index.py::test_espn_colors_from_another_sport_come_only_from_school_keyed_leagues": "data-raw",
     "tests/test_real_index.py::test_logo_colors_agree_with_published_ones_where_both_exist": "data-raw",
+    "tests/test_real_index.py::test_conference_colors_are_the_sdvplotr_snapshots_cbbplotr_values": "data-raw",
     "tests/test_sdvplotr_parity.py": "data-raw",
     "tests/test_submodule_examples.py::test_the_docs_page_snippets_run_offline_and_match_their_comments": "docs",
     "tests/test_repo_files.py::test_sdv_py_dotfiles_exist_and_parse": "CLAUDE.md",

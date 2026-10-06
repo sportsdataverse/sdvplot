@@ -23,13 +23,13 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X4 | ggpath `geom_from_path()` | `sdvplot.plotnine.geom_from_path()`, `sdvplot.matplotlib.add_images()` | ported (below) |
 | X5 | ggpath `geom_mean_lines()`, `geom_median_lines()` | `sdvplot.plotnine.geom_mean_lines()`, `geom_median_lines()` | ported (below) |
 | X6 | ggpath `element_path()`, `element_raster()` | recipe | not ported: `axis_logos` covers team marks |
-| X7 | `team_reference()` | recipe | not ported: `teams()` and `logo_url()` / `marks()` hold the same data |
+| X7 | `team_reference()` | recipe | not ported: `teams(include_conferences=)` and `logo_url()` / `marks()` hold the same data |
 | X8 | `sdv_team_factor()` | recipe | not ported: three lines over `resolve()` |
 | X9 | mean/median lines on matplotlib | recipe | not ported: `ax.axvline` is one line |
 | X10 | `geom_sdv_logos()` / `geom_sdv_wordmarks()` / `geom_sdv_headshots()` aesthetics `colour`, `angle`, `hjust`, `vjust`, `width` | `sdvplot.plotnine.geom_sdv_*` | not ported (below): documented divergence, port on demand |
 | X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
 | X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | none | not ported yet: headshots as axis labels (`axis_logos(mark_type="headshot")`) are a follow-up |
-| X13 | `include_conferences` (conference and league marks) | none | not ported yet: no conference rows in the team index or the archive mapping |
+| X13 | `include_conferences` (conference and league rows and marks) | `sdvplot.teams(league, include_conferences=True)` | ported (below): the 92 rows with cbbplotR colors; their marks follow once the archive holds them |
 | X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | none | not ported yet: `headshot_url` takes ESPN ids and NFL gsis ids |
 
 ## Ported
@@ -154,8 +154,29 @@ ax.add_artist(
 ```
 
 **X7 `team_reference`.** Identity and colors: `sdvplot.teams("nfl")` (`team_id`, `abbr`, `name`, `short_name`,
-`location`, `conference`, `color_primary`, `color_secondary`). Image URLs: `sdvplot.logo_url(team, "nfl")`
-(`variant="dark"`, `mark_type="wordmark"`), or every archived mark with `sdvplot.marks(team, "nfl")`.
+`location`, `conference`, `color_primary`, `color_secondary`; `include_conferences=True` adds R's `type != "team"`
+rows, see X13). Image URLs: `sdvplot.logo_url(team, "nfl")` (`variant="dark"`, `mark_type="wordmark"`), or every
+archived mark with `sdvplot.marks(team, "nfl")`.
+
+**X13 `include_conferences`.** sdvplotR's `logo_ref` holds 92 rows that are not teams (`type` `"conference"` or
+`"league"`: 25 CFB, 32 MBB and 32 WBB conferences, the AFC, NFC and NFL), keyed by the conference's ESPN short name,
+with cbbplotR's colors and ESPN's conference logo URLs, listed by `team_reference()` / `valid_team_names()` only with
+`include_conferences = TRUE` and drawn by every geom. `tools/export_sdvplotr.R` writes them to
+`data-raw/sdvplotr_conferences.csv`, and `tools/build_index.py` (`conference_rows`) adds them to the one team index
+after the team rows, so `teams(league, include_conferences=True)` lists them. Decision: the same table, not a second
+one, because the rows share every column and the opt-in keeps every consumer unchanged; `program` carries R's `type`
+(`"conference"` / `"league"`); `team_id` and `abbr` are R's key (`"SEC"`, `"Big 12"`, `"AFC"`: never a number, so no
+team id is met); `conference_id` is the league's group slug where the team rows name the same conference, so a team
+joins its conference row on it (the retired WAC has none; R's "Atlantic Sun Conference" and "Summit League" are the
+groups snapshot's "ASUN Conference" and "The Summit League", `CONFERENCE_NAMES`); `conference` is the row's own full
+name; colors are the snapshot's with `color_source` `"cbbplotR"` (85 rows), the placeholder rule for the 7 R has none
+for (`"fallback"`), a secondary equal to its primary dropped as for teams (`tests/test_real_index.py`). The rows have
+no aliases: `resolve()`, `palette()`, `team_colors()` and every mark helper see teams only (`team_table()`), so no
+existing call changes meaning (CFB's `MAC` is Macalester, as before, not the Mid-American Conference). Not drawn yet:
+the logo archive holds no conference or league marks (`data-raw/manifest_marks.csv` has no `ncaa_conf`, `afc`, `nfc`
+or `leagues/nfl` entries), and sdvplot ships no live-CDN URLs, so `logo_url("SEC", "cfb")` stays `None` until the
+archive adds the 92 marks the CSV's `logo_url` / `logo_dark_url` columns list; then `mark_aliases` needs the
+conference rows as known ids and the resolver an opt-in for conference keys.
 
 **X8 `sdv_team_factor`.** Canonical abbreviations as a categorical whose levels are the sorted known teams; values
 that are not teams become missing (with one `SdvplotWarning` from `resolve`):

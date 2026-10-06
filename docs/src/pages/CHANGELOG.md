@@ -43,6 +43,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `teams(league, include_conferences=True)` lists sdvplotR's conference and league rows (its `include_conferences`):
+  the 89 college conferences of cfb, mbb and wbb and the AFC, NFC and NFL, with `program` `"conference"` or `"league"`,
+  the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
+  `conference_id` the league's teams carry. The default lists teams only, and `resolve()` and `palette()` never
+  answer a conference key, so no existing call changes. Index-only for now: the archive has no conference marks yet.
 - `sdvplot.plotnine.scale_color_sdv` and `scale_fill_sdv` take `alpha=`, an opacity applied to the team colors
   (sdvplotR's `alpha`); `na_value` is drawn as given. `scale_colour_sdv` is the British alias sdvplotR and plotnine
   both ship.

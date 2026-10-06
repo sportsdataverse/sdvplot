@@ -33,6 +33,13 @@ def _raw(tmp_path):
         "groups_latest.csv": "league,team_id,season,conference_id,conference\nnfl,13,2026,nfl:afc-west,AFC West\n",
         "curated/historical_abbrs.csv": "league,id_system,value,canonical,valid_from,valid_to\nnfl,nflverse,OAK,LV,,2019\n",
         "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
+        # sdvplotR's AFC and NFL rows as tools/export_sdvplotr.R writes them (no colors: nflplotR has none)
+        "sdvplotr_conferences.csv": '"sport","team_abbr","team_name","team_short_name","logo_url","logo_dark_url",'
+        '"color1","color2","color_source","conference","division","type"\n'
+        '"nfl","AFC","American Football Conference","AFC","https://a.espncdn.com/i/teamlogos/nfl/500/afc.png",'
+        '"https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png",,,,"AFC",,"conference"\n'
+        '"nfl","NFL","National Football League","NFL","https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png",'
+        '"https://a.espncdn.com/i/teamlogos/leagues/500-dark/nfl.png",,,,,,"league"\n',
     }
     for name, text in files.items():
         (raw / name).write_text(text, encoding="utf-8", newline="")  # LF on every OS, like the eol=lf checkout
@@ -652,3 +659,36 @@ def test_college_baseball_reaches_its_school_by_a_unique_exact_name_never_by_id(
         "team_id", "color_source", "color_primary", "color_secondary").rows()}  # fmt: skip
     assert got["102"] == ("espn", "#ce0e2d", "#ffffff")
     assert got["371"][0] == got["5"][0] == got["6"][0] == "fallback"
+
+
+def test_conference_rows_join_the_index_after_the_teams_with_no_alias(tmp_path):  # sdvplotR include_conferences
+    teams, aliases, _ = bi.build(_raw(tmp_path))
+    conf = teams.filter(pl.col("program").is_in(_index.NON_TEAM))
+    cols = [
+        "league",
+        "team_id",
+        "abbr",
+        "name",
+        "short_name",
+        "location",
+        "conference_id",
+        "conference",
+        "color_source",
+    ]
+    assert conf.select(cols).rows() == [
+        (
+            "nfl",
+            "AFC",
+            "AFC",
+            "American Football Conference",
+            "AFC",
+            None,
+            None,
+            "American Football Conference",
+            "fallback",
+        ),
+        ("nfl", "NFL", "NFL", "National Football League", "NFL", None, None, None, "fallback"),
+    ]
+    assert teams.schema == pl.Schema(_index.TEAM_SCHEMA) and teams.height == 5  # the three teams, then the two rows
+    assert conf["color_primary"].str.starts_with("#").all() and (conf["color_secondary"] != conf["color_primary"]).all()
+    assert aliases.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi").height == 0

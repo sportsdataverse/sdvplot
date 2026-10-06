@@ -20,6 +20,12 @@ import sdvplot
 sdvplot.teams("nfl").shape  # (32, 12)
 ```
 
+Conferences are opt-in (sdvplotR's `include_conferences`): `teams("cfb", include_conferences=True)` adds the league's
+conference rows (and, for the NFL, the AFC, NFC and NFL), with `program` `"conference"` or `"league"` and the
+conference's short name (`"SEC"`, `"Big 12"`, `"AFC"`) as `team_id` and `abbr`; a team's `conference_id` equals its
+conference row's. Every other listing shows teams only, and `resolve()` and `palette()` never answer a conference key
+(CFB's `MAC` is Macalester, not the Mid-American Conference).
+
 ## Resolving what you have
 
 `resolve()` turns the identifiers in your data into canonical `team_id`s:

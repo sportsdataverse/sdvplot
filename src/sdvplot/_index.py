@@ -68,6 +68,17 @@ def _read(name: str, directory: str) -> pl.DataFrame:
     return pl.read_parquet(Path(directory) / f"{name}.parquet")
 
 
+# The ``program`` values of the rows that are not teams: sdvplotR's conference and league rows (its ``type``), which
+# every team listing leaves out unless asked (teams(include_conferences=True)); they have no aliases, so resolve()
+# never answers them
+NON_TEAM = ("conference", "league")
+
+
+@functools.cache
+def _team_rows(directory: str) -> pl.DataFrame:
+    return _read("teams", directory).filter(~pl.col("program").is_in(NON_TEAM).fill_null(False))  # soccer: null program
+
+
 @functools.cache
 def _leagues(directory: str) -> frozenset[str]:
     return frozenset(_read("teams", directory)["league"].unique().to_list())
@@ -134,6 +145,7 @@ def on_reload(fn: Callable[[], None]) -> None:
 def reload_index() -> None:
     """Forget the loaded index and everything derived from it."""
     _read.cache_clear()
+    _team_rows.cache_clear()
     _leagues.cache_clear()
     _season_table.cache_clear()
     for fn in _RELOAD_HOOKS:
@@ -141,7 +153,8 @@ def reload_index() -> None:
 
 
 def team_table() -> pl.DataFrame:
-    return _read("teams", str(data_dir()))
+    """The team rows of the index: what palette, the tables and every consumer that lists teams read."""
+    return _team_rows(str(data_dir()))
 
 
 def alias_table() -> pl.DataFrame:
@@ -153,17 +166,23 @@ def index_version() -> str:
     return path.read_text().strip() if path.exists() else "unknown"
 
 
-def teams(league: str | None = None) -> pl.DataFrame:
+def teams(league: str | None = None, *, include_conferences: bool = False) -> pl.DataFrame:
     """The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors.
 
     Args:
         league: An SDV league key such as "nfl"; None returns every league.
+        include_conferences: Also list the conference and league rows (sdvplotR's ``include_conferences``): the
+            college conferences of cfb, mbb and wbb, and the AFC, NFC and NFL. Their ``program`` is "conference" or
+            "league", their ``team_id`` and ``abbr`` the conference's short name ("SEC", "Big 12", "AFC"), their
+            colors cbbplotR's (``color_source`` "cbbplotR"), and a team's ``conference_id`` equals its conference
+            row's. The default, False, lists teams only, so code that loops over teams sees only teams; conferences
+            are opt-in everywhere (``resolve`` and ``palette`` never answer one).
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,
         ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``:
         "nflverse" or "espn" (published colors), "logo" (derived from the team's archived logo, where no source
-        publishes any) or "fallback" (a placeholder).
+        publishes any), "cbbplotR" (a conference row's) or "fallback" (a placeholder).
 
     Raises:
         InputError: (a ValueError) If ``league`` is given and is not a known league key.
@@ -171,15 +190,17 @@ def teams(league: str | None = None) -> pl.DataFrame:
     Example:
         ::
 
+            import polars as pl
             import sdvplot
 
             sdvplot.teams("nfl").shape   # (32, 12)
+            sdvplot.teams("cfb", include_conferences=True).filter(pl.col("program") == "conference")["abbr"]
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
-    t = team_table()
+    t = _read("teams", str(data_dir())) if include_conferences else team_table()
     if league is None:
         return t.clone()  # never the cached frame: an in-place edit by the caller would leak into the session
     check_league(league)
