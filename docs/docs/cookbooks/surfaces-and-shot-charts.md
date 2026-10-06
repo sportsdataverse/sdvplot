@@ -297,9 +297,11 @@ plt.show()
 
 ## 9. A soccer shot map on an mplsoccer pitch
 
-For soccer, mplsoccer draws the pitch and sdvplot's logos go on its matplotlib Axes. ESPN's play-by-play gives
-each shot's position as fractions of the pitch: `field_position_x` measured from the goal the team attacks,
-`field_position_y` across. The home team shoots right, the away team left; goals are the scorer's logo. The
+For soccer, mplsoccer draws the pitch and sdvplot's logos go on its matplotlib Axes. ESPN's play-by-play gives each
+shot's position relative to the goal the shooter attacks: `field_position_x` is the distance from that goal line as a
+fraction of **half** the pitch (the penalty spot is 0.23), and `field_position_y` runs across it, below 0.5 being the
+shooter's left. An event with no recorded location is `(0, 0)`. The home team shoots right, so the shooter's left is
+the top of the pitch; the away team shoots left, a half-turn of the same picture. Goals are the scorer's logo. The
 Premier League's final day of 2025-26, Manchester City against Aston Villa (ESPN team ids 382 and 362):
 
 ```python
@@ -307,14 +309,14 @@ from mplsoccer import Pitch
 
 EVENT, HOME, AWAY = 740970, "382", "362"
 plays = soccer.espn_soccer_game_plays("eng.1", EVENT, cid=EVENT)
+fx, fy, home = pl.col("field_position_x"), pl.col("field_position_y"), pl.col("team") == HOME
 shots = (
     plays.filter(pl.col("type_text").str.contains("(?i)shot|goal") & (pl.col("type_text") != "Assists Shot"))
+    .filter((fx > 0) | (fy > 0))  # (0, 0) is ESPN's "no location"
     .with_columns(team=pl.col("team_$ref").str.extract(r"/teams/(\d+)"))
-    .with_columns(
-        x=pl.when(pl.col("team") == HOME)
-        .then((1 - pl.col("field_position_x")) * 105)
-        .otherwise(pl.col("field_position_x") * 105),
-        y=pl.col("field_position_y") * 68,
+    .with_columns(  # fractions of HALF the pitch from the attacked goal line; home attacks right, away left
+        x=pl.when(home).then(105 - 52.5 * fx).otherwise(52.5 * fx),
+        y=pl.when(home).then(68 * (1 - fy)).otherwise(68 * fy),
     )
 )
 goals = shots.filter(pl.col("scoring_play"))

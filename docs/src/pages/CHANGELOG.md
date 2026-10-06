@@ -69,6 +69,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- The surfaces cookbook's soccer shot map (§9) placed ESPN shots at twice their distance from goal (ESPN's
+  `field_position_x` is a fraction of half the pitch, not of the whole), mirrored the home team's wings, and kept
+  ESPN's `(0, 0)` "no location" events. It now scales by 52.5 m, turns the away team half a turn, and drops them.
 - Coordinates, teams and seasons accept a `range`: `add_logos(ax, range(1, 8), ...)` raised a `TypeError` that named
   `resolve()` though the bad value was `x`. A container sdvplot cannot read now raises a `TypeError` that names no one
   function: `expected a scalar, list, tuple, range, numpy array or a pandas/polars Series, got dict`.
