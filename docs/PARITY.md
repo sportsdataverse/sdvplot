@@ -26,6 +26,11 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X7 | `team_reference()` | recipe | not ported: `teams()` and `logo_url()` / `marks()` hold the same data |
 | X8 | `sdv_team_factor()` | recipe | not ported: three lines over `resolve()` |
 | X9 | mean/median lines on matplotlib | recipe | not ported: `ax.axvline` is one line |
+| X10 | `geom_sdv_logos()` / `geom_sdv_wordmarks()` / `geom_sdv_headshots()` aesthetics `colour`, `angle`, `hjust`, `vjust`, `width` | `sdvplot.plotnine.geom_sdv_*` | not ported (below): documented divergence, port on demand |
+| X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
+| X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | none | not ported yet: headshots as axis labels (`axis_logos(mark_type="headshot")`) are a follow-up |
+| X13 | `include_conferences` (conference and league marks) | none | not ported yet: no conference rows in the team index or the archive mapping |
+| X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | none | not ported yet: `headshot_url` takes ESPN ids and NFL gsis ids |
 
 ## Ported
 
@@ -56,16 +61,29 @@ resolved abbreviation. The default `height`, 0.1, is about the largest height at
 `tier_no` or `tier_rank` is skipped with one warning; non-numeric tiers raise `TypeError`; the matplotlib title and
 subtitle sit over the panel (sdvplotR: `plot.title.position = "plot"`, which the plotnine version keeps); there is
 no `season`. `theme="light"` draws on white with dark lines and text, as sdvplotR's `theme = "light"` does (`"dark"`
-is the default in both). Addition: `variant`, default `"auto"`, draws the archive's `"dark"` logo variant on the dark
-theme and `"default"` on the light one; a team with no dark mark draws its default one. sdvplotR's `sdv_team_tiers()`
-draws every team's default logo on either theme, so dark logos (Toronto's, Iowa's, West Virginia's, Penn State's)
-nearly vanish on its dark background, and its docs point to `theme = "light"` instead; `variant="default"` reproduces
-sdvplotR's look. Bringing the dark variant to `sdv_team_tiers()` is a separate sdvplotR follow-up.
+is the default in both). `variant`, default `"auto"`, draws the archive's `"dark"` logo variant on the dark theme and
+`"default"` on the light one; a team with no dark mark draws its default one. sdvplotR's `sdv_team_tiers()` does the
+same since sdvplotR #62 (`variant = "auto"`, `R/team_tiers.R`), so dark logos (Toronto's, Iowa's, West Virginia's,
+Penn State's) no longer vanish on either package's dark background; `variant="default"` reproduces the earlier look.
 
 **X4 `geom_from_path` / `add_images`.** Images are sized like sdvplot's logo verbs: `height` is a fraction of the
 panel (Axes) height, default 0.1, and the image keeps its aspect ratio. ggpath's `width`, `angle`, `hjust`, `vjust` and
 `colour` aesthetics are not ported. URLs are cached like headshots; SVG files are not read. An image that cannot be
 read skips its points with one `SdvplotWarning`, the verbs' rule.
+
+**X10 `geom_sdv_*` aesthetics.** sdvplotR's `geom_sdv_logos()`, `geom_sdv_wordmarks()` and `geom_sdv_headshots()`
+take ggpath's `colour` (a tint: `"b/w"` draws the mark in greyscale, any other colour tints it), `angle` (rotation in
+degrees), `hjust` / `vjust` (the anchor within the image, 0.5 centred) and `width` (npc, `height` follows the aspect
+ratio) as aesthetics, so each row can carry its own. `sdvplot.plotnine.geom_sdv_*` draw the mark untinted, unrotated
+and centred, with one `height` parameter (a fraction of the panel height; `width` follows the aspect ratio) and `alpha`
+for the whole layer; they add `variant`, `id_system` and a `season=` parameter sdvplotR has not. The aesthetics are
+documented here and not ported: a tinted or rotated logo has not come up; port on demand.
+
+**X11 `scale_color_sdv` / `scale_fill_sdv`.** `alpha` fades the team colors (sdvplotR applies `scales::alpha()`;
+sdvplot appends the alpha byte, `#rrggbbaa`) and leaves `na_value` as given, as R leaves `na.value`; `scale_colour_sdv`
+is the British alias both packages ship. R's `type` is `which` (keyword-only), `na.value = "grey50"` is
+`na_value="grey"`, and R's `values` override is plotnine's own `scale_color_manual(values=)`: the sdvplot scales map
+any id system and season lazily when the plot is drawn, so a fixed `values` dict is not an argument.
 
 **X5 `geom_mean_lines` / `geom_median_lines`.** ggpath's defaults (red, size 0.5, dashed) and its missing-value rule:
 with `na_rm=False` a panel whose values include a missing one draws no line on that axis and warns; `na_rm=True` ignores

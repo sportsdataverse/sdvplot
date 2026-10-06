@@ -2,6 +2,7 @@
 except the gated live test at the end."""
 
 import os
+import re
 import warnings
 from pathlib import Path
 
@@ -418,3 +419,29 @@ def test_the_plotnine_scales_and_pygal_style_read_nhl_stats_ids_when_named():  #
     assert list(team_style(ids, league="nhl", id_system="nhl_id").colors[:3]) == devils_bruins_leafs
     with pytest.raises(sdvplot.UnresolvedTeamError):
         team_style(["NOPE"], league="nhl", strict=True)
+
+
+def test_merge_stack_keeps_missouris_gold_readable_as_sdvplotr_does():  # sdvplotR #55's test, on the shipped index
+    pytest.importorskip("great_tables")
+    from great_tables import GT
+
+    from sdvplot._contrast import contrast
+    from sdvplot.great_tables import gt_merge_stack_team_color, gt_theme_midnight, gt_theme_terminal
+
+    def inks(gt):
+        return re.findall(r"font-weight:bold;color:(#[0-9a-fA-F]{6});font-size:12px", gt.as_raw_html())
+
+    df = pl.DataFrame({"team": ["MIZ", "WVU"], "mascot": ["Tigers", "Mountaineers"]})
+    # Missouri's gold primary measures 1.8:1 on white; its black secondary passes
+    light = inks(gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="cfb"))
+    assert light[0] == sdvplot.team_colors("cfb", "MIZ", which="secondary") == "#000000"
+    assert light[1] == sdvplot.team_colors("cfb", "WVU", which="secondary") == "#002855"
+    # on a dark table the golds pass and stay
+    dark = gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="cfb", background="#1e1e1e")
+    assert inks(dark) == ["#f1b82d", "#eaaa00"] == sdvplot.team_colors("cfb", ["MIZ", "WVU"])
+    # a theme applied first sets the background the ink is checked against
+    for theme in (gt_theme_midnight, gt_theme_terminal):
+        tbl = theme(GT(df))
+        bg = str(tbl._options.table_background_color.value)
+        got = inks(gt_merge_stack_team_color(tbl, "team", "mascot", "team", league="cfb"))
+        assert got == ["#f1b82d", "#eaaa00"] and all(contrast(i, bg) >= 4.5 for i in got)

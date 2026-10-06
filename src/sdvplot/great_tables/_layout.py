@@ -10,9 +10,11 @@ import importlib.metadata
 import math
 import numbers
 import random
+import re
 import string
 import textwrap
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from html import escape as html_escape
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote
@@ -24,7 +26,8 @@ from great_tables import GT, google_font, html, loc
 from great_tables import style as gst
 
 from sdvplot._contrast import contrast, hex6, mix, on_color, solid
-from sdvplot._errors import warn
+from sdvplot._errors import DownloadError, OfflineError, warn
+from sdvplot._manifest import load_manifest
 from sdvplot.great_tables._cells import _columns, _frame, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
 from sdvplot.great_tables._marks import (
@@ -818,12 +821,14 @@ def gt_tiers(
     img_height: str = "55px",
     tier_column: str = "tier",
     image_columns: Any = None,
+    alt: Callable[[list[str]], Sequence[Any]] | None = None,
 ) -> GT:
     """Build a tier list: a tier label column filled in each tier's color, the other columns rendered as images.
 
     Applies ``gt_theme_tier(style=style)``, renders the image columns with ``fmt_image`` at ``img_height``, blanks
     missing cells and every column label, then fills each tier's label cell with its color and readable bold ink. The
     tier colors are recorded on the table (``_sdvplot_key``), so ``gt_legend_discrete(gt)`` draws the matching key.
+    Each image gets its own ``alt`` text, so a screen reader can tell the entries apart.
 
     Args:
         gt: The table: one row per tier, a tier column, and image paths or URLs in the other columns.
@@ -833,17 +838,23 @@ def gt_tiers(
         img_height: The image height, as a CSS size.
         tier_column: The column holding the tier values.
         image_columns: The columns to render as images (any great_tables selection); defaults to every other column.
+        alt: A function from the image paths or URLs (one list of the distinct values, column by column) to their alt
+            text, one string per image, such as ``lambda urls: [names[u] for u in urls]``. ``None`` (the default)
+            names a mark the logo archive knows (any ``logo_url``) by its team, and any other image by its file name
+            without the extension. The alt comes from the cell's value: a local file is embedded as a data URI, which
+            names nothing.
 
     Returns:
         GT: A new tier-list table.
 
     Raises:
-        TypeError: If ``gt`` is not a great_tables ``GT``.
+        TypeError: If ``gt`` is not a great_tables ``GT``, or ``alt`` is not a function.
         ValueError: If ``colors`` is missing without a mapping, the lengths differ, ``tier_column`` is not a column,
-            or a color is not hex.
+            a color is not hex, or ``alt`` returns the wrong number of strings.
 
     Warns:
-        SdvplotWarning: When a level has no rows in ``tier_column``.
+        SdvplotWarning: When a level has no rows in ``tier_column``; and, with the default ``alt``, when the logo
+            manifest cannot be fetched (the images are then named by file).
 
     Example:
         ::
@@ -861,6 +872,11 @@ def gt_tiers(
     from sdvplot.great_tables._themes import gt_theme_tier  # wave B
 
     _check_gt(gt)
+    if alt is None:
+        alt = _tier_alt
+    elif not callable(alt):
+        raise TypeError(f"alt must be a function that takes the image URLs, got {type(alt).__name__}; "
+                        "use alt=lambda urls: ..., or leave it None to name each team")  # fmt: skip
     if colors is None:
         if not isinstance(levels, Mapping):
             raise ValueError("colors is missing; pass levels and colors as two lists, or one mapping such as "
@@ -888,12 +904,63 @@ def gt_tiers(
         .sub_missing(missing_text="")
         .cols_label(cases={c: "" for c in data.columns})
     )
+    gt = _alt_images(gt, images, alt)
     for level, fill in zip(names, fills, strict=True):
         rows = [i for i, t in enumerate(tiers) if t == level]
         if rows:
             look = [important(gst.fill(color=fill)), important(gst.text(weight="bold", color=on_color(fill)))]
             gt = gt.tab_style(look, loc.body(columns=tier_column, rows=rows))
     return _record(gt, "_sdvplot_key", dict(zip(names, fills, strict=True)))
+
+
+def _stem(source: str) -> str:
+    """A path or URL's file name without its extension (R's ``sub("\\.[^./]*$", "", basename(url))``)."""
+    return re.sub(r"\.[^./]*$", "", re.split(r"[\\/]", source.rstrip("\\/"))[-1])
+
+
+def _tier_alt(sources: list[str]) -> list[str]:
+    """``gt_tiers``' default ``alt`` (sdvplotR's ``.tier_alt``): a mark the archive knows is named by its team (the
+    manifest's first name for the URL), any other image by its file name without the extension."""
+    try:
+        manifest = load_manifest()
+    except (OfflineError, DownloadError) as e:
+        warn(f"the logo manifest could not be fetched, so the tier images are named by file: {e}")
+        names: dict[str, str] = {}
+    else:
+        rows = manifest.group_by("archive_url", maintain_order=True).agg(pl.col("entity_name").first())
+        names = dict(rows.iter_rows())
+    return [names.get(s) or _stem(s) for s in sources]
+
+
+def _alt_tagger(alts: list[str], text: str) -> str:
+    """A ``text_transform`` function: ``alt=`` on each ``<img>`` ``fmt_image`` wrote, when their count matches."""
+    parts = text.split("<img ")
+    if len(parts) - 1 != len(alts):
+        return text
+    return parts[0] + "".join(f'<img alt="{a}" {p}' for a, p in zip(alts, parts[1:], strict=True))
+
+
+def _alt_images(gt: GT, columns: list[str], alt: Callable[[list[str]], Sequence[Any]]) -> GT:
+    """sdvplotR's ``.alt_images()``: alt text on every image ``fmt_image`` wrote in ``columns``, from the value the
+    cell held (a local file becomes a data URI, which names nothing); one transform per distinct value, so the rows
+    keep their alts whatever order they render in (row groups reorder them)."""
+    cells = {c: _strings(gt, c) for c in columns}
+    values = list(dict.fromkeys(v for col in cells.values() for v in col if v))
+    if not values:
+        return gt
+    pieces = [re.split(r",\s*", v) for v in values]  # one image per piece, split the way fmt_image splits a cell
+    sources = [s for p in pieces for s in p]
+    texts = list(alt(sources))
+    if len(texts) != len(sources):
+        raise ValueError(f"alt returned {len(texts)} string(s) for {len(sources)} image(s)")
+    escaped = iter(html_escape("" if t is None else str(t), quote=True) for t in texts)
+    alts = [[next(escaped) for _ in p] for p in pieces]
+    for col, held in cells.items():
+        for value, tags in zip(values, alts, strict=True):
+            rows = [i for i, v in enumerate(held) if v == value]
+            if rows:
+                gt = gt.text_transform(loc.body(columns=col, rows=rows), functools.partial(_alt_tagger, tags))
+    return gt
 
 
 def _rendered(gt: GT) -> list[str]:
@@ -917,7 +984,7 @@ def gt_spotlight(
     accent_color: str | None = None,
     accent_width: float = 4,
     accent_column: Any = None,
-    dim_color: str | None = "#BBBBBB",
+    dim_color: str | None = "auto",
     if_none: str = "warn",
 ) -> GT:
     """Light up some rows (bold, a fill, an accent bar) and dim everything else.
@@ -934,7 +1001,11 @@ def gt_spotlight(
         accent_color: A bar on the left edge of the focused rows; giving a color turns it on.
         accent_width: The bar width in pixels.
         accent_column: The column(s) the bar is drawn on; defaults to the leftmost rendered column.
-        dim_color: The text color of everything else; ``None`` emphasizes without dimming.
+        dim_color: The text color of everything else. ``"auto"`` (the default) blends the table's text toward its
+            background until it sits just above 4.5:1 contrast against it (WCAG AA for text), so the rows read as
+            muted rather than disabled, on a light or a dark theme; apply the theme first, the background is read
+            from the table as set so far. Pass a color to choose it yourself, or ``None`` to emphasize without
+            dimming.
         if_none: When ``rows`` matches nothing: ``"warn"`` (unchanged, with an SdvplotWarning), ``"dim"`` (dim the
             whole table, for a spotlight that lives in another table of a grid) or ``"ignore"``.
 
@@ -962,6 +1033,11 @@ def gt_spotlight(
     """
     _check_gt(gt)
     _choice("if_none", if_none, ("warn", "dim", "ignore"))
+    if dim_color == "auto":
+        # gtUtils dimmed to a fixed #BBBBBB: 1.9:1 on white, under WCAG AA, and on a dark theme barely dimmer than
+        # the text. Muted but legible on either ground (sdvplotR #61)
+        bg = _background(gt)
+        dim_color = _secondary_on(bg, on_color(bg))
     focus = _row_indices(gt, rows)
     if not focus:
         if if_none == "dim" and dim_color is not None:

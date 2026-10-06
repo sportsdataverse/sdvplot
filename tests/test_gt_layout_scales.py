@@ -184,7 +184,7 @@ def test_percentile_bar_rows_and_the_input_table():
 
 
 @pytest.mark.parametrize("kind", KINDS)
-def test_tiers_fill_each_tier_and_record_the_key(kind):
+def test_tiers_fill_each_tier_and_record_the_key(manifest, kind):
     df = frame(kind, {"tier": ["S", "A", "B"], "t1": ["https://cdn/1.png", "https://cdn/2.png", None]})
     out = gt_tiers(GT(df), {"S": "#C84630", "A": "#5DA271", "B": "#F2E86D"})
     h = out.as_raw_html()
@@ -197,13 +197,13 @@ def test_tiers_fill_each_tier_and_record_the_key(kind):
         r'style="[^"]*background-color: #f2e86d !important; color: #000000 !important; font-weight: bold !important;"[^>]*>B</td>',
         h,
     )
-    assert '<img src="https://cdn/1.png" style="height: 55px;vertical-align: middle;">' in h
+    assert '<img alt="1" src="https://cdn/1.png" style="height: 55px;vertical-align: middle;">' in h
     assert re.findall(r'scope="col" id="(?:\w+-)?(\w+)">([^<]*)</th>', h) == [("tier", ""), ("t1", "")]
     assert out.__dict__["_sdvplot_key"] == {"S": "#c84630", "A": "#5da271", "B": "#f2e86d"}
     assert "background-color:#5da271" in gt_legend_discrete(out).as_raw_html()
 
 
-def test_tiers_two_lists_warnings_and_errors():
+def test_tiers_two_lists_warnings_and_errors(manifest):
     gt = GT(pl.DataFrame({"tier": ["S", "A"], "logo": ["https://cdn/1.png", "https://cdn/2.png"]}))
     with pytest.warns(SdvplotWarning, match=r"tier\(s\) \['C'\] are not in 'tier'"):
         gt_tiers(gt, ["S", "A", "C"], ["#C84630", "#5DA271", "#000000"])
@@ -213,3 +213,76 @@ def test_tiers_two_lists_warnings_and_errors():
         gt_tiers(gt, ["S", "A"], ["#C84630"])
     with pytest.raises(ValueError, match="'rank' is not a column"):
         gt_tiers(gt, {"S": "#C84630"}, tier_column="rank")
+
+
+def alts_of(html):
+    return re.findall(r'<img alt="([^"]*)"', html)
+
+
+def test_tiers_alt_names_each_entry_by_the_team_its_image_shows(manifest):
+    # sdvplotR #61: a logo the archive knows takes the team's name, anything else its file name
+    import sdvplot
+
+    lv, lv_dark = sdvplot.logo_url("LV", "nfl"), sdvplot.logo_url("LV", "nfl", variant="dark")
+    d = pl.DataFrame({"tier": ["A", "B"], "1": [lv, lv_dark], "2": ["https://x/my-team.png", "https://x/kc.png"],
+                      "3": [None, None]})  # fmt: skip
+    h = gt_tiers(GT(d), ["A", "B"], ["#1B7837", "#B2182B"]).as_raw_html()
+    assert alts_of(h) == ["Las Vegas Raiders", "my-team", "Las Vegas Raiders", "kc"]
+    h = gt_tiers(
+        GT(d), {"A": "#1B7837", "B": "#B2182B"}, alt=lambda urls: ["Logo " + u.rsplit("/", 1)[-1] for u in urls]
+    )
+    assert alts_of(h.as_raw_html()) == ["Logo 1111.png", "Logo my-team.png", "Logo 2222.png", "Logo kc.png"]
+    with pytest.raises(TypeError, match="alt must be a function"):
+        gt_tiers(GT(d), {"A": "#1B7837", "B": "#B2182B"}, alt="Logo")
+    with pytest.raises(ValueError, match="alt returned 1 string"):
+        gt_tiers(GT(d), {"A": "#1B7837", "B": "#B2182B"}, alt=lambda urls: ["one"])
+    # alt sees the distinct values column by column (lv, lv_dark, my-team, kc), as R's unique(unlist(cells)) does;
+    # None is an empty alt, and the text is escaped for the attribute
+    h = gt_tiers(GT(d), {"A": "#1B7837", "B": "#B2182B"}, alt=lambda urls: [None, "<b>", "", 1]).as_raw_html()
+    assert alts_of(h) == ["", "", "&lt;b&gt;", "1"]
+
+
+def test_tiers_alt_names_a_local_image_by_its_path_not_the_data_uri(manifest, tmp_path):
+    # great_tables embeds a local file as a data URI, which names nothing: the alt comes from the cell's value
+    from PIL import Image
+
+    osu, mich = str(tmp_path / "Ohio State.png"), str(tmp_path / "Michigan.png")
+    Image.new("RGB", (4, 4), "red").save(osu)
+    Image.new("RGB", (4, 4), "blue").save(mich)
+    # groups render the rows out of data order (y, y, x), and the None cell stays empty
+    d = pl.DataFrame({"grp": ["y", "x", "y"], "tier": ["A", "B", "A"], "1": [osu, mich, f"{mich}, {osu}"],
+                      "2": [None, "https://x/kc.png", osu]})  # fmt: skip
+    gt = GT(d, groupname_col="grp")
+    h = gt_tiers(gt, {"A": "#1B7837", "B": "#B2182B"}, image_columns=["1", "2"]).as_raw_html()
+    assert 'src="data:image/png;base64,' in h
+    assert alts_of(h) == ["Ohio State", "Michigan", "Ohio State", "Ohio State", "Michigan", "kc"]
+    seen = []
+
+    def alt(x):
+        seen.extend(x)
+        return [s.rsplit("/", 1)[-1].rsplit("\\", 1)[-1] for s in x]
+
+    h = gt_tiers(gt, {"A": "#1B7837", "B": "#B2182B"}, image_columns=["1", "2"], alt=alt).as_raw_html()
+    assert set(seen) == {osu, mich, "https://x/kc.png"}
+    assert alts_of(h) == [
+        "Ohio State.png",
+        "Michigan.png",
+        "Ohio State.png",
+        "Ohio State.png",
+        "Michigan.png",
+        "kc.png",
+    ]
+
+
+def test_tiers_name_images_by_file_when_the_manifest_cannot_be_fetched(cache, monkeypatch):
+    from sdvplot._errors import OfflineError
+    from sdvplot.great_tables import _layout
+
+    def offline():
+        raise OfflineError("no network")
+
+    monkeypatch.setattr(_layout, "load_manifest", offline)
+    d = pl.DataFrame({"tier": ["A"], "logo": ["https://cdn/kc.png"]})
+    with pytest.warns(SdvplotWarning, match="named by file"):
+        h = gt_tiers(GT(d), {"A": "#1B7837"}).as_raw_html()
+    assert alts_of(h) == ["kc"]

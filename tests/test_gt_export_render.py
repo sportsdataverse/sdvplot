@@ -212,3 +212,25 @@ def test_render_kenpom_bands_alternate_over_data_rows_around_summary_rows(tmp_pa
         elif runs and runs[-1][0] == c and runs[-1][1] == y - 1:
             runs[-1][1] = y
     assert [c for c, _ in runs] == [(0xF2, 0xFA, 0xFD), (0xE5, 0xEC, 0xF9)] * 2
+
+
+@pytest.mark.render
+@pytest.mark.real_index
+def test_render_merge_stack_keeps_missouris_gold_off_a_white_table(tmp_path):
+    # sdvplotR #55: Missouri's gold primary (1.8:1 on white) gives way to its black secondary on a white table and
+    # stays on a dark one; measured in the render, so the ink survives great_tables' own CSS
+    import nokap
+
+    gold = (0xF1, 0xB8, 0x2D)
+
+    def gold_pixels(gt, name):
+        shot = nokap.from_html(gt.as_raw_html(make_page=True), tmp_path / name, selector="#ms table")
+        with Image.open(shot) as im:
+            colors = [c for _, c in im.convert("RGB").getcolors(1 << 20)]
+        return [c for c in colors if all(abs(a - b) <= 12 for a, b in zip(c, gold, strict=True))]
+
+    df = pl.DataFrame({"team": ["MIZ", "WVU"], "mascot": ["Tigers", "Mountaineers"]})
+    light = sgt.gt_merge_stack_team_color(GT(df, id="ms"), "team", "mascot", "team", league="cfb")
+    assert gold_pixels(light, "light.png") == []
+    dark = sgt.gt_merge_stack_team_color(sgt.gt_theme_midnight(GT(df, id="ms")), "team", "mascot", "team", league="cfb")
+    assert gold_pixels(dark, "dark.png")

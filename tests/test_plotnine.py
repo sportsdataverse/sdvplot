@@ -180,6 +180,22 @@ def test_bad_arguments_fail_when_built_not_when_drawn():
         sdvplot.axis_logos(_axis_plot(["LV"]), "x", league="nfl", mark_type="banner")
     with pytest.raises(ValueError):
         sp9.scale_color_sdv("nfl", which="tertiary")
+    with pytest.raises(ValueError, match="alpha"):
+        sp9.scale_fill_sdv("nfl", alpha=1.5)
+
+
+def test_scale_alpha_fades_the_team_colors_but_not_na_value(mark_images):
+    # sdvplotR's scale_*_sdv(alpha=) applies scales::alpha() to the team colors only; na.value is drawn as given
+    df = pd.DataFrame({"x": [1.0, 2.0, 3.0], "y": [1.0, 2.0, 3.0], "team": ["LV", "LAR", "XXX"]})
+    p = ggplot(df, aes("x", "y", fill="team")) + geom_point() + sp9.scale_fill_sdv("nfl", alpha=0.4, na_value="#123456")
+    with pytest.warns(SdvplotWarning):
+        fig = p.draw()
+    colors = [tuple(c) for c in fig.axes[0].collections[0].get_facecolors()]
+    to_rgba = matplotlib.colors.to_rgba
+    assert colors == [to_rgba("#00000066"), to_rgba("#00359466"), to_rgba("#123456")]
+    assert sp9.scale_colour_sdv is sp9.scale_color_sdv
+    assert sp9.scale_color_sdv("nfl", alpha=1).map(["LV"], limits=["LV"]) == ["#000000ff"]
+    assert sp9.scale_color_sdv("nfl").map(["LV"], limits=["LV"]) == ["#000000"]
 
 
 # geom_from_path: any image by local path or URL (the port of ggpath's geom_from_path)

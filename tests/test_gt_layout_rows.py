@@ -8,7 +8,13 @@ pytest.importorskip("great_tables")
 from great_tables import GT  # noqa: E402
 
 from sdvplot._errors import SdvplotWarning  # noqa: E402
-from sdvplot.great_tables import gt_outliers, gt_row_accent, gt_significance, gt_spotlight  # noqa: E402
+from sdvplot.great_tables import (  # noqa: E402
+    gt_outliers,
+    gt_row_accent,
+    gt_significance,
+    gt_spotlight,
+    gt_theme_midnight,
+)
 from tests.gt_frames import KINDS, frame  # noqa: E402
 
 TEAMS = {"team": ["LV", "KC", "BUF"], "wins": [10, 12, 11], "color": ["#A5ACAF", "#E31837", "#00338D"]}
@@ -33,7 +39,7 @@ def test_private_boxhead_api():
 def test_spotlight_lights_the_rows_and_dims_the_rest(kind):
     gt = gt_spotlight(GT(frame(kind, TEAMS)), [1], columns=["team", "wins"], fill="#fff3c4", accent_color="#E31837")
     lv, kc, buf = rows_of(gt)
-    assert lv.count('style="color: #BBBBBB !important;"') == 3 and buf.count('style="color: #BBBBBB !important;"') == 3
+    assert lv.count('style="color: #737373 !important;"') == 3 and buf.count('style="color: #737373 !important;"') == 3
     assert (
         '<td style="background-color: #fff3c4 !important; font-weight: bold !important; border-left: 4px solid #E31837 !important;"'
         in kc
@@ -43,7 +49,7 @@ def test_spotlight_lights_the_rows_and_dims_the_rest(kind):
         in kc
     )
     assert (
-        '<td style="color: #BBBBBB !important;" class="gt_row gt_left">#E31837</td>' in kc
+        '<td style="color: #737373 !important;" class="gt_row gt_left">#E31837</td>' in kc
     )  # outside `columns`: dimmed
 
 
@@ -60,7 +66,7 @@ def test_spotlight_takes_a_polars_expression_and_an_accent_column():
     gt = gt_spotlight(GT(pl.DataFrame(TEAMS)), pl.col("wins") > 10, dim_color=None, accent_color="#000000",
                       accent_column="wins")  # fmt: skip
     lv, kc, buf = rows_of(gt)
-    assert "#BBBBBB" not in lv and "font-weight: bold" not in lv
+    assert "#737373" not in lv and "font-weight: bold" not in lv
     assert 'font-weight: bold !important; border-left: 4px solid #000000 !important;" class="gt_row gt_right">12' in kc
     assert 'font-weight: bold !important; border-left: 4px solid #000000 !important;" class="gt_row gt_right">11' in buf
 
@@ -71,9 +77,41 @@ def test_spotlight_with_no_matching_rows():
         assert gt_spotlight(gt, pl.col("team") == "NYJ") is gt
     assert gt_spotlight(gt, pl.col("team") == "NYJ", if_none="ignore") is gt
     dimmed = gt_spotlight(gt, pl.col("team") == "NYJ", if_none="dim")
-    assert sum(r.count("color: #BBBBBB !important;") for r in rows_of(dimmed)) == 9
+    assert sum(r.count("color: #737373 !important;") for r in rows_of(dimmed)) == 9
     with pytest.warns(SdvplotWarning, match="accent_column matched no rendered column"):
         gt_spotlight(gt.cols_hide("wins"), [0], accent_color="#000000", accent_column="wins")
+
+
+def test_spotlight_dims_the_other_rows_to_a_tone_that_still_passes_wcag_aa():
+    # sdvplotR #61: gtUtils dimmed to a fixed #BBBBBB, 1.9:1 on white; "auto" blends the table's text toward its
+    # background until it clears 4.5:1 (R's .theme_secondary_on: #737373 on white)
+    from sdvplot._contrast import contrast, on_color
+
+    for tbl in (GT(pl.DataFrame(TEAMS)), gt_theme_midnight(GT(pl.DataFrame(TEAMS)))):
+        bg = str(tbl._options.table_background_color.value or "#ffffff")
+        lv, kc, buf = rows_of(gt_spotlight(tbl, [1]))
+        assert "font-weight: bold" in kc and "font-weight: bold" not in lv + buf
+        dim = {m for m in re.findall(r"color: (#[0-9a-fA-F]{6}) !important", lv + buf)}
+        assert len(dim) == 1
+        (dim,) = dim
+        assert contrast(dim, bg) >= 4.5
+        assert contrast(dim, bg) < contrast(on_color(bg), bg) / 2  # still muted next to full-strength text
+    assert "#737373" in rows_of(gt_spotlight(GT(pl.DataFrame(TEAMS)), [1]))[0]
+    # a color you pass is used as is
+    assert (
+        'style="color: #BBBBBB !important;"'
+        in rows_of(gt_spotlight(GT(pl.DataFrame(TEAMS)), [1], dim_color="#BBBBBB"))[0]
+    )
+
+
+def test_secondary_on_matches_sdvplotr_on_the_same_backgrounds():
+    # sdvplotR's .theme_secondary_on(bg, .theme_on_color(bg), 4.5) (R/utils-theme.R, origin/main 45daa5d)
+    from sdvplot._contrast import on_color
+    from sdvplot.great_tables._marks import _secondary_on
+
+    r = {"#FFFFFF": "#737373", "#1e1e1e": "#8e8e8e", "#0B1220": "#797d84", "#0D1117": "#7a7c7f", "#000000": "#808080",
+         "#F5F5F5": "#6e6e6e", "#002244": "#8090a2"}  # fmt: skip
+    assert {bg: _secondary_on(bg, on_color(bg)) for bg in r} == r
 
 
 @pytest.mark.parametrize("kind", KINDS)

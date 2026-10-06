@@ -1,6 +1,8 @@
-"""Borders and fills sdvplot draws inline must show in a notebook too. great_tables' notebook repr marks its own cell
-rules !important (``td, th {border-style: none !important}``, the stub's and row groups' ``background-color``), and a
-stylesheet !important beats a plain inline style: the bar shows in a saved image and vanishes in Jupyter."""
+"""Borders and fills sdvplot draws inline must show in a notebook too. Under VS Code and Positron (``VSCODE_PID``,
+``POSITRON_VERSION``) great_tables' notebook repr marks its own cell rules !important (``td, th {border-style: none
+!important}``, the stub's and row groups' ``background-color``), and a stylesheet !important beats a plain inline
+style: the bar shows in a saved image and vanishes in the VS Code notebook. Jupyter, Quarto, Databricks and
+``as_raw_html()`` get no !important repr, so the inline !important costs nothing there."""
 
 import ast
 import re

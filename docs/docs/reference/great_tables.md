@@ -35,7 +35,7 @@ great_tables helpers (``pip install sdvplot[tables]``), ported from sdvplotR's `
 | [gt_legend_continuous](#gt_legend_continuous) | Add a color-scale legend that matches a column colored by ``gt_color_ranks``, ``gt_color_pills``, |
 | [gt_legend_discrete](#gt_legend_discrete) | Add a key of labeled color swatches (home/away, tiers, conferences). |
 | [gt_marginalia](#gt_marginalia) | Turn columns into margin notes: muted italic prose in a fixed-width column behind a hairline rule. |
-| [gt_merge_stack_team_color](#gt_merge_stack_team_color) | Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's primary color. |
+| [gt_merge_stack_team_color](#gt_merge_stack_team_color) | Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's color. |
 | [gt_outliers](#gt_outliers) | Flag outlying values in numeric columns: colored (and bold) text, an optional fill, symbol and source note. |
 | [gt_percentile_bar](#gt_percentile_bar) | Draw each percentile as a filled track with a round marker at its tip, the value printed in the marker. |
 | [gt_row_accent](#gt_row_accent) | Draw a colored bar on the edge of each row, keyed to a column (a team color, a conference). |
@@ -1865,6 +1865,7 @@ gt_merge_stack_team_color(
     font_size_top: float = 14,
     font_size_bottom: float = 12,
     color: str = 'black',
+    background: str | None = None,
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
@@ -1872,7 +1873,11 @@ gt_merge_stack_team_color(
 
 </div>
 
-Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's primary color.
+Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's color.
+
+The bottom line takes the team's primary color when it clears 4.5:1 contrast (WCAG AA) against the cell
+background, else the secondary color, else the primary darkened (or lightened, on a dark table) until it does, so
+a light primary such as Missouri's gold stays readable on a white table and keeps its gold on a dark one.
 
 ### Arguments
 
@@ -1886,18 +1891,19 @@ Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom
 | `font_size_top` | `float` | The top line's font size in pixels. |
 | `font_size_bottom` | `float` | The bottom line's font size in pixels. |
 | `color` | `str` | The top line's CSS color. |
+| `background` | `str \| None` | The cell background the bottom line is checked against, a hex color. ``None`` (the default) reads the table's background, so a theme such as ``gt_theme_midnight`` applied **before** this function is taken into account; a theme applied afterwards is not seen, so set ``background`` then. A table with no background set counts as white. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 
 ### Returns
 
-`GT` — A new table. A team that does not resolve, or has no color, gets grey, with one SdvplotWarning.
+`GT` — A new table. A team that does not resolve, or has no color, gets grey (sdvplotR's ``#bebebe``, made readable the same way), with one SdvplotWarning.
 
 ### Raises
 
 - `TypeError`: If ``gt`` is not a great_tables GT.
 - `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown.
-- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+- `ValueError`: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``background`` is not a hex color.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
 ### Example
@@ -2982,7 +2988,7 @@ gt_spotlight(
     accent_color: str | None = None,
     accent_width: float = 4,
     accent_column: Any = None,
-    dim_color: str | None = '#BBBBBB',
+    dim_color: str | None = 'auto',
     if_none: str = 'warn',
 ) -> great_tables.gt.GT
 ```
@@ -3004,7 +3010,7 @@ Light up some rows (bold, a fill, an accent bar) and dim everything else.
 | `accent_color` | `str \| None` | A bar on the left edge of the focused rows; giving a color turns it on. |
 | `accent_width` | `float` | The bar width in pixels. |
 | `accent_column` | `Any` | The column(s) the bar is drawn on; defaults to the leftmost rendered column. |
-| `dim_color` | `str \| None` | The text color of everything else; ``None`` emphasizes without dimming. |
+| `dim_color` | `str \| None` | The text color of everything else. ``"auto"`` (the default) blends the table's text toward its background until it sits just above 4.5:1 contrast against it (WCAG AA for text), so the rows read as muted rather than disabled, on a light or a dark theme; apply the theme first, the background is read from the table as set so far. Pass a color to choose it yourself, or ``None`` to emphasize without dimming. |
 | `if_none` | `str` | When ``rows`` matches nothing: ``"warn"`` (unchanged, with an SdvplotWarning), ``"dim"`` (dim the whole table, for a spotlight that lives in another table of a grid) or ``"ignore"``. |
 
 ### Returns
@@ -4342,6 +4348,7 @@ gt_tiers(
     img_height: str = '55px',
     tier_column: str = 'tier',
     image_columns: Any = None,
+    alt: collections.abc.Callable[[list[str]], collections.abc.Sequence[Any]] | None = None,
 ) -> great_tables.gt.GT
 ```
 
@@ -4352,6 +4359,7 @@ Build a tier list: a tier label column filled in each tier's color, the other co
 Applies ``gt_theme_tier(style=style)``, renders the image columns with ``fmt_image`` at ``img_height``, blanks
 missing cells and every column label, then fills each tier's label cell with its color and readable bold ink. The
 tier colors are recorded on the table (``_sdvplot_key``), so ``gt_legend_discrete(gt)`` draws the matching key.
+Each image gets its own ``alt`` text, so a screen reader can tell the entries apart.
 
 ### Arguments
 
@@ -4364,6 +4372,7 @@ tier colors are recorded on the table (``_sdvplot_key``), so ``gt_legend_discret
 | `img_height` | `str` | The image height, as a CSS size. |
 | `tier_column` | `str` | The column holding the tier values. |
 | `image_columns` | `Any` | The columns to render as images (any great_tables selection); defaults to every other column. |
+| `alt` | `collections.abc.Callable[[list[str]], collections.abc.Sequence[Any]] \| None` | A function from the image paths or URLs (one list of the distinct values, column by column) to their alt text, one string per image, such as ``lambda urls: [names[u] for u in urls]``. ``None`` (the default) names a mark the logo archive knows (any ``logo_url``) by its team, and any other image by its file name without the extension. The alt comes from the cell's value: a local file is embedded as a data URI, which names nothing. |
 
 ### Returns
 
@@ -4371,8 +4380,8 @@ tier colors are recorded on the table (``_sdvplot_key``), so ``gt_legend_discret
 
 ### Raises
 
-- `TypeError`: If ``gt`` is not a great_tables ``GT``.
-- `ValueError`: If ``colors`` is missing without a mapping, the lengths differ, ``tier_column`` is not a column, or a color is not hex.
+- `TypeError`: If ``gt`` is not a great_tables ``GT``, or ``alt`` is not a function.
+- `ValueError`: If ``colors`` is missing without a mapping, the lengths differ, ``tier_column`` is not a column, a color is not hex, or ``alt`` returns the wrong number of strings.
 
 ### Example
 
