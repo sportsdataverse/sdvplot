@@ -13,6 +13,7 @@ import sdvplot
 from sdvplot import _pitch
 
 FIXTURES = Path(__file__).parent / "fixtures"
+MPL_KEYS = {"metrica": "metricasports"}  # mplsoccer's own name for the pitch
 SHA256 = "5e6b0b1181b80a338775ac6b3c9318c8154452f018b2e85ec3a7c5440723ed3d"  # the same pin as sdvplotR's test
 
 
@@ -218,10 +219,7 @@ def _grid(x, y):
 def test_fixed_providers_agree_with_mplsoccer(provider):
     mplsoccer = pytest.importorskip("mplsoccer", exc_type=ImportError)
     gx, gy = _grid(*_pitch._landmarks(provider, None))
-    try:
-        std = mplsoccer.Standardizer(pitch_from=provider, pitch_to="uefa")
-    except (TypeError, ValueError):
-        pytest.skip(f"mplsoccer {mplsoccer.__version__} has no {provider!r} pitch")
+    std = mplsoccer.Standardizer(pitch_from=MPL_KEYS.get(provider, provider), pitch_to="uefa")
     tx, ty = std.transform(gx, gy)
     ours = sdvplot.pitch_coords(pl.DataFrame({"x": gx, "y": gy}), provider=provider)
     # Standardizer's 105 x 68 frame has its origin bottom-left with +y on the attacker's left; ours is centered
@@ -237,10 +235,9 @@ def test_tracking_providers_agree_with_mplsoccer(provider, length, width, atol):
     # atol 0.01 m for Metrica: mplsoccer rounds Metrica's landmark fractions to 4 decimals (up to 0.5 cm)
     mplsoccer = pytest.importorskip("mplsoccer", exc_type=ImportError)
     gx, gy = _grid(*_pitch._physical(provider, length, width))
-    try:
-        std = mplsoccer.Standardizer(pitch_from=provider, pitch_to="uefa", length_from=length, width_from=width)
-    except (TypeError, ValueError):
-        pytest.skip(f"mplsoccer {mplsoccer.__version__} has no {provider!r} pitch")
+    std = mplsoccer.Standardizer(
+        pitch_from=MPL_KEYS.get(provider, provider), pitch_to="uefa", length_from=length, width_from=width
+    )
     tx, ty = std.transform(gx, gy)
     ours = sdvplot.pitch_coords(
         pl.DataFrame({"x": gx, "y": gy}), provider=provider, pitch_length=length, pitch_width=width

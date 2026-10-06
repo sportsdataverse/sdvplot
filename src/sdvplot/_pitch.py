@@ -127,7 +127,8 @@ def _flip(flip: Any, frame: Any) -> NDArray[np.bool_]:
 
 def _floats(series: Any) -> Floats:
     """A narwhals Float64 Series as numpy floats, nulls as NaN."""
-    return np.array([np.nan if v is None else v for v in series.to_list()], dtype=float)
+    out: Floats = series.fill_null(float("nan")).to_numpy().astype(float)
+    return out
 
 
 def pitch_coords(
@@ -224,10 +225,10 @@ def pitch_coords(
     mx, my = _landmarks(key, dims)
     tx, ty = _landmarks("impect", None)
     px, py = _interp(xs, mx, tx), _interp(ys, my, ty)
-    px[rotate], py[rotate] = -px[rotate], -py[rotate]
+    px[rotate], py[rotate] = -px[rotate] + 0.0, -py[rotate] + 0.0  # + 0.0: no -0.0
     backend = nw.get_native_namespace(frame)
 
     def as_series(name: str, values: Floats) -> Any:
-        return nw.new_series(name, [None if np.isnan(v) else float(v) for v in values], nw.Float64(), backend=backend)
+        return nw.new_series(name, values, nw.Float64(), backend=backend).fill_nan(None)
 
     return frame.with_columns(pitch_x=as_series("pitch_x", px), pitch_y=as_series("pitch_y", py)).to_native()
