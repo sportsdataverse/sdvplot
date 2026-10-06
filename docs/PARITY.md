@@ -29,7 +29,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X10 | `geom_sdv_logos()` / `geom_sdv_wordmarks()` / `geom_sdv_headshots()` aesthetics `colour`, `angle`, `hjust`, `vjust`, `width` | `sdvplot.plotnine.geom_sdv_*` | not ported (below): documented divergence, port on demand |
 | X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
 | X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | `axis_logos(target, axis, *, league, mark_type="headshot", height=0.1, id_system="auto")` on matplotlib, plotnine, Plotly and Altair | ported (below) |
-| X13 | `include_conferences` (conference and league rows and marks) | `sdvplot.teams(league, include_conferences=True)` | ported (below): the 92 rows with cbbplotR colors; their marks follow once the archive holds them |
+| X13 | `include_conferences` (conference and league rows and marks) | `sdvplot.teams(league, include_conferences=True)`; `logo_url("SEC", "cfb")` and every mark helper | ported (below): rows AND marks; the 92 rows with cbbplotR colors, each with its archived primary mark (dark where the archive has one) |
 | X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | `headshot_url(..., id_system="league")` and every headshot helper | ported (below); the default id system still differs (`espn` for every league; R's NFL default is gsis) |
 | X15 | `sdv_pitch_coords()` | `sdvplot.pitch_coords(data, *, provider, x=None, y=None, flip=None, pitch_length=None, pitch_width=None)` | ported (below) |
 
@@ -202,12 +202,22 @@ joins its conference row on it (the retired WAC has none; R's "Atlantic Sun Conf
 groups snapshot's "ASUN Conference" and "The Summit League", `CONFERENCE_NAMES`); `conference` is the row's own full
 name; colors are the snapshot's with `color_source` `"cbbplotR"` (85 rows), the placeholder rule for the 7 R has none
 for (`"fallback"`), a secondary equal to its primary dropped as for teams (`tests/test_real_index.py`). The rows have
-no aliases: `resolve()`, `palette()`, `team_colors()` and every mark helper see teams only (`team_table()`), so no
-existing call changes meaning (CFB's `MAC` is Macalester, as before, not the Mid-American Conference). Not drawn yet:
-the logo archive holds no conference or league marks (`data-raw/manifest_marks.csv` has no `ncaa_conf`, `afc`, `nfc`
-or `leagues/nfl` entries), and sdvplot ships no live-CDN URLs, so `logo_url("SEC", "cfb")` stays `None` until the
-archive adds the 92 marks the CSV's `logo_url` / `logo_dark_url` columns list; then `mark_aliases` needs the
-conference rows as known ids and the resolver an opt-in for conference keys.
+no resolver aliases: `resolve()`, `palette()` and `team_colors()` see teams only (`team_table()`), so no existing call
+changes meaning (CFB's `MAC` is Macalester, as before, not the Mid-American Conference). Marks: sdvplotR's
+`logo_marks` (`data-raw/generate_logo_marks.R`) joins each row's `logo_url` / `logo_dark_url` to the archive manifest
+on the source URL, and resolves 1,228 of 1,228 primary marks (1,136 teams, the 92 rows). sdvplot does the same at
+build time: `tools/fetch_sources.py` snapshots the manifest's conference and league rows with their URLs
+(`data-raw/manifest_conferences.csv`), and `tools/build_index.py` (`conference_mark_aliases`) joins the CSV's URLs on
+it and gives each row one `"mark"` alias, an id system `resolve()` never reads. The alias value is the manifest row's
+own key, `level:league:source:entity_id` (`conference:cfb:espn:8` for the CFB SEC), not a team's `source:entity_id`,
+because ESPN files one conference logo under each league with a different group id (`sec.png`: cfb 8, mbb and wbb
+23; the row's own league is taken) and some once, under `ncaa` (the WAC, the MAAC), and because the key reaches the
+conference's every variant: the `dark` copy the archive holds beside the listed file (16 of the 25 CFB conferences,
+the AFC, NFC and NFL; MBB and WBB have none, as in R). At run time `_marks._ranked` builds that key for every non-team manifest
+row, and the mark functions (`logo_url`, `marks`, `logo_image`, `select_mark`, every adapter through `_placement`)
+resolve with `_resolve.resolve_marks`, which reads a value no team alias names as a conference row's key, after every
+team alias. 92 of 92 rows have a primary mark (`test_conference_mark_aliases_name_the_manifests_own_rows`; the gated
+live test draws all 92). A listed file the archive lacks fails the build, as R's `stopifnot` does.
 
 **X8 `sdv_team_factor`.** Canonical abbreviations as a categorical whose levels are the sorted known teams; values
 that are not teams become missing (with one `SdvplotWarning` from `resolve`):

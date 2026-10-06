@@ -30,7 +30,7 @@ manifest's, narrowed by the mark alias's (an open side takes the alias's).
 
 | Name | Type | Description |
 |---|---|---|
-| `team` | `Any` | One team identifier (abbreviation, name, ESPN id, ...). |
+| `team` | `Any` | One team identifier (abbreviation, name, ESPN id, ...), or a conference or league row's key ("SEC", "AFC": the ``team_id`` of ``teams(league, include_conferences=True)``). |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `season` | `Any` | A season year, used to resolve a reused code. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | "auto" or one id-system name, as in ``resolve``. |

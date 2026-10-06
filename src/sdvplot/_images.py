@@ -17,7 +17,7 @@ from urllib.request import url2pathname
 from sdvplot._cache import MEMORY_CACHES, atomic_write, cache_path, fetch_cached, fetch_immutable, key_lock
 from sdvplot._errors import InputError, IntegrityError, OptionalDependencyError, UnsafeCachePathError, warn
 from sdvplot._marks import _check_mark_type, _check_variant, select_mark
-from sdvplot._resolve import one_team, resolve
+from sdvplot._resolve import one_team, resolve_marks
 from sdvplot._types import IdSystem, MarkType
 
 if TYPE_CHECKING:
@@ -155,7 +155,7 @@ def logo_image(
         isinstance(size, bool) or not isinstance(size, numbers.Integral) or not 1 <= size <= MAX_SIZE
     ):
         raise InputError(f"size is the longest side in pixels, an int from 1 to {MAX_SIZE}, got {size!r}")
-    team_id = resolve(one_team(team, "logo_image"), league, season=season, id_system=id_system, strict=strict)
+    team_id = resolve_marks(one_team(team, "logo_image"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)

@@ -1,0 +1,174 @@
+level,league,source,entity_id,entity_name,url
+conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/1.png
+conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/1.png
+conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/acc.png
+conference,cfb,espn,12,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/12.png
+conference,cfb,espn,12,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
+conference,cfb,espn,15,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/15.png
+conference,cfb,espn,15,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/15.png
+conference,cfb,espn,15,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_american.png
+conference,cfb,espn,151,American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/151.png
+conference,cfb,espn,151,American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/151.png
+conference,cfb,espn,151,American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/american.png
+conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/17.png
+conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/17.png
+conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
+conference,cfb,espn,179,Ohio Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ovc.png
+conference,cfb,espn,18,FBS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/18.png
+conference,cfb,espn,18,FBS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/18.png
+conference,cfb,espn,18,FBS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/fbs_independents.png
+conference,cfb,espn,20,Big Sky Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/20.png
+conference,cfb,espn,20,Big Sky Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_sky.png
+conference,cfb,espn,21,Missouri Valley Football Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/21.png
+conference,cfb,espn,21,Missouri Valley Football Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/21.png
+conference,cfb,espn,21,Missouri Valley Football Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/missouri_valley.png
+conference,cfb,espn,22,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/22.png
+conference,cfb,espn,22,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ivy.png
+conference,cfb,espn,24,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/24.png
+conference,cfb,espn,24,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/meac.png
+conference,cfb,espn,25,Northeast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/25.png
+conference,cfb,espn,25,Northeast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/25.png
+conference,cfb,espn,25,Northeast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/northeast.png
+conference,cfb,espn,27,Patriot League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/27.png
+conference,cfb,espn,27,Patriot League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/27.png
+conference,cfb,espn,27,Patriot League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/patriot_league.png
+conference,cfb,espn,28,Pioneer Football League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/28.png
+conference,cfb,espn,28,Pioneer Football League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/28.png
+conference,cfb,espn,28,Pioneer Football League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pioneer.png
+conference,cfb,espn,29,Southern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/29.png
+conference,cfb,espn,29,Southern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southern.png
+conference,cfb,espn,30,Southland Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/30.png
+conference,cfb,espn,30,Southland Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/30.png
+conference,cfb,espn,30,Southland Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southland.png
+conference,cfb,espn,31,Southwestern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/31.png
+conference,cfb,espn,31,Southwestern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/31.png
+conference,cfb,espn,31,Southwestern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/swac.png
+conference,cfb,espn,32,FCS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/32.png
+conference,cfb,espn,32,FCS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/fcs_independents.png
+conference,cfb,espn,37,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/37.png
+conference,cfb,espn,37,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sun_belt.png
+conference,cfb,espn,4,Big 12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/4.png
+conference,cfb,espn,4,Big 12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/4.png
+conference,cfb,espn,4,Big 12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_12.png
+conference,cfb,espn,48,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/48.png
+conference,cfb,espn,48,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/48.png
+conference,cfb,espn,48,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/caa.png
+conference,cfb,espn,5,Big Ten Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/5.png
+conference,cfb,espn,5,Big Ten Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/5.png
+conference,cfb,espn,5,Big Ten Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_ten.png
+conference,cfb,espn,8,Southeastern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/8.png
+conference,cfb,espn,8,Southeastern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/8.png
+conference,cfb,espn,8,Southeastern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sec.png
+conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/9.png
+conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/9.png
+conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pac_12.png
+conference,mbb,espn,1,America East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/america_east.png
+conference,mbb,espn,10,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/coastal.png
+conference,mbb,espn,11,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
+conference,mbb,espn,12,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ivy.png
+conference,mbb,espn,14,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_american.png
+conference,mbb,espn,16,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/meac.png
+conference,mbb,espn,18,Missouri Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/missouri_valley.png
+conference,mbb,espn,19,Northeast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/northeast.png
+conference,mbb,espn,2,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/acc.png
+conference,mbb,espn,20,Ohio Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ohio_valley.png
+conference,mbb,espn,21,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pac_12.png
+conference,mbb,espn,22,Patriot League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/patriot_league.png
+conference,mbb,espn,23,Southeastern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sec.png
+conference,mbb,espn,24,Southern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southern.png
+conference,mbb,espn,25,Southland Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southland.png
+conference,mbb,espn,26,Southwestern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/swac.png
+conference,mbb,espn,27,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sun_belt.png
+conference,mbb,espn,29,West Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/west_coast.png
+conference,mbb,espn,3,Atlantic 10 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_10.png
+conference,mbb,espn,4,Big East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_east.png
+conference,mbb,espn,44,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
+conference,mbb,espn,45,Horizon League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/horizon.png
+conference,mbb,espn,46,Atlantic Sun Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_sun.png
+conference,mbb,espn,49,Summit League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/summit_league.png
+conference,mbb,espn,5,Big Sky Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_sky.png
+conference,mbb,espn,6,Big South Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_south.png
+conference,mbb,espn,62,American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/american.png
+conference,mbb,espn,7,Big Ten Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_ten.png
+conference,mbb,espn,8,Big 12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_12.png
+conference,mbb,espn,9,Big West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_west.png
+conference,mlb,espn,AL,AL,https://a.espncdn.com/i/teamlogos/mlb/500-dark/al.png
+conference,mlb,espn,AL,AL,https://a.espncdn.com/i/teamlogos/mlb/500/al.png
+conference,mlb,espn,NL,NL,https://a.espncdn.com/i/teamlogos/mlb/500-dark/nl.png
+conference,mlb,espn,NL,NL,https://a.espncdn.com/i/teamlogos/mlb/500/nl.png
+conference,mlb,mlbstatic,103,American League,https://www.mlbstatic.com/team-logos/league-on-light/103.svg
+conference,mlb,mlbstatic,104,National League,https://www.mlbstatic.com/team-logos/league-on-light/104.svg
+conference,nba,espn,East,East,https://a.espncdn.com/i/teamlogos/nba/500-dark/east.png
+conference,nba,espn,East,East,https://a.espncdn.com/i/teamlogos/nba/500/east.png
+conference,nba,espn,West,West,https://a.espncdn.com/i/teamlogos/nba/500-dark/west.png
+conference,nba,espn,West,West,https://a.espncdn.com/i/teamlogos/nba/500/west.png
+conference,ncaa,espn,caa,caa,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/caa.png
+conference,ncaa,espn,colonial,colonial,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/colonial.png
+conference,ncaa,espn,fbs_independents,fbs_independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/fbs_independents.png
+conference,ncaa,espn,great_west,great_west,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/great_west.png
+conference,ncaa,espn,maac,maac,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/maac.png
+conference,ncaa,espn,mid_continent,mid_continent,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_continent.png
+conference,ncaa,espn,trans_america,trans_america,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/trans_america.png
+conference,ncaa,espn,wac,wac,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/wac.png
+conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png
+conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500/afc.png
+conference,nfl,espn,NFC,NFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/nfc.png
+conference,nfl,espn,NFC,NFC,https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png
+conference,nfl,nflverse,AFC,AFC,https://github.com/nflverse/nflverse-pbp/raw/master/AFC.png
+conference,nfl,nflverse,NFC,NFC,https://github.com/nflverse/nflverse-pbp/raw/master/NFC.png
+conference,wbb,espn,1,America East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/america_east.png
+conference,wbb,espn,10,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/coastal.png
+conference,wbb,espn,11,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
+conference,wbb,espn,12,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ivy.png
+conference,wbb,espn,14,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_american.png
+conference,wbb,espn,16,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/meac.png
+conference,wbb,espn,18,Missouri Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/missouri_valley.png
+conference,wbb,espn,19,Northeast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/northeast.png
+conference,wbb,espn,2,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/acc.png
+conference,wbb,espn,20,Ohio Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ohio_valley.png
+conference,wbb,espn,21,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pac_12.png
+conference,wbb,espn,22,Patriot League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/patriot_league.png
+conference,wbb,espn,23,Southeastern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sec.png
+conference,wbb,espn,24,Southern Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southern.png
+conference,wbb,espn,25,Southland Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/southland.png
+conference,wbb,espn,26,Southwestern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/swac.png
+conference,wbb,espn,27,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sun_belt.png
+conference,wbb,espn,29,West Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/west_coast.png
+conference,wbb,espn,3,Atlantic 10 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_10.png
+conference,wbb,espn,4,Big East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_east.png
+conference,wbb,espn,44,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
+conference,wbb,espn,45,Horizon League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/horizon.png
+conference,wbb,espn,46,Atlantic Sun Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_sun.png
+conference,wbb,espn,47,Summit League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/summit_league.png
+conference,wbb,espn,5,Big Sky Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_sky.png
+conference,wbb,espn,6,Big South Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_south.png
+conference,wbb,espn,62,American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/american.png
+conference,wbb,espn,7,Big Ten Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_ten.png
+conference,wbb,espn,8,Big 12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_12.png
+conference,wbb,espn,9,Big West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_west.png
+conference,wnba,espn,East,East,https://a.espncdn.com/i/teamlogos/wnba/500/east.png
+conference,wnba,espn,West,West,https://a.espncdn.com/i/teamlogos/wnba/500/west.png
+league,aaf,aaf.com,aaf,Alliance of American Football,https://web.archive.org/web/2019id_/https://aaf.com/images/TeamLogos.png
+league,mlb,espn,MLB,MLB,https://a.espncdn.com/i/teamlogos/leagues/500-dark/mlb.png
+league,mlb,espn,MLB,MLB,https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png
+league,mlb,mlbstatic,1,MLB,https://www.mlbstatic.com/team-logos/league-on-dark/1.svg
+league,mlb,mlbstatic,1,MLB,https://www.mlbstatic.com/team-logos/league-on-light/1.svg
+league,nba,espn,NBA,NBA,https://a.espncdn.com/i/teamlogos/leagues/500-dark/nba.png
+league,nba,espn,NBA,NBA,https://a.espncdn.com/i/teamlogos/leagues/500/nba.png
+league,ncaa,espn,NCAA,NCAA,https://a.espncdn.com/i/espn/misc_logos/500-dark/ncaa.png
+league,ncaa,espn,NCAA,NCAA,https://a.espncdn.com/i/espn/misc_logos/500/ncaa.png
+league,ncaa,espn,NCAA baseball,NCAA baseball,https://a.espncdn.com/i/espn/misc_logos/500/ncaa_baseball.png
+league,ncaa,espn,NCAA football,NCAA football,https://a.espncdn.com/i/espn/misc_logos/500/ncaa_football.png
+league,nfl,espn,NFL,NFL,https://a.espncdn.com/i/teamlogos/leagues/500-dark/nfl.png
+league,nfl,espn,NFL,NFL,https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png
+league,nfl,nflverse,NFL,NFL,https://raw.githubusercontent.com/nflverse/nflverse-pbp/master/NFL.png
+league,nhl,espn,NHL,NHL,https://a.espncdn.com/i/teamlogos/leagues/500-dark/nhl.png
+league,nhl,espn,NHL,NHL,https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_19171918-19461947_dark.svg
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_19171918-19461947_light.svg
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_19471948-20042005_dark.svg
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_19471948-20042005_light.svg
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_dark.svg
+league,nhl,nhl,99,NHL,https://assets.nhle.com/logos/nhl/svg/NHL_light.svg
+league,wnba,espn,WNBA,WNBA,https://a.espncdn.com/i/teamlogos/leagues/500-dark/wnba.png
+league,wnba,espn,WNBA,WNBA,https://a.espncdn.com/i/teamlogos/leagues/500/wnba.png

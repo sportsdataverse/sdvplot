@@ -1,5 +1,6 @@
 import datetime as dt
 import math
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -49,6 +50,15 @@ def test_place_reads_pandas_by_position_not_label(manifest):
 def test_place_takes_range_coordinates(manifest):
     out = place(range(1, 3), [0, 0], ["LV", "LAR"], league="nfl")  # add_logos(ax, range(1, 3), ...) in the README
     assert [(p.team_id, p.x, p.y) for p in out] == [("13", 1, 0), ("14", 2, 0)]
+
+
+def test_place_draws_a_conference_row_by_its_key_beside_teams(manifest):  # sdvplotR include_conferences marks
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # the key resolves: no "did not resolve" warning
+        out = place([1, 2], [0, 0], ["LV", "AFC"], league="nfl")
+    assert [(p.team_id, p.url) for p in out] == [("13", "https://cdn/1111.png"), ("AFC", "https://cdn/7777.png")]
+    with pytest.warns(SdvplotWarning, match="'NFC'"):  # a key no row has is skipped with the usual warning
+        assert [p.team_id for p in place([1, 2], [0, 0], ["AFC", "NFC"], league="nfl")] == ["AFC"]
 
 
 def test_an_unsupported_container_names_no_one_function(manifest):

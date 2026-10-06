@@ -25,7 +25,7 @@ The bundled team index: one row per (league, team_id), with names, abbreviation,
 | Name | Type | Description |
 |---|---|---|
 | `league` | `str \| None` | An SDV league key such as "nfl"; None returns every league. |
-| `include_conferences` | `bool` | Also list the conference and league rows (sdvplotR's ``include_conferences``): the college conferences of cfb, mbb and wbb, and the AFC, NFC and NFL. Their ``program`` is "conference" or "league", their ``team_id`` and ``abbr`` the conference's short name ("SEC", "Big 12", "AFC"), their colors cbbplotR's (``color_source`` "cbbplotR"), and a team's ``conference_id`` equals its conference row's. The default, False, lists teams only, so code that loops over teams sees only teams; conferences are opt-in everywhere (``resolve`` and ``palette`` never answer one). |
+| `include_conferences` | `bool` | Also list the conference and league rows (sdvplotR's ``include_conferences``): the college conferences of cfb, mbb and wbb, and the AFC, NFC and NFL. Their ``program`` is "conference" or "league", their ``team_id`` and ``abbr`` the conference's short name ("SEC", "Big 12", "AFC"), their colors cbbplotR's (``color_source`` "cbbplotR"), and a team's ``conference_id`` equals its conference row's. The default, False, lists teams only, so code that loops over teams sees only teams; conferences are opt-in everywhere (``resolve`` and ``palette`` never answer one). The mark helpers (``logo_url``, ``marks``, ``add_logos`` and the rest) do draw one, by this key, from the archive's conference and league marks ("SEC", "Big 12", "AFC", "NFL"). |
 
 ## Returns
 

@@ -73,7 +73,7 @@ TEAMS = [
         "espn",
     ),
     # sdvplotR's AFC row (program "conference"; the shipped index's values): every team listing leaves it out unless
-    # asked, and it has no alias
+    # asked, and its only alias is its mark's (the fixture manifest's conference row)
     (
         "nfl",
         "AFC",
@@ -196,6 +196,7 @@ ALIASES = [
     ("nfl", "mark", "espn:14", "14", None, None),
     ("nfl", "mark", "espn:24", "24", None, None),
     ("nfl", "mark", "espn:STL", "14", None, 2015),  # an old-abbreviation logo, dated by its relocation alias (R36)
+    ("nfl", "mark", "conference:nfl:espn:8", "AFC", None, None),  # the AFC row's only alias: its mark, by manifest key
     ("nfl", "name", "Las Vegas Raiders", "13", None, None),
     ("nfl", "name", "Los Angeles Rams", "14", None, None),
     ("mlb", "team_id", "7", "7", None, None),

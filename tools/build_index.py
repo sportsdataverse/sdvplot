@@ -267,8 +267,9 @@ def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     carry for the same conference name, so a team joins its conference row on it (a retired conference, the WAC, has
     none); ``conference`` is the row's own full name (null for the NFL itself). Colors are cbbplotR's through R
     (``color_source`` "cbbplotR"), the placeholder rule where R has none (the AFC, NFC and NFL, the independents); a
-    secondary equal to the primary is none, as for teams. The rows get NO aliases: resolve() never answers a conference
-    key unless asked for it (cfb's "MAC" is the Mid-American Conference and Macalester)."""
+    secondary equal to the primary is none, as for teams. The rows get NO resolver aliases, only the "mark" ones of
+    ``conference_mark_aliases`` (an id system resolve() never reads): resolve() never answers a conference key unless
+    asked for it (cfb's "MAC" is the Mid-American Conference and Macalester)."""
     path = raw / "sdvplotr_conferences.csv"
     if not path.exists():
         return teams.clear()
@@ -299,6 +300,47 @@ def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     assert not out.select("league", "team_id").is_duplicated().any(), f"{path.name} repeats a (sport, team_abbr)"
     assert out.join(teams, on=["league", "team_id"], how="semi").height == 0, "a conference key is a team id"
     return _fill_fallback(out).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+def conference_mark_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
+    """The conference and league rows' "mark" aliases (sdvplotR's logo_marks rows for its include_conferences rows):
+    the archive's copies of the files sdvplotr_conferences.csv lists (``logo_url``, ``logo_dark_url``), found by URL
+    as generate_logo_marks.R finds them, in data-raw/manifest_conferences.csv (the manifest's conference and league
+    rows). The value is the manifest row's own key, "level:league:source:entity_id", which the runtime builds for
+    every non-team manifest row (_marks._ranked): so a row reaches the conference's every variant (the dark
+    500-dark/8.png beside the listed sec.png), and no key meets a team's "source:entity_id". ESPN files one conference
+    logo under several leagues, with a different group id each (sec.png: cfb 8, mbb and wbb 23): the row's own league
+    is taken where the archive has one, else any (the WAC, the MAAC and the FBS independents are filed once, under
+    "ncaa"). Every listed file must have a copy: one the archive lacks fails the build (R stops too)."""
+    path = raw / "manifest_conferences.csv"
+    if conf.is_empty() or not path.exists():
+        return pl.DataFrame(schema=ALIAS_SCHEMA)
+    listed = (
+        _csv(raw, "sdvplotr_conferences.csv")
+        .select(pl.col("sport").alias("league"), pl.col("team_abbr").alias("team_id"), "logo_url", "logo_dark_url")
+        .unpivot(on=["logo_url", "logo_dark_url"], index=["league", "team_id"], value_name="url")
+        .drop_nulls("url")
+        .select("league", "team_id", "url")
+    )
+    assert listed.join(conf, on=["league", "team_id"], how="anti").height == 0, "a listed file is no index row's"
+    m = _csv(raw, path.name).select("url", "level", pl.col("league").alias("_mlg"), "source", "entity_id")
+    j = listed.join(m, on="url", how="left")
+    missing = j.filter(pl.col("level").is_null()).select("league", "team_id", "url")
+    assert missing.height == 0, f"conference files the archive has no copy of: {missing.rows()}"
+    own = pl.col("_mlg") == pl.col("league")
+    j = j.filter(own | ~own.any().over("league", "team_id", "url"))
+    return (
+        j.select(
+            "league",
+            pl.lit("mark").alias("id_system"),
+            pl.concat_str(pl.col("level", "_mlg", "source", "entity_id"), separator=":").alias("value"),
+            "team_id",
+            pl.lit(None, pl.Int32).alias("valid_from"),
+            pl.lit(None, pl.Int32).alias("valid_to"),
+        )
+        .unique()
+        .cast(ALIAS_SCHEMA)
+    )
 
 
 def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
@@ -773,7 +815,12 @@ def stamp(teams: pl.DataFrame, aliases: pl.DataFrame) -> str:
 def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     teams = build_teams(raw)
     aliases = build_aliases(raw, teams)  # from the team rows only: a conference row is never a resolver candidate
-    teams = pl.concat([teams, conference_rows(raw, teams)])
+    conf = conference_rows(raw, teams)
+    # a conference row's only aliases are "mark" ones (its logos); resolve() never reads that id system
+    aliases = pl.concat([aliases, conference_mark_aliases(raw, conf)]).sort(
+        "league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True
+    )
+    teams = pl.concat([teams, conf])
     return teams, aliases, stamp(teams, aliases)
 
 

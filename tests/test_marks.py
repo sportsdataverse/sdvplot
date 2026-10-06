@@ -2,6 +2,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
+import sdvplot
 from sdvplot import _index, _marks
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError
 
@@ -159,6 +160,28 @@ def test_a_warm_mark_lookup_runs_no_polars_filter(monkeypatch):  # re-audit find
     monkeypatch.setattr(pl.DataFrame, "filter", no_filter)
     assert _marks.logo_url("LV", "nfl") == "https://cdn/1111.png"
     assert _marks.logo_url("OAK", "nfl", season=2010) == "https://cdn/3333.png"  # the same team's rows, another season
+
+
+# sdvplotR's logo_marks draws its include_conferences rows: the fixture's AFC row reaches the fixture manifest's
+# conference row through its one alias, the manifest key "conference:nfl:espn:8" (level:league:source:entity_id)
+def test_a_conference_key_draws_the_archives_conference_mark():
+    assert _marks.logo_url("AFC", "nfl") == "https://cdn/7777.png"
+    assert _marks.logo_url("afc", "nfl", variant="dark") == "https://cdn/7777.png"  # no dark copy: default, as teams
+    assert _marks.marks("AFC", "nfl").select("level", "team_id", "sha256").rows() == [("conference", "AFC", "7" * 64)]
+    assert _marks.marks("LV", "nfl").filter(pl.col("level") != "team").height == 0  # a team's rows stay its own
+
+
+def test_a_conference_key_is_read_after_every_team_alias_and_never_by_resolve():
+    with pytest.warns(SdvplotWarning, match="'AFC'"):
+        assert sdvplot.resolve("AFC", "nfl") is None  # its alias is a mark alias: not an id system resolve() reads
+    with pytest.raises(ValueError, match="unknown id_system 'mark'"):
+        sdvplot.resolve("conference:nfl:espn:8", "nfl", id_system="mark")
+    with pytest.warns(SdvplotWarning, match="did not resolve"):  # never a candidate under "auto" either
+        assert sdvplot.resolve("conference:nfl:espn:8", "nfl") is None
+    with pytest.warns(SdvplotWarning, match="'NFC'"):  # a key no row has: the usual None and warning
+        assert _marks.logo_url("NFC", "nfl") is None
+    with pytest.raises(UnresolvedTeamError):
+        _marks.marks("NFC", "nfl")
 
 
 def test_select_mark_hands_out_a_copy_of_the_cached_row():

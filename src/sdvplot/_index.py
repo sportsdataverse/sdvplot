@@ -69,8 +69,8 @@ def _read(name: str, directory: str) -> pl.DataFrame:
 
 
 # The ``program`` values of the rows that are not teams: sdvplotR's conference and league rows (its ``type``), which
-# every team listing leaves out unless asked (teams(include_conferences=True)); they have no aliases, so resolve()
-# never answers them
+# every team listing leaves out unless asked (teams(include_conferences=True)); their only aliases are "mark" ones (an
+# id system resolve() never reads), so resolve() never answers them and only the mark functions reach them, by key
 NON_TEAM = ("conference", "league")
 
 
@@ -176,7 +176,9 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
             "league", their ``team_id`` and ``abbr`` the conference's short name ("SEC", "Big 12", "AFC"), their
             colors cbbplotR's (``color_source`` "cbbplotR"), and a team's ``conference_id`` equals its conference
             row's. The default, False, lists teams only, so code that loops over teams sees only teams; conferences
-            are opt-in everywhere (``resolve`` and ``palette`` never answer one).
+            are opt-in everywhere (``resolve`` and ``palette`` never answer one). The mark helpers (``logo_url``,
+            ``marks``, ``add_logos`` and the rest) do draw one, by this key, from the archive's conference and league
+            marks ("SEC", "Big 12", "AFC", "NFL").
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,

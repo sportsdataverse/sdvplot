@@ -429,6 +429,17 @@ def manifest_mark_rows(rows: list[dict]) -> list[dict]:
     return [dict(zip(MARK_COLUMNS, k, strict=True)) for k in sorted(seen)]
 
 
+# The conference and league marks (sdvplotR's logo_marks rows for its include_conferences rows), with the source URL
+# the archive copied: tools/build_index.py joins sdvplotr_conferences.csv's logo_url / logo_dark_url on it
+CONFERENCE_MARK_COLUMNS = ["level", "league", "source", "entity_id", "entity_name", "url"]
+NON_TEAM_LEVELS = ("conference", "league")
+
+
+def manifest_conference_rows(rows: list[dict]) -> list[dict]:
+    seen = {tuple(r[c] for c in CONFERENCE_MARK_COLUMNS) for r in rows if r["level"] in NON_TEAM_LEVELS}
+    return [dict(zip(CONFERENCE_MARK_COLUMNS, k, strict=True)) for k in sorted(seen)]
+
+
 def nhl_rows(teams_payload: dict, franchise_payload: dict) -> list[dict]:
     fran = {f["id"]: f for f in franchise_payload["data"]}
     out = []
@@ -543,6 +554,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     archived = manifest_team_rows(manifest)
     write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
+    write("manifest_conferences", manifest_conference_rows(manifest), CONFERENCE_MARK_COLUMNS)
 
     espn: list[dict] = []
     hosts = list(ESPN_HOSTS)  # R7: site.web.* may 403 from some networks; fall back to site.api.*
