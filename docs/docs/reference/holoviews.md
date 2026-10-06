@@ -1,7 +1,7 @@
 ---
 title: sdvplot.holoviews
 sidebar_label: sdvplot.holoviews
-sidebar_position: 21
+sidebar_position: 22
 ---
 
 # sdvplot.holoviews

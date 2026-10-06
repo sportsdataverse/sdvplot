@@ -1,7 +1,7 @@
 ---
 title: sdvplot.plotnine
 sidebar_label: sdvplot.plotnine
-sidebar_position: 17
+sidebar_position: 18
 ---
 
 # sdvplot.plotnine

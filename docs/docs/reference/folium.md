@@ -1,7 +1,7 @@
 ---
 title: sdvplot.folium
 sidebar_label: sdvplot.folium
-sidebar_position: 22
+sidebar_position: 23
 ---
 
 # sdvplot.folium
