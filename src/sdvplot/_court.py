@@ -12,8 +12,8 @@ from sdvplot._placement import _missing
 BASKET_X = -47 + 5.25  # sportypy's NBA/WNBA/NCAA courts: center-court origin, baseline at -47, basket 5.25 ft in
 
 
-def _tenths(frame: Any, name: str) -> Any:
-    """Column ``name`` (tenths of a foot) as a Float64 Series; strings of numbers are coerced."""
+def _numeric(frame: Any, name: str) -> Any:
+    """Column ``name`` as a Float64 Series; strings of numbers are coerced (court_coords and pitch_coords share it)."""
     s = frame[name]
     if s.dtype.is_numeric():  # rebuilt like the coerced columns, so both outputs share one dtype (pandas nullable too)
         floats = [None if _missing(v) else v for v in s.cast(nw.Float64).to_list()]
@@ -106,5 +106,5 @@ def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
     # Divide by a Series of tens, not the scalar: polars divides by a scalar through its reciprocal, so -224 / 10 would
     # be -22.400000000000002 instead of R's (and IEEE division's) -22.4.
     ten = nw.new_series("ten", [10.0] * len(frame), nw.Float64(), backend=nw.get_native_namespace(frame))
-    xs, ys = _tenths(frame, x) / ten, _tenths(frame, y) / ten
+    xs, ys = _numeric(frame, x) / ten, _numeric(frame, y) / ten
     return frame.with_columns(court_x=ys + BASKET_X, court_y=xs).to_native()

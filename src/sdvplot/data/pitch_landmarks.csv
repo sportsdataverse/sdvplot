@@ -1,0 +1,94 @@
+# Soccer pitch landmarks for each fixed-frame provider, in the provider's native units.
+# x rows: i = 1..9 run from the defended goal line to the attacked one: goal line, six-yard line, penalty spot,
+#   box edge, halfway line, box edge, penalty spot, six-yard line, goal line.
+# y rows: i = 1..8 run from the attacker's RIGHT touchline to the LEFT one: touchline, box side, six-yard side,
+#   post, post, six-yard side, box side, touchline (a top-origin provider's values therefore descend).
+# Values: mplsoccer 1.8.1 (MIT), mplsoccer/soccer/dimensions.py create_pitch_dims(); verified 2026-10-05.
+# impect is regulation 105 x 68 m centered, the frame sdv_pitch_coords() / sdvplot.pitch_coords() output.
+# Shared byte-for-byte by sdvplotR (inst/extdata/) and sdvplot (src/sdvplot/data/); both test its SHA-256.
+provider,axis,i,value
+opta,x,1,0
+opta,x,2,5.8
+opta,x,3,11.5
+opta,x,4,17
+opta,x,5,50
+opta,x,6,83
+opta,x,7,88.5
+opta,x,8,94.2
+opta,x,9,100
+opta,y,1,0
+opta,y,2,21.1
+opta,y,3,36.8
+opta,y,4,45.2
+opta,y,5,54.8
+opta,y,6,63.2
+opta,y,7,78.9
+opta,y,8,100
+wyscout,x,1,0
+wyscout,x,2,6
+wyscout,x,3,10
+wyscout,x,4,16
+wyscout,x,5,50
+wyscout,x,6,84
+wyscout,x,7,90
+wyscout,x,8,94
+wyscout,x,9,100
+wyscout,y,1,100
+wyscout,y,2,81
+wyscout,y,3,63
+wyscout,y,4,56
+wyscout,y,5,44
+wyscout,y,6,37
+wyscout,y,7,19
+wyscout,y,8,0
+statsbomb,x,1,0
+statsbomb,x,2,6
+statsbomb,x,3,12
+statsbomb,x,4,18
+statsbomb,x,5,60
+statsbomb,x,6,102
+statsbomb,x,7,108
+statsbomb,x,8,114
+statsbomb,x,9,120
+statsbomb,y,1,80
+statsbomb,y,2,62
+statsbomb,y,3,50
+statsbomb,y,4,44
+statsbomb,y,5,36
+statsbomb,y,6,30
+statsbomb,y,7,18
+statsbomb,y,8,0
+uefa,x,1,0
+uefa,x,2,5.5
+uefa,x,3,11
+uefa,x,4,16.5
+uefa,x,5,52.5
+uefa,x,6,88.5
+uefa,x,7,94
+uefa,x,8,99.5
+uefa,x,9,105
+uefa,y,1,0
+uefa,y,2,13.84
+uefa,y,3,24.84
+uefa,y,4,30.34
+uefa,y,5,37.66
+uefa,y,6,43.16
+uefa,y,7,54.16
+uefa,y,8,68
+impect,x,1,-52.5
+impect,x,2,-47
+impect,x,3,-41.5
+impect,x,4,-36
+impect,x,5,0
+impect,x,6,36
+impect,x,7,41.5
+impect,x,8,47
+impect,x,9,52.5
+impect,y,1,-34
+impect,y,2,-20.16
+impect,y,3,-9.16
+impect,y,4,-3.66
+impect,y,5,3.66
+impect,y,6,9.16
+impect,y,7,20.16
+impect,y,8,34

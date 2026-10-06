@@ -51,6 +51,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `gt_tiers` takes `alt=`, a function from the image paths or URLs to their alt text. By default a logo the archive
   knows (any `logo_url`) is named by its team and any other image by its file name; the images had no alt text at
   all. The alt comes from the cell's value, so a local file (embedded as a data URI) gets a real name.
+- `pitch_coords()` converts soccer event coordinates from Opta / Stats Perform, Wyscout, StatsBomb, UEFA, Impect,
+  ESPN and the tracking providers (Tracab, SkillCorner, Second Spectrum, Metrica) to one regulation 105 x 68 m
+  frame, piecewise-linearly between pitch landmarks, with `flip` for teams attacking opposite ends. The port of
+  sdvplotR's `sdv_pitch_coords()`, matched to 1e-12 on every provider.
+- `tools/espn_soccer_y_gate.py`, the measurement behind the ESPN frame's y direction.
 
 ### Changed
 

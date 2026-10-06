@@ -31,6 +31,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | none | not ported yet: headshots as axis labels (`axis_logos(mark_type="headshot")`) are a follow-up |
 | X13 | `include_conferences` (conference and league marks) | none | not ported yet: no conference rows in the team index or the archive mapping |
 | X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | none | not ported yet: `headshot_url` takes ESPN ids and NFL gsis ids |
+| X15 | `sdv_pitch_coords()` | `sdvplot.pitch_coords(data, *, provider, x=None, y=None, flip=None, pitch_length=None, pitch_width=None)` | ported (below) |
 
 ## Ported
 
@@ -39,6 +40,13 @@ same validation, on a pandas or polars frame (the same type comes back). Checked
 `sdv_court_coords()` on 40 real `shotchartdetail` rows (`tests/fixtures/sdvplotr_court_coords.csv`). Differences:
 a non-string `x`/`y` and a non-frame `data` raise `TypeError` (R raises one error class for everything); the
 arguments are `x`/`y`, not `x_column`/`y_column`.
+
+**X15 `pitch_coords`.** One landmark table (`src/sdvplot/data/pitch_landmarks.csv`, byte-identical to sdvplotR's
+`inst/extdata/pitch_landmarks.csv`; both test its SHA-256) and the same arithmetic (`searchsorted` for
+`findInterval`), so sdvplot matches sdvplotR to 1e-12 on a grid of landmarks, midpoints, off-pitch points and
+flipped rows of every provider (`tests/fixtures/sdvplotr_pitch_coords.csv`, from `tools/export_parity_extras.R`).
+Differences: the column arguments are `x`/`y` (sdvplotR: `x_column`/`y_column`), keyword-only; nulls come back
+as null in polars and NaN in plain pandas float columns; value errors raise `InputError`.
 
 **X2 `title_image`.** One call per adapter instead of `ggtitle_image()` plus a markdown title theme: matplotlib sets
 the Axes title (or a Figure's suptitle) and anchors the image to that title text, plotnine is added with `+`. A team
