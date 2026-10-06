@@ -204,6 +204,14 @@ def test_tracking_providers_convert_from_the_venues_real_size():
     assert v["pitch_x"][0] == pytest.approx(41.5)  # 11 m from a 100 m pitch's goal line is still the spot
 
 
+def _mplsoccer():
+    try:  # not importorskip(exc_type=): that needs pytest 8.2, and the floor mplsoccer fails to import on newer matplotlib
+        import mplsoccer
+    except ImportError:
+        pytest.skip("mplsoccer is not importable")
+    return mplsoccer
+
+
 def _grid(x, y):
     def mid(v):
         s = np.sort(v)
@@ -217,7 +225,7 @@ def _grid(x, y):
 
 @pytest.mark.parametrize("provider", ["opta", "wyscout", "statsbomb", "uefa", "impect"])
 def test_fixed_providers_agree_with_mplsoccer(provider):
-    mplsoccer = pytest.importorskip("mplsoccer", exc_type=ImportError)
+    mplsoccer = _mplsoccer()
     gx, gy = _grid(*_pitch._landmarks(provider, None))
     std = mplsoccer.Standardizer(pitch_from=MPL_KEYS.get(provider, provider), pitch_to="uefa")
     tx, ty = std.transform(gx, gy)
@@ -233,7 +241,7 @@ def test_fixed_providers_agree_with_mplsoccer(provider):
 )
 def test_tracking_providers_agree_with_mplsoccer(provider, length, width, atol):
     # atol 0.01 m for Metrica: mplsoccer rounds Metrica's landmark fractions to 4 decimals (up to 0.5 cm)
-    mplsoccer = pytest.importorskip("mplsoccer", exc_type=ImportError)
+    mplsoccer = _mplsoccer()
     gx, gy = _grid(*_pitch._physical(provider, length, width))
     std = mplsoccer.Standardizer(
         pitch_from=MPL_KEYS.get(provider, provider), pitch_to="uefa", length_from=length, width_from=width
