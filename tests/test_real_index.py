@@ -170,6 +170,42 @@ def test_nhl_stats_ids_answer_only_when_named():  # R49: NHL ids 1-28 are other 
     assert sdvplot.resolve("NJD", "nhl") == "11"  # tri-codes stay under auto
 
 
+# The NHL stats API files the original Jets (team 33, WIN, 1979-80 to 1995-96) under today's Jets' franchise. The team
+# that played those seasons became the Coyotes (1996) and its line is Utah's, as sdvplotR's resolve_historical_abbr()
+# says; today's Jets are the relocated Thrashers (2011-12 on). Seasons are the year they end, as everywhere in the index.
+@pytest.mark.parametrize(
+    ("value", "id_system", "season", "team"),
+    [
+        ("WIN", "auto", 1980, "129764"),  # the original Jets' first season: Utah's line
+        ("WIN", "auto", 1990, "129764"),
+        ("WIN", "auto", 1996, "129764"),  # their last
+        ("WIN", "auto", 2012, "28"),  # today's Jets' first season
+        ("WIN", "auto", 2015, "28"),
+        ("WIN", "auto", None, "28"),  # no season: the code's current holder (the KCA / WAS rule)
+        ("WPG", "auto", 1990, "28"),  # today's code is never the original Jets'
+        ("33", "nhl_id", 1990, "129764"),  # the NHL's team id for the original Jets, dated the same way
+        ("33", "nhl_id", 2015, "28"),
+        ("33", "nhl_id", None, "28"),
+    ],
+)
+def test_the_original_winnipeg_jets_resolve_by_season(value, id_system, season, team):
+    assert sdvplot.resolve(value, "nhl", season=season, id_system=id_system) == team
+
+
+def test_the_original_jets_marks_reach_utah_over_their_seasons():  # the archive's nhl:33 logos, 1980-1996
+    from sdvplot._marks import select_mark
+
+    m = _index.alias_table().filter((pl.col("id_system") == "mark") & (pl.col("value") == "nhl:33"))
+    assert m.select("team_id", "valid_from", "valid_to").rows() == [("129764", 1980, 1996)]
+    assert select_mark("WIN", "nhl", 1985)["entity_id"] == "33"
+    assert select_mark("WPG", "nhl", 2020)["entity_id"] != "33"
+
+
+@pytest.mark.parametrize("value", ["UTRGV", "TEXAS-RIO GRANDE VALLEY", "UT Rio Grande Valley", "RGV"])
+def test_utrgv_resolves_in_college_football(value):  # ESPN's cfb teams list omits 292; its per-team endpoint says RGV
+    assert sdvplot.resolve(value, "cfb") == "292"
+
+
 def test_coyotes_marks_reach_utah_with_their_own_ranges():  # R50
     m = _index.alias_table().filter((pl.col("id_system") == "mark") & pl.col("value").is_in(["nhl:27", "nhl:53"]))
     assert sorted(m.select("value", "team_id", "valid_from", "valid_to").rows()) == [

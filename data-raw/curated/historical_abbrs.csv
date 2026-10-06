@@ -11,3 +11,5 @@ wnba,espn_abbr,DET,DAL,1998,2009
 wnba,espn_abbr,TUL,DAL,2010,2015
 wnba,espn_abbr,SA,LV,2014,2017
 wnba,espn_abbr,SAS,LV,2003,2013
+nhl,nhl,WIN,UTAH,1980,1996
+nhl,nhl_id,33,UTAH,1980,1996

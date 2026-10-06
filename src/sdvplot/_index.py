@@ -85,14 +85,21 @@ def check_league(league: str) -> None:
         raise InputError(f"unknown league {league!r}; known leagues: {sorted(known)}")
 
 
+# The id systems whose dated aliases cover a league's whole history, every team it ever had with its seasons: Sports
+# Reference's codes, the MLB Stats API's team history and ESPN's per-season scoreboard codes. A curated relocation
+# (nflverse's OAK, the NHL's WIN) dates one team, not the league.
+_HISTORY_SYSTEMS = ("bref", "sportsipy", "mlbstats", "espn_abbr")
+
+
 @functools.cache
 def _season_table() -> dict[str | None, tuple[int, int]]:
     """league -> (first, last) season a season argument may name, and None -> the bounds for any league; built once per
     index load. The first season is the earliest the aliases date (MLB's 1871 for the index), and a league's own where
-    its aliases close a range (``valid_to``), so its history is dated: the NFL's 1920, the WNBA's 1997, the XFL's 2020.
-    Aliases that only open a range (the NHL's 2026 renames) say nothing about where a league starts, so such a league
-    keeps the index's floor. The last season is the later of the latest one the aliases name and next year, for every
-    league (an older index still takes this season and the next)."""
+    a system that records whole histories (``_HISTORY_SYSTEMS``) closes a range (``valid_to``) for it: the NFL's 1920,
+    the WNBA's 1997, the XFL's 2020. Aliases that only open a range (the NHL's 2026 renames) or date one relocation
+    (the NHL's curated WIN, 1980-96) say nothing about where a league starts, so such a league keeps the index's floor.
+    The last season is the later of the latest one the aliases name and next year, for every league (an older index
+    still takes this season and the next)."""
     a = alias_table()
     lo = a.select(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min())).item()
     hi = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
@@ -100,9 +107,10 @@ def _season_table() -> dict[str | None, tuple[int, int]]:
         return {}
     last = max(int(hi), datetime.date.today().year + 1)
     out: dict[str | None, tuple[int, int]] = {None: (int(lo), last)}
-    dated = set(a.filter(pl.col("valid_to").is_not_null())["league"].to_list())
+    history = a.filter(pl.col("id_system").is_in(_HISTORY_SYSTEMS))
+    dated = set(history.filter(pl.col("valid_to").is_not_null())["league"].to_list())
     firsts = (
-        a.filter(pl.col("league").is_in(sorted(dated)))
+        history.filter(pl.col("league").is_in(sorted(dated)))
         .group_by("league")
         .agg(pl.min_horizontal(pl.col("valid_from").min(), pl.col("valid_to").min()).alias("first"))
     )
