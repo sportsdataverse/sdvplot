@@ -13,7 +13,7 @@ The Plotly adapter: logos, wordmarks, headshots and axis logos as layout images 
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Plotly figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Plotly figure, as layout images. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Plotly figure. |
-| [axis_logos](#axis_logos) | Replace a category axis' team labels with the teams' logos (or wordmarks). |
+| [axis_logos](#axis_logos) | Replace a category axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
 
 ## add_headshots
 
@@ -251,7 +251,7 @@ axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark', 'headshot'] = 'logo',
     embed: bool = False,
     id_system: str = 'auto',
 ) -> Any
@@ -259,7 +259,7 @@ axis_logos(
 
 </div>
 
-Replace a category axis' team labels with the teams' logos (or wordmarks).
+Replace a category axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
 The images sit in paper coordinates just outside the plot (under the x axis, left of the y axis), ``height`` of
 the plot area tall; labels that are not teams stay as text, with one SdvplotWarning. The bottom (left) margin grows
@@ -269,13 +269,13 @@ to make room. Call it after adding the traces, so the axis has its categories.
 
 | Name | Type | Description |
 |---|---|---|
-| `target` | `Any` | A ``plotly.graph_objects.Figure`` whose ``axis`` is a category axis. |
+| `target` | `Any` | A ``plotly.graph_objects.Figure`` whose ``axis`` is a category axis. Player ids look numeric to Plotly (and to this inference): for a headshot axis give the axis ``type="category"``. |
 | `axis` | `str` | "x" or "y" (the first x or y axis). |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the plot area's height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn" or "gsis" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
 | `id_system` | `str` | The id system of the labels; "auto" tries each in order. |
 

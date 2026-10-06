@@ -13,7 +13,7 @@ The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team
 | [add_headshots](#add_headshots) | A copy of the plot with each player's headshot at its (x, y). |
 | [add_logos](#add_logos) | A copy of the plot with each team's logo at its (x, y); the front door's plotnine adapter. |
 | [add_wordmarks](#add_wordmarks) | A copy of the plot with each team's wordmark at its (x, y). |
-| [axis_logos](#axis_logos) | A copy of the plot whose team axis shows logos (or wordmarks) instead of tick labels. |
+| [axis_logos](#axis_logos) | A copy of the plot whose team axis shows logos or wordmarks (or whose player axis shows headshots), not text. |
 | [geom_from_path](#geom_from_path) | Any image, by local path or URL, at (x, y): ``aes(x=..., y=..., path=...)``, plus ``height`` (fraction of the |
 | [geom_mean_lines](#geom_mean_lines) | Reference lines at the mean of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's |
 | [geom_median_lines](#geom_median_lines) | Reference lines at the median of ``x0`` (vertical) and/or ``y0`` (horizontal), per panel: the port of ggpath's |
@@ -243,14 +243,14 @@ axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark', 'headshot'] = 'logo',
     id_system: str = 'auto',
 ) -> plotnine.ggplot.ggplot
 ```
 
 </div>
 
-A copy of the plot whose team axis shows logos (or wordmarks) instead of tick labels.
+A copy of the plot whose team axis shows logos or wordmarks (or whose player axis shows headshots), not text.
 
 ### Arguments
 
@@ -262,7 +262,7 @@ A copy of the plot whose team axis shows logos (or wordmarks) instead of tick la
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the panel height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn" or "gsis" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `id_system` | `str` | The id system of the labels. |
 
 ### Returns
@@ -273,7 +273,7 @@ A copy of the plot whose team axis shows logos (or wordmarks) instead of tick la
 
 - `ValueError`: If ``axis`` is not "x"/"y".
 - `UnsupportedTargetError`: (a TypeError) If ``target`` is not a plotnine ggplot.
-- `InputError`: (a ValueError) If ``height`` is out of range or ``mark_type`` is not "logo"/"wordmark"; when the plot is drawn, if ``league``, ``id_system`` or ``variant`` is unknown, or a season is not a year or is outside the seasons sdvplot knows for the league.
+- `InputError`: (a ValueError) If ``height`` is out of range or ``mark_type`` is not "logo", "wordmark" or "headshot"; when the plot is drawn, if ``league``, ``id_system`` or ``variant`` is unknown, or a season is not a year or is outside the seasons sdvplot knows for the league.
 - `OfflineError`: When the plot is drawn, if the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
 - `UnsafeDownloadError`: (an OSError) When the plot is drawn, if a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 - `UnsafeCachePathError`: (a ValueError) When the plot is drawn, if the manifest's sha256 or extension for a mark would put the file outside the cache directory.
@@ -289,11 +289,16 @@ from plotnine import aes, geom_col, ggplot
 df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "epa": [0.2, 0.15, 0.1]})
 p = ggplot(df, aes("team", "epa")) + geom_col()
 p2 = sdvplot.axis_logos(p, "x", league="nfl")
+
+# player headshots as the labels (ESPN athlete ids)
+qb = pd.DataFrame({"player": ["3139477", "3918298"], "epa": [0.31, 0.27]})
+p3 = sdvplot.axis_logos(ggplot(qb, aes("player", "epa")) + geom_col(), "x", league="nfl",
+                        mark_type="headshot")
 ```
 
 ### See also
 
-- [sdvplotR element_sdv_logo()](https://sdvplotR.sportsdataverse.org/)
+- [sdvplotR element_sdv_logo(), scale_x_sdv_headshots()](https://sdvplotR.sportsdataverse.org/)
 - sdvplot.plotnine.title_image: an image beside the plot title
 
 ## geom_from_path

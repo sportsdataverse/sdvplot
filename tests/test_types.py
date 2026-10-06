@@ -13,14 +13,16 @@ import pytest
 from sdvplot import InputError, headshot_url
 from sdvplot._colors import _COLUMNS
 from sdvplot._marks import MARK_TYPES
+from sdvplot._placement import KINDS
 from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY
-from sdvplot._types import HeadshotIdSystem, IdSystem, MarkType, Which
+from sdvplot._types import AxisMarkType, HeadshotIdSystem, IdSystem, MarkType, Which
 
 
 def test_literals_match_the_runtime_vocabularies() -> None:
     assert get_args(IdSystem) == ("auto", *PRIORITY, *EXPLICIT_ONLY)
     assert get_args(Which) == tuple(_COLUMNS)
     assert get_args(MarkType) == MARK_TYPES
+    assert get_args(AxisMarkType) == KINDS
 
 
 def test_headshot_id_systems_are_the_accepted_ones() -> None:
@@ -87,3 +89,4 @@ if TYPE_CHECKING:
         sdvplot.logo_url("KC", "nfl", mark_type="wordmrk")  # type: ignore[arg-type]
         sdvplot.logo_image("KC", "nfl", mark_type="wordmrk")  # type: ignore[arg-type]
         sdvplot.headshot_url("3139477", "nfl", id_system="nflverse")  # type: ignore[arg-type]
+        sdvplot.matplotlib.axis_logos(ax, "x", league="nfl", mark_type="headshots")  # type: ignore[arg-type]

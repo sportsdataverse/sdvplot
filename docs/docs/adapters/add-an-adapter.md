@@ -27,7 +27,7 @@ test hooks, constants) starts with an underscore.
 | --- | --- |
 | `add_logos`, `add_wordmarks` | `(target, x, y, teams, *, league, season=None, height=0.1, alpha=1, variant="default", embed=False, id_system="auto")` |
 | `add_headshots` | `(target, x, y, players, *, league, height=0.1, alpha=1, embed=False, id_system="espn")`: no `season`, no `variant` |
-| `axis_logos` | `(target, axis, *, league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")`: draw logos in place of tick labels; or `(target, axis, **kwargs)` that raises `UnsupportedTargetError` (a `TypeError`), with `_SUPPORTS_AXIS_LOGOS = False` |
+| `axis_logos` | `(target, axis, *, league, season=None, height=0.1, variant="default", mark_type="logo", id_system="auto")`: draw logos, wordmarks or (`mark_type="headshot"`, player-id labels) headshots in place of tick labels; or `(target, axis, **kwargs)` that raises `UnsupportedTargetError` (a `TypeError`), with `_SUPPORTS_AXIS_LOGOS = False` |
 | `_drawn_marks` | the test hook (private): `(target) -> list[tuple]` |
 | `_SUPPORTS_AXIS_LOGOS` | (private) `False` when `axis_logos` is not supported. The default, when absent, is `True` |
 

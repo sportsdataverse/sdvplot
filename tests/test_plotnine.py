@@ -380,3 +380,15 @@ def test_geom_from_path_leaves_a_missing_x_to_plotnine(tmp_path):
     df = pd.DataFrame({"x": [1.0, None], "y": [1.0, 2.0], "img": [a, a]})
     with pytest.warns(PlotnineWarning, match="Removed 1 rows"):  # plotnine's warning, and no SdvplotWarning
         assert [m[0] for m in sp9._drawn_marks(ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path())] == [a]
+
+
+def test_axis_headshots_draw_player_ids_at_the_ticks(headshot_images):
+    from tests.conftest import PLAYERS
+
+    p, q = PLAYERS
+    plot = sdvplot.axis_logos(_axis_plot([p, "not-an-id", q]), "x", league="nfl", mark_type="headshot")
+    with pytest.warns(SdvplotWarning):
+        # a discrete scale's positions are 1-based, as in ggplot
+        assert sp9._drawn_axis_marks(plot, "x") == [(p, 1.0, pytest.approx(0.1)), (q, 3.0, pytest.approx(0.1))]
+    with pytest.warns(SdvplotWarning):
+        assert sp9._visible_axis_labels(plot, "x") == ["not-an-id"]

@@ -19,6 +19,7 @@ with requires_extra("plotly"):
     import plotly.graph_objects as go
 
 from sdvplot._placement import check_alpha, check_height, place
+from sdvplot._types import AxisMarkType
 from sdvplot._web import aspect, axis_letter, image_sources
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -472,24 +473,26 @@ def axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: AxisMarkType = "logo",
     embed: bool = False,
     id_system: str = "auto",
 ) -> Any:
-    """Replace a category axis' team labels with the teams' logos (or wordmarks).
+    """Replace a category axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
     The images sit in paper coordinates just outside the plot (under the x axis, left of the y axis), ``height`` of
     the plot area tall; labels that are not teams stay as text, with one SdvplotWarning. The bottom (left) margin grows
     to make room. Call it after adding the traces, so the axis has its categories.
 
     Args:
-        target: A ``plotly.graph_objects.Figure`` whose ``axis`` is a category axis.
+        target: A ``plotly.graph_objects.Figure`` whose ``axis`` is a category axis. Player ids look numeric to Plotly
+            (and to this inference): for a headshot axis give the axis ``type="category"``.
         axis: "x" or "y" (the first x or y axis).
         league: The SDV league key, e.g. "nfl".
         season: One season for every label.
         height: The image height as a fraction of the plot area's height, in (0, 1].
         variant: "default", "dark", or a named variant from ``marks()``.
-        mark_type: "logo" or "wordmark".
+        mark_type: "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn"
+            or "gsis" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect.
         embed: Inline each image as a data URI instead of linking its URL.
         id_system: The id system of the labels; "auto" tries each in order.
 

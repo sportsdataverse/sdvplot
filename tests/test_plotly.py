@@ -16,7 +16,9 @@ def _fig():
 
 
 def _axis_fig(categories):
-    return go.Figure(go.Bar(x=categories, y=list(range(1, len(categories) + 1))))
+    # a category axis, declared: Plotly (and the adapter, which mirrors its inference) would read numeric-looking labels
+    # such as player ids as a linear axis
+    return go.Figure(go.Bar(x=categories, y=list(range(1, len(categories) + 1)))).update_xaxes(type="category")
 
 
 def test_the_figure_adapter_passes_the_contract(mark_images, headshot_images):
@@ -246,3 +248,21 @@ def test_axis_logos_need_a_category_axis(mark_images):
 def test_a_non_figure_is_a_type_error(mark_images):
     with pytest.raises(TypeError, match="draws on a plotly.graph_objects.Figure"):
         splotly.add_logos(go.Scatter(), [0], [0], ["LV"], league="nfl")
+
+
+def test_axis_headshots_draw_player_ids_at_the_ticks_and_make_room_for_their_width(headshot_images):
+    from sdvplot import headshot_url
+    from tests.conftest import PLAYERS
+
+    p, q = PLAYERS
+    fig = _axis_fig([p, "not-an-id", q])
+    with pytest.warns(SdvplotWarning):
+        sdvplot.axis_logos(fig, "x", league="nfl", mark_type="headshot", height=0.1)
+    assert splotly._drawn_axis_marks(fig, "x") == [(p, 0.0, pytest.approx(0.1)), (q, 2.0, pytest.approx(0.1))]
+    assert splotly._visible_axis_labels(fig, "x") == ["not-an-id"]
+    assert fig.layout.images[0].source == headshot_url(p, "nfl")
+    fig = go.Figure(go.Bar(y=list(PLAYERS), x=[1, 2], orientation="h")).update_yaxes(type="category")
+    fig.update_layout(height=400, margin={"t": 50, "b": 50, "l": 80})
+    sdvplot.axis_logos(fig, "y", league="nfl", mark_type="headshot", height=0.1)
+    assert [m[0] for m in splotly._drawn_axis_marks(fig, "y")] == list(PLAYERS)
+    assert fig.layout.margin.l == 80 + math.ceil(0.1 * 300 * _web.HEADSHOT_ASPECT)  # a headshot is wider than tall

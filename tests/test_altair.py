@@ -230,3 +230,17 @@ def test_axis_logos_reads_an_untyped_channel_shorthand(mark_images, x):
     chart = alt.Chart(df).mark_bar().encode(x=x, y="v:Q").properties(height=200)
     out = sdvplot.axis_logos(chart, "x", league="nfl", height=0.1)
     assert sorted(m[0] for m in salt._drawn_axis_marks(out, "x")) == ["13", "14"]
+
+
+def test_axis_headshots_draw_player_ids_at_the_ticks(headshot_images):
+    from sdvplot._web import HEADSHOT_ASPECT
+    from tests.conftest import PLAYERS
+
+    p, q = PLAYERS
+    chart = _axis_chart([p, "not-an-id", q], height=200)
+    with pytest.warns(SdvplotWarning):
+        out = sdvplot.axis_logos(chart, "x", league="nfl", mark_type="headshot", height=0.1)
+    assert salt._drawn_axis_marks(out, "x") == [(p, 0.0, pytest.approx(0.1)), (q, 2.0, pytest.approx(0.1))]
+    assert salt._visible_axis_labels(out, "x") == ["not-an-id"]
+    layer = salt._named(out, "sdvplot_axis_x")[0]
+    assert layer.mark.width == pytest.approx(20 * HEADSHOT_ASPECT)  # 0.1 of 200 px tall, a headshot's aspect wide

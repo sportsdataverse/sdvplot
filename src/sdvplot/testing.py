@@ -47,7 +47,8 @@ plotnine, warns there): a call that skips nothing gives no SdvplotWarning, and e
 6. Headshots: add_headshots draws player ids at their own x/y, skips an unknown id with exactly one warning, and
    follows rule 4.
 7. Axis logos: known team categories become images in tick order, an unknown one gives exactly one warning and stays
-   readable text, and the images follow rule 4; or, without axis support, axis_logos raises TypeError.
+   readable text, and the images follow rule 4; with mark_type="headshot" the same holds for player ids (one warning
+   for an unknown id, which stays as text); or, without axis support, axis_logos raises TypeError.
 8. Alpha: on every verb that takes alpha (add_logos, add_wordmarks, add_headshots, and axis_logos when its signature
    has alpha), alpha outside [0, 1] raises ValueError.
 
@@ -387,6 +388,29 @@ def check_adapter_contract(  # noqa: C901 - one short block per contract rule, r
             return [m[2] for m in marks]
 
         _check_height("rule 7 (axis logos: height)", "axis_logos", axis_heights)
+
+        # rule 7, headshots: the same axis verb with mark_type="headshot" draws player ids
+        r7h = "rule 7 (axis headshots)"
+        try:
+            drawn, axis_marks, count = _draw(adapter, "axis_logos", make_axis([p, "not-an-id", q]), read_axis, "x",
+                                             league=league, mark_type="headshot")  # fmt: skip
+        except Exception as e:
+            raise AssertionError(f"{r7h}: axis_logos(mark_type='headshot') raised {e!r}") from e
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SdvplotWarning)
+            shown = list(adapter._visible_axis_labels(drawn, "x"))
+        if [m[0] for m in axis_marks] != [p, q]:
+            _fail(r7h, f"expected axis headshots for [{p!r}, {q!r}] in tick order, drew {axis_marks}")
+        _once(r7h, count, "an unknown player id on the axis")
+        if "not-an-id" not in shown or p in shown or q in shown:
+            _fail(r7h, f"only the unknown player id may stay as text, visible labels are {shown}")
+
+        def axis_headshot_heights(h: float, read: bool) -> list[float]:
+            _, marks, _ = _draw(adapter, "axis_logos", make_axis([p, q]), read_axis if read else lambda _: [], "x",
+                                league=league, mark_type="headshot", height=h)  # fmt: skip
+            return [m[2] for m in marks]
+
+        _check_height("rule 7 (axis headshots: height)", "axis_logos", axis_headshot_heights)
         if "alpha" in inspect.signature(adapter.axis_logos).parameters:  # no shipped adapter's axis logos take alpha
             alpha_draws["axis_logos"] = lambda alpha: _draw(adapter, "axis_logos", make_axis([a, b]), lambda _: [],
                                                             "x", league=league, alpha=alpha)  # fmt: skip

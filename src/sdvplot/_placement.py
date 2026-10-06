@@ -47,6 +47,13 @@ def check_height(height: Any) -> float:
     return float(height)
 
 
+def check_kind(kind: Any) -> str:
+    """``kind`` (an axis verb's ``mark_type``), or InputError unless it is one of KINDS."""
+    if kind not in KINDS:
+        raise InputError(f"kind must be one of {list(KINDS)}, got {kind!r}")
+    return str(kind)
+
+
 def check_alpha(alpha: Any) -> float:
     """``alpha`` as a float, or ValueError unless it is an opacity in [0, 1]."""
     if not _real(alpha) or not 0 <= alpha <= 1:
@@ -83,14 +90,16 @@ def place(
     whose team is unknown, whose x or y is missing, or that have no mark.
 
     ``x``, ``y`` and ``teams`` are read positionally (a pandas index is ignored). For ``kind="headshot"``, ``teams``
-    holds player ids and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``); otherwise
+    holds player ids, ``season`` is ignored and ``id_system`` must be ``"espn"`` or ``"gsis"`` (as in ``headshot_url``;
+    ``"auto"`` means ``"espn"``); otherwise
     ``strict=True`` raises UnresolvedTeamError for a team that does not resolve, as ``resolve`` does. ``_warn=False``
     skips the same points without warning, for an adapter that already warned for them (no process-wide warning
     filter is touched, so it is thread-safe).
     """
     skipped = _warn_skipped if _warn else lambda reason, values: None
-    if kind not in KINDS:
-        raise InputError(f"kind must be one of {KINDS}, got {kind!r}")
+    check_kind(kind)
+    if kind == "headshot" and id_system == "auto":
+        id_system = "espn"  # the axis verbs' default; a headshot id is an ESPN athlete id unless told "gsis"
     xs, _ = _unpack(x)
     ys, _ = _unpack(y)
     ts, _ = _unpack(teams)
