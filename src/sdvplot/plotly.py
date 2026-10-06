@@ -431,7 +431,8 @@ def add_headshots(
         yref: The y axis to place on.
         layer: "above" or "below" the traces.
         embed: Inline each image as a data URI instead of linking its URL.
-        id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
 
     Returns:
         object: ``target`` itself, with the images added.

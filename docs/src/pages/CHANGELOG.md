@@ -48,6 +48,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
   `conference_id` the league's teams carry. The default lists teams only, and `resolve()` and `palette()` never
   answer a conference key, so no existing call changes. Index-only for now: the archive has no conference marks yet.
+- Headshots by the league's own player id: `id_system="league"` (sdvplotR's `id_type = "league"`) on `headshot_url`
+  and every headshot helper (`add_headshots` on every adapter, `geom_sdv_headshots`, `gt_sdv_headshots`,
+  `gt_sdv_cols_label(mark_type="headshot")`, `reactable_sdv_headshots`, `plottable.headshot_column`) draws an NBA or
+  WNBA Stats `PERSON_ID` (what nba_api, hoopR and wehoop return), an MLBAM id or an NHL API id from the league's CDN,
+  with sdvplotR's URL templates; for the NFL it is the gsis id. `"espn"` stays the default. A league without them is
+  an `InputError` naming the ones that have them, and a `DownloadError` from cdn.nba.com or cdn.wnba.com with a 403
+  says that those CDNs block datacenter and cloud IPs.
 - `surface("fiba")` draws a FIBA court (no team yet).
 - `sdvplot.plotnine.scale_color_sdv` and `scale_fill_sdv` take `alpha=`, an opacity applied to the team colors
   (sdvplotR's `alpha`); `na_value` is drawn as given. `scale_colour_sdv` is the British alias sdvplotR and plotnine

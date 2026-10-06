@@ -56,7 +56,7 @@ Draw each player's headshot centred on its (x, y) point of a Plotly figure.
 | `yref` | `str` | The y axis to place on. |
 | `layer` | `str` | "above" or "below" the traces. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 

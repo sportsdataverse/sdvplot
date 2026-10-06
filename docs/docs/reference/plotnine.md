@@ -59,7 +59,7 @@ A copy of the plot with each player's headshot at its (x, y).
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `height` | `float` | The headshot height as a fraction of the panel height, in (0, 1]. |
 | `alpha` | `float` | Opacity, 0 to 1. |
-| `id_system` | `str` | "espn" or "gsis" (NFL). |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 
@@ -469,7 +469,7 @@ Player headshots at (x, y), as a plotnine layer.
 |---|---|
 | `mapping` | ``aes(x=..., y=..., player_id=...)``. |
 | `data` | The layer's data (pandas or polars), when not the plot's. |
-| `**kwargs` | ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1], default 0.1), ``alpha`` (0 to 1), ``id_system`` and plotnine's layer arguments (``inherit_aes``, ...). |
+| `**kwargs` | ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1], default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis" or "league", as in ``headshot_url``) and plotnine's layer arguments (``inherit_aes``, ...). |
 
 ### Returns
 

@@ -102,7 +102,8 @@ def headshot_column(
     Args:
         name: The data column holding the player ids.
         league: The SDV league key, e.g. "nfl".
-        id_system: "espn" or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
         **column_definition_kwargs: Passed to ``plottable.ColumnDefinition``.
 
     Returns:
