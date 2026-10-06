@@ -390,8 +390,8 @@ def test_sdvplotr_keys_map_through_their_canonical_abbreviation(tmp_path):  # F1
     _, aliases, _ = bi.build(raw)
     got = aliases.filter(pl.col("id_system") == "sdvplotr").select("league", "value", "team_id").rows()
     # XYZ: no team; LOS ANGELES: two teams by name (sdvplotR keeps the first, sdvplot never guesses); nba: no team;
-    # historical: OAK; RAI through abbr_mapping's LVR; LVR stays abbr_mapping's (sdvplotR's order)
-    assert sorted(got) == [("nfl", "LAS VEGAS", "13"), ("nfl", "LVR", "13"), ("nfl", "OAK", "13"), ("nfl", "RAI", "13")]
+    # historical: OAK; RAI through abbr_mapping's LVR; LVR is the relocation table's, over abbr_mapping's (sdvplotR #55)
+    assert sorted(got) == [("nfl", "LAS VEGAS", "13"), ("nfl", "LVR", "24"), ("nfl", "OAK", "13"), ("nfl", "RAI", "13")]
     assert aliases.filter(pl.col("id_system") == "sdvplotr")["valid_from"].is_null().all()
 
 

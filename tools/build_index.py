@@ -295,20 +295,18 @@ def _nhl_by_tri_code(nhl: pl.DataFrame, espn: pl.DataFrame, aliases: pl.DataFram
 
 
 def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
-    """sdvplotR's keys (R43): clean_team_abbrs()'s abbr_mapping, then resolve_historical_abbr()'s table where
-    abbr_mapping lacks the key, its target looked up in abbr_mapping again (sdvplotR's order). A key goes to the team
-    its canonical abbreviation names today: the current nflverse alias in the NFL, the current espn_abbr alias
-    elsewhere. A canon naming no team or several drops, and so does a key the name system gives several teams:
-    sdvplotR keeps the first of a shared name ("NEW YORK"), sdvplot never guesses."""
-    hist = (
-        hist.join(am, on=["sport", "key"], how="anti")
-        .join(
-            am.select("sport", pl.col("key").alias("canon"), pl.col("canon").alias("_to")),
-            on=["sport", "canon"],
-            how="left",
-        )
-        .select("sport", "key", pl.coalesce("_to", "canon").alias("canon"))
-    )
+    """sdvplotR's keys (R43) in match_team_abbrs()'s order (sdvplotR #55): resolve_historical_abbr()'s table first,
+    its target looked up in clean_team_abbrs()'s abbr_mapping, then abbr_mapping for every other key, so a relocation
+    key wins over an alias of the same name. A key goes to the team its canonical abbreviation names today: the
+    current nflverse alias in the NFL, the current espn_abbr alias elsewhere. A canon naming no team or several drops,
+    and so does a key the name system gives several teams: sdvplotR keeps the first of a shared name ("NEW YORK"),
+    sdvplot never guesses."""
+    hist = hist.join(
+        am.select("sport", pl.col("key").alias("canon"), pl.col("canon").alias("_to")),
+        on=["sport", "canon"],
+        how="left",
+    ).select("sport", "key", pl.coalesce("_to", "canon").alias("canon"))
+    am = am.join(hist, on=["sport", "key"], how="anti")
     system = pl.when(pl.col("league") == "nfl").then(pl.lit("nflverse")).otherwise(pl.lit("espn_abbr"))
     canon = (
         aliases.filter((pl.col("id_system") == system) & pl.col("valid_to").is_null())

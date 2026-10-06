@@ -98,11 +98,14 @@ data's range is not brought into view.
 
 ## Team index
 
-sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`):
-4,234 of 4,241, every miss a place several teams share (`CHICAGO`, `NEW YORK`, CFBD's two `CHARLOTTE`s), which sdvplotR
-gives its first team and sdvplot never guesses. sdvplotR's keys have no seasons, so a key that a dated source gives
-another team earlier starts the season after that team's last; a value given without a season means its current
-holder. Two MLB codes and one NHL code show the rule:
+sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`,
+against the sdvplotR commit in `data-raw/sdvplotr_commit.txt`): 4,233 of 4,240, every miss a place several teams share
+(`CHICAGO`, `NEW YORK`, CFBD's two `CHARLOTTE`s), which sdvplotR gives its first team and sdvplot never guesses. Its
+`resolve_historical_abbr()` keys resolve to the franchise today, looked up as sdvplotR does since its #55 (the
+relocation table first, then its target through `abbr_mapping`); the one exception is `WIN` below. Where both hold a
+team's colors, they agree (sdvplotR #63 takes sdvplot's for the teams ESPN gives none). sdvplotR's keys have no seasons,
+so a key that a dated source gives another team earlier starts the season after that team's last; a value given without
+a season means its current holder. Two MLB codes and one NHL code show the rule:
 
 - **`KCA`.** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics; the API's Royals
   teamCode `kca`, Lahman and sdvplotR use it for the Royals from 1968. sdvplot gives 1955-67 to the Athletics and
@@ -116,7 +119,7 @@ holder. Two MLB codes and one NHL code show the rule:
   into today's Jets on 2026-09-24, but the logos and colors of those seasons are the Coyotes line's). sdvplot gives the
   seasons 1980-1996 (the year a season ends, as everywhere in the index) to Utah, as sdvplotR's
   `resolve_historical_abbr()` does, and every other season, and no season, to today's Jets, the relocated Thrashers
-  (2011-12 on); `WPG` is only today's Jets.
+  (2011-12 on), where sdvplotR, which has no seasons, gives a bare `WIN` to Utah; `WPG` is only today's Jets.
 
 Known gaps in the archive (recorded, not invented):
 
