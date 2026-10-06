@@ -25,6 +25,7 @@ from sdvplot._headshots import headshot_url
 from sdvplot._images import logo_image
 from sdvplot._index import teams
 from sdvplot._marks import logo_url, marks
+from sdvplot._pitch import pitch_coords
 from sdvplot._resolve import resolve, suggest
 from sdvplot._surface import surface
 from sdvplot._versions import versions
@@ -59,6 +60,7 @@ __all__ = [
     "logo_url",
     "marks",
     "palette",
+    "pitch_coords",
     "resolve",
     "suggest",
     "surface",
