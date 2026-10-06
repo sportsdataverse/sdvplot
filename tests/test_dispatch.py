@@ -5,7 +5,7 @@ import warnings
 import pytest
 
 import sdvplot._dispatch as d
-from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsupportedTargetError
+from sdvplot._errors import OptionalDependencyError, SdvplotWarning, UnsupportedTargetError, warn
 from sdvplot._headshots import headshot_url
 from sdvplot._resolve import resolve
 from sdvplot.testing import check_adapter_contract
@@ -421,10 +421,16 @@ def _axis_target(categories):
 def axis_dummy(dummy, monkeypatch):
     """The dummy adapter with axis logos: each team label becomes an ("axis", team_id, tick, height) entry."""
 
-    def axis_logos(target, axis, *, league, height=0.1, **kw):
+    def axis_logos(target, axis, *, league, height=0.1, mark_type="logo", **kw):
         if not 0 < height <= 1:
             raise ValueError("height is a fraction of the plot height")
-        for i, team_id in enumerate(resolve(list(target.labels), league)):
+        if mark_type == "headshot":  # player ids: the ones with a headshot URL, one warning for the rest
+            ids = [lab if headshot_url(lab, league) else None for lab in target.labels]
+            if None in ids:
+                warn(f"skipped {ids.count(None)} point(s) with no headshot")
+        else:
+            ids = resolve(list(target.labels), league)
+        for i, team_id in enumerate(ids):
             if team_id is not None:
                 target.append(("axis", team_id, float(i), height))
                 target.labels[i] = ""

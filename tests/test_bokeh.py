@@ -6,6 +6,7 @@ from bokeh.plotting import figure  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.bokeh as sbokeh  # noqa: E402
+from sdvplot._errors import UnsupportedTargetError  # noqa: E402
 from sdvplot.testing import check_adapter_contract  # noqa: E402
 
 
@@ -79,6 +80,8 @@ def test_empty_input_adds_no_renderer(mark_images):
 def test_axis_logos_name_the_workaround(mark_images):
     with pytest.raises(TypeError, match="add_logos"):
         sdvplot.axis_logos(_fig(), "x", league="nfl")
+    with pytest.raises(UnsupportedTargetError):  # a headshot axis is no more drawable here than a logo one
+        sdvplot.axis_logos(_fig(), "x", league="nfl", mark_type="headshot")
 
 
 def test_a_bokeh_object_that_is_not_a_figure_is_a_type_error(mark_images):

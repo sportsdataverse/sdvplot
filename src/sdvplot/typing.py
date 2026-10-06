@@ -12,9 +12,9 @@ Use them where you keep an argument in a variable, so a type checker accepts it:
 set is open (annotate them as ``str``).
 """
 
-from sdvplot._types import HeadshotIdSystem, IdSystem, MarkType, Which
+from sdvplot._types import AxisMarkType, HeadshotIdSystem, IdSystem, MarkType, Which
 
-__all__ = ["HeadshotIdSystem", "IdSystem", "MarkType", "Which"]
+__all__ = ["AxisMarkType", "HeadshotIdSystem", "IdSystem", "MarkType", "Which"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only

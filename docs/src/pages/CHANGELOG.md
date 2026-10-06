@@ -64,6 +64,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   frame, piecewise-linearly between pitch landmarks, with `flip` for teams attacking opposite ends. The port of
   sdvplotR's `sdv_pitch_coords()`, matched to 1e-12 on every provider.
 - `tools/espn_soccer_y_gate.py`, the measurement behind the ESPN frame's y direction.
+- `axis_logos(..., mark_type="headshot")` draws player headshots as axis labels on matplotlib, plotnine, Plotly and
+  Altair (the port of sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` and `element_sdv_headshot()`):
+  the tick labels are read as player ids (`id_system` `"espn"`, which `"auto"` means, `"gsis"` or `"league"`), each headshot
+  keeps its own aspect, an unknown id stays as text with one warning, and the adapters without axis logos raise
+  `UnsupportedTargetError` as before. `sdvplot.typing.AxisMarkType` is the `Literal` of the three mark types. The
+  matplotlib y-axis label pad now grows by the widest image's width, so wordmarks and headshots no longer overlap
+  their tick labels' room. The adapter contract (`check_adapter_contract`, rule 7) checks the headshot axis too.
 
 ### Changed
 

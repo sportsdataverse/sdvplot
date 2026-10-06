@@ -19,6 +19,7 @@ with requires_extra("altair"):
     import altair as alt
 
 from sdvplot._placement import Placement, check_alpha, check_height, place
+from sdvplot._types import AxisMarkType
 from sdvplot._web import aspect, axis_letter, image_sources
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -507,11 +508,11 @@ def axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: AxisMarkType = "logo",
     embed: bool = False,
     id_system: str = "auto",
 ) -> alt.LayerChart:
-    """Replace a discrete axis' team labels with the teams' logos (or wordmarks).
+    """Replace a discrete axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
     The images are a layer placed just outside the plot (under the x axis, left of the y axis), ``height`` of the chart
     height tall; the axis' ``labelExpr`` blanks only the labels that became images and its ``labelPadding`` grows past
@@ -525,7 +526,9 @@ def axis_logos(
         season: One season for every label.
         height: The image height as a fraction of the chart height, in (0, 1].
         variant: "default", "dark", or a named variant from ``marks()``.
-        mark_type: "logo" or "wordmark".
+        mark_type: "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn",
+            "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their
+            own aspect.
         embed: Inline each image as a data URI instead of linking its URL.
         id_system: The id system of the labels; "auto" tries each in order.
 

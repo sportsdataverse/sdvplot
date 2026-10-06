@@ -39,7 +39,7 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [add_logos](add_logos.md) | Add team logos to a plot or table of any supported library. |
 | [add_wordmarks](add_wordmarks.md) | Add team wordmarks to a plot or table of any supported library. |
 | [add_headshots](add_headshots.md) | Add player headshots to a plot or table of any supported library. |
-| [axis_logos](axis_logos.md) | Replace an axis' team labels with team logos on a plot of any supported library. |
+| [axis_logos](axis_logos.md) | Replace an axis' team labels with team logos (or a player axis' with headshots) on any supported library. |
 | [surface](surface.md) | Draw the league's playing surface with sportypy, in a team's colors. |
 | [court_coords](court_coords.md) | Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws. |
 | [pitch_coords](pitch_coords.md) | Convert soccer event coordinates from any provider's frame to the pitch ``surface("soccer")`` draws. |

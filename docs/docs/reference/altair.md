@@ -13,7 +13,7 @@ The Altair adapter: logos, wordmarks and headshots as a native Vega-Lite image l
 | [add_headshots](#add_headshots) | Layer each player's headshot, centred on its (x, y) point, onto an Altair chart. |
 | [add_logos](#add_logos) | Layer each team's logo, centred on its (x, y) point, onto an Altair chart. |
 | [add_wordmarks](#add_wordmarks) | Layer each team's wordmark, centred on its (x, y) point, onto an Altair chart. |
-| [axis_logos](#axis_logos) | Replace a discrete axis' team labels with the teams' logos (or wordmarks). |
+| [axis_logos](#axis_logos) | Replace a discrete axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
 | [logo_layer](#logo_layer) | A Vega-Lite image layer of team logos, to layer onto a chart: ``alt.layer(chart, logo_layer(...))``. |
 
 ## add_headshots
@@ -238,7 +238,7 @@ axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark', 'headshot'] = 'logo',
     embed: bool = False,
     id_system: str = 'auto',
 ) -> altair.vegalite.v6.api.LayerChart
@@ -246,7 +246,7 @@ axis_logos(
 
 </div>
 
-Replace a discrete axis' team labels with the teams' logos (or wordmarks).
+Replace a discrete axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
 The images are a layer placed just outside the plot (under the x axis, left of the y axis), ``height`` of the chart
 height tall; the axis' ``labelExpr`` blanks only the labels that became images and its ``labelPadding`` grows past
@@ -263,7 +263,7 @@ scale domain or sort list, or the chart's inline data.
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the chart height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn", "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
 | `id_system` | `str` | The id system of the labels; "auto" tries each in order. |
 

@@ -27,6 +27,7 @@ with requires_extra("mpl"):
 from sdvplot import _tiers
 from sdvplot._images import MAX_SIZE, load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
+from sdvplot._types import AxisMarkType
 
 _SUPPORTS_AXIS_LOGOS = True
 _MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
@@ -497,13 +498,13 @@ def axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: AxisMarkType = "logo",
     id_system: str = "auto",
 ) -> Any:
-    """Replace a team axis' tick labels with the teams' logos (or wordmarks).
+    """Replace a team axis' tick labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
     Reads the axis' ticks and labels when called, so call it after setting the categories and limits. Labels that are
-    not teams stay as text, with one SdvplotWarning.
+    not teams (or, with ``mark_type="headshot"``, not player ids with a headshot) stay as text, with one SdvplotWarning.
 
     Args:
         target: A matplotlib Axes, a Figure with one Axes, or a seaborn grid with one Axes.
@@ -512,7 +513,9 @@ def axis_logos(
         season: One season for every label.
         height: The image height as a fraction of the Axes height, in (0, 1].
         variant: "default", "dark", or a named variant from ``marks()``.
-        mark_type: "logo" or "wordmark".
+        mark_type: "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn",
+            "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their
+            own aspect.
         id_system: The id system of the labels; "auto" tries each in order.
 
     Returns:
@@ -520,12 +523,13 @@ def axis_logos(
 
     Raises:
         InputError: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or
-            ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+            ``variant`` is unknown, ``season`` is not a year or is outside the seasons sdvplot knows for the league, or
+            ``league`` has no ESPN headshots for ``mark_type="headshot"``.
         ValueError: If ``axis`` is not "x"/"y", or the target has several Axes.
         UnsupportedTargetError: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-        OfflineError: If the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also
-            an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not
-            match the manifest's sha256, or one PIL cannot decode).
+        OfflineError: If the logo manifest, a mark's image or a headshot is neither cached nor downloadable (a
+            DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends
+            a file that does not match the manifest's sha256, or one PIL cannot decode).
         UnsafeDownloadError: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or
             redirected away from https.
         UnsafeCachePathError: (a ValueError) If the manifest's sha256 or extension for a mark would put the file outside
@@ -542,8 +546,13 @@ def axis_logos(
             ax.bar(["KC", "BUF", "BAL"], [12, 10, 9])
             sdvplot.axis_logos(ax, "x", league="nfl", height=0.08)
 
+            # player headshots as the labels of a leaderboard (ESPN athlete ids)
+            fig, ax = plt.subplots()
+            ax.barh(["3139477", "3918298"], [0.31, 0.27])
+            sdvplot.axis_logos(ax, "y", league="nfl", mark_type="headshot", height=0.2)
+
     See Also:
-        sdvplotR element_sdv_logo(): https://sdvplotR.sportsdataverse.org/
+        sdvplotR element_sdv_logo(), scale_x_sdv_headshots(): https://sdvplotR.sportsdataverse.org/
     """
     return _axis_logos(target, axis, league=league, season=season, height=height, variant=variant,
                        mark_type=mark_type, id_system=id_system)  # fmt: skip
@@ -557,7 +566,7 @@ def _axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = "default",
-    mark_type: str = "logo",
+    mark_type: AxisMarkType = "logo",
     id_system: str = "auto",
     warn: bool = True,
 ) -> Any:
@@ -581,14 +590,17 @@ def _axis_logos(
     )
     tick = which.get_major_ticks()[0] if which.get_major_ticks() else None
     offset = (tick.get_tick_padding() if tick is not None else 0) + 2  # images start this many points past the axis
-    image_points = h * ax.bbox.height * 72 / ax.figure.dpi
-    if tick is not None:  # keep the configured label pad, plus room for the images below/left of the tick marks
-        which.set_tick_params(pad=tick.get_pad() + 2 + image_points)
     images: dict[str, np.ndarray] = {}
     for p in placements:
-        loc = p.x if axis == "x" else p.y
         if p.url not in images:
             images[p.url] = _image(p)
+    image_points = h * ax.bbox.height * 72 / ax.figure.dpi
+    if axis == "y":  # left of the axis the widest image takes the room: its width, from its own aspect (a headshot is
+        image_points *= max((im.shape[1] / im.shape[0] for im in images.values()), default=1.0)  # wider than tall)
+    if tick is not None:  # keep the configured label pad, plus room for the images below/left of the tick marks
+        which.set_tick_params(pad=tick.get_pad() + 2 + image_points)
+    for p in placements:
+        loc = p.x if axis == "x" else p.y
         box = AnnotationBbox(
             _AxesFractionImage(images[p.url], ax, h),
             (loc, 0) if axis == "x" else (0, loc),
