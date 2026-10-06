@@ -9,10 +9,11 @@ description: "Nine recipes for playing surfaces: every sport's surface in team c
 
 Ten recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
 colors and a center logo, NBA and WNBA shot charts from the stats-API shot files (converted with
-`court_coords`), a vertical half court, a hockey goal map, a baseball field and two soccer shot maps,
-one from ESPN and one from StatsBomb, both converted with `pitch_coords`. Surfaces are drawn by sportypy. The data is one season each from the NFL (nflverse), the NBA, WNBA and college
-basketball (hoopR, wehoop and the stats-API shot files the SportsDataverse publishes on GitHub), the NHL
-(fastRhockey) and the Premier League (ESPN), all through sportsdataverse-py; nothing calls stats.nba.com.
+`court_coords`), a vertical half court, a hockey goal map, a baseball field and two soccer shot maps, one from
+ESPN and one from StatsBomb, both converted with `pitch_coords`. Surfaces are drawn by sportypy. The data is
+one season each from the NFL (nflverse), the NBA, WNBA and college basketball (hoopR, wehoop and the stats-API
+shot files the SportsDataverse publishes on GitHub), the NHL (fastRhockey) and the Premier League (ESPN), all
+through sportsdataverse-py; nothing calls stats.nba.com.
 
 ```python
 import matplotlib.pyplot as plt
@@ -321,6 +322,7 @@ other = shots.filter(~pl.col("scoring_play") & (pl.col("type_text") != "Shot On 
 
 pitch = Pitch(pitch_type="impect", pitch_color="#22312b", line_color="#c7d5cc")
 fig, ax = pitch.draw(figsize=(10, 6.5))
+ax.set_ylim(-36, 44)  # headroom above the top touchline for the team crests
 pitch.scatter(other["pitch_x"], other["pitch_y"], s=70, facecolors="none", edgecolors="#c7d5cc", ax=ax,
               label="Off target, blocked or post")  # fmt: skip
 pitch.scatter(on_target["pitch_x"], on_target["pitch_y"], s=70, color="#c7d5cc", ax=ax, label="Saved")
