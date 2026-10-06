@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
   "narwhals>=2.0",
+  "numpy>=1.26",
   "polars>=1.24,<2",
   "Pillow>=12.3",
   "platformdirs>=4",
@@ -54,7 +55,7 @@ Repository = "https://github.com/sportsdataverse/sdvplot"
 Changelog = "https://sdvplot.sportsdataverse.org/CHANGELOG"
 
 [dependency-groups]
-test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "numpy>=1.26", "nba_api>=1.5", "seaborn>=0.13", "kaleido>=1.0", "vl-convert-python>=1.6", "cairosvg>=2.9"]
+test = ["pytest>=8", "pytest-cov>=5", "pytest-mpl>=0.17", "nbmake>=1.5", "pandas>=2", "pyarrow>=15", "nba_api>=1.5", "seaborn>=0.13", "kaleido>=1.0", "vl-convert-python>=1.6", "cairosvg>=2.9"]
 # Gallery packages sdvplot needs no code from: tests/test_compat_*.py prove they work (each skips when absent).
 # Floors are the versions checked; the markers follow each package's own Requires-Python.
 compat = [

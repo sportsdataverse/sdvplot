@@ -75,7 +75,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `pitch_coords()` converts soccer event coordinates from Opta / Stats Perform, Wyscout, StatsBomb, UEFA, Impect,
   ESPN and the tracking providers (Tracab, SkillCorner, Second Spectrum, Metrica) to one regulation 105 x 68 m
   frame, piecewise-linearly between pitch landmarks, with `flip` for teams attacking opposite ends. The port of
-  sdvplotR's `sdv_pitch_coords()`, matched to 1e-12 on every provider. It needs numpy (optional; `pip install numpy`).
+  sdvplotR's `sdv_pitch_coords()`, matched to 1e-12 on every provider.
 - `tools/espn_soccer_y_gate.py`, the measurement behind the ESPN frame's y direction.
 - `axis_logos(..., mark_type="headshot")` draws player headshots as axis labels on matplotlib, plotnine, Plotly and
   Altair (the port of sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` and `element_sdv_headshot()`):
@@ -87,6 +87,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- numpy is now a core dependency (it was optional, needed only by `pitch_coords()`).
 - `surface("soccer")` draws a regulation 105 x 68 m pitch by default (it drew sportypy's 120 x 90 m maximum), the
   frame `pitch_coords()` returns; `pitch_updates` still overrides it key by key.
 - `gt_merge_stack_team_color` keeps the bottom line readable (sdvplotR #55): the team's primary color when it clears

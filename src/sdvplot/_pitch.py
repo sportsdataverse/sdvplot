@@ -7,18 +7,16 @@ import csv
 import numbers
 from functools import lru_cache
 from importlib import resources
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import narwhals as nw
+import numpy as np
+from numpy.typing import NDArray
 
 from sdvplot._court import _numeric
 from sdvplot._errors import InputError
 
-if TYPE_CHECKING:  # numpy is not a core dependency: it is imported inside the functions that need it
-    import numpy as np
-    from numpy.typing import NDArray
-
-    Floats = NDArray[np.float64]
+Floats = NDArray[np.float64]
 
 FIXED = ("opta", "wyscout", "statsbomb", "uefa", "impect")
 PHYSICAL = ("tracab", "skillcorner", "secondspectrum", "metrica")
@@ -41,8 +39,6 @@ def _physical(provider: str, length: float, width: float) -> tuple[Floats, Float
     """A tracking provider's landmarks on the venue's ``length`` x ``width`` m pitch, in its own units: the Laws of the
     Game's fixed distances (six-yard line 5.5 m, spot 11 m, box 16.5 m deep; goal 7.32 m, six-yard box 18.32 m and box
     40.32 m wide). The same arithmetic as sdvplotR's physical_landmarks()."""
-    import numpy as np
-
     along = np.array([0, 5.5, 11, 16.5, length / 2, length - 16.5, length - 11, length - 5.5, length], dtype=float)
     half = width / 2
     across = np.array(
@@ -57,8 +53,6 @@ def _physical(provider: str, length: float, width: float) -> tuple[Floats, Float
 
 def _landmarks(provider: str, dims: tuple[float, float] | None) -> tuple[Floats, Floats]:
     """The x and y landmarks of ``provider`` (a canonical key); ``dims`` = (length, width) for tracking providers."""
-    import numpy as np
-
     if provider in PHYSICAL:
         if dims is None:
             raise ValueError(f"{provider!r} needs the pitch's length and width")
@@ -71,8 +65,6 @@ def _interp(v: Floats, src: Floats, dst: Floats) -> Floats:
     """Piecewise-linear from ``src`` landmarks to ``dst``, extending the end segments beyond both ends (numpy.interp
     would clamp). The same index (findInterval's) and the same arithmetic as sdvplotR's interp_landmarks(), so the two
     packages agree to the last bit; NaN stays NaN."""
-    import numpy as np
-
     order = np.argsort(src, kind="stable")
     src, dst = src[order], dst[order]
     j = np.clip(np.searchsorted(src, v, side="right") - 1, 0, len(src) - 2)
@@ -116,8 +108,6 @@ def _dims(key: str, pitch_length: Any, pitch_width: Any) -> tuple[float, float] 
 
 
 def _flip(flip: Any, frame: Any) -> NDArray[np.bool_]:
-    import numpy as np
-
     n = len(frame)
     if flip is None:
         return np.zeros(n, dtype=bool)
@@ -190,8 +180,6 @@ def pitch_coords(
         InputError: If ``provider`` is unknown, ``pitch_length``/``pitch_width`` are given to a fixed-frame provider,
             missing for a tracking one or out of range, ``x`` and ``y`` name the same column, a column is missing, a
             string is not a number, or the ``flip`` column is not boolean or has missing values.
-        ImportError: If numpy is not installed (``pip install numpy``); numpy is not a core dependency, and no
-            sdvplot extra lists it.
 
     Example:
         ::
@@ -211,10 +199,6 @@ def pitch_coords(
         mplsoccer Standardizer: https://mplsoccer.readthedocs.io/ ;
         ggsoccer rescale_coordinates(): https://github.com/Torvaney/ggsoccer
     """
-    try:
-        import numpy as np
-    except ImportError:
-        raise ImportError("pitch_coords() needs numpy: pip install numpy (or pip install sdvplot[surfaces])") from None
     try:
         frame = nw.from_native(data, eager_only=True)
     except TypeError:
