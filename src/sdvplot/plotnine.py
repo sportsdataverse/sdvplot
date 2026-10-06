@@ -232,7 +232,7 @@ class geom_sdv_headshots(_geom_sdv_marks):
         mapping: ``aes(x=..., y=..., player_id=...)``.
         data: The layer's data (pandas or polars), when not the plot's.
         **kwargs: ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1],
-            default 0.1), ``alpha`` (0 to 1), ``id_system`` and
+            default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis" or "league", as in ``headshot_url``) and
             plotnine's layer arguments (``inherit_aes``, ...).
 
     Returns:
@@ -619,7 +619,8 @@ def add_headshots(
         league: The SDV league key, e.g. "nfl".
         height: The headshot height as a fraction of the panel height, in (0, 1].
         alpha: Opacity, 0 to 1.
-        id_system: "espn" or "gsis" (NFL).
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
 
     Returns:
         ggplot: A new plot with a ``geom_sdv_headshots`` layer.

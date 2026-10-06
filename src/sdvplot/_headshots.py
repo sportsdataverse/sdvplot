@@ -1,4 +1,5 @@
-"""Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table."""
+"""Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table, and the leagues'
+own player ids (NBA / WNBA Stats, MLBAM, NHL) on their CDNs."""
 
 from __future__ import annotations
 
@@ -26,6 +27,21 @@ ESPN_HEADSHOT_LEAGUES = {
     "mbb": "mens-college-basketball",
     "wbb": "womens-college-basketball",
 }
+# Headshots by the league's own player id, as sdvplotR's `league_headshot_url` (utils.R) builds them: hoopR's
+# nba_player_headshot_url() / wehoop's wnba_playerheadshot() (NBA and WNBA Stats PERSON_ID), mlbplotR (MLBAM) and the
+# NHL API's `headshot` for players with no current team (mugs/nhl/latest, the same image as the season/team mug). An
+# unknown id gets the CDN's silhouette, not a 404. cdn.nba.com and cdn.wnba.com answer 403 to datacenter IPs (_cache).
+# The NFL's league id is the gsis id: id_system="league" on "nfl" is "gsis" (sdvplotR's id_type="league" for the NFL).
+LEAGUE_HEADSHOT_URLS = {
+    "nba": "https://cdn.nba.com/headshots/nba/latest/260x190/{}.png",
+    "wnba": "https://cdn.wnba.com/headshots/wnba/latest/260x190/{}.png",
+    "mlb": (
+        "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/"
+        "w_213,q_auto:best/v1/people/{}/headshot/67/current.png"
+    ),
+    "nhl": "https://assets.nhle.com/mugs/nhl/latest/{}.png",
+}
+LEAGUE_ID_LEAGUES = ("nfl", *LEAGUE_HEADSHOT_URLS)  # the leagues id_system="league" accepts
 NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
 PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
 
@@ -77,18 +93,24 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     """A headshot URL for one player.
 
     Args:
-        player_id: One player id: an ESPN athlete id, or an nflverse gsis id.
-        league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only.
-        id_system: "espn" (ESPN athlete id, any ESPN league) or "gsis" (mapped to ESPN through nflverse's player table,
-            preferring nflverse's own headshot).
+        player_id: One player id: an ESPN athlete id, an nflverse gsis id, or the league's own player id.
+        league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only;
+            "league" works for nfl, nba, wnba, mlb and nhl.
+        id_system: "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table,
+            preferring nflverse's own headshot), or "league" (the league's own player id, sdvplotR's
+            ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM
+            id, an NHL API id, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown
+            league id gets the CDN's silhouette image, not a 404.
 
     Returns:
         str | None: The image URL, or None when the id is missing, malformed, or not in the player table.
 
     Raises:
-        InputError: (a ValueError) If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``.
-        OfflineError: If ``id_system`` is "gsis" and the nflverse player table cannot be downloaded and no
-            cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error status).
+        InputError: (a ValueError) If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``
+            ("league" names the leagues that have league-id headshots).
+        OfflineError: If ``id_system`` is "gsis" (or "league" on "nfl") and the nflverse player table cannot be
+            downloaded and no cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error
+            status).
         UnsafeDownloadError: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger
             than the byte cap, past the deadline, or redirected away from https.
 
@@ -100,6 +122,8 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             sdvplot.headshot_url("3139477", "nfl")
             # 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png'
             sdvplot.headshot_url("00-0033873", "nfl", id_system="gsis")   # Patrick Mahomes, an nfl.com URL ending .png
+            sdvplot.headshot_url(2544, "nba", id_system="league")   # LeBron James by his NBA Stats PERSON_ID
+            # 'https://cdn.nba.com/headshots/nba/latest/260x190/2544.png'
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -108,13 +132,26 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     # check the arguments first, so a null id never hides a bad league or id_system
     if id_system == "espn" and league not in ESPN_HEADSHOT_LEAGUES:
         raise InputError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
-    if id_system != "espn" and (id_system, league) != ("gsis", "nfl"):
-        raise InputError(f"id_system must be 'espn' (any league) or 'gsis' (nfl), got {id_system!r} for {league!r}")
+    if id_system == "league":
+        if league not in LEAGUE_ID_LEAGUES:
+            raise InputError(
+                f"no headshots by league player id for league {league!r}; supported: {list(LEAGUE_ID_LEAGUES)} "
+                "(use ESPN athlete ids with id_system='espn')"
+            )
+        if league == "nfl":
+            id_system = "gsis"  # the NFL's league id is the gsis id
+    elif id_system != "espn" and (id_system, league) != ("gsis", "nfl"):
+        raise InputError(
+            f"id_system must be 'espn' (any league), 'gsis' (nfl) or 'league' ({', '.join(LEAGUE_ID_LEAGUES)}), "
+            f"got {id_system!r} for {league!r}"
+        )
     pid = norm_value(player_id)
     if pid is None:
         return None
     if id_system == "espn":
         return _espn(pid, league)
+    if id_system == "league":
+        return LEAGUE_HEADSHOT_URLS[league].format(pid) if _is_valid_espn_id(pid) else None  # digits, as R's grepl
     path = fetch_cached(
         NFLVERSE_PLAYERS_URL,
         "nflverse/players.parquet",

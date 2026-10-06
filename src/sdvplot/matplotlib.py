@@ -335,7 +335,8 @@ def add_headshots(
         height: The headshot height as a fraction of the Axes height, in (0, 1].
         alpha: Opacity, 0 to 1.
         zorder: matplotlib drawing order.
-        id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
         transform: The coordinates x and y are in, when not the Axes' data: a Cartopy CRS such as
             ``ccrs.PlateCarree()`` (longitude/latitude, required on a GeoAxes) or a matplotlib Transform.
             A mark whose position falls outside the Axes is not drawn, whatever the transform.

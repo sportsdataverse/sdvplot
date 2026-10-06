@@ -110,7 +110,7 @@ Show each cell's player id as the player's headshot in a great_tables table.
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
-| `id_system` | `str` | "espn" (ESPN athlete ids, any ESPN league) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 
@@ -2350,7 +2350,7 @@ gt_sdv_cols_label(
     height: Any = 30,
     season: Any = None,
     mark_type: str = 'logo',
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] | Literal['espn', 'gsis'] | NoneType = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] | Literal['espn', 'gsis', 'league'] | NoneType = None,
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -2369,7 +2369,7 @@ Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...
 | `height` | `Any` | The image height in pixels. |
 | `season` | `Any` | One season whose marks to show; None for today's. |
 | `mark_type` | `str` | "logo", "wordmark", or "headshot" (the column names are player ids). |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] \| Literal['espn', 'gsis'] \| NoneType` | The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means "auto"; NHL stats ids need "nhl_id"), for headshots "espn" or "gsis" as in ``headshot_url`` (None means "espn"). |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] \| Literal['espn', 'gsis', 'league'] \| NoneType` | The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis" or "league" as in ``headshot_url`` (None means "espn"). |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team. |
 
 ### Returns
@@ -2429,7 +2429,7 @@ Show each cell's player id as the player's headshot in a great_tables table.
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
-| `id_system` | `str` | "espn" (ESPN athlete ids, any ESPN league) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 

@@ -51,7 +51,7 @@ Layer each player's headshot, centred on its (x, y) point, onto an Altair chart.
 | `height` | `float` | The headshot height as a fraction of the chart height, in (0, 1]. |
 | `alpha` | `float` | Opacity, 0 to 1. |
 | `embed` | `bool` | Inline each image as a data URI instead of linking its URL. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 
 ### Returns
 

@@ -425,7 +425,8 @@ def add_headshots(
         height: The headshot height as a fraction of the chart height, in (0, 1].
         alpha: Opacity, 0 to 1.
         embed: Inline each image as a data URI instead of linking its URL.
-        id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
 
     Returns:
         altair.LayerChart: A new chart, ``chart`` plus the image layer.
