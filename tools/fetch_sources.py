@@ -74,6 +74,9 @@ MILB_SPORT_IDS = [11, 12, 13, 14, 16]
 # Leagues whose teams list abbreviations differ from the ones ESPN's per-team endpoint, scores and standings use
 # (college baseball: NCST in the list, NCSU everywhere else): espn_abbrs.csv keeps the per-team ones
 ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
+# Teams the archive holds that ESPN's teams list omits, whose per-team endpoint has the abbreviation ESPN uses
+# elsewhere (UTRGV, college football from 2025: RGV): (sdv league, ESPN sport, ESPN league, team id)
+ESPN_TEAM_ENDPOINT_TEAMS = [("cfb", "football", "college-football", "292")]
 ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid_from", "valid_to"]
 # Leagues whose earlier seasons' codes the teams list no longer shows (UFL 2024-25's BIR, ARL; the defunct XFL's):
 # (sdv league, ESPN sport, ESPN league, first season, last season or None for the current year)
@@ -214,14 +217,16 @@ def fetch_espn_unlisted_teams(s: requests.Session, host: str, espn: list[dict], 
 
 
 def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> list[dict]:
-    """The per-team endpoint's abbreviation of every ESPN_TEAM_ENDPOINT_LEAGUES team in ``espn`` (one request each)."""
+    """The per-team endpoint's abbreviation of every ESPN_TEAM_ENDPOINT_LEAGUES team in ``espn`` and of each
+    ESPN_TEAM_ENDPOINT_TEAMS team (one request each)."""
     slugs = {league: (sport, el) for league, sport, el in ESPN_LEAGUES}
+    wanted = [
+        (t["league"], *slugs[t["league"]], t["team_id"]) for t in espn if t["league"] in ESPN_TEAM_ENDPOINT_LEAGUES
+    ]
     rows = []
-    for t in espn:
-        if t["league"] in ESPN_TEAM_ENDPOINT_LEAGUES:
-            sport, el = slugs[t["league"]]
-            payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{t['team_id']}").json()
-            rows.append(espn_team_abbr_row(t["league"], payload))
+    for league, sport, el, team_id in [*wanted, *ESPN_TEAM_ENDPOINT_TEAMS]:
+        payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{team_id}").json()
+        rows.append(espn_team_abbr_row(league, payload))
     return [r for r in rows if r is not None]
 
 
