@@ -1,7 +1,7 @@
 ---
 title: sdvplot.altair
 sidebar_label: sdvplot.altair
-sidebar_position: 19
+sidebar_position: 20
 ---
 
 # sdvplot.altair

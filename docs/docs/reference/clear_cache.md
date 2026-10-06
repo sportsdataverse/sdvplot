@@ -1,7 +1,7 @@
 ---
 title: clear_cache
 sidebar_label: clear_cache
-sidebar_position: 28
+sidebar_position: 29
 ---
 
 # clear_cache

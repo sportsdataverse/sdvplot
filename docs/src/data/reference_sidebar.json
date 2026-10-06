@@ -41,6 +41,7 @@
       "reference/axis_logos",
       "reference/surface",
       "reference/court_coords",
+      "reference/pitch_coords",
       "reference/matplotlib",
       "reference/plotnine",
       "reference/plotly",

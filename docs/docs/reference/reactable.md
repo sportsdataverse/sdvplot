@@ -1,7 +1,7 @@
 ---
 title: sdvplot.reactable
 sidebar_label: sdvplot.reactable
-sidebar_position: 25
+sidebar_position: 26
 ---
 
 # sdvplot.reactable

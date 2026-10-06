@@ -27,6 +27,7 @@ PUBLIC = {
     "axis_logos",
     "surface",
     "court_coords",
+    "pitch_coords",
     "SdvplotWarning",
     "SdvplotDeprecationWarning",
     "SdvplotError",
@@ -222,6 +223,7 @@ POSITIONAL = {
     sdvplot.headshot_url: ["player_id", "league"],
     sdvplot.surface: ["league", "team"],
     sdvplot.court_coords: ["data"],
+    sdvplot.pitch_coords: ["data"],
 }
 
 

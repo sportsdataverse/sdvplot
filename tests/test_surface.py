@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import sdvplot  # noqa: E402
 import sdvplot.matplotlib as smpl  # noqa: E402
 from sdvplot import _surface  # noqa: E402
-from sdvplot._errors import OptionalDependencyError  # noqa: E402
+from sdvplot._errors import InputError, OptionalDependencyError  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +20,7 @@ def _close_figures():
     plt.close("all")
 
 
-@pytest.mark.parametrize("league", sorted(_surface.SURFACES))
+@pytest.mark.parametrize("league", sorted(set(_surface.SURFACES) - _surface.NO_TEAMS))
 def test_every_color_key_exists_on_its_sportypy_surface(league):
     sport, cls_name = _surface.SURFACES[league]
     defaults = getattr(importlib.import_module(f"sportypy.surfaces.{sport}"), cls_name)().feature_colors
@@ -174,3 +174,32 @@ def test_polygon_limits_restore_an_updater_the_axes_already_had():
 
         ax.add_patch(Circle((0, 0), 1))  # not a polygon: the Axes' own updater gets it
     assert len(seen) == 1
+
+
+def test_soccer_defaults_to_a_105_by_68_pitch_and_pitch_updates_win(monkeypatch):
+    import sportypy.surfaces.soccer as soccer
+
+    seen = {}
+
+    class Spy(soccer.FIFAPitch):
+        def __init__(self, **kwargs):
+            seen.update(kwargs)
+            super().__init__(**kwargs)
+
+    monkeypatch.setattr(soccer, "FIFAPitch", Spy)
+    sdvplot.surface("soccer")
+    assert seen["pitch_updates"] == {"pitch_length": 105, "pitch_width": 68}
+    sdvplot.surface("soccer", pitch_updates={"pitch_length": 110})
+    assert seen["pitch_updates"] == {"pitch_length": 110, "pitch_width": 68}
+
+
+def test_the_soccer_pitch_is_drawn_at_105_by_68():
+    _, xhi = sdvplot.surface("soccer").get_xlim()
+    assert 52.5 < xhi < 60  # FIFA's 120 x 90 maximum would put the goal line at 60
+
+
+def test_fiba_draws_and_refuses_a_team():
+    _, xhi = sdvplot.surface("fiba").get_xlim()
+    assert 14 < xhi < 20  # a 28 m court
+    with pytest.raises(InputError, match="no team identities for 'fiba'"):
+        sdvplot.surface("fiba", "ESP")
