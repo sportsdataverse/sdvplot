@@ -9,7 +9,7 @@ import holoviews.plotting.bokeh  # noqa: E402, F401
 import sdvplot  # noqa: E402
 import sdvplot.bokeh as sbokeh  # noqa: E402
 import sdvplot.holoviews as shv  # noqa: E402
-from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot._errors import SdvplotWarning, UnsupportedTargetError  # noqa: E402
 from sdvplot.testing import check_adapter_contract  # noqa: E402
 
 
@@ -71,3 +71,5 @@ def test_a_backend_other_than_bokeh_is_a_type_error(mark_images):
 def test_axis_logos_name_the_workaround(mark_images):
     with pytest.raises(TypeError, match="add_logos"):
         sdvplot.axis_logos(hv.Bars([("LV", 1)]), "x", league="nfl")
+    with pytest.raises(UnsupportedTargetError):  # a headshot axis is no more drawable here than a logo one
+        sdvplot.axis_logos(hv.Bars([("LV", 1)]), "x", league="nfl", mark_type="headshot")

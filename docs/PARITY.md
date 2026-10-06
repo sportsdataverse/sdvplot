@@ -28,7 +28,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X9 | mean/median lines on matplotlib | recipe | not ported: `ax.axvline` is one line |
 | X10 | `geom_sdv_logos()` / `geom_sdv_wordmarks()` / `geom_sdv_headshots()` aesthetics `colour`, `angle`, `hjust`, `vjust`, `width` | `sdvplot.plotnine.geom_sdv_*` | not ported (below): documented divergence, port on demand |
 | X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
-| X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | none | not ported yet: headshots as axis labels (`axis_logos(mark_type="headshot")`) are a follow-up |
+| X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | `axis_logos(target, axis, *, league, mark_type="headshot", height=0.1, id_system="auto")` on matplotlib, plotnine, Plotly and Altair | ported (below) |
 | X13 | `include_conferences` (conference and league rows and marks) | `sdvplot.teams(league, include_conferences=True)` | ported (below): the 92 rows with cbbplotR colors; their marks follow once the archive holds them |
 | X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | `headshot_url(..., id_system="league")` and every headshot helper | ported (below); the default id system still differs (`espn` for every league; R's NFL default is gsis) |
 | X15 | `sdv_pitch_coords()` | `sdvplot.pitch_coords(data, *, provider, x=None, y=None, flip=None, pitch_length=None, pitch_width=None)` | ported (below) |
@@ -40,6 +40,15 @@ same validation, on a pandas or polars frame (the same type comes back). Checked
 `sdv_court_coords()` on 40 real `shotchartdetail` rows (`tests/fixtures/sdvplotr_court_coords.csv`). Differences:
 a non-string `x`/`y` and a non-frame `data` raise `TypeError` (R raises one error class for everything); the
 arguments are `x`/`y`, not `x_column`/`y_column`.
+
+**X12 headshots as axis labels.** sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` (and the
+`element_sdv_headshot()` they draw with) are `axis_logos(..., mark_type="headshot")`: the same verb that puts logos
+and wordmarks on a team axis reads the tick labels as player ids and draws each player's headshot at its own aspect
+(ESPN serves 600 x 436), on every adapter that draws axis logos (matplotlib, plotnine, Plotly, Altair; the others
+raise `UnsupportedTargetError` as for logos). An unknown id stays as text with one `SdvplotWarning`, as an unknown
+team does. Differences: one verb with `mark_type` instead of two scales; `id_system` is `"espn"` (the default, also
+what `"auto"` means), `"gsis"` or `"league"`, as `headshot_url` (sdvplotR defaults the NFL to GSIS ids); `height` is a fraction of the plot height, not `size` in points; on Plotly, numeric-looking
+player ids need the axis declared `type="category"`, as Plotly itself would otherwise draw a linear axis.
 
 **X15 `pitch_coords`.** One landmark table (`src/sdvplot/data/pitch_landmarks.csv`, byte-identical to sdvplotR's
 `inst/extdata/pitch_landmarks.csv`; both test its SHA-256) and the same arithmetic (`searchsorted` for

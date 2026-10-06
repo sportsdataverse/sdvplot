@@ -14,7 +14,7 @@ The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figu
 | [add_images](#add_images) | Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plot. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a matplotlib or seaborn plot. |
-| [axis_logos](#axis_logos) | Replace a team axis' tick labels with the teams' logos (or wordmarks). |
+| [axis_logos](#axis_logos) | Replace a team axis' tick labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
 | [team_tiers](#team_tiers) | A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme. |
 | [title_image](#title_image) | Set the plot title and draw an image (a team logo, or any image) beside it. |
 
@@ -314,17 +314,17 @@ axis_logos(
     season: Any = None,
     height: float = 0.1,
     variant: str = 'default',
-    mark_type: str = 'logo',
+    mark_type: Literal['logo', 'wordmark', 'headshot'] = 'logo',
     id_system: str = 'auto',
 ) -> Any
 ```
 
 </div>
 
-Replace a team axis' tick labels with the teams' logos (or wordmarks).
+Replace a team axis' tick labels with the teams' logos (or wordmarks), or a player axis' with headshots.
 
 Reads the axis' ticks and labels when called, so call it after setting the categories and limits. Labels that are
-not teams stay as text, with one SdvplotWarning.
+not teams (or, with ``mark_type="headshot"``, not player ids with a headshot) stay as text, with one SdvplotWarning.
 
 ### Arguments
 
@@ -336,7 +336,7 @@ not teams stay as text, with one SdvplotWarning.
 | `season` | `Any` | One season for every label. |
 | `height` | `float` | The image height as a fraction of the Axes height, in (0, 1]. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `mark_type` | `str` | "logo" or "wordmark". |
+| `mark_type` | `Literal['logo', 'wordmark', 'headshot']` | "logo", "wordmark" or "headshot". With "headshot" the labels are player ids (``id_system`` "espn", "gsis" or "league" as in ``headshot_url``, "auto" meaning "espn"; ``season`` is ignored), drawn at their own aspect. |
 | `id_system` | `str` | The id system of the labels; "auto" tries each in order. |
 
 ### Returns
@@ -345,10 +345,10 @@ not teams stay as text, with one SdvplotWarning.
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or ``variant`` is unknown, or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `InputError`: (a ValueError) If ``height`` is out of range, ``league``, ``id_system``, ``mark_type`` or ``variant`` is unknown, ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``league`` has no ESPN headshots for ``mark_type="headshot"``.
 - `ValueError`: If ``axis`` is not "x"/"y", or the target has several Axes.
 - `UnsupportedTargetError`: (a TypeError) If ``target`` is not a matplotlib Axes, a Figure or a seaborn grid.
-- `OfflineError`: If the logo manifest or a mark's image is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
+- `OfflineError`: If the logo manifest, a mark's image or a headshot is neither cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
 - `UnsafeDownloadError`: (an OSError) If a download is refused: larger than the byte cap, past the deadline, or redirected away from https.
 - `UnsafeCachePathError`: (a ValueError) If the manifest's sha256 or extension for a mark would put the file outside the cache directory.
 - `OptionalDependencyError`: If a mark is an SVG and the ``svg`` extra is not installed.
@@ -362,11 +362,16 @@ import sdvplot
 fig, ax = plt.subplots()
 ax.bar(["KC", "BUF", "BAL"], [12, 10, 9])
 sdvplot.axis_logos(ax, "x", league="nfl", height=0.08)
+
+# player headshots as the labels of a leaderboard (ESPN athlete ids)
+fig, ax = plt.subplots()
+ax.barh(["3139477", "3918298"], [0.31, 0.27])
+sdvplot.axis_logos(ax, "y", league="nfl", mark_type="headshot", height=0.2)
 ```
 
 ### See also
 
-- [sdvplotR element_sdv_logo()](https://sdvplotR.sportsdataverse.org/)
+- [sdvplotR element_sdv_logo(), scale_x_sdv_headshots()](https://sdvplotR.sportsdataverse.org/)
 
 ## team_tiers
 

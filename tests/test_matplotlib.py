@@ -343,3 +343,40 @@ def test_a_very_wide_mark_is_decoded_within_max_size(monkeypatch):
     p = type("P", (), {"mark": {"sha256": "0" * 64}, "url": None, "aspect": 20.0})()
     smpl._image(p)
     assert seen == [MAX_SIZE]
+
+
+# axis_logos(mark_type="headshot"): player ids on a team axis (sdvplotR's scale_*_sdv_headshots)
+
+
+def test_axis_headshots_draw_player_ids_at_the_ticks_and_keep_their_aspect(headshot_images):
+    from tests.conftest import PLAYERS
+
+    p, q = PLAYERS
+    ax = _axis_target([p, "not-an-id", q])
+    with pytest.warns(SdvplotWarning):
+        sdvplot.axis_logos(ax, "x", league="nfl", mark_type="headshot", height=0.1)
+    assert smpl._drawn_axis_marks(ax, "x") == [(p, 0.0, pytest.approx(0.1)), (q, 2.0, pytest.approx(0.1))]
+    assert smpl._visible_axis_labels(ax, "x") == ["not-an-id"]
+    ax.figure.canvas.draw()
+    box = next(a for a in ax.artists if getattr(a, "_sdvplot_axis_mark", None))
+    ext = box.offsetbox.get_window_extent(ax.figure.canvas.get_renderer())
+    assert ext.width / ext.height == pytest.approx(150 / 109, rel=0.01)  # the seeded headshot's aspect, not a square
+
+
+def test_y_axis_headshots_pad_the_labels_by_the_image_width(headshot_images):
+    from tests.conftest import PLAYERS
+
+    _, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    ax.barh(list(PLAYERS), [1, 2])
+    pad_before = ax.yaxis.get_major_ticks()[0].get_pad()
+    sdvplot.axis_logos(ax, "y", league="nfl", mark_type="headshot", height=0.1)
+    assert [m[0] for m in smpl._drawn_axis_marks(ax, "y")] == list(PLAYERS)
+    image_points = 0.1 * ax.bbox.height * 72 / ax.figure.dpi
+    assert ax.yaxis.get_major_ticks()[0].get_pad() == pytest.approx(pad_before + 2 + image_points * 150 / 109)
+
+
+def test_axis_headshots_take_a_headshot_id_system_only(headshot_images):
+    from tests.conftest import PLAYERS
+
+    with pytest.raises(ValueError, match="id_system must be 'espn'"):
+        sdvplot.axis_logos(_axis_target([PLAYERS[0]]), "x", league="nfl", mark_type="headshot", id_system="nflverse")

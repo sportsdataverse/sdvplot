@@ -185,3 +185,28 @@ def test_baseline_plotnine_mean_and_median_lines():
         + p9.theme(figure_size=(4, 2), strip_text=p9.element_blank())
     )
     return p.draw()
+
+
+@COMPARE
+def test_baseline_x_axis_headshots(headshot_images):
+    from tests.conftest import PLAYERS
+
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    ax.bar(list(PLAYERS), [3, 2])
+    ax.set_yticks([])
+    sdvplot.axis_logos(ax, "x", league="nfl", mark_type="headshot", height=0.12)
+    return fig
+
+
+@COMPARE
+def test_baseline_plotnine_axis_headshots(headshot_images):
+    p9 = pytest.importorskip("plotnine")
+    from tests.conftest import PLAYERS
+
+    df = pd.DataFrame({"player": pd.Categorical(PLAYERS, PLAYERS), "v": [3, 2]})
+    p = (
+        p9.ggplot(df, p9.aes("player", "v"))
+        + p9.geom_col()
+        + p9.theme(figure_size=(4, 3), axis_text_y=p9.element_blank(), axis_ticks=p9.element_blank())
+    )
+    return sdvplot.axis_logos(p, "x", league="nfl", mark_type="headshot", height=0.12).draw()

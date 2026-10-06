@@ -37,3 +37,5 @@ HeadshotIdSystem = Literal["espn", "gsis", "league"]
 Which = Literal["primary", "secondary"]
 # logo_url() and logo_image()'s mark: _marks.MARK_TYPES
 MarkType = Literal["logo", "wordmark"]
+# axis_logos()'s mark_type: _placement.KINDS (a headshot axis holds player ids)
+AxisMarkType = Literal["logo", "wordmark", "headshot"]

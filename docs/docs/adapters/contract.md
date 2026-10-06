@@ -40,7 +40,9 @@ adapter (great_tables) takes `(table, columns, *, league, height=30, ...)` inste
   `sdvplot._placement.check_height`.
 - `alpha` is the opacity. Every verb that takes it raises `ValueError` for a value outside 0 to 1 (`InputError` from
   `check_alpha` in sdvplot's own adapters).
-- `axis_logos` puts images in place of an axis' tick labels, like sdvplotR's `element_sdv_logo`.
+- `axis_logos` puts images in place of an axis' tick labels, like sdvplotR's `element_sdv_logo`; with
+  `mark_type="headshot"` the labels are player ids and the images their headshots (sdvplotR's
+  `scale_*_sdv_headshots`), each at its own aspect.
 
 Users call the front door, `sdvplot.add_logos(target, ...)` and its siblings. It finds the adapter for `target`'s
 library, passes every argument through, and returns what the adapter returns.
@@ -137,7 +139,7 @@ A broken rule raises an `AssertionError` whose message starts with `rule N`:
 | 4 | Height: on every verb (`add_logos` here; rules 5 to 7 for the others), `height` is the fraction of the plot height drawn, measured by the hooks within 1%; `0` and values above `1` raise `ValueError` when the verb is called |
 | 5 | Wordmarks: `add_wordmarks` follows rules 1, 2 and 4 |
 | 6 | Headshots: `add_headshots` draws player ids at their own x/y, skips an unknown id with exactly one warning, and follows rule 4 |
-| 7 | Axis logos: known team categories become images in tick order, an unknown one gives exactly one warning and stays readable text, and the images follow rule 4; without axis support, `axis_logos` raises `TypeError` |
+| 7 | Axis logos: known team categories become images in tick order, an unknown one gives exactly one warning and stays readable text, and the images follow rule 4; with `mark_type="headshot"` the same holds for player ids; without axis support, `axis_logos` raises `TypeError` |
 | 8 | Alpha: on every verb that takes `alpha` (`add_logos`, `add_wordmarks`, `add_headshots`, and `axis_logos` when its signature has it), `alpha` outside 0 to 1 raises `ValueError` |
 
 ## Table adapters

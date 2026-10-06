@@ -14,7 +14,7 @@ pygal = pytest.importorskip("pygal")
 import sdvplot  # noqa: E402
 import sdvplot.pygal as spg  # noqa: E402
 from sdvplot import _cache  # noqa: E402
-from sdvplot._errors import SdvplotWarning  # noqa: E402
+from sdvplot._errors import SdvplotWarning, UnsupportedTargetError  # noqa: E402
 from sdvplot._web import HEADSHOT_ASPECT  # noqa: E402
 from sdvplot.testing import check_adapter_contract  # noqa: E402
 
@@ -269,3 +269,9 @@ def test_team_style_keeps_the_default_color_for_an_unknown_team(mark_images):
     with pytest.warns(SdvplotWarning, match="XXX"):
         style = spg.team_style(["LV", "XXX", "LAR"], league="nfl")
     assert style.colors == ("#000000", pygal.style.Style.colors[1], "#003594")  # the others keep their positions
+
+
+def test_axis_logos_are_not_drawn_whatever_the_mark_type(mark_images):
+    for mark_type in ("logo", "headshot"):
+        with pytest.raises(UnsupportedTargetError, match="does not draw axis logos"):
+            sdvplot.axis_logos(pygal.Bar(), "x", league="nfl", mark_type=mark_type)

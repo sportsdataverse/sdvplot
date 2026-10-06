@@ -10,10 +10,21 @@ Types for annotating code that calls sdvplot: the ``Literal`` aliases of its clo
 
 | Name | What it is |
 |---|---|
+| [AxisMarkType](#axismarktype) | The values it accepts (a `Literal` alias). |
 | [HeadshotIdSystem](#headshotidsystem) | The values it accepts (a `Literal` alias). |
 | [IdSystem](#idsystem) | The values it accepts (a `Literal` alias). |
 | [MarkType](#marktype) | The values it accepts (a `Literal` alias). |
 | [Which](#which) | The values it accepts (a `Literal` alias). |
+
+## AxisMarkType
+
+<div class="sdv-signature">
+
+```python
+AxisMarkType = Literal['logo', 'wordmark', 'headshot']
+```
+
+</div>
 
 ## HeadshotIdSystem
 
