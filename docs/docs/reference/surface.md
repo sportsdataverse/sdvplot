@@ -28,7 +28,7 @@ Draw the league's playing surface with sportypy, in a team's colors.
 
 | Name | Type | Description |
 |---|---|---|
-| `league` | `str` | The SDV league key, e.g. "nfl", "nba", "nhl", "cfb", "soccer". |
+| `league` | `str` | The SDV league key, e.g. "nfl", "nba", "nhl", "cfb", "soccer" (a 105 x 68 m pitch, the frame pitch_coords() returns) or "fiba". |
 | `team` | `Any` | A team to color the surface by (end zones, lane and apron, center line and boards); None for the plain surface. |
 | `season` | `Any` | The season, for teams whose colors changed. |
 | `ax` | `Any` | The matplotlib Axes to draw on; None makes a new figure. |
