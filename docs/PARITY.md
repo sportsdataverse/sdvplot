@@ -55,7 +55,7 @@ player ids need the axis declared `type="category"`, as Plotly itself would othe
 `findInterval`), so sdvplot matches sdvplotR to 1e-12 on a grid of landmarks, midpoints, off-pitch points and
 flipped rows of every provider (`tests/fixtures/sdvplotr_pitch_coords.csv`, from `tools/export_parity_extras.R`).
 Differences: the column arguments are `x`/`y` (sdvplotR: `x_column`/`y_column`), keyword-only; nulls come back
-as null in polars and NaN in plain pandas float columns; value errors raise `InputError`; needs numpy (R needs nothing extra).
+as null in polars and NaN in plain pandas float columns; value errors raise `InputError`.
 
 **X2 `title_image`.** One call per adapter instead of `ggtitle_image()` plus a markdown title theme: matplotlib sets
 the Axes title (or a Figure's suptitle) and anchors the image to that title text, plotnine is added with `+`. A team
