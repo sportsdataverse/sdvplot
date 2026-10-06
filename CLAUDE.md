@@ -149,7 +149,10 @@ teams lists, else `data-raw/espn_colors.csv`, its per-team endpoint, including a
 another ESPN sport), `logo` (the two dominant colors of the team's archived logo, `data-raw/logo_colors.csv`) and
 `fallback` (a placeholder from a fixed palette). One source gives both colors (`COLOR_SOURCES` in
 `tools/build_index.py`); ESPN's stand-in colors (black alone, black with its stock red) count as none.
-`docs/docs/concepts/colors.md` documents the rules.
+`docs/docs/concepts/colors.md` documents the rules. The conference and league rows (`program` "conference" / "league",
+sdvplotR's `include_conferences`; `conference_rows` in `tools/build_index.py` from `data-raw/sdvplotr_conferences.csv`)
+carry cbbplotR's colors (`cbbplotR`) or the placeholder; `team_table()` and every listing leave them out unless
+`teams(include_conferences=True)` asks, and they have no aliases, so `resolve()` never answers one.
 
 ## Marks
 

@@ -71,7 +71,8 @@ sdvplot.team_colors("nfl", "KC", which="secondary")  # '#ffb612'
 | `nflverse` | nflverse's team table | the NFL |
 | `espn` | ESPN: its teams lists, else its per-team endpoint by the team's ESPN id. A college team with no color in its own sport takes its school's ESPN colors from another sport: the same school id at the same location, or, for college baseball and softball (which number their teams apart from the school), an exact display name and location that no other ESPN team has | MLB, NBA, NHL, WNBA and the UFL; most teams of soccer, CFB, MBB, WBB, the NBA G League, college baseball and softball, and the XFL; about half of college hockey |
 | `logo` | the two dominant colors of the team's current archived logo, for a team no source publishes colors for | the HockeyTech leagues (PWHL, AHL, ECHL, OHL, WHL, QMJHL, USHL), MiLB, cricket, the PHF, the AAF and the USFL, and the remaining teams of the leagues above |
-| `fallback` | a placeholder | two men's college hockey teams known only from ESPN scoreboards, SUNY Morrisville and Maryville (Mo): no archived logo, and no ESPN color in any sport |
+| `cbbplotR` | [cbbplotR](https://cbbplotr.aweatherman.com/)'s conference colors, through sdvplotR, on the conference rows `teams(include_conferences=True)` adds | 85 of the 92 conference and league rows (CFB, MBB, WBB) |
+| `fallback` | a placeholder | two men's college hockey teams known only from ESPN scoreboards, SUNY Morrisville and Maryville (Mo): no archived logo, and no ESPN color in any sport; the AFC, NFC, NFL and the four CFB conference rows cbbplotR has no color for |
 
 **ESPN's stand-in colors are not a team's.** ESPN gives hundreds of newer or smaller college programs black and
 nothing else, and hundreds of soccer clubs black with its stock red (`#c60000`) or black on black. sdvplot counts those

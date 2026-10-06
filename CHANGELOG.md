@@ -43,6 +43,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `teams(league, include_conferences=True)` lists sdvplotR's conference and league rows (its `include_conferences`):
+  the 89 college conferences of cfb, mbb and wbb and the AFC, NFC and NFL, with `program` `"conference"` or `"league"`,
+  the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
+  `conference_id` the league's teams carry. The default lists teams only, and `resolve()` and `palette()` never
+  answer a conference key, so no existing call changes. Index-only for now: the archive has no conference marks yet.
 - Headshots by the league's own player id: `id_system="league"` (sdvplotR's `id_type = "league"`) on `headshot_url`
   and every headshot helper (`add_headshots` on every adapter, `geom_sdv_headshots`, `gt_sdv_headshots`,
   `gt_sdv_cols_label(mark_type="headshot")`, `reactable_sdv_headshots`, `plottable.headshot_column`) draws an NBA or

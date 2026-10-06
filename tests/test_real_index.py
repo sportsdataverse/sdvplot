@@ -445,3 +445,47 @@ def test_merge_stack_keeps_missouris_gold_readable_as_sdvplotr_does():  # sdvplo
         bg = str(tbl._options.table_background_color.value)
         got = inks(gt_merge_stack_team_color(tbl, "team", "mascot", "team", league="cfb"))
         assert got == ["#f1b82d", "#eaaa00"] and all(contrast(i, bg) >= 4.5 for i in got)
+
+
+RAW = Path(__file__).parents[1] / "data-raw"
+
+
+# sdvplotR's include_conferences (parity audit gap #2): 89 college conferences plus the AFC, NFC and NFL
+def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
+    everything = sdvplot.teams(include_conferences=True)
+    conf = everything.filter(pl.col("program").is_in(_index.NON_TEAM))
+    assert conf.group_by("league").len().sort("league").rows() == [("cfb", 25), ("mbb", 32), ("nfl", 3), ("wbb", 32)]
+    assert conf.filter(pl.col("program") == "league")["abbr"].to_list() == ["NFL"]
+    assert sdvplot.teams().height + conf.height == everything.height and sdvplot.teams("cfb").height == 687
+    assert not sdvplot.teams()["program"].is_in(_index.NON_TEAM).any()
+    # the id is R's key (the short name), never a team id; a team's conference_id is its conference row's
+    assert conf["team_id"].str.contains(r"^[0-9]+$").sum() == 0 and (conf["team_id"] == conf["abbr"]).all()
+    sec = conf.filter((pl.col("league") == "cfb") & (pl.col("abbr") == "SEC")).row(0, named=True)
+    assert sec["conference_id"] == "cfb:sec" and sec["conference"] == "Southeastern Conference"
+    assert sdvplot.teams("cfb").filter(pl.col("conference_id") == "cfb:sec").height == 16
+    retired = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
+    assert retired.select("league", "abbr").rows() == [("cfb", "WAC"), ("mbb", "WAC"), ("wbb", "WAC")]  # ESPN: UAC now
+    # opt-in everywhere: no alias, so no resolution and no palette key; cfb's MAC is still Macalester
+    assert _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi").height == 0
+    with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
+        assert sdvplot.resolve("SEC", "cfb") is None
+    assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
+    assert set(everything["color_source"]) == {"nflverse", "espn", "logo", "cbbplotR", "fallback"}
+    assert everything["color_primary"].str.contains(r"^#[0-9a-f]{6}$").all()
+    assert everything.filter(pl.col("color_secondary") == pl.col("color_primary")).height == 0
+
+
+def test_conference_colors_are_the_sdvplotr_snapshots_cbbplotr_values():
+    r = pl.read_csv(RAW / "sdvplotr_conferences.csv", infer_schema_length=0).select(
+        pl.col("sport").alias("league"), pl.col("team_abbr").alias("team_id"), pl.col("type").alias("r_type"),
+        pl.col("color1").str.to_lowercase().alias("r1"), pl.col("color2").str.to_lowercase().alias("r2"),
+    )  # fmt: skip
+    conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
+    j = conf.join(r, on=["league", "team_id"], how="inner")
+    assert j.height == conf.height == 92 and (j["program"] == j["r_type"]).all()
+    colored = j.filter(pl.col("r1").is_not_null())
+    assert colored.height == 85 and (colored["color_source"] == "cbbplotR").all()
+    assert (colored["color_primary"] == colored["r1"]).all()
+    assert (colored["color_secondary"] == colored.select(pl.when(pl.col("r2") != pl.col("r1")).then("r2"))["r2"]).all()
+    none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC and the Pioneer
+    assert none.height == 7 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()

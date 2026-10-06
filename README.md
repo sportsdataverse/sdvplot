@@ -83,7 +83,8 @@ Colors work in any library that takes a `{value: color}` mapping, for example se
 
 `teams()` records where each team's colors come from in `color_source`: `nflverse` or `espn` when that source
 publishes them, `logo` when they are derived from the team's archived logo because no source does, and `fallback` for
-a placeholder that is not the team's colors.
+a placeholder that is not the team's colors (`cbbplotR` on the conference rows `teams(league, include_conferences=True)`
+adds).
 
 From the [gallery](https://sdvplot.sportsdataverse.org/docs/gallery), each drawn by sdvplot from the logo archive:
 
