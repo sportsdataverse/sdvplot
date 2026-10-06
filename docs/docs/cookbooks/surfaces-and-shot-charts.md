@@ -7,12 +7,13 @@ description: "Nine recipes for playing surfaces: every sport's surface in team c
 
 # Surfaces and shot charts
 
-Nine recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
+Ten recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
 colors and a center logo, NBA and WNBA shot charts from the stats-API shot files (converted with
-`court_coords`), a vertical half court, a hockey goal map, a baseball field and a soccer shot map on an
-mplsoccer pitch. Surfaces are drawn by sportypy. The data is one season each from the NFL (nflverse), the NBA, WNBA and college
-basketball (hoopR, wehoop and the stats-API shot files the SportsDataverse publishes on GitHub), the NHL
-(fastRhockey) and the Premier League (ESPN), all through sportsdataverse-py; nothing calls stats.nba.com.
+`court_coords`), a vertical half court, a hockey goal map, a baseball field and two soccer shot maps, one from
+ESPN and one from StatsBomb, both converted with `pitch_coords`. Surfaces are drawn by sportypy. The data is
+one season each from the NFL (nflverse), the NBA, WNBA and college basketball (hoopR, wehoop and the stats-API
+shot files the SportsDataverse publishes on GitHub), the NHL (fastRhockey) and the Premier League (ESPN), all
+through sportsdataverse-py; nothing calls stats.nba.com.
 
 ```python
 import matplotlib.pyplot as plt
@@ -297,39 +298,36 @@ plt.show()
 
 ## 9. A soccer shot map on an mplsoccer pitch
 
-For soccer, mplsoccer draws the pitch and sdvplot's logos go on its matplotlib Axes. ESPN's play-by-play gives each
-shot's position relative to the goal the shooter attacks: `field_position_x` is the distance from that goal line as a
-fraction of **half** the pitch (the penalty spot is 0.23), and `field_position_y` runs across it, below 0.5 being the
-shooter's left. An event with no recorded location is `(0, 0)`. The home team shoots right, so the shooter's left is
-the top of the pitch; the away team shoots left, a half-turn of the same picture. Goals are the scorer's logo. The
-Premier League's final day of 2025-26, Manchester City against Aston Villa (ESPN team ids 382 and 362):
+`pitch_coords` converts ESPN's play-by-play to one frame: meters from the center spot on a regulation 105 x 68 m pitch,
+attacking toward +x, +y on the shooter's left. That is mplsoccer's `impect` pitch, so the points go straight on it.
+ESPN records every shot as if its team attacked the same way; `flip` turns the away team's shots half a turn so the
+two sides attack opposite ends, each wing still on its own side. Events with no location come back null. Goals are the
+scorer's logo. The Premier League's final day of 2025-26, Manchester City against Aston Villa (ESPN ids 382 and 362):
 
 ```python
 from mplsoccer import Pitch
 
 EVENT, HOME, AWAY = 740970, "382", "362"
 plays = soccer.espn_soccer_game_plays("eng.1", EVENT, cid=EVENT)
-fx, fy, home = pl.col("field_position_x"), pl.col("field_position_y"), pl.col("team") == HOME
-shots = (
+shots = sdvplot.pitch_coords(
     plays.filter(pl.col("type_text").str.contains("(?i)shot|goal") & (pl.col("type_text") != "Assists Shot"))
-    .filter((fx > 0) | (fy > 0))  # (0, 0) is ESPN's "no location"
     .with_columns(team=pl.col("team_$ref").str.extract(r"/teams/(\d+)"))
-    .with_columns(  # fractions of HALF the pitch from the attacked goal line; home attacks right, away left
-        x=pl.when(home).then(105 - 52.5 * fx).otherwise(52.5 * fx),
-        y=pl.when(home).then(68 * (1 - fy)).otherwise(68 * fy),
-    )
-)
+    .with_columns(away=pl.col("team") != HOME),
+    provider="espn",
+    flip="away",
+).drop_nulls("pitch_x")
 goals = shots.filter(pl.col("scoring_play"))
 on_target = shots.filter(pl.col("type_text") == "Shot On Target")
 other = shots.filter(~pl.col("scoring_play") & (pl.col("type_text") != "Shot On Target"))
 
-pitch = Pitch(pitch_type="custom", pitch_length=105, pitch_width=68, pitch_color="#22312b", line_color="#c7d5cc")
+pitch = Pitch(pitch_type="impect", pitch_color="#22312b", line_color="#c7d5cc")
 fig, ax = pitch.draw(figsize=(10, 6.5))
-pitch.scatter(other["x"], other["y"], s=70, facecolors="none", edgecolors="#c7d5cc", ax=ax,
+ax.set_ylim(-36, 44)  # headroom above the top touchline for the team crests
+pitch.scatter(other["pitch_x"], other["pitch_y"], s=70, facecolors="none", edgecolors="#c7d5cc", ax=ax,
               label="Off target, blocked or post")  # fmt: skip
-pitch.scatter(on_target["x"], on_target["y"], s=70, color="#c7d5cc", ax=ax, label="Saved")
-sdvplot.add_logos(ax, goals["x"], goals["y"], goals["team"], league="soccer", height=0.08, zorder=5)
-sdvplot.add_logos(ax, [8, 97], [74, 74], [AWAY, HOME], league="soccer", height=0.1, zorder=5)
+pitch.scatter(on_target["pitch_x"], on_target["pitch_y"], s=70, color="#c7d5cc", ax=ax, label="Saved")
+sdvplot.add_logos(ax, goals["pitch_x"], goals["pitch_y"], goals["team"], league="soccer", height=0.08, zorder=5)
+sdvplot.add_logos(ax, [-44.5, 44.5], [40, 40], [AWAY, HOME], league="soccer", height=0.1, zorder=5)
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.06), ncols=2, frameon=False, labelcolor="white")
 home_goals = goals.filter(pl.col("team") == HOME).height
 ax.set_title(f"Manchester City {home_goals}, Aston Villa {goals.height - home_goals}: every shot (logos: goals)",
@@ -342,6 +340,45 @@ plt.show()
 <div class="sdv-output">
 
 ![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_19_0.png)
+
+</div>
+
+## 10. Any provider: a StatsBomb shot map
+
+The same function reads every major provider's frame: Opta and Wyscout (0-100, not to scale), StatsBomb (120 x 80),
+UEFA and Impect, and the tracking providers given the venue's size. Here is StatsBomb's free open data for the 2018
+World Cup final (France 4-2 Croatia, match 8658) on sdvplot's own pitch, `surface("soccer")`, which is the same
+105 x 68 m frame. StatsBomb open data is free for non-commercial use; credit it as below.
+
+```python
+import requests
+
+URL = "https://raw.githubusercontent.com/statsbomb/open-data/master/data/events/8658.json"
+events = requests.get(URL, timeout=60).json()
+sb = pl.DataFrame(
+    [
+        {"team": e["team"]["name"], "x": e["location"][0], "y": e["location"][1],
+         "goal": e["shot"]["outcome"]["name"] == "Goal"}
+        for e in events
+        if e["type"]["name"] == "Shot"
+    ]
+)  # fmt: skip
+sb = sdvplot.pitch_coords(sb.with_columns(croatia=pl.col("team") == "Croatia"), provider="statsbomb", flip="croatia")
+
+ax = sdvplot.surface("soccer")
+for team, color in (("France", "#1f3f8f"), ("Croatia", "#d71920")):
+    t = sb.filter(pl.col("team") == team)
+    ax.scatter(t["pitch_x"], t["pitch_y"], s=[160 if g else 50 for g in t["goal"]], color=color, alpha=0.8,
+               edgecolors="white", zorder=20, label=team)  # fmt: skip
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.12), ncols=2, frameon=False)
+ax.set_title("2018 World Cup final: every shot (large: goals)", fontweight="bold", loc="left")
+ax.figure.text(0.99, 0.01, "Data: StatsBomb open data", ha="right", fontsize=8)
+plt.show()
+```
+
+<div class="sdv-output">
+
+![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_21_0.png)
 
 </div>
 

@@ -1,4 +1,4 @@
 sdvplotR commit the data-raw/sdvplotr_*.csv snapshots and the tests/fixtures/sdvplotr_logo_history.csv and
 sdvplotr_team_colors.csv fixtures were exported from
 (tools/export_sdvplotr.R):
-824eec125026588b38ad9c46fde1f6d54108a699
+5c7e8bee1e6a9f4950206bc9adc55e69dd084fda
