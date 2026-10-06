@@ -186,7 +186,7 @@ def pitch_coords(
             import polars as pl
             import sdvplot
 
-            shots = pl.DataFrame({"x": [88.5, 83, 50], "y": [50, 21.1, 100], "away": [False, True, False]})
+            shots = pl.DataFrame({"x": [88.5, 83, 50], "y": [50.0, 21.1, 100.0], "away": [False, True, False]})
             out = sdvplot.pitch_coords(shots, provider="opta", flip="away")
             out["pitch_x"].to_list()   # [41.5, -36.0, 0.0]: the spot, the far box edge, halfway
 

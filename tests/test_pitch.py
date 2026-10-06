@@ -244,3 +244,23 @@ def test_tracking_providers_agree_with_mplsoccer(provider, length, width, atol):
     )
     np.testing.assert_allclose(ours["pitch_x"].to_numpy(), np.asarray(tx) - 52.5, rtol=0, atol=atol)
     np.testing.assert_allclose(ours["pitch_y"].to_numpy(), np.asarray(ty) - 34, rtol=0, atol=atol)
+
+
+def test_matches_sdvplotr_on_a_grid_of_every_provider():
+    """sdvplotR's sdv_pitch_coords() on landmarks, midpoints, off-pitch points and flipped rows of every provider
+    (tools/export_parity_extras.R): the two packages share the table and the arithmetic, so they agree exactly."""
+    theirs = pl.read_csv(
+        FIXTURES / "sdvplotr_pitch_coords.csv",
+        schema_overrides={"flip": pl.Boolean, "pitch_length": pl.Float64, "pitch_width": pl.Float64},
+        null_values="NA",
+    )
+    keys = ["provider", "pitch_length", "pitch_width"]
+    for (provider, length, width), group in theirs.group_by(keys, maintain_order=True):
+        sizes = {} if length is None else {"pitch_length": length, "pitch_width": width}
+        ours = sdvplot.pitch_coords(
+            group.select("x", "y", "flip"), provider=provider, x="x", y="y", flip="flip", **sizes
+        )
+        for col in ("pitch_x", "pitch_y"):
+            np.testing.assert_allclose(
+                ours[col].to_numpy(), group[col].to_numpy(), rtol=0, atol=1e-12, err_msg=f"{provider} {col}"
+            )

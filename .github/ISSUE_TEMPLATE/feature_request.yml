@@ -62,6 +62,7 @@ body:
         - axis_logos
         - surface
         - court_coords
+        - pitch_coords
         - versions
         - clear_cache
         - an adapter submodule (sdvplot.matplotlib, sdvplot.plotly, ...)
