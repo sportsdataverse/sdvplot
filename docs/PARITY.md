@@ -99,9 +99,10 @@ data's range is not brought into view.
 ## Team index
 
 sdvplotR's `clean_team_abbrs()` keys resolve as their canonical abbreviation does (`tests/test_sdvplotr_parity.py`):
-4,232 of 4,241, every miss a key sdvplot cannot pin to one team. sdvplotR's keys have no seasons, so a key that a dated
-source gives another team earlier starts the season after that team's last; a value given without a season means its
-current holder. Two MLB codes show the rule:
+4,234 of 4,241, every miss a place several teams share (`CHICAGO`, `NEW YORK`, CFBD's two `CHARLOTTE`s), which sdvplotR
+gives its first team and sdvplot never guesses. sdvplotR's keys have no seasons, so a key that a dated source gives
+another team earlier starts the season after that team's last; a value given without a season means its current
+holder. Two MLB codes and one NHL code show the rule:
 
 - **`KCA`.** The MLB Stats API and Baseball-Reference use it for the 1955-67 Kansas City Athletics; the API's Royals
   teamCode `kca`, Lahman and sdvplotR use it for the Royals from 1968. sdvplot gives 1955-67 to the Athletics and
@@ -109,6 +110,13 @@ current holder. Two MLB codes show the rule:
 - **`WAS`.** The MLB Stats API's abbreviation for the Senators of 1901-60 (now the Twins) and 1961-71 (the Rangers),
   and the Nationals' teamCode `was` from 2005 (Lahman and sdvplotR agree). Those seasons go to those franchises; no
   season, or any other, goes to the Nationals.
+- **`WIN`.** The NHL stats API's code (and team id 33) for the original Winnipeg Jets, 1979-80 to 1995-96, which it
+  files under today's Jets' franchise (35). The team that played those seasons became the Phoenix Coyotes, then the
+  Arizona Coyotes, whose line is Utah's (`records.nhl.com` franchise season results; the NHL consolidated the records
+  into today's Jets on 2026-09-24, but the logos and colors of those seasons are the Coyotes line's). sdvplot gives the
+  seasons 1980-1996 (the year a season ends, as everywhere in the index) to Utah, as sdvplotR's
+  `resolve_historical_abbr()` does, and every other season, and no season, to today's Jets, the relocated Thrashers
+  (2011-12 on); `WPG` is only today's Jets.
 
 Known gaps in the archive (recorded, not invented):
 

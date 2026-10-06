@@ -37,7 +37,8 @@ def test_the_shipped_index_holds_seasons_from_1871():
 def test_a_leagues_own_first_season_comes_from_its_dated_aliases():
     first = {league: _index.season_bounds(league)[0] for league in ("nfl", "nba", "wnba", "xfl", "ufl", "mlb")}
     assert first == {"nfl": 1920, "nba": 1947, "wnba": 1997, "xfl": 2020, "ufl": 2024, "mlb": 1871}
-    # the NHL's aliases only open ranges (its 2026 renames), which date no start: it keeps the index's floor
+    # the NHL's dated aliases only open ranges (its 2026 renames) or date one relocation (the curated WIN, 1980-96 to
+    # Utah), neither a history of the league: it keeps the index's floor, so TOR 1927 stays a season
     assert _index.season_bounds("nhl") == _index.season_bounds("cfb") == _index.season_bounds()
 
 

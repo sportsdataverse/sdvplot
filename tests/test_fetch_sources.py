@@ -275,6 +275,34 @@ def test_espn_team_abbr_rows_skip_placeholders():
     assert fs.espn_team_abbr_row("ncaa_baseball", {"team": {"id": "1153", "displayName": "TBD"}}) is None
 
 
+def test_espn_team_abbrs_cover_the_endpoint_leagues_and_the_listed_unlisted_teams(monkeypatch):
+    seen = []
+
+    class Response:
+        def __init__(self, url):
+            self.url = url
+
+        def json(self):
+            tid = self.url.rsplit("/", 1)[1]
+            return {"team": {"id": tid, "abbreviation": {"95": "NCSU", "292": "RGV"}[tid], "displayName": tid}}
+
+    def get(s, url, **kw):
+        seen.append(url)
+        return Response(url)
+
+    monkeypatch.setattr(fs, "_get", get)
+    espn = [{"league": "ncaa_baseball", "team_id": "95"}, {"league": "cfb", "team_id": "2"}]  # cfb: not a list league
+    rows = fs.fetch_espn_team_abbrs(None, "site.api.espn.com", espn)
+    assert [(r["league"], r["team_id"], r["abbreviation"]) for r in rows] == [
+        ("ncaa_baseball", "95", "NCSU"),
+        ("cfb", "292", "RGV"),  # ESPN_TEAM_ENDPOINT_TEAMS: UTRGV, which the cfb teams list omits
+    ]
+    assert seen == [
+        "https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/teams/95",
+        "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/292",
+    ]
+
+
 def test_espn_season_abbr_rows_keep_each_code_with_its_seasons():
     def board(*teams):
         competitors = [{"team": {"id": i, "abbreviation": a, "displayName": n}} for i, a, n in teams]

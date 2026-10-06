@@ -612,13 +612,14 @@ def espn_extra_aliases(extra: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:
 
 
 def date_reused_codes(a: pl.DataFrame) -> pl.DataFrame:
-    """An undated ESPN abbreviation or sdvplotR key that a dated alias gives another team (MIL: the Braves 1953-65 in
-    the MLB Stats API; WSH: Baseball-Reference's first Senators, 1901-60; sdvplotR's KCA, the 1955-67 Kansas City
-    Athletics') starts the season after that team's last, so a season of the earlier era goes to the earlier team;
-    the code without a season still means today's team."""
+    """An undated ESPN abbreviation, NHL stats code or id, or sdvplotR key that a dated alias gives another team
+    (MIL: the Braves 1953-65 in the MLB Stats API; WSH: Baseball-Reference's first Senators, 1901-60; sdvplotR's KCA,
+    the 1955-67 Kansas City Athletics'; the NHL's WIN and team 33, the 1979-96 Jets, curated to the Coyotes' line)
+    starts the season after that team's last, so a season of the earlier era goes to the earlier team; the code
+    without a season still means today's team."""
     key = _norm(pl.col("value")).alias("_key")
     undated = pl.col("valid_from").is_null() & pl.col("valid_to").is_null()
-    current = pl.col("id_system").is_in(["espn_abbr", "sdvplotr"]) & undated
+    current = pl.col("id_system").is_in(["espn_abbr", "sdvplotr", "nhl", "nhl_id"]) & undated
     since = (
         a.filter((pl.col("id_system") != "espn_abbr") & pl.col("valid_to").is_not_null())
         .select("league", key, pl.col("team_id").alias("_other"), "valid_to")

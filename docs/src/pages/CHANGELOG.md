@@ -72,6 +72,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - Coordinates, teams and seasons accept a `range`: `add_logos(ax, range(1, 8), ...)` raised a `TypeError` that named
   `resolve()` though the bad value was `x`. A container sdvplot cannot read now raises a `TypeError` that names no one
   function: `expected a scalar, list, tuple, range, numpy array or a pandas/polars Series, got dict`.
+- NHL `WIN` is season-aware: `resolve("WIN", "nhl", season=1990)` (and NHL team id 33, and the archive's logos of
+  those seasons) gives the original Jets' line, today's Utah Mammoth, for the seasons ending 1980-1996, as sdvplotR's
+  `resolve_historical_abbr()` does; any other season, or none, gives today's Winnipeg Jets, the relocated Thrashers.
+  Every season used to give today's Jets, because the NHL stats API files the 1979-96 team under their franchise.
+- `UTRGV`, `TEXAS-RIO GRANDE VALLEY` and `RGV` resolve in college football (ESPN's teams list omits UT Rio Grande
+  Valley, 292; its per-team endpoint's `RGV` is now in `data-raw/espn_abbrs.csv`).
 
 ## [0.1.0] - 2026-10-05
 

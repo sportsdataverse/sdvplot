@@ -426,15 +426,28 @@ def test_a_current_espn_code_another_team_held_earlier_starts_after_it():
         ("wnba", "espn_abbr", "DET", "3", 1998, 2009),  # already dated: untouched
         ("mlb", "sdvplotr", "KCA", "7", None, None),  # sdvplotR's keys follow the same rule
         ("mlb", "mlbstats", "KCA", "11", 1955, 1967),
+        ("nhl", "nhl", "WIN", "28", None, None),  # the NHL stats API's codes and ids too: the original Jets'
+        ("nhl", "nhl_id", "33", "28", None, None),
+        ("nhl", "nhl", "WIN", "129764", 1980, 1996),  # curated to the Coyotes' line
+        ("nhl", "nhl_id", "33", "129764", 1980, 1996),
+        ("nhl", "nhl", "WPG", "28", None, None),  # nobody else's: untouched
     ]
     a = pl.DataFrame(rows, schema=_index.ALIAS_SCHEMA, orient="row")
-    got = bi.date_reused_codes(a).filter(pl.col("id_system").is_in(["espn_abbr", "sdvplotr"]))
-    assert sorted(got.select("value", "valid_from", "valid_to").rows()) == [
-        ("DET", 1998, 2009),
-        ("KC", None, None),
-        ("KCA", 1968, None),
-        ("MIL", 1966, None),
+    got = bi.date_reused_codes(a).filter(pl.col("valid_to").is_null())
+    assert sorted(got.select("value", "team_id", "valid_from").rows()) == [
+        ("33", "28", 1997),
+        ("KC", "7", None),
+        ("KCA", "7", 1968),
+        ("MIL", "8", 1966),
+        ("MIL", "8", 1970),
+        ("WIN", "28", 1997),
+        ("WPG", "28", None),
     ]
+    assert (
+        bi.date_reused_codes(a)
+        .filter(pl.col("valid_to").is_not_null())
+        .equals(a.filter(pl.col("valid_to").is_not_null()))
+    )
 
 
 def test_espn_team_endpoint_abbreviations_add_to_the_list_but_never_take_a_listed_one(tmp_path):

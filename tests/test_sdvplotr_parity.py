@@ -21,10 +21,9 @@ KNOWN_GAPS = {
     ("nfl", "NEW YORK"),
     ("nhl", "NEW YORK"),
     ("cfb", "CHARLOTTE"),  # CFBD names two teams "Charlotte", and cfbd decides before sdvplotr
-    # ESPN's teams list has no UTRGV, so its abbreviation names no team in sdvplot
-    ("cfb", "UTRGV"),
-    ("cfb", "TEXAS-RIO GRANDE VALLEY"),
 }
+# ESPN's cfb teams list omits UTRGV (292); its per-team endpoint's RGV is in data-raw/espn_abbrs.csv, so sdvplotR's
+# UTRGV and TEXAS-RIO GRANDE VALLEY keys resolve through their canonical RGV (tests/test_real_index.py).
 
 
 def _csv(name):
