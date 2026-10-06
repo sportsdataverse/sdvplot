@@ -212,3 +212,99 @@ def test_pandas_output_columns_share_one_dtype():
     out = sdvplot.court_coords(df)
     assert out["court_x"].dtype == out["court_y"].dtype == np.float64
     assert out["court_y"].iloc[0] == -22.4 and np.isnan(out["court_y"].iloc[1])
+
+
+# provider="euroleague": the Euroleague shot frame (cm, hoop origin, free throws as -1,-1) onto sportypy's FIBA court
+EURO = FIXTURES / "euroleague_points_E2025_1.csv"  # real live.euroleague.net Points rows, E2025 game 1 (see the README)
+FIBA_BASKET_X = -12.425  # sportypy's FIBACourt: 28 m long, basket 1.575 m from the baseline
+
+
+def _euro():
+    return pl.read_csv(EURO, schema_overrides={"id_player": pl.Utf8, "console": pl.Utf8})
+
+
+@pytest.mark.parametrize("lib", [pd, pl])
+def test_euroleague_shots_land_on_the_fiba_court_in_meters(lib):
+    # the hoop, the free-throw line (FIBA: 5.8 m from the baseline, 4.225 m from the basket), the top of the arc
+    # (6.75 m), a shot to the x < 0 side, and a free throw's -1,-1 sentinel
+    euro = lib.DataFrame({"coord_x": [0.0, 0.0, 0.0, -650.0, -1.0], "coord_y": [0.0, 422.5, 675.0, 50.0, -1.0]})
+    out = sdvplot.court_coords(euro, x="coord_x", y="coord_y", provider="euroleague")
+    assert type(out) is lib.DataFrame
+    cx, cy = [list(out[c]) for c in ("court_x", "court_y")]
+    assert cx[:4] == pytest.approx([FIBA_BASKET_X, -14 + 5.8, FIBA_BASKET_X + 6.75, -11.925], abs=1e-12)
+    assert cy[:4] == [0.0, 0.0, 0.0, -6.5]
+    assert all(v is None or math.isnan(v) for v in (cx[4], cy[4]))  # a free throw: null (pandas NaN) on both outputs
+    assert list(out["coord_x"]) == [0.0, 0.0, 0.0, -650.0, -1.0]  # the input columns are not touched
+
+
+def test_only_the_full_sentinel_pair_is_a_euroleague_free_throw():
+    out = sdvplot.court_coords(
+        pl.DataFrame({"coord_x": [-1, 5, None], "coord_y": [5, -1, -1]}),
+        x="coord_x",
+        y="coord_y",
+        provider="euroleague",
+    )
+    assert out["court_y"].to_list() == [-0.01, 0.05, None]
+    assert out["court_x"].to_list() == [FIBA_BASKET_X + 0.05, FIBA_BASKET_X - 0.01, FIBA_BASKET_X - 0.01]
+    # the nba frame has no sentinel: (-1, -1) is a real location
+    nba = sdvplot.court_coords(pl.DataFrame({"x_legacy": [-1], "y_legacy": [-1]}))
+    assert nba["court_y"].to_list() == [-0.1] and nba["court_x"].to_list() == [-41.75 - 0.1]
+
+
+def test_provider_is_case_insensitive_and_unknown_ones_are_input_errors():
+    df = pl.DataFrame({"coord_x": [0], "coord_y": [0]})
+    assert sdvplot.court_coords(df, x="coord_x", y="coord_y", provider="EuroLeague")["court_x"][0] == FIBA_BASKET_X
+    assert sdvplot.court_coords(df, x="coord_x", y="coord_y", provider="NBA")["court_x"][0] == -41.75
+    with pytest.raises(sdvplot.InputError, match=r"provider must be one of \['nba', 'euroleague'\], got 'fiba'"):
+        sdvplot.court_coords(df, x="coord_x", y="coord_y", provider="fiba")
+    with pytest.raises(TypeError, match="provider must be a string"):
+        sdvplot.court_coords(df, x="coord_x", y="coord_y", provider=None)
+
+
+def test_the_default_provider_is_the_nba_frame_unchanged():
+    # byte for byte against the committed sdvplotR oracle, with and without naming the default
+    theirs = pl.read_csv(FIXTURES / "sdvplotr_court_coords.csv", schema_overrides={"game_id": pl.Utf8})
+    for kw in ({}, {"provider": "nba"}):
+        ours = sdvplot.court_coords(_shots(), x="loc_x", y="loc_y", **kw)
+        assert ours["court_x"].to_list() == theirs["court_x"].to_list()
+        assert ours["court_y"].to_list() == theirs["court_y"].to_list()
+
+
+def test_the_real_euroleague_game_matches_sdvplotr_exactly():
+    euro = _euro()
+    ours = sdvplot.court_coords(euro, x="coord_x", y="coord_y", provider="euroleague")
+    theirs = pl.read_csv(FIXTURES / "sdvplotr_court_coords_euroleague.csv", null_values="NA")
+    assert ours.height == theirs.height == 158
+    assert ours["num_anot"].to_list() == theirs["num_anot"].to_list()
+    free_throws = euro.filter((pl.col("coord_x") == -1) & (pl.col("coord_y") == -1))
+    assert free_throws.height == 27 and set(free_throws["action"]) == {"Free Throw In"}
+    for col in ("court_x", "court_y"):
+        a, b = ours[col].to_list(), theirs[col].to_list()
+        assert [v is None for v in a] == [v is None for v in b] and sum(v is None for v in a) == 27
+        assert max(abs(x - y) for x, y in zip(a, b, strict=True) if x is not None) == 0.0  # 17 significant digits
+    # every located shot is on the TV-left half of a 28 x 15 m court, and the rim zone "A" is at the basket
+    located = ours.drop_nulls("court_x")
+    assert located["court_x"].min() >= -14.5 and located["court_x"].max() < 0  # a few rows are behind the backboard
+    assert located["court_y"].abs().max() <= 7.5
+    rim = located.filter(pl.col("zone") == "A")
+    assert rim.height > 0
+    assert max(math.hypot(cx - FIBA_BASKET_X, cy) for cx, cy in rim.select("court_x", "court_y").iter_rows()) < 0.35
+
+
+def test_the_euroleague_basket_is_where_sportypy_draws_the_fiba_one():
+    pytest.importorskip("sportypy")
+    from sportypy.surfaces.basketball import FIBACourt
+
+    court = FIBACourt()
+    ring = [f for f in court._features if type(f).__name__ == "BasketRing" and f.x_anchor < 0][0]
+    pts = ring._translate_feature()
+    center = pts["x"].max() - pts["y"].max()  # the ring's far edge less its radius (the near side is the connector)
+    hoop = sdvplot.court_coords(pl.DataFrame({"coord_x": [0], "coord_y": [0]}), x="coord_x", y="coord_y",
+                                provider="euroleague")  # fmt: skip
+    assert hoop["court_x"][0] == pytest.approx(center, abs=0.01) and hoop["court_y"][0] == 0
+    # the free-throw line is sportypy's lane_length from the baseline
+    ft = sdvplot.court_coords(pl.DataFrame({"coord_x": [0], "coord_y": [422.5]}), x="coord_x", y="coord_y",
+                              provider="euroleague")  # fmt: skip
+    assert ft["court_x"][0] == pytest.approx(
+        -court.court_params["court_length"] / 2 + court.court_params["lane_length"]
+    )

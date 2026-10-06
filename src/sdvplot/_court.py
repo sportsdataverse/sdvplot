@@ -1,4 +1,5 @@
-"""Shot locations from the stats.nba.com legacy frame to sportypy's court: the port of sdvplotR's sdv_court_coords()."""
+"""Shot locations from the stats.nba.com legacy frame (or the Euroleague one) to sportypy's court: the port of
+sdvplotR's sdv_court_coords()."""
 
 from __future__ import annotations
 
@@ -7,9 +8,17 @@ from typing import Any
 
 import narwhals as nw
 
+from sdvplot._errors import InputError
 from sdvplot._placement import _missing
 
 BASKET_X = -47 + 5.25  # sportypy's NBA/WNBA/NCAA courts: center-court origin, baseline at -47, basket 5.25 ft in
+
+# One row per shot frame: input units per output unit, the basket's x on the sportypy court the output lands on
+# (center-court origin), and the provider's "no location" pair, if any. The same table as sdvplotR's court_providers.
+PROVIDERS: dict[str, tuple[float, float, tuple[float, float] | None]] = {
+    "nba": (10.0, BASKET_X, None),  # tenths of a foot -> feet
+    "euroleague": (100.0, -12.425, (-1.0, -1.0)),  # cm -> meters; sportypy's FIBACourt: 28 m long, basket 1.575 m in
+}
 
 
 def _numeric(frame: Any, name: str) -> Any:
@@ -44,8 +53,8 @@ def _numeric(frame: Any, name: str) -> Any:
     return nw.new_series(name, values, nw.Float64(), backend=nw.get_native_namespace(frame))
 
 
-def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
-    """Convert stats.nba.com / stats.wnba.com shot locations to the court frame sportypy draws.
+def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy", provider: str = "nba") -> Any:
+    """Convert stats.nba.com / stats.wnba.com (or Euroleague) shot locations to the court frame sportypy draws.
 
     The stats API's legacy shot frame (``LOC_X``/``LOC_Y``; hoopR, wehoop and sdv-py ``x_legacy``/``y_legacy``) is in
     tenths of a foot with the hoop at the origin, relative to the shooter's basket. sportypy's ``NBACourt``,
@@ -55,19 +64,35 @@ def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
     court with ``surface("nba", display_range="defense")``. Don't pass ESPN ``coordinate_x``/``coordinate_y``: they
     are already in feet on a center-court frame.
 
+    ``provider="euroleague"`` converts the Euroleague shot frame of sportsdataverse-py's ``euroleague_game_points()``
+    (``coord_x``/``coord_y``; measured on real games, 2026-10-06): integer centimeters with the hoop at the origin,
+    both teams mapped onto one basket, ``coord_y`` growing away from the baseline toward the court, and free throws
+    encoded as ``coord_x = coord_y = -1`` (a sentinel, not a location), which become null. The output is meters on
+    sportypy's ``FIBACourt`` (what ``surface("fiba")`` draws): 28 x 15 m, basket 1.575 m from the baseline, so
+    ``court_x = -12.425 + coord_y / 100`` and ``court_y = coord_x / 100``. Which sideline is positive ``coord_x`` is
+    unverified, so a chart may be left-right mirrored; the court is symmetric, so distances and zones are unaffected.
+
     Args:
         data: A pandas or polars DataFrame of shots.
-        x: The column holding ``LOC_X`` / ``x_legacy`` (tenths of a foot, across the court).
-        y: The column holding ``LOC_Y`` / ``y_legacy`` (tenths of a foot, toward half court).
+        x: The column holding ``LOC_X`` / ``x_legacy`` (tenths of a foot, across the court), or Euroleague
+            ``coord_x`` (centimeters).
+        y: The column holding ``LOC_Y`` / ``y_legacy`` (tenths of a foot, toward half court), or Euroleague
+            ``coord_y`` (centimeters).
+        provider: The frame of ``data``, which sets the output's units: ``"nba"`` (the default; stats.nba.com /
+            stats.wnba.com, tenths of a foot in, **feet** out on the NBA/WNBA/NCAA court) or ``"euroleague"``
+            (``euroleague_game_points()`` ``coord_x``/``coord_y``, centimeters in, **meters** out on the FIBA court).
+            Case is ignored.
 
     Returns:
-        DataFrame: ``data``'s type, with ``court_x`` and ``court_y`` (feet, Float64) added; existing columns of those
-        names are replaced in place, every other column is kept. Numeric columns and strings of numbers (stats.nba.com
-        payloads arrive as strings) convert; nulls stay null, and an all-null column gives null coordinates.
+        DataFrame: ``data``'s type, with ``court_x`` and ``court_y`` (Float64; feet for ``"nba"``, meters for
+        ``"euroleague"``) added; existing columns of those names are replaced in place, every other column is kept.
+        Numeric columns and strings of numbers (stats.nba.com payloads arrive as strings) convert; nulls stay null,
+        and an all-null column gives null coordinates.
 
     Raises:
-        TypeError: If ``data`` is not a pandas/polars DataFrame, ``x``/``y`` is not a string, or a coordinate column
-            is boolean (or holds booleans), categorical or another non-numeric type.
+        TypeError: If ``data`` is not a pandas/polars DataFrame, ``x``/``y``/``provider`` is not a string, or a
+            coordinate column is boolean (or holds booleans), categorical or another non-numeric type.
+        InputError: If ``provider`` is not ``"nba"`` or ``"euroleague"``.
         ValueError: If ``x`` and ``y`` name the same column, a column is missing, or a string is not a number (such
             as ``""``, ``"NA"`` or ``"1_0"``).
 
@@ -84,6 +109,14 @@ def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
             ax = sdvplot.surface("nba", display_range="defense")
             ax.scatter(out["court_x"], out["court_y"], zorder=20)
 
+            # Euroleague shots (sportsdataverse-py euroleague_game_points() columns) onto the FIBA court: the
+            # rim, the lane, a corner three and a free throw
+            euro = pl.DataFrame({"coord_x": [0, 0, -650, -1], "coord_y": [0, 400, 50, -1]})
+            euro = sdvplot.court_coords(euro, x="coord_x", y="coord_y", provider="euroleague")
+            euro["court_x"].to_list()   # [-12.425, -8.425, -11.925, None]: meters; the free throw is null
+            ax = sdvplot.surface("fiba", display_range="defense")
+            ax.scatter(euro["court_x"], euro["court_y"], zorder=20)
+
     See Also:
         sdvplotR sdv_court_coords(): https://sdvplotR.sportsdataverse.org/ ;
         sportypy: https://sportypy.sportsdataverse.org/ ;
@@ -96,6 +129,11 @@ def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
     for arg, column in (("x", x), ("y", y)):
         if not isinstance(column, str):
             raise TypeError(f"{arg} must be a single column name (a string), got {column!r}")
+    if not isinstance(provider, str):
+        raise TypeError(f"provider must be a string such as 'nba', got {type(provider).__name__}")
+    if provider.lower() not in PROVIDERS:
+        raise InputError(f"provider must be one of {list(PROVIDERS)}, got {provider!r}")
+    per_unit, basket_x, sentinel = PROVIDERS[provider.lower()]
     if x == y:
         raise ValueError(f"x and y must name different columns, not both {x!r}")
     missing = [c for c in (x, y) if c not in frame.columns]
@@ -103,8 +141,14 @@ def court_coords(data: Any, *, x: str = "x_legacy", y: str = "y_legacy") -> Any:
         raise ValueError(
             f"data is missing column(s) {missing}; name the stats-API columns with x=/y=, e.g. x='LOC_X', y='LOC_Y'"
         )
-    # Divide by a Series of tens, not the scalar: polars divides by a scalar through its reciprocal, so -224 / 10 would
-    # be -22.400000000000002 instead of R's (and IEEE division's) -22.4.
-    ten = nw.new_series("ten", [10.0] * len(frame), nw.Float64(), backend=nw.get_native_namespace(frame))
-    xs, ys = _numeric(frame, x) / ten, _numeric(frame, y) / ten
-    return frame.with_columns(court_x=ys + BASKET_X, court_y=xs).to_native()
+    backend = nw.get_native_namespace(frame)
+    xs, ys = _numeric(frame, x), _numeric(frame, y)
+    if sentinel is not None:  # the provider's "no location" pair -> null on both outputs, like sdvplotR's NA
+        none = ((xs == sentinel[0]) & (ys == sentinel[1])).fill_null(False)
+        null = nw.new_series("null", [None] * len(frame), nw.Float64(), backend=backend)
+        xs, ys = xs.zip_with(~none, null), ys.zip_with(~none, null)
+    # Divide by a Series, not the scalar: polars divides by a scalar through its reciprocal, so -224 / 10 would be
+    # -22.400000000000002 instead of R's (and IEEE division's) -22.4.
+    per = nw.new_series("per", [per_unit] * len(frame), nw.Float64(), backend=backend)
+    xs, ys = xs / per, ys / per
+    return frame.with_columns(court_x=ys + basket_x, court_y=xs).to_native()
