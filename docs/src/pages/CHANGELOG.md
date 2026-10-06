@@ -76,6 +76,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   ESPN and the tracking providers (Tracab, SkillCorner, Second Spectrum, Metrica) to one regulation 105 x 68 m
   frame, piecewise-linearly between pitch landmarks, with `flip` for teams attacking opposite ends. The port of
   sdvplotR's `sdv_pitch_coords()`, matched to 1e-12 on every provider.
+- `court_coords(provider="euroleague")` converts the Euroleague shot frame of sportsdataverse-py's
+  `euroleague_game_points()` (`coord_x`/`coord_y`: integer centimeters, hoop at the origin, both teams on one basket,
+  free throws as `-1,-1`) onto the FIBA court `surface("fiba")` draws, in meters, with the `-1,-1` free throws as
+  null. The default `"nba"` is unchanged, byte for byte. Matched to sdvplotR's `sdv_court_coords(provider =
+  "euroleague")` bit for bit on a real Euroleague game (`tests/fixtures/euroleague_points_E2025_1.csv`).
 - `tools/espn_soccer_y_gate.py`, the measurement behind the ESPN frame's y direction.
 - `axis_logos(..., mark_type="headshot")` draws player headshots as axis labels on matplotlib, plotnine, Plotly and
   Altair (the port of sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` and `element_sdv_headshot()`):

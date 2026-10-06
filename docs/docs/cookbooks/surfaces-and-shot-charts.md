@@ -7,10 +7,10 @@ description: "Nine recipes for playing surfaces: every sport's surface in team c
 
 # Surfaces and shot charts
 
-Ten recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
+Eleven recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
 colors and a center logo, NBA and WNBA shot charts from the stats-API shot files (converted with
 `court_coords`), a vertical half court, a hockey goal map, a baseball field and two soccer shot maps, one from
-ESPN and one from StatsBomb, both converted with `pitch_coords`. Surfaces are drawn by sportypy. The data is
+ESPN and one from StatsBomb, both converted with `pitch_coords`, and a Euroleague shot chart on the FIBA court. Surfaces are drawn by sportypy. The data is
 one season each from the NFL (nflverse), the NBA, WNBA and college basketball (hoopR, wehoop and the stats-API
 shot files the SportsDataverse publishes on GitHub), the NHL (fastRhockey) and the Premier League (ESPN), all
 through sportsdataverse-py; nothing calls stats.nba.com.
@@ -381,6 +381,34 @@ plt.show()
 ![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_21_0.png)
 
 </div>
+
+## 11. Euroleague shots on the FIBA court
+
+sportsdataverse-py's `euroleague_game_points()` reports each shot in centimeters from the hoop, both teams on one
+basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves them onto the FIBA court
+`surface("fiba")` draws, in meters, and turns the free throws into nulls. Which sideline is positive is unverified
+in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game:
+
+```python
+import sportsdataverse.euroleague as euroleague
+
+euro = sdvplot.court_coords(
+    euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
+)
+print(euro.select("player", "action", "coord_x", "coord_y", "court_x", "court_y").head(3))
+shots = euro.drop_nulls("court_x")  # free throws are -1,-1 in the source and null here
+made, missed = shots.filter(pl.col("points") > 0), shots.filter(pl.col("points") == 0)
+
+fig, ax = plt.subplots(figsize=(7, 6.5))
+sdvplot.surface("fiba", ax=ax, display_range="defense")
+ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=16, linewidths=0.8, color="#3d3d3d", alpha=0.6,
+           zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
+ax.scatter(made["court_x"], made["court_y"], s=20, color="#e8552b", edgecolors="black", linewidths=0.4, zorder=21,
+           label=f"Made ({made.height})")  # fmt: skip
+ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
+ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
+plt.show()
+```
 
 ## Run it yourself
 

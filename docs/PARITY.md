@@ -17,7 +17,7 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 
 | # | sdvplotR / ggpath export | sdvplot | Decision |
 | --- | --- | --- | --- |
-| X1 | `sdv_court_coords()` | `sdvplot.court_coords(data, *, x="x_legacy", y="y_legacy")` | ported (below) |
+| X1 | `sdv_court_coords()` | `sdvplot.court_coords(data, *, x="x_legacy", y="y_legacy", provider="nba")` | ported (below) |
 | X2 | `ggtitle_image()` + `theme_title_image()` | `sdvplot.matplotlib.title_image()`, `sdvplot.plotnine.title_image()` | ported (below) |
 | X3 | `sdv_team_tiers()` | `sdvplot.matplotlib.team_tiers()`, `sdvplot.plotnine.team_tiers()` | ported (below) |
 | X4 | ggpath `geom_from_path()` | `sdvplot.plotnine.geom_from_path()`, `sdvplot.matplotlib.add_images()` | ported (below) |
@@ -39,7 +39,8 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 same validation, on a pandas or polars frame (the same type comes back). Checked bit for bit against
 `sdv_court_coords()` on 40 real `shotchartdetail` rows (`tests/fixtures/sdvplotr_court_coords.csv`). Differences:
 a non-string `x`/`y` and a non-frame `data` raise `TypeError` (R raises one error class for everything); the
-arguments are `x`/`y`, not `x_column`/`y_column`.
+arguments are `x`/`y`, not `x_column`/`y_column`. `provider="euroleague"` (both packages) is checked bit for bit on
+a real Euroleague game (`tests/fixtures/sdvplotr_court_coords_euroleague.csv`), free throws null/NA on both sides.
 
 **X12 headshots as axis labels.** sdvplotR's `scale_x_sdv_headshots()` / `scale_y_sdv_headshots()` (and the
 `element_sdv_headshot()` they draw with) are `axis_logos(..., mark_type="headshot")`: the same verb that puts logos

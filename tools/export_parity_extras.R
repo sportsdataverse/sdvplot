@@ -1,6 +1,8 @@
 # Export the R oracle for sdvplot's parity extras, computed on the committed real shot rows
 # (tests/fixtures/nba_shotchartdetail_2023.csv):
 #   tests/fixtures/sdvplotr_court_coords.csv  sdvplotR's sdv_court_coords() output (court_x, court_y) per row
+#   tests/fixtures/sdvplotr_court_coords_euroleague.csv  the same with provider = "euroleague" on the real Euroleague
+#                                             shot rows (tests/fixtures/euroleague_points_E2025_1.csv; -1,-1 -> NA)
 #   tests/fixtures/sdvplotr_pitch_coords.csv  sdvplotR's sdv_pitch_coords() output on a landmark grid of every provider
 #   tests/fixtures/ggpath_ref_lines.csv       ggpath's geom_mean_lines() / geom_median_lines() per facet panel
 # Needs ggplot2 and ggpath. From the sdvplot root, with the sdvplotR checkout's path as the argument:
@@ -29,6 +31,9 @@ e <- new.env()
 sys.source(file.path(src, "R", "court_coords.R"), envir = e)
 cc <- e$sdv_court_coords(shots, "loc_x", "loc_y")
 write(cc[c("game_id", "game_event_id", "court_x", "court_y")], "sdvplotr_court_coords.csv")
+euro <- read.csv(file.path(fixtures, "euroleague_points_E2025_1.csv"), encoding = "UTF-8")
+ec <- e$sdv_court_coords(euro, "coord_x", "coord_y", provider = "euroleague")
+write(ec[c("num_anot", "coord_x", "coord_y", "court_x", "court_y")], "sdvplotr_court_coords_euroleague.csv")
 
 # sdvplotR's sdv_pitch_coords() on landmarks, midpoints and 5%-off-pitch points of every provider, alternate rows
 # flipped. Sourced like sdv_court_coords() above, so this needs no installed sdvplotR: its system.file() is pointed
