@@ -369,6 +369,21 @@ def _text(value: Any) -> str:
     return "" if _missing(value) else html.escape(str(value))
 
 
+def readable_ink(primary: str, secondary: str | None, background: str, target: float = 4.5) -> str:
+    """sdvplotR's ``sdv_readable_ink()``: ``primary`` when it clears ``target`` contrast on ``background``, else
+    ``secondary``, else ``primary`` blended toward black or white (whichever reads on ``background``) until it does."""
+    toward = on_color(background)
+    for cand in (primary, secondary):
+        if cand is not None and contrast(cand, background) >= target:
+            return cand
+    for i in range(20):
+        # R's seq(0.95, 0, by = -0.05): unrounded steps, the last clamped to 0; primary * w + toward * (1 - w)
+        cand = mix(toward, primary, max(0.95 + i * -0.05, 0.0))
+        if contrast(cand, background) >= target:
+            return cand
+    return toward
+
+
 def gt_merge_stack_team_color(
     gt: GT,
     col1: str,
@@ -379,10 +394,15 @@ def gt_merge_stack_team_color(
     font_size_top: float = 14,
     font_size_bottom: float = 12,
     color: str = "black",
+    background: str | None = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
 ) -> GT:
-    """Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's primary color.
+    """Stack ``col1`` over ``col2`` in one cell: the top in bold small caps, the bottom in the team's color.
+
+    The bottom line takes the team's primary color when it clears 4.5:1 contrast (WCAG AA) against the cell
+    background, else the secondary color, else the primary darkened (or lightened, on a dark table) until it does, so
+    a light primary such as Missouri's gold stays readable on a white table and keeps its gold on a dark one.
 
     Args:
         gt: A great_tables ``GT``.
@@ -393,17 +413,23 @@ def gt_merge_stack_team_color(
         font_size_top: The top line's font size in pixels.
         font_size_bottom: The bottom line's font size in pixels.
         color: The top line's CSS color.
+        background: The cell background the bottom line is checked against, a hex color. ``None`` (the default) reads
+            the table's background, so a theme such as ``gt_theme_midnight`` applied **before** this function is taken
+            into account; a theme applied afterwards is not seen, so set ``background`` then. A table with no
+            background set counts as white.
         id_system: The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
             "nhl_id".
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
 
     Returns:
-        GT: A new table. A team that does not resolve, or has no color, gets grey, with one SdvplotWarning.
+        GT: A new table. A team that does not resolve, or has no color, gets grey (sdvplotR's ``#bebebe``, made
+        readable the same way), with one SdvplotWarning.
 
     Raises:
         TypeError: If ``gt`` is not a great_tables GT.
         InputError: (a ValueError) If ``league`` or ``id_system`` is unknown.
-        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data.
+        ValueError: If ``col1``, ``col2`` or ``team_col`` is not a column of the table's data, or ``background`` is
+            not a hex color.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
     Example:
@@ -426,7 +452,11 @@ def gt_merge_stack_team_color(
     for name in (col1, col2, team_col):
         if name not in frame.columns:
             raise ValueError(f"{name!r} is not a column of the table's data; columns are {frame.columns}")
-    colors = team_colors(league, frame[team_col].to_list(), id_system=id_system, strict=strict)
+    bg = _background(gt) if background is None else solid(background)
+    ids = resolve(frame[team_col].to_list(), league, id_system=id_system, strict=strict)  # one warning, not two
+    primaries = team_colors(league, ids, id_system="team_id")
+    secondaries = team_colors(league, ids, which="secondary", id_system="team_id")
+    colors = [readable_ink(p or "#bebebe", q, bg) for p, q in zip(primaries, secondaries, strict=True)]
     top_style = f"font-weight:bold;font-variant:small-caps;color:{color};font-size:{font_size_top}px"
     for row, (top, bottom, team_color) in enumerate(
         zip(frame[col1].to_list(), frame[col2].to_list(), colors, strict=True)
@@ -434,7 +464,7 @@ def gt_merge_stack_team_color(
         cell = (
             f"<div style='line-height:{font_size_top - 2}px'><span style='{top_style}'>{_text(top)}</span></div>\n"
             f"<div style='line-height:{font_size_bottom - 2}px'><span style='font-weight:bold;"
-            f"color:{team_color or 'grey'};font-size:{font_size_bottom}px'>{_text(bottom)}</span></div>"
+            f"color:{team_color};font-size:{font_size_bottom}px'>{_text(bottom)}</span></div>"
         )
         # fmt() takes data rows, so row groups (which reorder the display) cannot shuffle the pairs
         # one fmt() per row keeps it simple; group identical cells into one call if long tables get slow

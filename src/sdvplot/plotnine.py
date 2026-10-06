@@ -79,6 +79,7 @@ __all__ = [
     "geom_sdv_logos",
     "geom_sdv_wordmarks",
     "scale_color_sdv",
+    "scale_colour_sdv",
     "scale_fill_sdv",
     "team_tiers",
     "title_image",
@@ -962,8 +963,11 @@ def _scale(
     kwargs: dict[str, Any],
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alpha: float | None = None,
 ) -> Any:
     _column(which)  # "primary" / "secondary", else ValueError now rather than when the plot is drawn
+    # sdvplotR applies scales::alpha() to the team colors only (not na.value): "#rrggbb" -> "#rrggbbaa"
+    suffix = "" if alpha is None else f"{round(check_alpha(alpha) * 255):02x}"
 
     class _TeamScale(kind):
         def __init__(self) -> None:
@@ -972,7 +976,7 @@ def _scale(
         def map(self, x: Any, limits: Any = None) -> Any:
             values = [v for v in (limits if limits is not None else self.final_limits) if v is not None]
             colors = team_colors(league, values, which=which, season=season, id_system=id_system, strict=strict)
-            self._values = {v: c for v, c in zip(values, colors, strict=True) if c is not None}
+            self._values = {v: c + suffix for v, c in zip(values, colors, strict=True) if c is not None}
             self.palette = lambda n: [self._values.get(v, na_value) for v in values]
             return [self._values.get(v, na_value) for v in x]
 
@@ -987,6 +991,7 @@ def scale_color_sdv(
     id_system: IdSystem = "auto",
     strict: bool = False,
     na_value: str = "grey",
+    alpha: float | None = None,
     **kwargs: Any,
 ) -> Any:
     """A discrete color scale that maps each team value (any id system) to its team color.
@@ -999,16 +1004,18 @@ def scale_color_sdv(
             ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries.
         strict: Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing
             it in ``na_value`` with one ``SdvplotWarning``.
-        na_value: The color of values that are not teams.
+        na_value: The color of values that are not teams; drawn as given, ``alpha`` does not fade it.
+        alpha: An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None``
+            (the default) leaves them opaque.
         **kwargs: Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...).
 
     Returns:
         scale: A plotnine color scale.
 
     Raises:
-        InputError: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league``
-            or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the
-            league.
+        InputError: (a ValueError) If ``which`` is not "primary" or "secondary" or ``alpha`` is not in [0, 1]; when
+            the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the
+            seasons sdvplot knows for the league.
         UnresolvedTeamError: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
     Example:
@@ -1025,7 +1032,10 @@ def scale_color_sdv(
         sdvplotR scale_color_sdv(): https://sdvplotR.sportsdataverse.org/ ;
         sdvplot.plotnine.scale_fill_sdv: the fill scale
     """
-    return _scale(scale_color_manual, league, which, season, na_value, kwargs, id_system, strict)
+    return _scale(scale_color_manual, league, which, season, na_value, kwargs, id_system, strict, alpha)
+
+
+scale_colour_sdv = scale_color_sdv  # the British spelling, as sdvplotR and plotnine both ship
 
 
 def scale_fill_sdv(
@@ -1036,6 +1046,7 @@ def scale_fill_sdv(
     id_system: IdSystem = "auto",
     strict: bool = False,
     na_value: str = "grey",
+    alpha: float | None = None,
     **kwargs: Any,
 ) -> Any:
     """A discrete fill scale that maps each team value (any id system) to its team color.
@@ -1048,16 +1059,18 @@ def scale_fill_sdv(
             ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries.
         strict: Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing
             it in ``na_value`` with one ``SdvplotWarning``.
-        na_value: The color of values that are not teams.
+        na_value: The color of values that are not teams; drawn as given, ``alpha`` does not fade it.
+        alpha: An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None``
+            (the default) leaves them opaque.
         **kwargs: Passed to plotnine's ``scale_fill_manual``.
 
     Returns:
         scale: A plotnine fill scale.
 
     Raises:
-        InputError: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league``
-            or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the
-            league.
+        InputError: (a ValueError) If ``which`` is not "primary" or "secondary" or ``alpha`` is not in [0, 1]; when
+            the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the
+            seasons sdvplot knows for the league.
         UnresolvedTeamError: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
     Example:
@@ -1074,7 +1087,7 @@ def scale_fill_sdv(
         sdvplotR scale_fill_sdv(): https://sdvplotR.sportsdataverse.org/ ;
         sdvplot.plotnine.scale_color_sdv: the color scale
     """
-    return _scale(scale_fill_manual, league, which, season, na_value, kwargs, id_system, strict)
+    return _scale(scale_fill_manual, league, which, season, na_value, kwargs, id_system, strict, alpha)
 
 
 def _drawn(target: ggplot) -> Figure:

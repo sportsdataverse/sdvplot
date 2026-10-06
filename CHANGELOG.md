@@ -3,11 +3,12 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+    - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
   - [[0.1.0] - 2026-10-05](#010---2026-10-05)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
-    - [Added](#added)
+    - [Added](#added-1)
       - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
       - [Repository standards](#repository-standards)
       - [Matplotlib family](#matplotlib-family)
@@ -40,8 +41,26 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ## [Unreleased]
 
+### Added
+
+- `sdvplot.plotnine.scale_color_sdv` and `scale_fill_sdv` take `alpha=`, an opacity applied to the team colors
+  (sdvplotR's `alpha`); `na_value` is drawn as given. `scale_colour_sdv` is the British alias sdvplotR and plotnine
+  both ship.
+- `gt_merge_stack_team_color` takes `background=`, the cell background the bottom line's color is checked against;
+  the default reads the table's background, so a theme applied first is taken into account.
+- `gt_tiers` takes `alt=`, a function from the image paths or URLs to their alt text. By default a logo the archive
+  knows (any `logo_url`) is named by its team and any other image by its file name; the images had no alt text at
+  all. The alt comes from the cell's value, so a local file (embedded as a data URI) gets a real name.
+
 ### Changed
 
+- `gt_merge_stack_team_color` keeps the bottom line readable (sdvplotR #55): the team's primary color when it clears
+  4.5:1 contrast (WCAG AA) on the cell background, else the secondary, else the primary darkened (or lightened, on a
+  dark table) until it does, so Missouri's gold (1.8:1 on white) reads on a white table and stays gold on a dark one.
+  An unknown team's grey goes through the same rule.
+- `gt_spotlight(dim_color=)` defaults to `"auto"` (sdvplotR #61): the other rows are dimmed to the table's text
+  blended toward its background until it clears 4.5:1 (`#737373` on white), instead of the fixed `#BBBBBB`, which is
+  1.9:1 on white and barely dimmer than the text on a dark theme. Pass a color to choose it, or `None` not to dim.
 - `team_tiers` (matplotlib and plotnine) takes `variant=`, default `"auto"`: the dark theme now draws the archive's
   dark-background logos (the `"dark"` variant), so dark marks such as the Capitals', the Giants', Penn State's or
   Iowa's no longer fade into the near-black background. A team with no dark mark draws its default one, with no

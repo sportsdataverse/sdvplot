@@ -21,6 +21,7 @@ The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team
 | [geom_sdv_logos](#geom_sdv_logos) | Team logos at (x, y), as a plotnine layer. |
 | [geom_sdv_wordmarks](#geom_sdv_wordmarks) | Team wordmarks at (x, y), as a plotnine layer: the same aesthetics and parameters as ``geom_sdv_logos``. |
 | [scale_color_sdv](#scale_color_sdv) | A discrete color scale that maps each team value (any id system) to its team color. |
+| [scale_colour_sdv](#scale_colour_sdv) | A discrete color scale that maps each team value (any id system) to its team color. |
 | [scale_fill_sdv](#scale_fill_sdv) | A discrete fill scale that maps each team value (any id system) to its team color. |
 | [team_tiers](#team_tiers) | A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme. |
 | [title_image](#title_image) | A plot title with an image (a team logo, or any image) beside it, added to a ggplot with ``+``. |
@@ -619,6 +620,7 @@ scale_color_sdv(
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
     na_value: str = 'grey',
+    alpha: float | None = None,
     **kwargs: Any,
 ) -> Any
 ```
@@ -636,7 +638,8 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `season` | `Any` | One season for every value. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
-| `na_value` | `str` | The color of values that are not teams. |
+| `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
+| `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
 
 ### Returns
@@ -645,7 +648,67 @@ A discrete color scale that maps each team value (any id system) to its team col
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `InputError`: (a ValueError) If ``which`` is not "primary" or "secondary" or ``alpha`` is not in [0, 1]; when the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `UnresolvedTeamError`: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
+
+### Example
+
+```python
+import pandas as pd
+from plotnine import aes, geom_point, ggplot
+from sdvplot.plotnine import scale_color_sdv
+
+df = pd.DataFrame({"team": ["KC", "BUF"], "epa": [0.2, 0.15], "sr": [0.48, 0.47]})
+p = ggplot(df, aes("epa", "sr", color="team")) + geom_point() + scale_color_sdv("nfl")
+```
+
+### See also
+
+- [sdvplotR scale_color_sdv()](https://sdvplotR.sportsdataverse.org/)
+- sdvplot.plotnine.scale_fill_sdv: the fill scale
+
+## scale_colour_sdv
+
+<div class="sdv-signature">
+
+```python
+scale_colour_sdv(
+    league: str,
+    *,
+    which: Literal['primary', 'secondary'] = 'primary',
+    season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
+    na_value: str = 'grey',
+    alpha: float | None = None,
+    **kwargs: Any,
+) -> Any
+```
+
+</div>
+
+A discrete color scale that maps each team value (any id system) to its team color.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
+| `season` | `Any` | One season for every value. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
+| `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
+| `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
+| `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
+
+### Returns
+
+`scale` — A plotnine color scale.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``which`` is not "primary" or "secondary" or ``alpha`` is not in [0, 1]; when the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
 - `UnresolvedTeamError`: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
 ### Example
@@ -677,6 +740,7 @@ scale_fill_sdv(
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
     na_value: str = 'grey',
+    alpha: float | None = None,
     **kwargs: Any,
 ) -> Any
 ```
@@ -694,7 +758,8 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 | `season` | `Any` | One season for every value. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
-| `na_value` | `str` | The color of values that are not teams. |
+| `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
+| `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_fill_manual``. |
 
 ### Returns
@@ -703,7 +768,7 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``which`` is not "primary" or "secondary"; when the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
+- `InputError`: (a ValueError) If ``which`` is not "primary" or "secondary" or ``alpha`` is not in [0, 1]; when the plot is drawn, if ``league`` or ``id_system`` is unknown or ``season`` is not a year or is outside the seasons sdvplot knows for the league.
 - `UnresolvedTeamError`: (a ValueError) With ``strict=True``, when the plot is drawn and a value does not resolve.
 
 ### Example

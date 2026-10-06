@@ -9,7 +9,7 @@ from great_tables import GT, loc  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.great_tables as sgt  # noqa: E402
-from sdvplot import _placement  # noqa: E402
+from sdvplot import _contrast, _placement  # noqa: E402
 from sdvplot._dispatch import adapter_for  # noqa: E402
 from sdvplot._errors import SdvplotWarning, UnresolvedTeamError  # noqa: E402
 from sdvplot.great_tables import (  # noqa: E402
@@ -188,7 +188,8 @@ def test_merge_stack_pairs_survive_row_groups_that_reorder_rows():
     )
     html = gt_merge_stack_team_color(GT(df, groupname_col="conf"), "team", "mascot", "team", league="nfl").as_raw_html()
     assert "color:#000000;font-size:12px'>Raiders<" in html
-    assert "color:#0080c6;font-size:12px'>Chargers<" in html
+    # the Chargers' blue is 4.28:1 on white, so it is darkened one step, as sdv_readable_ink() does (R: #007ABC)
+    assert "color:#007abc;font-size:12px'>Chargers<" in html
     assert "color:#003594;font-size:12px'>Rams<" in html
     assert html.index(">Raiders<") < html.index(">Chargers<") < html.index(">Rams<")  # group order, paired by row
 
@@ -197,9 +198,42 @@ def test_merge_stack_greys_an_unknown_team_and_escapes_text():
     df = pl.DataFrame({"team": ["XXX"], "mascot": ["<b>Nobody</b>"]})
     with pytest.warns(SdvplotWarning, match="'XXX'"):
         gt = gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl")
-    assert "color:grey;font-size:12px'>&lt;b&gt;Nobody&lt;/b&gt;</span>" in gt.as_raw_html()
+    # sdvplotR's grey (#BEBEBE) darkened until it reads on white, as sdv_readable_ink() does (R: #727272)
+    assert "color:#727272;font-size:12px'>&lt;b&gt;Nobody&lt;/b&gt;</span>" in gt.as_raw_html()
     with pytest.raises(ValueError, match="'nope' is not a column"):
         gt_merge_stack_team_color(GT(df), "team", "nope", "team", league="nfl")
+
+
+def test_merge_stack_keeps_the_team_text_readable_on_the_cell():
+    # sdvplotR #55: the primary when it clears 4.5:1 on the cell, else the secondary, else the primary blended toward
+    # the ink that reads on the background. LV's black and LAR's blue pass on white; on a dark table LV's black fails
+    # and its silver secondary (#a5acaf, 7.5:1 on #1e1e1e) is taken, as in R (sdv_readable_ink: #A5ACAF)
+    df = pl.DataFrame({"team": ["LV", "LAR"], "mascot": ["Raiders", "Rams"]})
+    light = gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl").as_raw_html()
+    assert "color:#000000;font-size:12px'>Raiders<" in light and "color:#003594;font-size:12px'>Rams<" in light
+    dark = gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl", background="#1e1e1e")
+    assert "color:#a5acaf;font-size:12px'>Raiders<" in dark.as_raw_html()
+    # a theme applied first sets the background the ink is checked against
+    themed = gt_merge_stack_team_color(sgt.gt_theme_midnight(GT(df)), "team", "mascot", "team", league="nfl")
+    bg = str(themed._options.table_background_color.value)
+    inks = re.findall(r"font-weight:bold;color:(#[0-9a-f]{6});font-size:12px", themed.as_raw_html())
+    assert len(inks) == 2 and all(_contrast.contrast(i, bg) >= 4.5 for i in inks)
+    with pytest.raises(ValueError, match="hex color"):
+        gt_merge_stack_team_color(GT(df), "team", "mascot", "team", league="nfl", background="white")
+
+
+def test_readable_ink_matches_sdvplotr_on_the_same_inputs():
+    # values from sdvplotR's sdv_readable_ink() (R/gt_sdv.R, origin/main 45daa5d) run on these inputs
+    ink = _marks.readable_ink
+    assert ink("#F1B82D", "#000000", "#FFFFFF") == "#000000"  # Missouri: gold is 1.8:1 on white, black passes
+    assert ink("#F1B82D", "#000000", "#1e1e1e") == "#F1B82D"  # on a dark table the gold passes and stays
+    assert ink("#F1B82D", "#FFE08A", "#FFFFFF") == "#916e1b"  # neither reads: darkened until it does
+    assert ink("#F1B82D", None, "#FFFFFF") == "#916e1b"  # no secondary
+    assert ink("#bebebe", None, "#FFFFFF") == "#727272"  # R's grey, the unknown-team fallback
+    assert ink("#bebebe", None, "#1e1e1e") == "#bebebe"
+    assert ink("#000000", "#A5ACAF", "#1e1e1e") == "#A5ACAF"
+    assert ink("#FFFFFF", "#FFFFFF", "#FFFFFF") == "#737373"  # the loop ends on the ink itself
+    assert ink("#FFFF00", "#FFFF00", "#808080") == "#191900"
 
 
 def _theme_css(html):
