@@ -59,6 +59,7 @@ wing on its own side.
 
 - `TypeError`: If ``data`` is not a pandas/polars DataFrame, ``provider`` is not a string, ``x``/``y`` is not a string, ``flip`` has the wrong type, or a coordinate column is boolean or another non-numeric type.
 - `InputError`: If ``provider`` is unknown, ``pitch_length``/``pitch_width`` are given to a fixed-frame provider, missing for a tracking one or out of range, ``x`` and ``y`` name the same column, a column is missing, a string is not a number, or the ``flip`` column is not boolean or has missing values.
+- `ImportError`: If numpy is not installed (``pip install numpy``); numpy is not a core dependency, and no sdvplot extra lists it.
 
 ## Example
 

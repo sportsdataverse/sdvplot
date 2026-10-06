@@ -190,6 +190,8 @@ def pitch_coords(
         InputError: If ``provider`` is unknown, ``pitch_length``/``pitch_width`` are given to a fixed-frame provider,
             missing for a tracking one or out of range, ``x`` and ``y`` name the same column, a column is missing, a
             string is not a number, or the ``flip`` column is not boolean or has missing values.
+        ImportError: If numpy is not installed (``pip install numpy``); numpy is not a core dependency, and no
+            sdvplot extra lists it.
 
     Example:
         ::
