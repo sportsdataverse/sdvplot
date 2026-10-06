@@ -47,7 +47,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   the 89 college conferences of cfb, mbb and wbb and the AFC, NFC and NFL, with `program` `"conference"` or `"league"`,
   the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
   `conference_id` the league's teams carry. The default lists teams only, and `resolve()` and `palette()` never
-  answer a conference key, so no existing call changes. Index-only for now: the archive has no conference marks yet.
+  answer a conference key, so no existing call changes.
+- Conference and league logos from the archive (sdvplotR's `logo_marks` for those rows): `logo_url("SEC", "cfb")`,
+  `logo_url("AFC", "nfl")`, `logo_url("NFL", "nfl")` and every mark helper (`marks`, `logo_image`, `add_logos`,
+  `axis_logos`, `geom_sdv_logos`, the table marks, the web adapters) take a conference or league row's key, with
+  `variant="dark"` where the archive has one (16 CFB conferences, the AFC, NFC and NFL) and the usual fallbacks. The
+  key is read after every team alias, so CFB's `MAC` is still Macalester, and `resolve()` still answers no conference:
+  the rows' only aliases are "mark" aliases, which name the manifest's own conference rows
+  (`level:league:source:entity_id`; `tools/build_index.py` `conference_mark_aliases`, from the new
+  `data-raw/manifest_conferences.csv` snapshot). All 92 rows have a primary mark, as sdvplotR's 92 do.
 - Headshots by the league's own player id: `id_system="league"` (sdvplotR's `id_type = "league"`) on `headshot_url`
   and every headshot helper (`add_headshots` on every adapter, `geom_sdv_headshots`, `gt_sdv_headshots`,
   `gt_sdv_cols_label(mark_type="headshot")`, `reactable_sdv_headshots`, `plottable.headshot_column`) draws an NBA or

@@ -96,6 +96,18 @@ def test_a_wordmark_keeps_its_aspect_ratio(mark_images):
     assert ext.width / ext.height == pytest.approx(2.5, rel=0.01)
 
 
+def test_add_logos_draws_a_conference_row_beside_a_team(mark_images):  # sdvplotR include_conferences marks
+    ax = _axes()
+    sdvplot.add_logos(ax, [10, 20], [-3, -7], ["LV", "AFC"], league="nfl", height=0.2)
+    ax.figure.canvas.draw()
+    assert len(ax.artists) == 2 and all(box.offsetbox.get_children()[0].get_array() is not None for box in ax.artists)
+    fig, ax = plt.subplots()
+    ax.bar(["AFC", "LV"], [1, 2])
+    sdvplot.axis_logos(ax, "x", league="nfl")  # the axis verb reads the same key from the tick labels
+    fig.canvas.draw()
+    assert len(ax.artists) == 2
+
+
 def test_a_4096_px_mark_is_decoded_no_bigger_than_it_is_drawn(mark_images):  # re-audit finding 2
     images = mark_images / "images"
     seed_image(images / "11" / f"{'1' * 64}.png", size=(4096, 4096))  # LV's logo (500 x 500 in the manifest)

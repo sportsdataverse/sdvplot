@@ -272,13 +272,36 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
+    return _resolve(values, league, season, id_system, strict)
+
+
+def resolve_marks(
+    values: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> Any:
+    """``resolve`` for the mark functions: a value no team answers to may be a conference or league row's key ("SEC",
+    "Big 12", "AFC"), which has marks but is never a team, so ``resolve`` itself leaves it unresolved."""
+    return _resolve(values, league, season, id_system, strict, marks=True)
+
+
+def _resolve(values: Any, league: str, season: Any, id_system: str, strict: bool, marks: bool = False) -> Any:
     _index.check_league(league)
     _systems(id_system)
     items, wrap = _unpack(values)
-    out, unresolved = _resolve_ids(items, league, _seasons(season, len(items), league), id_system)
+    out, unresolved = _resolve_ids(items, league, _seasons(season, len(items), league), id_system, marks=marks)
     if unresolved:
         _report(unresolved, league, strict)
     return wrap(out)
+
+
+@functools.cache
+def _non_team(league: str) -> dict[str, str]:
+    """normalized key -> team_id of the league's conference and league rows (_index.NON_TEAM), read after every team
+    alias and only for marks: a team's code that is also a conference's (cfb's "MAC", Macalester) stays the team's."""
+    rows = _index.teams(league, include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
+    return {k: tid for tid in rows["team_id"].to_list() if (k := norm_value(tid)) is not None}
+
+
+_index.on_reload(_non_team.cache_clear)
 
 
 def _systems(id_system: str) -> tuple[str, ...]:
@@ -288,15 +311,17 @@ def _systems(id_system: str) -> tuple[str, ...]:
 
 
 def _resolve_ids(
-    items: list[Any], league: str, seasons: list[int | None], id_system: str
+    items: list[Any], league: str, seasons: list[int | None], id_system: str, marks: bool = False
 ) -> tuple[list[str | None], dict[str, str]]:
     """resolve() without the report: the ids (None where a value does not resolve), and each unresolved value with
-    why ("unknown", or "ambiguous: " and the teams it could mean). The caller decides whether to warn."""
+    why ("unknown", or "ambiguous: " and the teams it could mean). The caller decides whether to warn. With ``marks``
+    (the mark functions), a value no team alias names is read as a conference or league row's key (``_non_team``)."""
     _index.check_league(league)
     systems = _systems(id_system)
     for year in {s for s in seasons if s is not None}:  # every season path resolves here: the league's own range
         check_season(year, league)
     table, latest = _lookup(league), _latest(league)
+    non_team = _non_team(league) if marks else {}
     out: list[str | None] = []
     unresolved: dict[str, str] = {}
     memo: dict[tuple[str, int | None], Any] = {}
@@ -307,6 +332,8 @@ def _resolve_ids(
             continue
         if (key, s) not in memo:
             memo[(key, s)] = _match(key, s, systems, table, latest)
+            if memo[(key, s)] is None:
+                memo[(key, s)] = non_team.get(key)
         hit = memo[(key, s)]
         if hit is None or isinstance(hit, tuple):
             unresolved[str(value)] = "unknown" if hit is None else _ambiguous(hit, league)

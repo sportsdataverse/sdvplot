@@ -92,6 +92,27 @@ def test_manifest_teams_come_from_identity_keyed_sources_only():
     ]
 
 
+def test_manifest_conference_rows_keep_the_non_team_levels_with_their_source_url():
+    rows = [
+        _row("espn", "13", "Las Vegas Raiders", "2026-10-01", url="lv"),
+        _row("espn", "AFC", "AFC", "2026-10-01", level="conference", program="", url="afc"),
+        _row("espn", "AFC", "AFC", "2026-10-01", level="conference", program="", url="afc", valid_from="2000"),
+        _row("espn", "NFL", "NFL", "2026-10-01", level="league", program="", url="nfl"),
+        _row("nhl", "18", "Metropolitan", "2026-10-01", league="nhl", level="division", program="", url="metro"),
+    ]
+    assert fs.manifest_conference_rows(rows) == [
+        {
+            "level": "conference",
+            "league": "nfl",
+            "source": "espn",
+            "entity_id": "AFC",
+            "entity_name": "AFC",
+            "url": "afc",
+        },
+        {"level": "league", "league": "nfl", "source": "espn", "entity_id": "NFL", "entity_name": "NFL", "url": "nfl"},
+    ]
+
+
 def test_manifest_mark_rows_dedupe_variants_and_skip_non_teams():
     rows = [
         _row("nhl", "1", "New Jersey Devils", "2026-10-01", league="nhl", variant="dark", url="a"),

@@ -10,7 +10,7 @@ from sdvplot._cache import MEMORY_CACHES
 from sdvplot._errors import InputError, UnresolvedTeamError, warn
 from sdvplot._manifest import load_manifest
 from sdvplot._normalize import norm_season
-from sdvplot._resolve import _covers, one_team, resolve
+from sdvplot._resolve import _covers, one_team, resolve_marks
 from sdvplot._types import IdSystem, MarkType
 
 if TYPE_CHECKING:
@@ -69,8 +69,9 @@ def _union(col: str, bound: pl.Expr) -> pl.Expr:
 
 
 def _mark_aliases(league: str) -> pl.DataFrame:
-    """key ("source:entity_id", normalized like every alias value) -> canonical team_id, unique mappings only, with
-    the season range of the mapping (R36: an old-abbreviation mark is dated by its relocation alias)."""
+    """key (a team mark's "source:entity_id", a conference or league mark's "level:league:source:entity_id", normalized
+    like every alias value) -> canonical team_id, unique mappings only, with the season range of the mapping (R36: an
+    old-abbreviation mark is dated by its relocation alias)."""
     return (
         _index.alias_table()
         .filter((pl.col("league") == league) & (pl.col("id_system") == "mark"))
@@ -99,16 +100,22 @@ for _clear in (_VARIANTS.clear, _RANKED.clear, _TEAM_ROWS.clear):
 
 
 def _ranked(league: str) -> pl.DataFrame:
-    """Every team-level manifest row of one league that maps to one canonical team, with its effective range,
-    best first; marks() only filters it on team_id."""
+    """Every team-level manifest row of one league, and every conference- and league-level row, that maps to one
+    index row of the league, with its effective range, best first; marks() only filters it on team_id. A team row's
+    key is "source:entity_id"; a conference or league row's is "level:league:source:entity_id", the manifest's own
+    league included, because ESPN files one conference logo under several leagues (sec.png: cfb 8, mbb 23) and some
+    once, under "ncaa" (the WAC): the index row's mark alias names the manifest row it reaches."""
     manifest = load_manifest()
     hit = _RANKED.get(league)
     if hit is not None and hit[0]() is manifest:
         return hit[1]
+    non_team = pl.col("level").is_in(_index.NON_TEAM)
     m = (
-        manifest.filter((pl.col("level") == "team") & (pl.col("league") == league))
+        manifest.filter(((pl.col("level") == "team") & (pl.col("league") == league)) | non_team)
         .with_columns(
-            pl.concat_str(pl.col("source"), pl.lit(":"), pl.col("entity_id"))
+            pl.when(non_team)
+            .then(pl.concat_str(pl.col("level", "league", "source", "entity_id"), separator=":"))
+            .otherwise(pl.concat_str(pl.col("source", "entity_id"), separator=":"))
             .str.strip_chars()
             .str.to_lowercase()
             .alias("_key")
@@ -155,7 +162,8 @@ def marks(team: Any, league: str, *, season: Any = None, id_system: IdSystem = "
     manifest's, narrowed by the mark alias's (an open side takes the alias's).
 
     Args:
-        team: One team identifier (abbreviation, name, ESPN id, ...).
+        team: One team identifier (abbreviation, name, ESPN id, ...), or a conference or league row's key ("SEC",
+            "AFC": the ``team_id`` of ``teams(league, include_conferences=True)``).
         league: The SDV league key, e.g. "nfl".
         season: A season year, used to resolve a reused code.
         id_system: "auto" or one id-system name, as in ``resolve``.
@@ -185,7 +193,7 @@ def marks(team: Any, league: str, *, season: Any = None, id_system: IdSystem = "
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
-    team_id = resolve(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
+    team_id = resolve_marks(one_team(team, "marks"), league, season=season, id_system=id_system, strict=True)
     if team_id is None:  # a null team: strict resolve() lets nulls through as None
         raise UnresolvedTeamError(f"marks() needs a team, got {team!r}")
     return _ranked(league).filter(pl.col("team_id") == team_id)
@@ -201,7 +209,7 @@ def select_mark(
     _check_mark_type(mark_type)
     s = norm_season(season, league)
     _check_variant(variant, league)
-    team_id = resolve(one_team(team, "select_mark"), league, season=s)
+    team_id = resolve_marks(one_team(team, "select_mark"), league, season=s)
     if team_id is None:
         return None
     # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45); the rows are
@@ -250,7 +258,9 @@ def logo_url(
     authoritative source. Unknown teams return None with one SdvplotWarning.
 
     Args:
-        team: One team identifier (abbreviation, name, ESPN id, ...).
+        team: One team identifier (abbreviation, name, ESPN id, ...), or a conference or league row's key ("SEC",
+            "Big 12", "AFC", "NFL": the ``team_id`` of ``teams(league, include_conferences=True)``), read after every
+            team alias (cfb's "MAC" is Macalester).
         league: The SDV league key, e.g. "nfl", "cfb", "nhl".
         season: A season year; None picks the current mark.
         variant: "default", "dark", or a named variant from ``marks()``.
@@ -286,7 +296,7 @@ def logo_url(
     """
     _check_mark_type(mark_type)
     _check_variant(variant, league)
-    team_id = resolve(one_team(team, "logo_url"), league, season=season, id_system=id_system, strict=strict)
+    team_id = resolve_marks(one_team(team, "logo_url"), league, season=season, id_system=id_system, strict=strict)
     if team_id is None:
         return None
     row = select_mark(team_id, league, season, variant, mark_type)

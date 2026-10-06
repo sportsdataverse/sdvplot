@@ -40,6 +40,15 @@ def _raw(tmp_path):
         '"https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png",,,,"AFC",,"conference"\n'
         '"nfl","NFL","National Football League","NFL","https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png",'
         '"https://a.espncdn.com/i/teamlogos/leagues/500-dark/nfl.png",,,,,,"league"\n',
+        # the manifest's conference and league rows (tools/fetch_sources.py manifest_conference_rows): the AFC's two
+        # ESPN files and nflverse's, the NFL shield once under "nfl" and, as ESPN files a shared logo, once under "ncaa"
+        "manifest_conferences.csv": "level,league,source,entity_id,entity_name,url\n"
+        "conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500/afc.png\n"
+        "conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png\n"
+        "conference,nfl,nflverse,AFC,AFC,https://github.com/nflverse/nflverse-pbp/raw/master/AFC.png\n"
+        "league,nfl,espn,NFL,NFL,https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png\n"
+        "league,ncaa,espn,NFL,NFL,https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png\n"
+        "league,ncaa,espn,nfl_dark,NFL,https://a.espncdn.com/i/teamlogos/leagues/500-dark/nfl.png\n",
     }
     for name, text in files.items():
         (raw / name).write_text(text, encoding="utf-8", newline="")  # LF on every OS, like the eol=lf checkout
@@ -59,7 +68,7 @@ def test_build_produces_the_runtime_schema_and_resolvable_aliases(tmp_path):
     oak = aliases.filter(pl.col("value") == "OAK").row(0, named=True)
     assert (oak["team_id"], oak["valid_to"]) == ("13", 2019)
     assert {"team_id", "espn", "espn_abbr", "name", "nflverse", "mark"} <= set(aliases["id_system"])
-    marks = aliases.filter(pl.col("id_system") == "mark")
+    marks = aliases.filter((pl.col("id_system") == "mark") & ~pl.col("value").str.contains(":espn:"))  # teams' only
     # R36: a relocation-derived mark alias carries the curated range; an identity one has none
     assert sorted(marks.select("value", "team_id", "valid_from", "valid_to").rows()) == [
         ("espn:13", "13", None, None),
@@ -661,7 +670,7 @@ def test_college_baseball_reaches_its_school_by_a_unique_exact_name_never_by_id(
     assert got["371"][0] == got["5"][0] == got["6"][0] == "fallback"
 
 
-def test_conference_rows_join_the_index_after_the_teams_with_no_alias(tmp_path):  # sdvplotR include_conferences
+def test_conference_rows_join_the_index_with_mark_aliases_only(tmp_path):  # sdvplotR include_conferences
     teams, aliases, _ = bi.build(_raw(tmp_path))
     conf = teams.filter(pl.col("program").is_in(_index.NON_TEAM))
     cols = [
@@ -691,4 +700,24 @@ def test_conference_rows_join_the_index_after_the_teams_with_no_alias(tmp_path):
     ]
     assert teams.schema == pl.Schema(_index.TEAM_SCHEMA) and teams.height == 5  # the three teams, then the two rows
     assert conf["color_primary"].str.starts_with("#").all() and (conf["color_secondary"] != conf["color_primary"]).all()
-    assert aliases.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi").height == 0
+    # their only aliases are "mark" ones, the manifest rows' keys: the file's own league where it has one (the NFL
+    # shield is filed under "nfl" and "ncaa"), else any (its dark copy only under "ncaa"); nflverse's AFC.png is not listed
+    ca = aliases.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
+    assert set(ca["id_system"]) == {"mark"} and ca["valid_from"].is_null().all()
+    assert ca.select("team_id", "value").sort("value").rows() == [
+        ("AFC", "conference:nfl:espn:AFC"),
+        ("NFL", "league:ncaa:espn:nfl_dark"),
+        ("NFL", "league:nfl:espn:NFL"),
+    ]
+
+
+def test_a_conference_file_the_archive_lacks_fails_the_build(tmp_path):
+    raw = _raw(tmp_path)
+    path = raw / "manifest_conferences.csv"
+    path.write_text(path.read_text(encoding="utf-8").replace("leagues/500/nfl.png", "leagues/500/nfl2.png"))
+    with pytest.raises(AssertionError, match="no copy of.*leagues/500/nfl.png"):
+        bi.build(raw)
+    path.unlink()  # without the snapshot the rows join with no alias at all (the sdist build)
+    teams, aliases, _ = bi.build(raw)
+    conf = teams.filter(pl.col("program").is_in(_index.NON_TEAM))
+    assert conf.height == 2 and aliases.join(conf, on=["league", "team_id"], how="semi").height == 0

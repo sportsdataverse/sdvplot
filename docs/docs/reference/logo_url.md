@@ -33,7 +33,7 @@ authoritative source. Unknown teams return None with one SdvplotWarning.
 
 | Name | Type | Description |
 |---|---|---|
-| `team` | `Any` | One team identifier (abbreviation, name, ESPN id, ...). |
+| `team` | `Any` | One team identifier (abbreviation, name, ESPN id, ...), or a conference or league row's key ("SEC", "Big 12", "AFC", "NFL": the ``team_id`` of ``teams(league, include_conferences=True)``), read after every team alias (cfb's "MAC" is Macalester). |
 | `league` | `str` | The SDV league key, e.g. "nfl", "cfb", "nhl". |
 | `season` | `Any` | A season year; None picks the current mark. |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |

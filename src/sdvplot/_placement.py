@@ -16,7 +16,7 @@ from sdvplot._errors import InputError, warn
 from sdvplot._headshots import headshot_url
 from sdvplot._marks import select_mark
 from sdvplot._normalize import norm_value
-from sdvplot._resolve import _resolve_ids, _seasons, _unpack, resolve
+from sdvplot._resolve import _resolve_ids, _seasons, _unpack, resolve_marks
 
 if TYPE_CHECKING:
     from sdvplot._types import HeadshotIdSystem, IdSystem
@@ -127,9 +127,9 @@ def place(
     else:
         seasons = _seasons(season, len(ts))
         if _warn or strict:  # one warning for unknown values, or the strict error
-            ids = resolve(ts, league, season=seasons, id_system=cast("IdSystem", id_system), strict=strict)
+            ids = resolve_marks(ts, league, season=seasons, id_system=cast("IdSystem", id_system), strict=strict)
         else:
-            ids, _ = _resolve_ids(ts, league, seasons, id_system)
+            ids, _ = _resolve_ids(ts, league, seasons, id_system, marks=True)
         rows: dict[tuple[str, int | None], dict[str, Any] | None] = {}
         no_mark: list[Any] = []
         for xi, yi, raw, team_id, s in zip(xs, ys, ts, ids, seasons, strict=True):

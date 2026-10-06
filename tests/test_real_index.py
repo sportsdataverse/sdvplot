@@ -465,8 +465,11 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     assert sdvplot.teams("cfb").filter(pl.col("conference_id") == "cfb:sec").height == 16
     retired = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
     assert retired.select("league", "abbr").rows() == [("cfb", "WAC"), ("mbb", "WAC"), ("wbb", "WAC")]  # ESPN: UAC now
-    # opt-in everywhere: no alias, so no resolution and no palette key; cfb's MAC is still Macalester
-    assert _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi").height == 0
+    # opt-in everywhere: the only aliases are "mark" ones (an id system resolve() never reads), so no resolution and
+    # no palette key; cfb's MAC is still Macalester
+    ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
+    assert ca.height == conf.height == 92 and set(ca["id_system"]) == {"mark"}  # every row's primary mark, once
+    assert ca.select("league", "team_id").unique().height == 92
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
@@ -489,3 +492,34 @@ def test_conference_colors_are_the_sdvplotr_snapshots_cbbplotr_values():
     assert (colored["color_secondary"] == colored.select(pl.when(pl.col("r2") != pl.col("r1")).then("r2"))["r2"]).all()
     none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC and the Pioneer
     assert none.height == 7 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
+
+
+def test_conference_mark_aliases_name_the_manifests_own_rows():  # sdvplotR logo_marks: 92 of 92 rows have a primary
+    conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
+    ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
+    key = dict(ca.select(pl.concat_str("league", "team_id", separator="/"), "value").rows())
+    assert len(key) == 92
+    # ESPN files one conference logo under each league with its own group id; the row's own league is taken
+    assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == ("conference:cfb:espn:8", "conference:mbb:espn:23", "conference:wbb:espn:23")  # fmt: skip
+    assert key["cfb/WAC"] == key["mbb/WAC"] == "conference:ncaa:espn:wac"  # filed once, under "ncaa"
+    assert (key["nfl/AFC"], key["nfl/NFL"]) == ("conference:nfl:espn:AFC", "league:nfl:espn:NFL")
+    assert ca["value"].str.contains(r"^(conference|league):[a-z]+:[a-z.]+:").all()
+
+
+@pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
+def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
+    from sdvplot import _manifest
+
+    monkeypatch.setenv("SDVPLOT_CACHE_DIR", str(tmp_path))
+    _manifest._read.cache_clear()
+    conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
+    urls = [sdvplot.logo_url(tid, lg, strict=True) for lg, tid in conf.select("league", "team_id").rows()]
+    assert len(urls) == 92 and all(u and u.startswith(_manifest.MANIFEST_URL.rsplit("/", 2)[0]) for u in urls)
+    sec = sdvplot.marks("SEC", "cfb")  # the dark variant beside the listed file
+    assert set(sec["variant"]) == {"default", "dark"} and sec["level"].to_list() == ["conference"] * sec.height
+    assert sdvplot.logo_url("SEC", "cfb", variant="dark") != sdvplot.logo_url("SEC", "cfb")
+    assert sdvplot.logo_url("NFL", "nfl", variant="dark") != sdvplot.logo_url("NFL", "nfl")
+    afc = sdvplot.marks("AFC", "nfl")  # ESPN's dark AFC file is the default one (one sha): same archive URL
+    assert set(afc["variant"]) == {"default", "dark"} and afc["sha256"].n_unique() == 1
+    assert sdvplot.logo_url("WAC", "wbb") == sdvplot.logo_url("WAC", "cfb")  # filed once, under "ncaa"
+    assert sdvplot.resolve("MAC", "cfb") == "2359" and sdvplot.logo_url("MAC", "cfb") == sdvplot.logo_url("2359", "cfb")
