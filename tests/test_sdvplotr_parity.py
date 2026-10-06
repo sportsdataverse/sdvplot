@@ -51,12 +51,45 @@ def test_abbr_mapping_keys_resolve_like_their_canonical_abbreviation():
     assert agree / has >= 0.99
 
 
+# A relocation key another team holds today. sdvplotR follows the franchise (WIN, the original Jets, gives Utah);
+# sdvplot gives the code's current holder unless a season says otherwise (the KCA / WAS rule, #89,
+# tests/test_real_index.py), so the two agree only for a season of the original team's. A new such key fails the test.
+REUSED_RELOCATION_KEYS = {("nhl", "WIN"): 1990}
+
+
 def test_historical_keys_resolve_to_the_franchise_today():
     am = {(r["sport"], r["key"]): r["canon"] for r in _csv("sdvplotr_abbr_mapping.csv").iter_rows(named=True)}
     for r in _csv("sdvplotr_historical.csv").iter_rows(named=True):
         lg, key = r["sport"], r["key"]
-        canon = am.get((lg, key)) or am.get((lg, r["canon"]), r["canon"])  # sdvplotR's two passes
-        assert sdvplot.resolve(key, lg) == sdvplot.resolve(canon, lg) is not None, (lg, key, canon)
+        # match_team_abbrs() since sdvplotR #55: the relocation table first, then its target through abbr_mapping
+        canon = am.get((lg, r["canon"]), r["canon"])
+        season = REUSED_RELOCATION_KEYS.get((lg, key))
+        assert sdvplot.resolve(key, lg, season=season) == sdvplot.resolve(canon, lg) is not None, (lg, key, canon)
+        if season is not None:  # the documented divergence: without a season, the code means today's holder
+            assert sdvplot.resolve(key, lg) != sdvplot.resolve(canon, lg), (lg, key, canon)
+
+
+def test_team_colors_agree_where_both_hold_a_real_one():  # parity audit 2026-10-05, 4b
+    # sdvplotR #63 reads sdvplot's colours for the teams ESPN gives none (its `logo` rows), so those agree by
+    # construction; the rest both read from ESPN or nflverse. A secondary ESPN repeats as the primary is null here.
+    r = pl.read_csv(Path(__file__).parent / "fixtures" / "sdvplotr_team_colors.csv", infer_schema_length=0)
+    py = pl.concat([sdvplot.teams(lg) for lg in sorted(set(r["sport"]))])
+    assert r.schema["espn_team_id"] == py.schema["team_id"] == pl.String
+    j = r.join(py, left_on=["sport", "espn_team_id"], right_on=["league", "team_id"])
+    assert j.height == r.height  # every sdvplotR team is in the index
+    both = j.filter(pl.col("color_source").is_not_null() & (pl.col("color_source_right") != "fallback"))
+    assert both.height == r.height
+    lower = {c: pl.col(c).str.to_lowercase() for c in ("color1", "color2", "color_primary", "color_secondary")}
+    differ = both.filter(
+        (lower["color1"] != lower["color_primary"])
+        | (
+            pl.col("color2").is_not_null()
+            & pl.col("color_secondary").is_not_null()
+            & (lower["color2"] != lower["color_secondary"])
+        )
+    )
+    assert differ.select("sport", "team_abbr", "color1", "color2", "color_primary", "color_secondary").rows() == []
+    assert both.filter(pl.col("color_source") != pl.col("color_source_right")).select("sport", "team_abbr").rows() == []
 
 
 @pytest.mark.parametrize(

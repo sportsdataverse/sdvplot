@@ -1,6 +1,7 @@
 # Export sdvplotR's team matching for sdvplot (Ruling R43): its clean_team_abbrs() table (abbr_mapping) and
 # resolve_historical_abbr() table (historical_team_mappings) become data-raw/sdvplotr_*.csv, which
-# tools/build_index.py turns into `sdvplotr` alias rows; logo_history becomes the parity-test fixture.
+# tools/build_index.py turns into `sdvplotr` alias rows; logo_history and logo_ref's team colours (with their
+# color_source, sdvplotR #63) become the parity-test fixtures under tests/fixtures/sdvplotr_*.csv.
 # Base R only. From the sdvplot root, with the sdvplotR checkout beside it (or its path as the argument):
 #   R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [/path/to/sdvplotR]
 args <- commandArgs(trailingOnly = TRUE)
@@ -17,8 +18,15 @@ long <- function(m) {
   }))
   d[order(d$sport, d$key, method = "radix"), ]
 }
+# a binary connection, so Windows writes LF too (the repo keeps every text file LF; tests/test_repo_files.py)
+lf <- function(path, lines) {
+  con <- file(path, open = "wb")
+  on.exit(close(con))
+  writeLines(enc2utf8(lines), con, useBytes = TRUE)
+}
 write <- function(d, path) {
-  write.csv(d, path, row.names = FALSE, fileEncoding = "UTF-8", na = "")
+  txt <- capture.output(write.csv(d, row.names = FALSE, na = ""))
+  lf(path, txt)
   message(path, ": ", nrow(d), " rows")
 }
 
@@ -28,11 +36,16 @@ write(long(e$historical_team_mappings), file.path("data-raw", "sdvplotr_historic
 lh <- e$logo_history
 write(lh[order(lh$sport, lh$key, lh$season_from, lh$variant, method = "radix"), ],
       file.path("tests", "fixtures", "sdvplotr_logo_history.csv"))
+# logo_ref's teams (not conferences) with both colours and where each came from (color_source)
+lr <- e$logo_ref[e$logo_ref$type == "team", c("sport", "espn_team_id", "team_abbr", "color1", "color2", "color_source")]
+write(lr[order(lr$sport, as.integer(lr$espn_team_id), method = "radix"), ],
+      file.path("tests", "fixtures", "sdvplotr_team_colors.csv"))
 
 commit <- system2("git", c("-C", src, "rev-parse", "HEAD"), stdout = TRUE)
 dirty <- length(system2("git", c("-C", src, "status", "--porcelain", "--", "R", "data-raw"), stdout = TRUE)) > 0
-writeLines(c(
-  "sdvplotR commit the sdvplotr_*.csv snapshots and tests/fixtures/sdvplotr_logo_history.csv were exported from",
+lf(file.path("data-raw", "sdvplotr_commit.txt"), c(
+  "sdvplotR commit the data-raw/sdvplotr_*.csv snapshots and the tests/fixtures/sdvplotr_logo_history.csv and",
+  "sdvplotr_team_colors.csv fixtures were exported from",
   "(tools/export_sdvplotr.R):",
   paste0(commit, if (dirty) " (with uncommitted changes)" else "")
-), file.path("data-raw", "sdvplotr_commit.txt"))
+))
