@@ -197,6 +197,24 @@ def _offline_message(url: str) -> str:
     )
 
 
+# hosts that answer 403 to datacenter and cloud IPs (CI runners, servers): a block, not an outage or a bad id (an
+# unknown id gets their silhouette image). The league-id headshot CDNs (_headshots.LEAGUE_HEADSHOT_URLS).
+GEOBLOCKED_HOSTS = ("cdn.nba.com", "cdn.wnba.com")
+
+
+def _download_message(url: str, e: Exception) -> str:
+    """The DownloadError message for an HTTP error status; a 403 from a host that blocks datacenter IPs names the
+    cause."""
+    message = f"{_offline_message(url)} ({e})"
+    host = urlsplit(url).hostname
+    if host in GEOBLOCKED_HOSTS and getattr(getattr(e, "response", None), "status_code", None) == 403:
+        message += (
+            f"; {host} answers 403 to datacenter and cloud IPs (CI runners, servers), whatever the id: draw from a "
+            f"residential connection, or copy a cache filled there to {CACHE_ENV}"
+        )
+    return message
+
+
 def _check_https(url: str) -> None:
     if urlsplit(url).scheme != "https":
         raise UnsafeDownloadError(f"refusing to download {url}: not https")
@@ -390,8 +408,9 @@ def _fetch_cached(
             return path
         if isinstance(e, UnsafeDownloadError):
             raise
-        error = DownloadError if isinstance(e, requests.HTTPError) else OfflineError
-        raise error(f"{_offline_message(url)} ({e})") from e
+        if isinstance(e, requests.HTTPError):
+            raise DownloadError(_download_message(url, e)) from e
+        raise OfflineError(f"{_offline_message(url)} ({e})") from e
     try:
         atomic_write(path, body)
         new_meta = {
@@ -423,7 +442,7 @@ def fetch_immutable(url: str, relpath: str, sha256: str, *, max_bytes: int = IMA
             r, body = _download(url, None, max_bytes)
             r.raise_for_status()
         except requests.HTTPError as e:  # a 4xx or 5xx: sdvplot's error, still an OSError as requests' was
-            raise DownloadError(f"{_offline_message(url)} ({e})") from e
+            raise DownloadError(_download_message(url, e)) from e
         except requests.RequestException as e:
             raise OfflineError(f"{_offline_message(url)} ({e})") from e
         digest = hashlib.sha256(body).hexdigest()

@@ -37,7 +37,7 @@ A plottable column that shows each row's player as a headshot.
 |---|---|---|
 | `name` | `str` | The data column holding the player ids. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
-| `id_system` | `str` | "espn" or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 | `**column_definition_kwargs` | `Any` | Passed to ``plottable.ColumnDefinition``. |
 
 ### Returns

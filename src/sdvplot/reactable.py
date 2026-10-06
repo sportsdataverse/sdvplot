@@ -223,7 +223,8 @@ def reactable_sdv_headshots(
         league: The SDV league key, e.g. "nfl".
         height: The image height in pixels.
         default_img: An image URL for ids without a headshot; None keeps their text.
-        id_system: "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``.
+        id_system: "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and
+            WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``.
         **column_kwargs: Passed to ``reactable.Column`` (``id`` is required by reactable).
 
     Returns:

@@ -115,7 +115,7 @@ A reactable column that shows each cell's player id as the player's headshot.
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `height` | `Any` | The image height in pixels. |
 | `default_img` | `str \| None` | An image URL for ids without a headshot; None keeps their text. |
-| `id_system` | `str` | "espn" (ESPN athlete ids) or "gsis" (NFL), as in ``headshot_url``. |
+| `id_system` | `str` | "espn" (ESPN athlete ids), "gsis" (NFL) or "league" (the league's own player id: nfl gsis, NBA and WNBA Stats ids, MLBAM, NHL), as in ``headshot_url``. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column`` (``id`` is required by reactable). |
 
 ### Returns
