@@ -51,7 +51,7 @@ change gets a bullet under `## [Unreleased]` in `CHANGELOG.md`.
 
 ## Code Style
 
-- Python 3.10+, full type hints, ruff (120 columns), polars 1.x only.
+- Python 3.10+, full type hints, ruff (120 columns), polars 1.x and 2.x (code must run on both).
 - Team ids are strings; never cast a float id to a string. Never guess an unresolved team: warn and return `None`.
 - Google-style docstrings with `Args`, `Returns`, `Raises`, `Example`, `See Also`; `tools/gen_docs.py --check` enforces
   them for the top level and every public submodule.
