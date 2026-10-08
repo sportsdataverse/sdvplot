@@ -92,6 +92,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- polars 2.x is supported: the dependency is `polars>=1.24` (was `<2`). With every optional extra installed,
+  the full suite (2,343 tests) passes on polars 2.0.0, the same as on 1.44.
 - numpy is now a core dependency (it was optional, needed only by `pitch_coords()`).
 - `surface("soccer")` draws a regulation 105 x 68 m pitch by default (it drew sportypy's 120 x 90 m maximum), the
   frame `pitch_coords()` returns; `pitch_updates` still overrides it key by key.
