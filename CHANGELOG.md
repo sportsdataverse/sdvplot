@@ -95,6 +95,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - The README links the JavaScript / TypeScript port, sdvplot-js, now on npm: an npm badge and an Installation note
   for `@sportsdataverse/sdvplot`, `@sportsdataverse/sporty` and `@sportsdataverse/sdvtables`, with their docs at
   plot.sportsdataverse.org.
+- The docs site's SDV menu adds cfbseedR and sdvplot-js, and the README's SportsDataverse table adds sdvplot-js, so
+  the package lists match the other SportsDataverse sites.
 - polars 2.x is supported: the dependency is `polars>=1.24` (was `<2`). With every optional extra installed,
   the full suite (2,343 tests) passes on polars 2.0.0, the same as on 1.44.
 - numpy is now a core dependency (it was optional, needed only by `pitch_coords()`).
