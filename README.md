@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/sdvplot?label=sdvplot&logo=python&style=for-the-badge)](https://pypi.org/project/sdvplot/)
 [![Python](https://img.shields.io/pypi/pyversions/sdvplot?logo=python&logoColor=white&style=for-the-badge)](https://pypi.org/project/sdvplot/)
+[![npm](https://img.shields.io/npm/v/@sportsdataverse/sdvplot?label=sdvplot-js&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@sportsdataverse/sdvplot)
 [![Downloads](https://img.shields.io/pypi/dm/sdvplot?style=for-the-badge)](https://pypistats.org/packages/sdvplot)
 [![Total downloads](https://img.shields.io/pepy/dt/sdvplot?style=for-the-badge)](https://pepy.tech/projects/sdvplot)
 [![tests](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/tests.yml?branch=main&label=tests&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/tests.yml)
@@ -51,6 +52,20 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 | `[plottable]` | plottable |
 | `[pygal]` | pygal |
 | `[all]` | everything above |
+
+### JavaScript / TypeScript
+
+The same colors, logos, wordmarks and headshots are on npm as
+[`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot), with integrations for Observable
+Plot, D3, React, Chart.js, Plotly, Vega and ECharts, plus shot charts and linked interactivity. Its siblings
+[`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces) and
+[`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (tables) ship from the same
+[sdvplot-js repo](https://github.com/sportsdataverse/sdvplot-js). Docs for all three:
+[plot.sportsdataverse.org](https://plot.sportsdataverse.org/).
+
+```bash
+npm install @sportsdataverse/sdvplot
+```
 
 ## **Usage**
 
