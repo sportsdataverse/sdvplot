@@ -564,6 +564,9 @@ def test_no_read_waits_past_the_time_left(cache, monkeypatch):
     s = FakeSession(FakeResponse(200, b"x"))
     monkeypatch.setattr(_cache, "SESSION", s)
     monkeypatch.setattr(_cache, "DEADLINE_SECONDS", 2.0)
+    # a clock that has not ticked, 2 s below a power of two: (t0 + 2.0) - t0 rounds to 2.0000000000000284 (a Windows
+    # runner's coarse clock at ~255 s of uptime failed this test that way)
+    monkeypatch.setattr(_cache, "time", types.SimpleNamespace(monotonic=lambda: 254.2687284882248, time=time.time))
     _cache._download("https://x/a", None, 100)
     assert 0 < max(s.timeouts[0]) <= 2.0
 
