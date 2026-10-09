@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+<style>
+  #sdv_15_0_0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #sdv_15_0_0.vega-embed details,
+  #sdv_15_0_0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="sdv_15_0_0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "sdv_15_0_0") {
+      outputDiv = document.getElementById("sdv_15_0_0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.4.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.4.1"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-sdv_15_0_1"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "team_id", "legend": null, "scale": {"domain": ["66", "77", "96", "78", "73", "126", "192", "68", "99", "136", "123", "168", "273", "293", "150"], "range": ["#005a94", "#b3a369", "#002942", "#d60022", "#c61018", "#ef7321", "#ffaa3c", "#a50010", "#fe0d04", "#395ab5", "#6a3333", "#0337b4", "#044520", "#ff4713", "#531122"]}, "type": "nominal"}, "tooltip": [{"field": "team_display_name", "title": "Team", "type": "nominal"}, {"field": "record", "title": "Record", "type": "nominal"}], "x": {"axis": {"format": ".0%"}, "field": "win_percent", "title": "Winning percentage", "type": "quantitative"}, "y": {"axis": {"labelExpr": "indexof([\"66\", \"77\", \"96\", \"78\", \"73\", \"126\", \"192\", \"68\", \"99\", \"136\", \"123\", \"168\", \"273\", \"293\", \"150\"], datum.label) >= 0 ? '' : datum.label", "labelPadding": 31.1}, "field": "team_id", "sort": ["66", "77", "96", "78", "73", "126", "192", "68", "99", "136", "123", "168", "273", "293", "150"], "title": null, "type": "nominal"}}, "title": "Best records in Division I baseball, 2026 (40+ games)"}, {"data": {"values": [{"team_id": "66", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/51/5145c6eb67719f52cdf51c92ef6b30486c9a585ca129624d6c7837e369321a23.png", "sdvplot_team": "66"}, {"team_id": "77", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c5/c50e6dcbe550c656e79729b1dc4d348a2deeb66dec33a331f9df4cb23885ce99.png", "sdvplot_team": "77"}, {"team_id": "96", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c5/c51339a92ebf5e7dbdbcb6c32dc2cc63f9e2f3dc0e5d47f60fd59fa22ceb32ec.png", "sdvplot_team": "96"}, {"team_id": "78", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/fa/fa5c7fb14d5ffa38eaddfeb80161835e60a3d496b57db5e0ebda5e6475226d8a.png", "sdvplot_team": "78"}, {"team_id": "73", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ea/ea8258009ea1024de674a785b6ab4229fbe55e3453e7931ebbaf61fe01f8c2d9.png", "sdvplot_team": "73"}, {"team_id": "126", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/12/12d69bb78c3443bdbcc5a7659f288840a7a3862d70043eda3d8868a229eb7696.png", "sdvplot_team": "126"}, {"team_id": "192", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/4a/4a210457f8f078c29cb143f9bd8b1ae666420e8973edd12c5ad5ce4fdc3f5945.png", "sdvplot_team": "192"}, {"team_id": "68", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ab/abd4a69d1efca7bd1c944acf8a5a77b5bce41602da970e9779f0bf6079489c1a.png", "sdvplot_team": "68"}, {"team_id": "99", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c0/c09e5b394cfa5be2f2369c5e63210a12e25943b904d077c6469714ca9f8285e2.png", "sdvplot_team": "99"}, {"team_id": "136", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/5d/5d80b2a5a79d7c5b8dfbb270f0140bd7353b87b6fcd8dc43a60ccff9a72baa29.png", "sdvplot_team": "136"}, {"team_id": "123", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0d/0da7ac07d04adcd38707b88a4198e988b830ed49a0ab6c9378cfb4cfb980aa08.png", "sdvplot_team": "123"}, {"team_id": "168", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e1/e1daa000b25e45917bfaa93464b8725980c8e3c1a859f1fb51174e9d37aee08b.png", "sdvplot_team": "168"}, {"team_id": "273", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57dca8a00b01bebcfb1e0c7ceafe0b046e175c47ec7225713b3930e7fcb7cd05.png", "sdvplot_team": "273"}, {"team_id": "293", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e4/e43f2825a58f41df2f8f3c27b5f13aeb16b3c41a1d1481d7a73d9bbe1227779d.png", "sdvplot_team": "293"}, {"team_id": "150", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/18/1854b6d52609c4db7daacc59ce122017c3eabd2e70b9c66deeec297183d4d46b.png", "sdvplot_team": "150"}]}, "mark": {"type": "image", "align": "right", "aspect": true, "height": 23.1, "width": 23.1}, "encoding": {"url": {"field": "sdvplot_url", "type": "nominal"}, "x": {"value": -6}, "y": {"field": "team_id", "sort": ["66", "77", "96", "78", "73", "126", "192", "68", "99", "136", "123", "168", "273", "293", "150"], "type": "nominal"}}, "name": "sdvplot_axis_y"}], "height": 420, "width": 480, "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-sdv_15_0_1": [{"team_id": "66", "team_display_name": "UCLA Bruins", "record": "51-6", "win_percent": 0.8947368}, {"team_id": "77", "team_display_name": "Georgia Tech Yellow Jackets", "record": "48-9", "win_percent": 0.84210527}, {"team_id": "96", "team_display_name": "North Carolina Tar Heels", "record": "45-11", "win_percent": 0.7982456}, {"team_id": "78", "team_display_name": "Georgia Bulldogs", "record": "46-12", "win_percent": 0.79310346}, {"team_id": "73", "team_display_name": "Jacksonville State Gamecocks", "record": "46-13", "win_percent": 0.779661}, {"team_id": "126", "team_display_name": "Texas Longhorns", "record": "40-13", "win_percent": 0.754717}, {"team_id": "192", "team_display_name": "Southern Miss Golden Eagles", "record": "44-15", "win_percent": 0.7457627}, {"team_id": "68", "team_display_name": "USC Trojans", "record": "43-15", "win_percent": 0.7413793}, {"team_id": "99", "team_display_name": "Nebraska Cornhuskers", "record": "42-15", "win_percent": 0.7368421}, {"team_id": "136", "team_display_name": "West Virginia Mountaineers", "record": "39-14", "win_percent": 0.7358491}, {"team_id": "123", "team_display_name": "Texas A&M Aggies", "record": "39-14", "win_percent": 0.7358491}, {"team_id": "168", "team_display_name": "Kansas Jayhawks", "record": "42-16", "win_percent": 0.7241379}, {"team_id": "273", "team_display_name": "Oregon Ducks", "record": "40-16", "win_percent": 0.71428573}, {"team_id": "293", "team_display_name": "Campbell Fighting Camels", "record": "41-17", "win_percent": 0.70689654}, {"team_id": "150", "team_display_name": "Mississippi State Bulldogs", "record": "40-17", "win_percent": 0.7017544}]}}, {"renderer": "svg", "actions": false, "mode": "vega-lite"});
+</script>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

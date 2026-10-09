@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+<style>
+  #sdv_20_0_0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #sdv_20_0_0.vega-embed details,
+  #sdv_20_0_0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="sdv_20_0_0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "sdv_20_0_0") {
+      outputDiv = document.getElementById("sdv_20_0_0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.4.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.4.1"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-sdv_20_0_1"}, "mark": {"type": "bar", "color": "#5b2c83"}, "encoding": {"tooltip": [{"field": "team_id", "type": "nominal"}, {"field": "shots", "type": "quantitative"}, {"field": "quality", "format": ".1%", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "quality", "title": "Quality share of shots on goal", "type": "quantitative"}, "y": {"axis": {"labelExpr": "indexof([\"1\", \"4\", \"2\", \"8\", \"9\", \"5\", \"3\", \"6\"], datum.label) >= 0 ? '' : datum.label", "labelPadding": 36.8}, "field": "team_id", "sort": ["1", "4", "2", "8", "9", "5", "3", "6"], "title": null, "type": "nominal"}}, "title": "Share of shots on goal that were quality chances, PWHL 2025-26"}, {"data": {"values": [{"team_id": "1", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3b/3bd2dc150c80a412148e1f74ab2502ec2a1f0d598651b7deda3f5a87083561b0.png", "sdvplot_team": "1"}, {"team_id": "4", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bf/bf645a1dd0f9b6ac1ff8be88fc1f836b767f634612b2acdd5c23558dc4919d16.png", "sdvplot_team": "4"}, {"team_id": "2", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/cb/cbf942375ad3b11560c2bb1c457bb520329faf18cc353bddd8d5c771bf4dcd39.png", "sdvplot_team": "2"}, {"team_id": "8", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c7/c7048ccd8b9c67a960d839c5e4677fb11151791788a5d352fe4816c1abd73525.png", "sdvplot_team": "8"}, {"team_id": "9", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c6/c6eaba58b6ed8cedb4a3df06121cb485dd590be7fce0d27bb1ecbb4c7f450aa1.png", "sdvplot_team": "9"}, {"team_id": "5", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/42/42808d4a136e68c31e4bdc200f53298e07f8ef276aea53e907cd33615b7c3966.png", "sdvplot_team": "5"}, {"team_id": "3", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a7/a759c039a69f07aac2403b29f65851cdab0f160974ef8384f6bb2a7ccfa95f82.png", "sdvplot_team": "3"}, {"team_id": "6", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bda0153d8521618ecd71ec81b725b2c71786131565d018d45012e4b90b7a40b.png", "sdvplot_team": "6"}]}, "mark": {"type": "image", "align": "right", "aspect": true, "height": 28.799999999999997, "width": 28.799999999999997}, "encoding": {"url": {"field": "sdvplot_url", "type": "nominal"}, "x": {"value": -6}, "y": {"field": "team_id", "sort": ["1", "4", "2", "8", "9", "5", "3", "6"], "type": "nominal"}}, "name": "sdvplot_axis_y"}], "height": 320, "width": 520, "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-sdv_20_0_1": [{"team_id": "1", "shots": 959, "quality": 0.5213764337851929}, {"team_id": "4", "shots": 885, "quality": 0.5186440677966102}, {"team_id": "2", "shots": 999, "quality": 0.5135135135135135}, {"team_id": "8", "shots": 837, "quality": 0.46953405017921146}, {"team_id": "9", "shots": 793, "quality": 0.46279949558638084}, {"team_id": "5", "shots": 982, "quality": 0.46028513238289204}, {"team_id": "3", "shots": 1135, "quality": 0.44669603524229073}, {"team_id": "6", "shots": 848, "quality": 0.44339622641509435}]}}, {"renderer": "svg", "actions": false, "mode": "vega-lite"});
+</script>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

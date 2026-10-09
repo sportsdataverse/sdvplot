@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunksdvplot_docs=self.webpackChunksdvplot_docs||[]).push([["1668"],{6569(s,e,r){r.r(e),r.d(e,{default:()=>o});var c=r(4848);r(6540);var a=r(4164),d=r(4308),t=r(8287),u=r(2831),l=r(816);function o(s){return(0,c.jsx)(d.e3,{className:(0,a.A)(t.G.wrapper.docsPages),children:(0,c.jsx)(l.A,{children:(0,u.v)(s.route.routes)})})}}}]);
