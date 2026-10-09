@@ -288,7 +288,9 @@ def _download(url: str, headers: dict | None, max_bytes: int) -> tuple[requests.
     try:
         for _ in range(MAX_REDIRECTS + 1):
             _check_https(url)
-            left = deadline - time.monotonic()
+            # capped at the budget: an absolute deadline can round up by half an ulp, and a clock that has not ticked
+            # then leaves 2.0000000000000284 s of a 2 s budget
+            left = min(DEADLINE_SECONDS, deadline - time.monotonic())
             if left <= 0:
                 raise UnsafeDownloadError(f"{url}: download exceeded {DEADLINE_SECONDS:.0f} s")
             # no read waits past the deadline either: on Windows a shut socket does not wake a read already waiting
