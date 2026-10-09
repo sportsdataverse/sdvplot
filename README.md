@@ -57,7 +57,7 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 
 The same colors, logos, wordmarks and headshots are on npm as
 [`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot), with integrations for Observable
-Plot, D3, React, Chart.js, Plotly, Vega and ECharts, plus shot charts and linked interactivity. Its siblings
+Plot, D3, React, Chart.js, Plotly, Vega-Lite and ECharts, plus shot charts and linked interactivity. Its siblings
 [`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces) and
 [`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (tables) ship from the same
 [sdvplot-js repo](https://github.com/sportsdataverse/sdvplot-js). Docs for all three:
