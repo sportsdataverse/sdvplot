@@ -194,7 +194,7 @@ See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 
 To cite [**`sdvplot`**](https://sdvplot.sportsdataverse.org) in publications, use:
 
-BibTex Citation
+BibTeX Citation
 
 ```bibtex
 @misc{gilani_2026_sdvplot,
