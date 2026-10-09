@@ -172,6 +172,7 @@ covers the sdvplot code only; team data belongs to its respective owners and sou
 | --- | --- |
 | [**sportsdataverse-py**](https://py.sportsdataverse.org/) | SportsDataverse data for Python: NFL, CFB, NBA, WNBA, MBB, WBB, MLB, NHL, PWHL, soccer and more |
 | [**sdvplotR**](https://sdvplotR.sportsdataverse.org/) | The R package this one mirrors |
+| [**sdvplot-js**](https://plot.sportsdataverse.org/) | The JavaScript port: `@sportsdataverse/sdvplot`, `@sportsdataverse/sporty` and `@sportsdataverse/sdvtables` on npm |
 | [**sportypy**](https://sportypy.sportsdataverse.org/) | Playing-surface plots for Python |
 | [**nflreadpy**](https://github.com/nflverse/nflreadpy) | nflverse data loaders for Python |
 | [**sportsdataverse-R**](https://r.sportsdataverse.org/) · [**sportsdataverse.js**](https://js.sportsdataverse.org/) | R and Node.js |

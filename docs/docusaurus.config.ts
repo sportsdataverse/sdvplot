@@ -346,6 +346,11 @@ const config: Config = {
               target: '_self',
             },
             {
+              label: 'cfbseedR',
+              href: 'https://cfbseedR.sportsdataverse.org/',
+              target: '_self',
+            },
+            {
               label: 'softballR',
               href: 'https://github.com/sportsdataverse/softballR/',
               target: '_self',
@@ -384,6 +389,11 @@ const config: Config = {
             {
               label: 'sportsdataverse.js',
               href: 'https://js.sportsdataverse.org/',
+              target: '_self',
+            },
+            {
+              label: 'sdvplot-js',
+              href: 'https://plot.sportsdataverse.org/',
               target: '_self',
             },
             {
