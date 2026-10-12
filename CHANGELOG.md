@@ -133,6 +133,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `QUC` (Queens, 2511), `SFPA` (Saint Francis, 2598) and `USI` (Southern Indiana, 88) in mbb, `MERC` (Mercyhurst,
   2385) and `SFPA` in wbb, and with them sdvplotR's keys for those teams. `tools/fetch_sources.py` reads them from
   ESPN's Core API per season (`ESPN_CORE_TEAMS`) into `data-raw/espn_abbrs.csv`.
+  `teams()` shows that code as `abbr` where ESPN's teams lists give none, as for UTRGV (`RGV`) and college
+  baseball's Loras (`LOR`): eight teams had a null `abbr`.
 - sdvplotR's conference names draw the conference's logo again: `logo_url("Southeastern Conference", "cfb")` is
   `logo_url("SEC", "cfb")`, `logo_url("B10", "mbb")` is `logo_url("Big Ten", "mbb")`, and so for the other keys
   sdvplotR's `clean_team_abbrs()` maps to a conference or league row ("B1G", "Pac-10", "American Football

@@ -539,6 +539,13 @@ def test_sdvplotr_conference_keys_reach_their_rows_for_marks_only():
 )  # fmt: skip
 def test_core_api_abbreviations_of_the_teams_espns_lists_omit(league, code, team):
     assert sdvplot.resolve(code, league) == team
+    assert sdvplot.teams(league).filter(pl.col("team_id") == team)["abbr"].item() == code  # sdvplotR shows it
+
+
+def test_abbr_falls_back_to_the_current_espn_abbrs_code():  # the teams ESPN's lists omit; the list's code wins
+    abbr = dict(sdvplot.teams().select(pl.concat_str("league", "team_id", separator="/"), "abbr").rows())
+    assert (abbr["cfb/292"], abbr["ncaa_baseball/1189"]) == ("RGV", "LOR")
+    assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "95")["abbr"].item() == "NCST"  # not NCSU
 
 
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")

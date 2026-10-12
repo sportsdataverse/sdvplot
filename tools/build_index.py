@@ -223,10 +223,11 @@ def build_teams(raw: Path) -> pl.DataFrame:
         .join(groups, on=["league", "team_id"], how="left")
         .join(espn_school_colors(raw, all_espn), on=["league", "team_id"], how="left")
         .join(logo_colors(raw), on=["league", "team_id"], how="left")
+        .join(current_extra_abbrs(raw), on=["league", "team_id"], how="left")
     )
     assert not t.select("league", "team_id").is_duplicated().any(), "a source repeats a (league, team_id)"
     t = t.with_columns(
-        pl.coalesce("nflv_abbr", "abbr").alias("abbr"),
+        pl.coalesce("nflv_abbr", "abbr", "extra_abbr").alias("abbr"),
         _first_source(lambda name, _: pl.lit(name)).fill_null("fallback").alias("color_source"),
         _first_source(lambda _, p: pl.col(f"{p}_primary")).alias("color_primary"),
         _first_source(lambda _, p: pl.col(f"{p}_secondary")).alias("color_secondary"),
@@ -234,6 +235,23 @@ def build_teams(raw: Path) -> pl.DataFrame:
         pl.when(pl.col("color_secondary") != pl.col("color_primary")).then(pl.col("color_secondary"))
     )
     return _fill_fallback(t).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+def current_extra_abbrs(raw: Path) -> pl.DataFrame:
+    """(league, team_id, extra_abbr): a team's current code in data-raw/espn_abbrs.csv (open-ended, valid_to empty),
+    for the teams ESPN's teams lists omit (UTRGV, the Core API basketball teams), whose ``abbr`` the list cannot give.
+    Only a fallback after the list's own code; a team with several current codes gets none."""
+    cols = {"league": pl.String, "team_id": pl.String, "extra_abbr": pl.String}
+    if not (raw / "espn_abbrs.csv").exists():
+        return pl.DataFrame(schema=cols)
+    return (
+        _csv(raw, "espn_abbrs.csv")
+        .filter(pl.col("valid_to").is_null() & pl.col("abbreviation").is_not_null())
+        .group_by("league", "team_id")
+        .agg(pl.col("abbreviation").unique())
+        .filter(pl.col("abbreviation").list.len() == 1)
+        .select("league", "team_id", pl.col("abbreviation").list.first().alias("extra_abbr"))
+    )
 
 
 def _fill_fallback(t: pl.DataFrame) -> pl.DataFrame:

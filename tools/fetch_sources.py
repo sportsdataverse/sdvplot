@@ -79,8 +79,9 @@ ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
 ESPN_TEAM_ENDPOINT_TEAMS = [("cfb", "football", "college-football", "292")]
 # Teams the archive holds that ESPN's men's or women's college basketball teams list omits (and so had no abbreviation
 # alias), whose abbreviation comes from ESPN's Core API per season (sports.core.api.espn.com .../seasons/{year}/teams/
-# {id}; ESPN's season is its ending year, 2026 = 2025-26), asked for last, this and next season. Measured 2026-10-12
-# (abbreviation; the season's group, from the team's `groups` $ref, and that group's parent):
+# {id}; ESPN's season is its ending year, 2026 = 2025-26), asked for the seasons ending in the calendar year before,
+# of and after the run: an October 2026 run asks 2025-2027, 2027 (2026-27) being the current season. Measured
+# 2026-10-12 (abbreviation; the season's group, from the team's `groups` $ref, and that group's parent):
 #   mbb 2815 Lindenwood        LIN   2025-2027 Ohio Valley Conference, NCAA Division I
 #   mbb 2511 Queens            QUC   2025-2027 Atlantic Sun Conference, NCAA Division I
 #   mbb 2598 Saint Francis     SFPA  2025-2026 Northeast Conference, NCAA Division I; 2027 Non-NCAA Division I
@@ -252,26 +253,32 @@ def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> l
 
 
 def espn_core_abbr_rows(league: str, team_id: str, seasons: dict[int, dict | None]) -> list[dict]:
-    """One team's Core API payloads by season (None: no such season) as espn_abbrs.csv rows, one per run of seasons
-    with the same (abbreviation, name). A run that reaches the first or last season that answered stays open on that
-    side: the code is the team's beyond the seasons asked."""
+    """One team's Core API payloads by season (None: no such season) as espn_abbrs.csv rows, one per run of
+    consecutive seasons with the same (abbreviation, name), as mlbstats_history_rows: a code used, dropped and used
+    again is two runs, never one spanning the other code. A run that reaches the first or last season that answered
+    stays open on that side: the code is the team's beyond the seasons asked."""
     got = {y: (t["abbreviation"], t.get("displayName")) for y, t in seasons.items() if t and t.get("abbreviation")}
     if not got:
         return []
-    runs: dict[tuple, list[int]] = {}
+    runs: dict[tuple, list[list[int]]] = {}
     for y in sorted(got):
-        runs.setdefault(got[y], []).append(y)
+        spans = runs.setdefault(got[y], [])
+        if spans and spans[-1][1] == y - 1:
+            spans[-1][1] = y
+        else:
+            spans.append([y, y])
     first, last = min(got), max(got)
     return [
         {"league": league, "team_id": team_id, "abbreviation": abbr, "display_name": name,
-         "valid_from": "" if min(ys) == first else min(ys), "valid_to": "" if max(ys) == last else max(ys)}
-        for (abbr, name), ys in runs.items()
+         "valid_from": "" if lo == first else lo, "valid_to": "" if hi == last else hi}
+        for (abbr, name), spans in runs.items() for lo, hi in spans
     ]  # fmt: skip
 
 
 def fetch_espn_core_abbrs(s: requests.Session) -> list[dict]:
-    """espn_core_abbr_rows for each ESPN_CORE_TEAMS team, from last, this and next season (one at a time: Core v2
-    answers bursts with 403s). A 404 is a season ESPN does not have yet."""
+    """espn_core_abbr_rows for each ESPN_CORE_TEAMS team, from the seasons ending in the calendar year before, of and
+    after today's (ESPN's ending-year seasons: an October 2026 run asks 2025-2027, 2027 the current season), one at a
+    time (Core v2 answers bursts with 403s). A 404 is a season ESPN does not have yet."""
     year = dt.date.today().year
     rows = []
     for league, sport, el, team_id in ESPN_CORE_TEAMS:

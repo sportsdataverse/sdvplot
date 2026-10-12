@@ -340,6 +340,19 @@ def test_espn_core_abbr_rows_stay_open_at_the_seasons_asked():
     assert fs.espn_core_abbr_rows("mbb", "2815", {2025: None, 2026: {"id": "2815"}}) == []
 
 
+def test_espn_core_abbr_rows_split_a_code_used_again_into_consecutive_runs():
+    def team(abbr):
+        return {"id": "2815", "abbreviation": abbr, "displayName": "Lindenwood Lions"}
+
+    # A, B, A: two A runs around B, never one open A row overlapping B
+    rows = fs.espn_core_abbr_rows("mbb", "2815", {2025: team("A"), 2026: team("B"), 2027: team("A")})
+    assert sorted((r["abbreviation"], str(r["valid_from"]), str(r["valid_to"])) for r in rows) == [
+        ("A", "", "2025"),
+        ("A", "2027", ""),
+        ("B", "2026", "2026"),
+    ]
+
+
 def test_fetch_espn_core_abbrs_asks_three_seasons_and_skips_a_missing_one(monkeypatch):
     seen = []
 

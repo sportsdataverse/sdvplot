@@ -711,6 +711,23 @@ def test_conference_rows_join_the_index_with_mark_aliases_only(tmp_path):  # sdv
     ]
 
 
+def test_abbr_falls_back_to_the_current_espn_abbrs_code(tmp_path):
+    # a team ESPN's teams lists omit (UTRGV, the Core API basketball teams) takes its open-ended espn_abbrs.csv code;
+    # the list's own code wins, a dated code is not current, and two current codes give none
+    raw = _raw(tmp_path)
+    for line in ("cfb,292,UT Rio Grande Valley Vaqueros,football", "cfb,293,Dated,football", "cfb,294,Twice,football"):
+        _add(raw, "manifest_teams.csv", line)
+    (raw / "espn_abbrs.csv").write_text(
+        "league,team_id,abbreviation,display_name,valid_from,valid_to\ncfb,292,RGV,UT Rio Grande Valley Vaqueros,,\n"
+        "mlb,7,KCR,Kansas City Royals,,\ncfb,293,DAT,Dated,2020,2021\ncfb,294,TWA,Twice,,\ncfb,294,TWB,Twice,,\n",
+        encoding="utf-8",
+    )
+    teams, _, _ = bi.build(raw)
+    got = dict(teams.select(pl.concat_str("league", "team_id", separator="/"), "abbr").rows())
+    assert got["cfb/292"] == "RGV" and got["mlb/7"] == "KC" and got["nfl/13"] == "LV"
+    assert got["cfb/293"] is None and got["cfb/294"] is None and got["ohl/7"] is None
+
+
 def test_sdvplotr_conference_keys_become_conference_aliases_not_team_ones(tmp_path):
     # sdvplotR's abbr_mapping rows whose canon is a conference or league row: id system "conference", the row's key
     raw = _raw(tmp_path)
