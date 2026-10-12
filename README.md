@@ -161,7 +161,7 @@ great_tables toolkit, surfaces and coordinates, in four colour themes, light and
 
 📄 **[Download the sdvplot cheat sheet (PDF)](https://sportsdataverse.org/cheatsheets/sdvplot.pdf)**
 
-Every SportsDataverse package has one — browse them all at
+Browse the other SportsDataverse cheat sheets at
 **[sportsdataverse.org/cheatsheets](https://sportsdataverse.org/cheatsheets)**.
 
 ## **Logos, trademarks and data**
