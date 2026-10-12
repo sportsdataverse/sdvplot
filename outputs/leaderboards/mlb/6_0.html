@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div id="mlb-standings" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+#mlb-standings table {
+          font-family: 'Source Serif 4', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans';
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#mlb-standings thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#mlb-standings p { margin: 0; padding: 0; }
+ #mlb-standings .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 14px; font-weight: normal; font-style: normal; background-color: #FBFAF7; width: auto; border-top-style: solid; border-top-width: 2px; border-top-color: #a6081a; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #mlb-standings .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #mlb-standings .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 6px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FBFAF7; border-bottom-width: 0; }
+ #mlb-standings .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 5px; padding-bottom: 7px; padding-left: 5px; padding-right: 5px; border-top-color: #FBFAF7; border-top-width: 0; }
+ #mlb-standings .gt_heading { background-color: #FBFAF7; text-align: left; border-bottom-color: #FBFAF7; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #mlb-standings .gt_bottom_border { border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #mlb-standings .gt_col_headings { border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 1.5px; border-bottom-color: #16130F; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #mlb-standings .gt_col_heading { color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: normal; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 4px; padding-bottom: 7px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; }
+ #mlb-standings .gt_column_spanner_outer { color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: normal; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #mlb-standings .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #mlb-standings .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #mlb-standings .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 1.5px; border-bottom-color: #16130F; vertical-align: bottom; padding-top: 4px; padding-bottom: 4px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #mlb-standings .gt_spanner_row { border-bottom-style: hidden; }
+ #mlb-standings .gt_group_heading { padding-top: 3px; padding-bottom: 3px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 1px; border-top-color: #16130F; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #mlb-standings .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 1px; border-top-color: #16130F; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #mlb-standings .gt_from_md> :first-child { margin-top: 0; }
+ #mlb-standings .gt_from_md> :last-child { margin-bottom: 0; }
+ #mlb-standings .gt_row { padding-top: 6px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #DEDAD2; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #mlb-standings .gt_stub { color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; }
+ #mlb-standings .gt_indent_1 { text-indent: 5px; }
+ #mlb-standings .gt_indent_2 { text-indent: calc(5px * 2); }
+ #mlb-standings .gt_indent_3 { text-indent: calc(5px * 3); }
+ #mlb-standings .gt_indent_4 { text-indent: calc(5px * 4); }
+ #mlb-standings .gt_indent_5 { text-indent: calc(5px * 5); }
+ #mlb-standings .gt_stub_row_group { color: #333333; background-color: #FBFAF7; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #mlb-standings .gt_row_group_first td { border-top-width: 1px; }
+ #mlb-standings .gt_row_group_first th { border-top-width: 1px; }
+ #mlb-standings .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #mlb-standings .gt_table_body { border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: #16130F; }
+ #mlb-standings .gt_summary_row { color: #333333; background-color: #FBFAF7; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #mlb-standings .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #mlb-standings .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #mlb-standings .gt_grand_summary_row { color: #333333; background-color: #FBFAF7; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #mlb-standings .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #mlb-standings .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #mlb-standings .gt_sourcenotes { color: #333333; background-color: #FBFAF7; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #mlb-standings .gt_sourcenote { font-size: 90%; padding-top: 6px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #mlb-standings .gt_left { text-align: left; }
+ #mlb-standings .gt_center { text-align: center; }
+ #mlb-standings .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #mlb-standings .gt_font_normal { font-weight: normal; }
+ #mlb-standings .gt_font_bold { font-weight: bold; }
+ #mlb-standings .gt_font_italic { font-style: italic; }
+ #mlb-standings .gt_super { font-size: 65%; }
+ #mlb-standings .gt_footnotes { color: font-color(#FBFAF7); background-color: #FBFAF7; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #mlb-standings .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #mlb-standings .gt_sourcenotes { color: #333333; background-color: #FBFAF7; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #mlb-standings .gt_sourcenote { font-size: 90%; padding-top: 6px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #mlb-standings .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #mlb-standings .gt_asterisk { font-size: 100%; vertical-align: 0; }
+
+#mlb-standings td { font-variant-numeric: tabular-nums; }
+#mlb-standings tbody tr:last-child { border-bottom: 2px solid #FBFAF7; }
+#mlb-standings .gt_col_heading, #mlb-standings .gt_column_spanner { letter-spacing: 0.09em; }
+#mlb-standings .gt_group_heading_row + tr td { padding-top: 4px; }
+#mlb-standings .gt_group_heading { letter-spacing: 0.08em; }
+#mlb-standings .gt_subtitle { padding-bottom: 14px !important; }
+#mlb-standings .gt_title { padding-bottom: 3px !important; }
+#mlb-standings .gt_sourcenote { padding-top: 10px; }
+
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+
+  <tr class="gt_heading">
+    <td colspan="10" class="gt_heading gt_title gt_font_normal" style="color: #16130F;font-family: Newsreader;font-size: 26px;font-weight: 600;">MLB standings, 2026</td>
+  </tr>
+  <tr class="gt_heading">
+    <td colspan="10" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #5C574F;font-family: Newsreader;font-size: 15px;font-style: italic;font-weight: 400;">By division, final regular season</td>
+  </tr>
+<tr class="gt_col_headings">
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-abbreviation"></th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-team_name">Team</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-w">W</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-l">L</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-pct">Pct</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-gb">GB</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-rs">RS</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-ra">RA</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-diff">Diff</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="color: #5C574F;font-family: Public Sans;font-size: 10px;font-weight: 600;text-transform: uppercase;" scope="col" id="mlb-standings-strk">Streak</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">American League Central</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/8883a4e8b7c6bb75f308f1fb27a39eb7cf81ce431ba781edbc4afe082164410f.png" style="height:24px;vertical-align:middle" alt="Cleveland Guardians" data-sdvplot-team="5"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Guardians</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">85</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">77</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.525</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">678</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">667</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #eef1f4; color: #000000; border-radius: 10px; text-align: center; '>11</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f9/f92f9c32cea65d9e697a254d09a8ae16326889796f380649b2fee64396cc4640.png" style="height:24px;vertical-align:middle" alt="Chicago White Sox" data-sdvplot-team="4"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">White Sox</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">84</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">78</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.519</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">1.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">776</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">720</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #c7dae8; color: #000000; border-radius: 10px; text-align: center; '>56</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3fbce769013cd44f2370505f8982d732c58c511eac9ede4e4d9bbe1b24ad4d39.png" style="height:24px;vertical-align:middle" alt="Minnesota Twins" data-sdvplot-team="9"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Twins</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">77</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">85</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.475</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">8.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">739</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">797</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #ecccc7; color: #000000; border-radius: 10px; text-align: center; '>-58</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/00/0037b82f8f714da9f40b6a2ac036c5086f06ccb139473891135c3321a7a08750.png" style="height:24px;vertical-align:middle" alt="Detroit Tigers" data-sdvplot-team="6"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Tigers</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">76</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">86</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.469</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">9.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">723</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">652</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #bad2e5; color: #000000; border-radius: 10px; text-align: center; '>71</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95188fdcf6d74b4e5437549ad33e20548ce8f3e696621765680354da25a0207b.png" style="height:24px;vertical-align:middle" alt="Kansas City Royals" data-sdvplot-team="7"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Royals</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">69</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">93</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.426</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">16.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">690</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">810</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #df9e93; color: #000000; border-radius: 10px; text-align: center; '>-120</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">American League East</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f16f721cfdbb929fac08c9e1d8f9e1ab410be8b409eed5dac9b5f5c9a7af5ae.png" style="height:24px;vertical-align:middle" alt="Tampa Bay Rays" data-sdvplot-team="30"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Rays</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">98</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">64</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.605</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">736</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">650</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #adcae1; color: #000000; border-radius: 10px; text-align: center; '>86</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d98856c36bc8d3b0fb0bab5fabd79d2ae057619164365845cbc817b04ae74a26.png" style="height:24px;vertical-align:middle" alt="New York Yankees" data-sdvplot-team="10"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Yankees</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">93</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">68</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.578</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">4.5</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">739</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">601</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #80afd3; color: #000000; border-radius: 10px; text-align: center; '>138</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/47/471966c3b3f4ab7b567b9cd29e7eefc138963182e98b31c01c922335ad265597.png" style="height:24px;vertical-align:middle" alt="Boston Red Sox" data-sdvplot-team="2"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Red Sox</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">87</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">75</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.537</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">11.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">689</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">611</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #b4cee3; color: #000000; border-radius: 10px; text-align: center; '>78</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e9/e96827050e6079674fa20221f5b8b8acbd4f80843f861dbb4d0261b309741472.png" style="height:24px;vertical-align:middle" alt="Baltimore Orioles" data-sdvplot-team="1"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Orioles</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">79</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">82</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.491</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">18.5</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">718</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">739</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f3e7e5; color: #000000; border-radius: 10px; text-align: center; '>-21</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af6d5454549834ea4b8cd6687618a76f936209ecf39eabdb17deaf76d21dd989.png" style="height:24px;vertical-align:middle" alt="Toronto Blue Jays" data-sdvplot-team="14"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Blue Jays</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">79</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">83</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.488</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">19.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">648</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">694</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #eed5d1; color: #000000; border-radius: 10px; text-align: center; '>-46</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">American League West</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b7e6858d9d11fe9fade351624bfbab74ec12451749feef37bd1f083d59eb4f7b.png" style="height:24px;vertical-align:middle" alt="Houston Astros" data-sdvplot-team="18"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Astros</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">81</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">81</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.500</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">734</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">766</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f1dfdc; color: #000000; border-radius: 10px; text-align: center; '>-32</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b19ee28a151164ed231d98cafbcebe471faaa876a202e9c558b925be3ac3dac9.png" style="height:24px;vertical-align:middle" alt="Texas Rangers" data-sdvplot-team="13"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Rangers</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">80</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">82</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.494</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">1.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">673</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">719</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #eed5d1; color: #000000; border-radius: 10px; text-align: center; '>-46</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/9273d78e456969b14ef9031f39fc0511d8e875a919d887daa6b0898b1ff52226.png" style="height:24px;vertical-align:middle" alt="Seattle Mariners" data-sdvplot-team="12"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Mariners</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">76</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">86</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.469</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">5.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">664</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">722</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #ecccc7; color: #000000; border-radius: 10px; text-align: center; '>-58</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f4/f430543a6db8d652e4fb1a81c4ac99ee32022ae587834234a029830a9653b8d2.png" style="height:24px;vertical-align:middle" alt="Athletics" data-sdvplot-team="11"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Athletics</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">64</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">98</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.395</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">17.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">699</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">937</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #c84630; color: #ffffff; border-radius: 10px; text-align: center; '>-238</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L2</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/71/712a4a6f37cac63156de1d17a170532fd6bbbf3a9690b276fec2a6aac751809f.png" style="height:24px;vertical-align:middle" alt="Los Angeles Angels" data-sdvplot-team="3"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Angels</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">62</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">100</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.383</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">19.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">655</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">752</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #e4afa6; color: #000000; border-radius: 10px; text-align: center; '>-97</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L2</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">National League Central</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d4f8fe1b5be4b266a7cb1520a46a863973467361a1d3fd528502e223cbe35490.png" style="height:24px;vertical-align:middle" alt="Milwaukee Brewers" data-sdvplot-team="8"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Brewers</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">103</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">59</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.636</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">832</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">618</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #3f87bf; color: #000000; border-radius: 10px; text-align: center; '>214</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W5</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39a2b071f52778bbaa9f7d58432db3dcf638bb9a25eb17a901d3551d5d859086.png" style="height:24px;vertical-align:middle" alt="Chicago Cubs" data-sdvplot-team="16"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Cubs</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">89</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">73</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.549</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">14.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">850</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">703</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #78aad1; color: #000000; border-radius: 10px; text-align: center; '>147</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0a/0af791c91bc01b4c654a65c90c983c3f907bf2605c67cfaaed731985efff34a1.png" style="height:24px;vertical-align:middle" alt="Pittsburgh Pirates" data-sdvplot-team="23"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Pirates</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">82</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">80</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.506</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">21.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">767</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">739</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #dfe8f0; color: #000000; border-radius: 10px; text-align: center; '>28</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b738c8aaac9b726336cfa3e42745a4ddcc4c8d9537a9dc0b6abba02c5952e417.png" style="height:24px;vertical-align:middle" alt="St. Louis Cardinals" data-sdvplot-team="24"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Cardinals</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">77</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">85</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.475</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">26.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">720</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">749</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f1e1df; color: #000000; border-radius: 10px; text-align: center; '>-29</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L4</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57f685ca691ba291d8ed31378e489a44b71648b310bfb7ceb8017bd21373f23c.png" style="height:24px;vertical-align:middle" alt="Cincinnati Reds" data-sdvplot-team="17"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Reds</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">75</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">87</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.463</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">28.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">666</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">826</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #d78071; color: #000000; border-radius: 10px; text-align: center; '>-160</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">National League East</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c36c62410bbed29624672b006173af58bcdfbb066ae9d6f7c4cb99205e861d2.png" style="height:24px;vertical-align:middle" alt="Atlanta Braves" data-sdvplot-team="15"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Braves</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">94</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">68</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.580</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">742</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">626</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #93bad9; color: #000000; border-radius: 10px; text-align: center; '>116</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95997c9aaac40ec5d718b667c374561b782e5cb88665d69daf3178a16401d683.png" style="height:24px;vertical-align:middle" alt="Philadelphia Phillies" data-sdvplot-team="22"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Phillies</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">88</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">74</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.543</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">6.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">713</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">698</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #eaeff3; color: #000000; border-radius: 10px; text-align: center; '>15</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ef/ef37342904a50d2807c45432909de83c62c6795e9e54ebe42ac85fdd5e24c91f.png" style="height:24px;vertical-align:middle" alt="Miami Marlins" data-sdvplot-team="28"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Marlins</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">80</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">82</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.494</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">14.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">715</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">712</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f4f5f6; color: #000000; border-radius: 10px; text-align: center; '>3</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d65931fe979aec3fe59a60b2d9df900e3f84da0eca81eb1646d0ea3a93fc810.png" style="height:24px;vertical-align:middle" alt="Washington Nationals" data-sdvplot-team="20"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Nationals</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">77</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">85</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.475</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">17.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">821</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">815</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f2f4f5; color: #000000; border-radius: 10px; text-align: center; '>6</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W1</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/94/94c334280d388936cb193fca6c3b620d2ed6abb7b932f352fa575630ce6243bd.png" style="height:24px;vertical-align:middle" alt="New York Mets" data-sdvplot-team="21"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Mets</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">74</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">88</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.457</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">20.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">699</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">731</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #f1dfdc; color: #000000; border-radius: 10px; text-align: center; '>-32</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="10" style="color: #a6081a;font-family: Public Sans;font-size: 11px;font-weight: 700;text-transform: uppercase;">National League West</th>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aab854c59098d4f465c1c6f31b580f2a38d2ed4f5c0c03df2da76f62f5378dc4.png" style="height:24px;vertical-align:middle" alt="Los Angeles Dodgers" data-sdvplot-team="19"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Dodgers</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">100</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">62</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.617</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">-</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">801</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">600</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #4a8dc3; color: #000000; border-radius: 10px; text-align: center; '>201</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W3</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bb012967768a5f476ff427f433e89960149217777c6371d80eafb8725c2f175.png" style="height:24px;vertical-align:middle" alt="San Diego Padres" data-sdvplot-team="25"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Padres</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">91</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">71</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.562</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">9.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">722</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">681</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #d4e1ec; color: #000000; border-radius: 10px; text-align: center; '>41</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">W2</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b0/b060f0fcc21d64b978be260f0c24880c50094f0ec8e640d14896dc5045bf0b21.png" style="height:24px;vertical-align:middle" alt="Arizona Diamondbacks" data-sdvplot-team="29"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">D-backs</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">86</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">76</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.531</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">14.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">739</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">730</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #eff2f5; color: #000000; border-radius: 10px; text-align: center; '>9</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L2</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/da/dad3e0a51931bb8281ebb0215624849e0fd6cbec81aafc6a12d2260f583c04e5.png" style="height:24px;vertical-align:middle" alt="San Francisco Giants" data-sdvplot-team="26"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Giants</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">65</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">97</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.401</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">35.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">669</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">760</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #e5b3ab; color: #000000; border-radius: 10px; text-align: center; '>-91</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L5</td>
+  </tr>
+  <tr>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd21e7588f021af3b44cc0aeab2b281ddc515b7d6b6a68e4c823086ed585ea75.png" style="height:24px;vertical-align:middle" alt="Colorado Rockies" data-sdvplot-team="27"></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">Rockies</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">58</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">104</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">.358</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">42.0</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">752</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right">944</td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_right"><span style='display: inline-block; width: 4ch; padding-left: 3px; padding-right: 3px; height: 25px; line-height: 25px; background-color: #d16856; color: #000000; border-radius: 10px; text-align: center; '>-192</span></td>
+    <td style="color: #16130F;font-size: 14px;" class="gt_row gt_left">L1</td>
+  </tr>
+</tbody>
+<tfoot><tr class="gt_sourcenotes"><td class="gt_sourcenote" colspan="10" style="color: #5C574F;font-family: Public Sans;font-size: 11px;"><span class="gt_from_md">Data: MLB Stats API via sportsdataverse-py</span></td></tr></tfoot>
+</table>
+
+</div>
+
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
