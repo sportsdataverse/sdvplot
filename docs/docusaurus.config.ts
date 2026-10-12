@@ -242,6 +242,11 @@ const config: Config = {
               label: 'Cheat Sheet (PDF)',
               target: '_self',
             },
+            {
+              href: 'https://sportsdataverse.org/cheatsheets',
+              label: 'All Cheat Sheets',
+              target: '_self',
+            },
             // -- Python --
             {
               label: 'Python Packages',
