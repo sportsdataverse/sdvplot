@@ -223,10 +223,11 @@ def build_teams(raw: Path) -> pl.DataFrame:
         .join(groups, on=["league", "team_id"], how="left")
         .join(espn_school_colors(raw, all_espn), on=["league", "team_id"], how="left")
         .join(logo_colors(raw), on=["league", "team_id"], how="left")
+        .join(current_extra_abbrs(raw), on=["league", "team_id"], how="left")
     )
     assert not t.select("league", "team_id").is_duplicated().any(), "a source repeats a (league, team_id)"
     t = t.with_columns(
-        pl.coalesce("nflv_abbr", "abbr").alias("abbr"),
+        pl.coalesce("nflv_abbr", "abbr", "extra_abbr").alias("abbr"),
         _first_source(lambda name, _: pl.lit(name)).fill_null("fallback").alias("color_source"),
         _first_source(lambda _, p: pl.col(f"{p}_primary")).alias("color_primary"),
         _first_source(lambda _, p: pl.col(f"{p}_secondary")).alias("color_secondary"),
@@ -234,6 +235,23 @@ def build_teams(raw: Path) -> pl.DataFrame:
         pl.when(pl.col("color_secondary") != pl.col("color_primary")).then(pl.col("color_secondary"))
     )
     return _fill_fallback(t).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
+
+
+def current_extra_abbrs(raw: Path) -> pl.DataFrame:
+    """(league, team_id, extra_abbr): a team's current code in data-raw/espn_abbrs.csv (open-ended, valid_to empty),
+    for the teams ESPN's teams lists omit (UTRGV, the Core API basketball teams), whose ``abbr`` the list cannot give.
+    Only a fallback after the list's own code; a team with several current codes gets none."""
+    cols = {"league": pl.String, "team_id": pl.String, "extra_abbr": pl.String}
+    if not (raw / "espn_abbrs.csv").exists():
+        return pl.DataFrame(schema=cols)
+    return (
+        _csv(raw, "espn_abbrs.csv")
+        .filter(pl.col("valid_to").is_null() & pl.col("abbreviation").is_not_null())
+        .group_by("league", "team_id")
+        .agg(pl.col("abbreviation").unique())
+        .filter(pl.col("abbreviation").list.len() == 1)
+        .select("league", "team_id", pl.col("abbreviation").list.first().alias("extra_abbr"))
+    )
 
 
 def _fill_fallback(t: pl.DataFrame) -> pl.DataFrame:
@@ -268,8 +286,9 @@ def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
     none); ``conference`` is the row's own full name (null for the NFL itself). Colors are cbbplotR's through R
     (``color_source`` "cbbplotR"), the placeholder rule where R has none (the AFC, NFC and NFL, the independents); a
     secondary equal to the primary is none, as for teams. The rows get NO resolver aliases, only the "mark" ones of
-    ``conference_mark_aliases`` (an id system resolve() never reads): resolve() never answers a conference key unless
-    asked for it (cfb's "MAC" is the Mid-American Conference and Macalester)."""
+    ``conference_mark_aliases`` and the "conference" ones of ``conference_aliases`` (id systems resolve() never reads):
+    resolve() never answers a conference key unless asked for it (cfb's "MAC" is the Mid-American Conference and
+    Macalester)."""
     path = raw / "sdvplotr_conferences.csv"
     if not path.exists():
         return teams.clear()
@@ -343,6 +362,25 @@ def conference_mark_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def conference_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
+    """sdvplotR's other keys for its conference and league rows: the data-raw/sdvplotr_abbr_mapping.csv rows whose
+    canon is a row's key ("SOUTHEASTERN CONFERENCE" and "SEC" -> SEC, "B1G" -> Big Ten, "PAC-10" -> Pac-12, "AMERICAN
+    FOOTBALL CONFERENCE" -> AFC), as id system "conference" aliases of that row. Only the mark functions read them
+    (_resolve._non_team, after every team alias), never resolve(). A key equal to the row's own key adds nothing, and
+    one naming several rows of a league drops."""
+    path = raw / "sdvplotr_abbr_mapping.csv"
+    if conf.is_empty() or not path.exists():
+        return pl.DataFrame(schema=ALIAS_SCHEMA)
+    norm = {c: pl.col(c).map_elements(norm_value, return_dtype=pl.String).alias(f"_{c}") for c in ("key", "canon")}
+    m = (
+        _csv(raw, path.name)
+        .join(conf.select(pl.col("league").alias("sport"), pl.col("team_id").alias("canon")), on=["sport", "canon"])
+        .with_columns(*norm.values())
+        .filter((pl.col("_key") != pl.col("_canon")) & (pl.col("canon").n_unique().over("sport", "_key") == 1))
+    )
+    return _alias(m, pl.col("sport"), "conference", "key", "canon").unique().cast(ALIAS_SCHEMA)
+
+
 def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
     lg = pl.lit(league) if isinstance(league, str) else league
     return df.select(
@@ -387,13 +425,17 @@ def _nhl_by_tri_code(nhl: pl.DataFrame, espn: pl.DataFrame, aliases: pl.DataFram
     return pl.concat([_alias(j, "nhl", "nhl", "tri_code"), _alias(j, "nhl", "nhl_id", "nhl_id")])
 
 
-def sdvplotr_aliases(am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
+def sdvplotr_aliases(
+    am: pl.DataFrame, hist: pl.DataFrame, aliases: pl.DataFrame, conf_keys: pl.DataFrame
+) -> pl.DataFrame:
     """sdvplotR's keys (R43) in match_team_abbrs()'s order (sdvplotR #55): resolve_historical_abbr()'s table first,
     its target looked up in clean_team_abbrs()'s abbr_mapping, then abbr_mapping for every other key, so a relocation
     key wins over an alias of the same name. A key goes to the team its canonical abbreviation names today: the
     current nflverse alias in the NFL, the current espn_abbr alias elsewhere. A canon naming no team or several drops,
     and so does a key the name system gives several teams: sdvplotR keeps the first of a shared name ("NEW YORK"),
-    sdvplot never guesses."""
+    sdvplot never guesses. A canon that is a conference or league row's key (``conf_keys``: sport, canon) is that
+    row's, never a team's (conference_aliases): cfb's "MID-AMERICAN CONFERENCE" is not Macalester, whose code is MAC."""
+    am = am.join(conf_keys, on=["sport", "canon"], how="anti")
     hist = hist.join(
         am.select("sport", pl.col("key").alias("canon"), pl.col("canon").alias("_to")),
         on=["sport", "canon"],
@@ -553,7 +595,7 @@ def _report_marks(mk: pl.DataFrame) -> None:
         print(f"  {r['league']}/{r['source']}: {r['unmapped']} unmapped, {r['ambiguous']} ambiguous ({shown})")
 
 
-def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
+def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.DataFrame:
     espn, _, twins = espn_teams(raw)
     parts = [
         _alias(teams, pl.col("league"), "team_id", "team_id"),
@@ -656,7 +698,10 @@ def build_aliases(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
         .join(known, on=["league", "team_id"], how="semi")
     )
     if (raw / "sdvplotr_abbr_mapping.csv").exists():  # last: its keys go through the aliases above
-        sdvr = sdvplotr_aliases(_csv(raw, "sdvplotr_abbr_mapping.csv"), _csv(raw, "sdvplotr_historical.csv"), a)
+        conf_keys = conf.select(pl.col("league").alias("sport"), pl.col("team_id").alias("canon"))
+        sdvr = sdvplotr_aliases(
+            _csv(raw, "sdvplotr_abbr_mapping.csv"), _csv(raw, "sdvplotr_historical.csv"), a, conf_keys
+        )
         a = pl.concat([a, sdvr.cast(ALIAS_SCHEMA)])
     a = date_reused_codes(a)
     mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
@@ -814,10 +859,10 @@ def stamp(teams: pl.DataFrame, aliases: pl.DataFrame) -> str:
 
 def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     teams = build_teams(raw)
-    aliases = build_aliases(raw, teams)  # from the team rows only: a conference row is never a resolver candidate
     conf = conference_rows(raw, teams)
-    # a conference row's only aliases are "mark" ones (its logos); resolve() never reads that id system
-    aliases = pl.concat([aliases, conference_mark_aliases(raw, conf)]).sort(
+    aliases = build_aliases(raw, teams, conf)  # from the team rows only: a conference row is never a resolver candidate
+    # a conference row's only aliases are "mark" (its logos) and "conference" ones; resolve() reads neither id system
+    aliases = pl.concat([aliases, conference_mark_aliases(raw, conf), conference_aliases(raw, conf)]).sort(
         "league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True
     )
     teams = pl.concat([teams, conf])

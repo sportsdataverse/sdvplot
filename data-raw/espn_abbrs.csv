@@ -1,5 +1,9 @@
 league,team_id,abbreviation,display_name,valid_from,valid_to
 cfb,292,RGV,UT Rio Grande Valley Vaqueros,,
+mbb,2511,QUC,Queens University Royals,,
+mbb,2598,SFPA,Saint Francis Red Wolves,,
+mbb,2815,LIN,Lindenwood Lions,,
+mbb,88,USI,Southern Indiana Screaming Eagles,,
 ncaa_baseball,100,DART,Dartmouth Big Green,,
 ncaa_baseball,101,PRIN,Princeton Tigers,,
 ncaa_baseball,102,RUTG,Rutgers Scarlet Knights,,
@@ -894,6 +898,8 @@ ufl,129043,MEM,Memphis Showboats,2024,2025
 ufl,132261,CLB,Columbus Aviators,2026,2026
 ufl,132262,LOU,Louisville Kings,2026,2026
 ufl,132263,ORL,Orlando Storm,2026,2026
+wbb,2385,MERC,Mercyhurst Lakers,,
+wbb,2598,SFPA,Saint Francis Red Wolves,,
 xfl,112646,DC,D.C. Defenders,2023,2023
 xfl,112646,DC,DC Defenders,2020,2020
 xfl,112647,ARL,Arlington Renegades,2023,2023

@@ -324,6 +324,68 @@ def test_espn_team_abbrs_cover_the_endpoint_leagues_and_the_listed_unlisted_team
     ]
 
 
+def test_espn_core_abbr_rows_stay_open_at_the_seasons_asked():
+    def team(abbr, name="Lindenwood Lions"):
+        return {"id": "2815", "abbreviation": abbr, "displayName": name}
+
+    # one code every season that answered (2027 not published yet): current, so open on both sides
+    same = fs.espn_core_abbr_rows("mbb", "2815", {2025: team("LIN"), 2026: team("LIN"), 2027: None})
+    assert [tuple(r.values()) for r in same] == [("mbb", "2815", "LIN", "Lindenwood Lions", "", "")]
+    # a change: the earlier code ends, the later one starts, each open at the edge of what was asked
+    moved = fs.espn_core_abbr_rows("mbb", "2815", {2025: team("LIND"), 2026: team("LIN"), 2027: team("LIN")})
+    assert [tuple(r.values()) for r in moved] == [
+        ("mbb", "2815", "LIND", "Lindenwood Lions", "", 2025),
+        ("mbb", "2815", "LIN", "Lindenwood Lions", 2026, ""),
+    ]
+    assert fs.espn_core_abbr_rows("mbb", "2815", {2025: None, 2026: {"id": "2815"}}) == []
+
+
+def test_espn_core_abbr_rows_split_a_code_used_again_into_consecutive_runs():
+    def team(abbr):
+        return {"id": "2815", "abbreviation": abbr, "displayName": "Lindenwood Lions"}
+
+    # A, B, A: two A runs around B, never one open A row overlapping B
+    rows = fs.espn_core_abbr_rows("mbb", "2815", {2025: team("A"), 2026: team("B"), 2027: team("A")})
+    assert sorted((r["abbreviation"], str(r["valid_from"]), str(r["valid_to"])) for r in rows) == [
+        ("A", "", "2025"),
+        ("A", "2027", ""),
+        ("B", "2026", "2026"),
+    ]
+
+
+def test_fetch_espn_core_abbrs_asks_three_seasons_and_skips_a_missing_one(monkeypatch):
+    seen = []
+
+    class Response:
+        def __init__(self, url):
+            self.url, self.status_code = url, 404 if "/seasons/2027/" in url else 200
+            self.ok = self.status_code == 200
+
+        def raise_for_status(self):
+            assert self.ok, "a 404 is a season ESPN does not have yet"
+
+        def json(self):
+            return {"id": "88", "abbreviation": "USI", "displayName": "Southern Indiana Screaming Eagles"}
+
+    class Session:
+        def get(self, url, **kw):
+            seen.append(url)
+            return Response(url)
+
+    class Date(fs.dt.date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 10, 12)
+
+    monkeypatch.setattr(fs.dt, "date", Date)
+    monkeypatch.setattr(fs, "ESPN_CORE_TEAMS", [("mbb", "basketball", "mens-college-basketball", "88")])
+    rows = fs.fetch_espn_core_abbrs(Session())
+    assert rows == [{"league": "mbb", "team_id": "88", "abbreviation": "USI",
+                     "display_name": "Southern Indiana Screaming Eagles", "valid_from": "", "valid_to": ""}]  # fmt: skip
+    base = "https://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball/seasons"
+    assert seen == [f"{base}/{y}/teams/88" for y in (2025, 2026, 2027)]
+
+
 def test_espn_season_abbr_rows_keep_each_code_with_its_seasons():
     def board(*teams):
         competitors = [{"team": {"id": i, "abbreviation": a, "displayName": n}} for i, a, n in teams]

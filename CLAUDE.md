@@ -152,7 +152,8 @@ another ESPN sport), `logo` (the two dominant colors of the team's archived logo
 `docs/docs/concepts/colors.md` documents the rules. The conference and league rows (`program` "conference" / "league",
 sdvplotR's `include_conferences`; `conference_rows` in `tools/build_index.py` from `data-raw/sdvplotr_conferences.csv`)
 carry cbbplotR's colors (`cbbplotR`) or the placeholder; `team_table()` and every listing leave them out unless
-`teams(include_conferences=True)` asks, and they have no aliases, so `resolve()` never answers one.
+`teams(include_conferences=True)` asks, and their only aliases are "mark" and "conference" ones (sdvplotR's other
+keys, `conference_aliases`), id systems only the mark functions read, so `resolve()` never answers one.
 
 ## Marks
 

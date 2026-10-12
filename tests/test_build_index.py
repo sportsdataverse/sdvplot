@@ -711,6 +711,60 @@ def test_conference_rows_join_the_index_with_mark_aliases_only(tmp_path):  # sdv
     ]
 
 
+def test_abbr_falls_back_to_the_current_espn_abbrs_code(tmp_path):
+    # a team ESPN's teams lists omit (UTRGV, the Core API basketball teams) takes its open-ended espn_abbrs.csv code;
+    # the list's own code wins, a dated code is not current, and two current codes give none
+    raw = _raw(tmp_path)
+    for line in ("cfb,292,UT Rio Grande Valley Vaqueros,football", "cfb,293,Dated,football", "cfb,294,Twice,football"):
+        _add(raw, "manifest_teams.csv", line)
+    (raw / "espn_abbrs.csv").write_text(
+        "league,team_id,abbreviation,display_name,valid_from,valid_to\ncfb,292,RGV,UT Rio Grande Valley Vaqueros,,\n"
+        "mlb,7,KCR,Kansas City Royals,,\ncfb,293,DAT,Dated,2020,2021\ncfb,294,TWA,Twice,,\ncfb,294,TWB,Twice,,\n",
+        encoding="utf-8",
+    )
+    teams, _, _ = bi.build(raw)
+    got = dict(teams.select(pl.concat_str("league", "team_id", separator="/"), "abbr").rows())
+    assert got["cfb/292"] == "RGV" and got["mlb/7"] == "KC" and got["nfl/13"] == "LV"
+    assert got["cfb/293"] is None and got["cfb/294"] is None and got["ohl/7"] is None
+
+
+def test_sdvplotr_conference_keys_become_conference_aliases_not_team_ones(tmp_path):
+    # sdvplotR's abbr_mapping rows whose canon is a conference or league row: id system "conference", the row's key
+    raw = _raw(tmp_path)
+    (raw / "sdvplotr_abbr_mapping.csv").write_text(
+        '"sport","key","canon"\n"nfl","AFC","AFC"\n"nfl","afc ","AFC"\n"nfl","AMERICAN FOOTBALL CONFERENCE","AFC"\n'
+        '"nfl","NATIONAL FOOTBALL LEAGUE","NFL"\n"nfl","SHIELD","AFC"\n"nfl","SHIELD","NFL"\n"nfl","RAIDERS","LV"\n',
+        encoding="utf-8",
+    )
+    (raw / "sdvplotr_historical.csv").write_text('"sport","key","canon"\n', encoding="utf-8")
+    _, aliases, _ = bi.build(raw)
+    ca = aliases.filter(pl.col("id_system") == "conference")
+    # the row's own key (any case) adds nothing; SHIELD names two rows, so neither; RAIDERS is a team's
+    assert ca.select("value", "team_id").sort("value").rows() == [
+        ("AMERICAN FOOTBALL CONFERENCE", "AFC"),
+        ("NATIONAL FOOTBALL LEAGUE", "NFL"),
+    ]
+    assert ca["valid_from"].is_null().all() and ca["valid_to"].is_null().all()
+    sdvr = aliases.filter(pl.col("id_system") == "sdvplotr")
+    assert sdvr.select("value", "team_id").rows() == [("RAIDERS", "13")]  # a conference key is never a team's
+
+
+def test_a_conference_key_never_reaches_a_team_through_a_shared_code(tmp_path):
+    # cfb's MAC is Macalester's ESPN code and the Mid-American Conference's key: sdvplotR's MID-AMERICAN CONFERENCE
+    # (canon MAC) is the conference's, never Macalester's
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "cfb,2359,Macalester Scots,football")
+    _add(raw, "espn_teams.csv", "cfb,2359,MAC,Macalester Scots,Macalester,Macalester,Scots,c51230,")
+    _add(raw, "sdvplotr_conferences.csv", '"cfb","MAC","Mid-American Conference","Mid-American",,,,,,,,"conference"')
+    (raw / "sdvplotr_abbr_mapping.csv").write_text(
+        '"sport","key","canon"\n"cfb","MAC","MAC"\n"cfb","MID-AMERICAN CONFERENCE","MAC"\n', encoding="utf-8"
+    )
+    (raw / "sdvplotr_historical.csv").write_text('"sport","key","canon"\n', encoding="utf-8")
+    _, aliases, _ = bi.build(raw)
+    cfb = aliases.filter((pl.col("league") == "cfb") & pl.col("id_system").is_in(["sdvplotr", "conference"]))
+    assert cfb.select("id_system", "value", "team_id").rows() == [("conference", "MID-AMERICAN CONFERENCE", "MAC")]
+
+
 def test_a_conference_file_the_archive_lacks_fails_the_build(tmp_path):
     raw = _raw(tmp_path)
     path = raw / "manifest_conferences.csv"

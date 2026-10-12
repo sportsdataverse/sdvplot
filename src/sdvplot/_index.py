@@ -69,8 +69,9 @@ def _read(name: str, directory: str) -> pl.DataFrame:
 
 
 # The ``program`` values of the rows that are not teams: sdvplotR's conference and league rows (its ``type``), which
-# every team listing leaves out unless asked (teams(include_conferences=True)); their only aliases are "mark" ones (an
-# id system resolve() never reads), so resolve() never answers them and only the mark functions reach them, by key
+# every team listing leaves out unless asked (teams(include_conferences=True)); their only aliases are "mark" and
+# "conference" ones (id systems resolve() never reads), so resolve() never answers them and only the mark functions
+# reach them, by key
 NON_TEAM = ("conference", "league")
 
 
