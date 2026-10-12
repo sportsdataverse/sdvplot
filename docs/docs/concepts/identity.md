@@ -24,7 +24,8 @@ Conferences are opt-in (sdvplotR's `include_conferences`): `teams("cfb", include
 conference rows (and, for the NFL, the AFC, NFC and NFL), with `program` `"conference"` or `"league"` and the
 conference's short name (`"SEC"`, `"Big 12"`, `"AFC"`) as `team_id` and `abbr`; a team's `conference_id` equals its
 conference row's. Every other listing shows teams only, and `resolve()` and `palette()` never answer a conference key
-(CFB's `MAC` is Macalester, not the Mid-American Conference).
+(CFB's `MAC` is Macalester, not the Mid-American Conference). The logo functions take a conference's key and sdvplotR's
+other names for it (`logo_url("Southeastern Conference", "cfb")` is `logo_url("SEC", "cfb")`), after every team.
 
 ## Resolving what you have
 

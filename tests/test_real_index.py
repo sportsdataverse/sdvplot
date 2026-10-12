@@ -11,7 +11,7 @@ import pytest
 
 import sdvplot
 from sdvplot import _index
-from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY
+from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY, resolve_marks
 
 pytestmark = pytest.mark.real_index
 
@@ -465,11 +465,13 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     assert sdvplot.teams("cfb").filter(pl.col("conference_id") == "cfb:sec").height == 16
     retired = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
     assert retired.select("league", "abbr").rows() == [("cfb", "WAC"), ("mbb", "WAC"), ("wbb", "WAC")]  # ESPN: UAC now
-    # opt-in everywhere: the only aliases are "mark" ones (an id system resolve() never reads), so no resolution and
-    # no palette key; cfb's MAC is still Macalester
+    # opt-in everywhere: the only aliases are "mark" and "conference" ones (id systems resolve() never reads), so no
+    # resolution and no palette key; cfb's MAC is still Macalester
     ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
-    assert ca.height == conf.height == 92 and set(ca["id_system"]) == {"mark"}  # every row's primary mark, once
-    assert ca.select("league", "team_id").unique().height == 92
+    assert set(ca["id_system"]) == {"mark", "conference"}
+    marks = ca.filter(pl.col("id_system") == "mark")
+    assert marks.height == conf.height == 92  # every row's primary mark, once
+    assert marks.select("league", "team_id").unique().height == 92
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
@@ -496,7 +498,8 @@ def test_conference_colors_are_the_sdvplotr_snapshots_cbbplotr_values():
 
 def test_conference_mark_aliases_name_the_manifests_own_rows():  # sdvplotR logo_marks: 92 of 92 rows have a primary
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
-    ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
+    ca = _index.alias_table().filter(pl.col("id_system") == "mark")
+    ca = ca.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     key = dict(ca.select(pl.concat_str("league", "team_id", separator="/"), "value").rows())
     assert len(key) == 92
     # ESPN files one conference logo under each league with its own group id; the row's own league is taken
@@ -504,6 +507,29 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():  # sdvplotR logo
     assert key["cfb/WAC"] == key["mbb/WAC"] == "conference:ncaa:espn:wac"  # filed once, under "ncaa"
     assert (key["nfl/AFC"], key["nfl/NFL"]) == ("conference:nfl:espn:AFC", "league:nfl:espn:NFL")
     assert ca["value"].str.contains(r"^(conference|league):[a-z]+:[a-z.]+:").all()
+
+
+def test_sdvplotr_conference_keys_reach_their_rows_for_marks_only():
+    # sdvplotR's abbr_mapping keys whose canon is a conference or league row: 367 (cfb 116, mbb 125, wbb 120, nfl 6),
+    # less each row's own key and its case variants, and none names two rows of a league
+    ca = _index.alias_table().filter(pl.col("id_system") == "conference")
+    assert ca.group_by("league").len().sort("league").rows() == [("cfb", 91), ("mbb", 93), ("nfl", 3), ("wbb", 88)]
+    pairs = [("Southeastern Conference", "SEC", "cfb"), ("B1G", "Big Ten", "cfb"), ("B10", "Big Ten", "mbb"),
+             ("Pac-10", "Pac-12", "wbb"), ("American Football Conference", "AFC", "nfl"),
+             ("National Football League", "NFL", "nfl")]  # fmt: skip
+    for key, row, league in pairs:
+        assert resolve_marks(key, league) == resolve_marks(row, league) == row, (key, league)
+        with pytest.warns(sdvplot.SdvplotWarning, match="did not resolve"):
+            assert sdvplot.resolve(key, league) is None
+    # a team's code stays the team's, for resolve() and for the mark functions; the conference's long name is the
+    # conference's (it resolved to Macalester through sdvplotR's MAC canon before)
+    assert sdvplot.resolve("MAC", "cfb") == resolve_marks("MAC", "cfb") == "2359"
+    assert resolve_marks("Mid-American Conference", "cfb") == "MAC"
+    with pytest.warns(sdvplot.SdvplotWarning, match="did not resolve"):
+        assert sdvplot.resolve("Mid-American Conference", "cfb") is None
+    with pytest.raises(ValueError, match="unknown id_system 'conference'"):
+        sdvplot.resolve("B10", "mbb", id_system="conference")
+    assert all(tid in sdvplot.teams("mbb")["team_id"] for tid, _ in sdvplot.suggest("Big Ten Conferenc", "mbb"))
 
 
 @pytest.mark.parametrize(
@@ -532,3 +558,7 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     assert set(afc["variant"]) == {"default", "dark"} and afc["sha256"].n_unique() == 1
     assert sdvplot.logo_url("WAC", "wbb") == sdvplot.logo_url("WAC", "cfb")  # filed once, under "ncaa"
     assert sdvplot.resolve("MAC", "cfb") == "2359" and sdvplot.logo_url("MAC", "cfb") == sdvplot.logo_url("2359", "cfb")
+    # sdvplotR's long names and other keys draw the conference's logo (id system "conference")
+    assert sdvplot.logo_url("Southeastern Conference", "cfb") == sdvplot.logo_url("SEC", "cfb")
+    assert sdvplot.logo_url("B10", "mbb") == sdvplot.logo_url("Big Ten", "mbb")
+    assert sdvplot.logo_url("Mid-American Conference", "cfb") == sdvplot.logo_url("MAC", "cfb", id_system="team_id")

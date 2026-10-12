@@ -184,6 +184,17 @@ def test_a_conference_key_is_read_after_every_team_alias_and_never_by_resolve():
         _marks.marks("NFC", "nfl")
 
 
+def test_a_conference_alias_draws_its_rows_mark_and_is_never_a_team():
+    # sdvplotR's other keys for a conference row (id system "conference"): the mark functions only
+    assert _marks.logo_url("American Football Conference", "nfl") == _marks.logo_url("AFC", "nfl")
+    assert _marks.logo_url("american football conference", "nfl") == "https://cdn/7777.png"
+    with pytest.warns(SdvplotWarning, match="'American Football Conference'"):
+        assert sdvplot.resolve("American Football Conference", "nfl") is None
+    with pytest.raises(ValueError, match="unknown id_system 'conference'"):
+        sdvplot.resolve("American Football Conference", "nfl", id_system="conference")
+    assert "AFC" not in {tid for tid, _ in sdvplot.suggest("American Football Conferenc", "nfl")}
+
+
 def test_select_mark_hands_out_a_copy_of_the_cached_row():
     row = _marks.select_mark("LV", "nfl")
     row["archive_url"] = "edited by the caller"

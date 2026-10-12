@@ -41,6 +41,9 @@ PRIORITY: tuple[str, ...] = (
 )
 # Systems "auto" never tries, only an explicit id_system: NHL stats API ids 1-28 are other teams' ESPN ids (R49)
 EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id",)
+# The index's internal id systems, for the mark functions only: never an id_system= and never read by resolve(). "mark"
+# keys archive rows to teams; "conference" holds sdvplotR's other keys of the conference rows (suggest() skips it)
+_MARKS_ONLY: tuple[str, ...] = ("mark", "conference")
 Candidates = list[tuple[str, int | None, int | None]]
 
 
@@ -64,7 +67,7 @@ _index.on_reload(_lookup.cache_clear)
 def _latest(league: str) -> int | None:
     """The latest season any of the league's id-system aliases names (a range's end, else its start); None if none
     is dated. A value given without a season is read in this season first: the code's current holder."""
-    a = _index.alias_table().filter((pl.col("league") == league) & (pl.col("id_system") != "mark"))
+    a = _index.alias_table().filter((pl.col("league") == league) & ~pl.col("id_system").is_in(_MARKS_ONLY))
     latest = a.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
     return None if latest is None else int(latest)
 
@@ -295,10 +298,14 @@ def _resolve(values: Any, league: str, season: Any, id_system: str, strict: bool
 
 @functools.cache
 def _non_team(league: str) -> dict[str, str]:
-    """normalized key -> team_id of the league's conference and league rows (_index.NON_TEAM), read after every team
-    alias and only for marks: a team's code that is also a conference's (cfb's "MAC", Macalester) stays the team's."""
+    """normalized key -> team_id of the league's conference and league rows (_index.NON_TEAM), by the row's own key and
+    by its "conference" aliases (sdvplotR's other keys: "Southeastern Conference", "B1G"), read after every team alias
+    and only for marks: a team's code that is also a conference's (cfb's "MAC", Macalester) stays the team's."""
     rows = _index.teams(league, include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
-    return {k: tid for tid in rows["team_id"].to_list() if (k := norm_value(tid)) is not None}
+    out = {k: tid for tid in rows["team_id"].to_list() if (k := norm_value(tid)) is not None}
+    for k, cands in _lookup(league).get("conference", {}).items():
+        out.setdefault(k, cands[0][0])  # the build keeps a key naming one row only
+    return out
 
 
 _index.on_reload(_non_team.cache_clear)
@@ -379,7 +386,9 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
     if key is None:
         return []
     merged: dict[str, list[str]] = {}
-    for system in _lookup(league).values():
+    for name, system in _lookup(league).items():
+        if name == "conference":  # a conference row's key: never a team candidate (marks only)
+            continue
         for k, cands in system.items():
             merged.setdefault(k, []).extend(c[0] for c in cands)
     names = dict(_index.teams(league).select("team_id", "name").iter_rows())

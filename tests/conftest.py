@@ -196,7 +196,8 @@ ALIASES = [
     ("nfl", "mark", "espn:14", "14", None, None),
     ("nfl", "mark", "espn:24", "24", None, None),
     ("nfl", "mark", "espn:STL", "14", None, 2015),  # an old-abbreviation logo, dated by its relocation alias (R36)
-    ("nfl", "mark", "conference:nfl:espn:8", "AFC", None, None),  # the AFC row's only alias: its mark, by manifest key
+    ("nfl", "mark", "conference:nfl:espn:8", "AFC", None, None),  # the AFC row's mark, by manifest key
+    ("nfl", "conference", "American Football Conference", "AFC", None, None),  # sdvplotR's other key: marks only
     ("nfl", "name", "Las Vegas Raiders", "13", None, None),
     ("nfl", "name", "Los Angeles Rams", "14", None, None),
     ("mlb", "team_id", "7", "7", None, None),

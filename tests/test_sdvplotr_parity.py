@@ -31,13 +31,16 @@ def _csv(name):
 
 
 def test_abbr_mapping_keys_resolve_like_their_canonical_abbreviation():
-    am = _csv("sdvplotr_abbr_mapping.csv")
+    # a canon that is a conference row's key is the conference's (id system "conference", marks only), even where a
+    # team holds the same code (cfb's MAC: Macalester)
+    conf = _csv("sdvplotr_conferences.csv").select("sport", pl.col("team_abbr").alias("canon"))
+    am = _csv("sdvplotr_abbr_mapping.csv").join(conf, on=["sport", "canon"], how="anti")
     agree, has, gaps, wrong = 0, 0, set(), []
     for lg in sorted(set(am["sport"])):
         sub = am.filter(pl.col("sport") == lg)
         got, want = sdvplot.resolve(sub["key"], lg).to_list(), sdvplot.resolve(sub["canon"], lg).to_list()
         for key, g, w in zip(sub["key"], got, want, strict=True):
-            if w is None:  # a conference, or a team sdvplot has no abbreviation for
+            if w is None:  # a team sdvplot has no abbreviation for
                 continue
             has += 1
             if g == w:
