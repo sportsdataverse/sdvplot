@@ -153,6 +153,17 @@ The [changelog](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.m
 - `SDVPLOT_CACHE_TTL`: cache lifetime in days (default 7).
 - `SDVPLOT_LIVE_TESTS=1`: enable the network tests.
 
+<!-- cheatsheet-section -->
+## **Cheat sheet**
+
+A printable four-page reference for **sdvplot**: team identity and colours, the nine plotting adapters, the
+great_tables toolkit, surfaces and coordinates, in four colour themes, light and dark.
+
+📄 **[Download the sdvplot cheat sheet (PDF)](https://sportsdataverse.org/cheatsheets/sdvplot.pdf)**
+
+Browse the other SportsDataverse cheat sheets at
+**[sportsdataverse.org/cheatsheets](https://sportsdataverse.org/cheatsheets)**.
+
 ## **Logos, trademarks and data**
 
 Team names, logos, wordmarks and player headshots are trademarks or copyrighted works of their respective leagues,
