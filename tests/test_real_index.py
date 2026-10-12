@@ -506,6 +506,15 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():  # sdvplotR logo
     assert ca["value"].str.contains(r"^(conference|league):[a-z]+:[a-z.]+:").all()
 
 
+@pytest.mark.parametrize(
+    ("league", "code", "team"),
+    [("mbb", "LIN", "2815"), ("mbb", "QUC", "2511"), ("mbb", "SFPA", "2598"), ("mbb", "USI", "88"),
+     ("wbb", "MERC", "2385"), ("wbb", "SFPA", "2598")],
+)  # fmt: skip
+def test_core_api_abbreviations_of_the_teams_espns_lists_omit(league, code, team):
+    assert sdvplot.resolve(code, league) == team
+
+
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
 def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     from sdvplot import _manifest

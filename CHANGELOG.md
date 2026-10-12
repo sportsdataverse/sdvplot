@@ -129,6 +129,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   Every season used to give today's Jets, because the NHL stats API files the 1979-96 team under their franchise.
 - `UTRGV`, `TEXAS-RIO GRANDE VALLEY` and `RGV` resolve in college football (ESPN's teams list omits UT Rio Grande
   Valley, 292; its per-team endpoint's `RGV` is now in `data-raw/espn_abbrs.csv`).
+- Six college basketball teams ESPN's teams lists omit resolve by their ESPN abbreviation: `LIN` (Lindenwood, 2815),
+  `QUC` (Queens, 2511), `SFPA` (Saint Francis, 2598) and `USI` (Southern Indiana, 88) in mbb, `MERC` (Mercyhurst,
+  2385) and `SFPA` in wbb, and with them sdvplotR's keys for those teams. `tools/fetch_sources.py` reads them from
+  ESPN's Core API per season (`ESPN_CORE_TEAMS`) into `data-raw/espn_abbrs.csv`.
 
 ## [0.1.0] - 2026-10-05
 

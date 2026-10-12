@@ -77,6 +77,27 @@ ESPN_TEAM_ENDPOINT_LEAGUES = ["ncaa_baseball", "ncaa_softball"]
 # Teams the archive holds that ESPN's teams list omits, whose per-team endpoint has the abbreviation ESPN uses
 # elsewhere (UTRGV, college football from 2025: RGV): (sdv league, ESPN sport, ESPN league, team id)
 ESPN_TEAM_ENDPOINT_TEAMS = [("cfb", "football", "college-football", "292")]
+# Teams the archive holds that ESPN's men's or women's college basketball teams list omits (and so had no abbreviation
+# alias), whose abbreviation comes from ESPN's Core API per season (sports.core.api.espn.com .../seasons/{year}/teams/
+# {id}; ESPN's season is its ending year, 2026 = 2025-26), asked for last, this and next season. Measured 2026-10-12
+# (abbreviation; the season's group, from the team's `groups` $ref, and that group's parent):
+#   mbb 2815 Lindenwood        LIN   2025-2027 Ohio Valley Conference, NCAA Division I
+#   mbb 2511 Queens            QUC   2025-2027 Atlantic Sun Conference, NCAA Division I
+#   mbb 2598 Saint Francis     SFPA  2025-2026 Northeast Conference, NCAA Division I; 2027 Non-NCAA Division I
+#   mbb 88   Southern Indiana  USI   2025-2027 Ohio Valley Conference, NCAA Division I
+#   wbb 2385 Mercyhurst        MERC  2025-2027 Northeast Conference, NCAA Division I (2022-2024 Non-NCAA Division I)
+#   wbb 2598 Saint Francis     SFPA  2025-2026 Northeast Conference, NCAA Division I; 2027 Non-NCAA Division I
+# Every team kept its abbreviation across the three seasons, so the rows are open-ended. The other list carries each
+# of them (wbb lists Lindenwood, Queens, Southern Indiana; mbb lists Mercyhurst), Saint Francis in neither.
+ESPN_CORE_TEAMS = [
+    ("mbb", "basketball", "mens-college-basketball", "2815"),
+    ("mbb", "basketball", "mens-college-basketball", "2511"),
+    ("mbb", "basketball", "mens-college-basketball", "2598"),
+    ("mbb", "basketball", "mens-college-basketball", "88"),
+    ("wbb", "basketball", "womens-college-basketball", "2385"),
+    ("wbb", "basketball", "womens-college-basketball", "2598"),
+]
+ESPN_CORE_TEAM_URL = "https://sports.core.api.espn.com/v2/sports/{sport}/leagues/{el}/seasons/{season}/teams/{team_id}"
 ESPN_ABBR_COLUMNS = ["league", "team_id", "abbreviation", "display_name", "valid_from", "valid_to"]
 # Leagues whose earlier seasons' codes the teams list no longer shows (UFL 2024-25's BIR, ARL; the defunct XFL's):
 # (sdv league, ESPN sport, ESPN league, first season, last season or None for the current year)
@@ -228,6 +249,43 @@ def fetch_espn_team_abbrs(s: requests.Session, host: str, espn: list[dict]) -> l
         payload = _get(s, f"https://{host}/apis/site/v2/sports/{sport}/{el}/teams/{team_id}").json()
         rows.append(espn_team_abbr_row(league, payload))
     return [r for r in rows if r is not None]
+
+
+def espn_core_abbr_rows(league: str, team_id: str, seasons: dict[int, dict | None]) -> list[dict]:
+    """One team's Core API payloads by season (None: no such season) as espn_abbrs.csv rows, one per run of seasons
+    with the same (abbreviation, name). A run that reaches the first or last season that answered stays open on that
+    side: the code is the team's beyond the seasons asked."""
+    got = {y: (t["abbreviation"], t.get("displayName")) for y, t in seasons.items() if t and t.get("abbreviation")}
+    if not got:
+        return []
+    runs: dict[tuple, list[int]] = {}
+    for y in sorted(got):
+        runs.setdefault(got[y], []).append(y)
+    first, last = min(got), max(got)
+    return [
+        {"league": league, "team_id": team_id, "abbreviation": abbr, "display_name": name,
+         "valid_from": "" if min(ys) == first else min(ys), "valid_to": "" if max(ys) == last else max(ys)}
+        for (abbr, name), ys in runs.items()
+    ]  # fmt: skip
+
+
+def fetch_espn_core_abbrs(s: requests.Session) -> list[dict]:
+    """espn_core_abbr_rows for each ESPN_CORE_TEAMS team, from last, this and next season (one at a time: Core v2
+    answers bursts with 403s). A 404 is a season ESPN does not have yet."""
+    year = dt.date.today().year
+    rows = []
+    for league, sport, el, team_id in ESPN_CORE_TEAMS:
+        seasons: dict[int, dict | None] = {}
+        for season in range(year - 1, year + 2):
+            r = s.get(ESPN_CORE_TEAM_URL.format(sport=sport, el=el, season=season, team_id=team_id), timeout=60)
+            if r.status_code != 404:
+                r.raise_for_status()
+            seasons[season] = r.json() if r.ok else None
+        got = espn_core_abbr_rows(league, team_id, seasons)
+        if not got:
+            raise RuntimeError(f"espn core: no abbreviation for {league} {team_id}")
+        rows += got
+    return rows
 
 
 # ESPN's stand-in colors, not a team's: black alone (317 college football teams, 61 college baseball, 60 softball, 25
@@ -575,7 +633,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     write("espn_teams", espn, ESPN_TEAM_COLUMNS)
     unlisted = fetch_espn_unlisted_teams(s, hosts[0], espn, archived)
     write("espn_unlisted_teams", unlisted, ESPN_TEAM_COLUMNS)
-    abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0])
+    abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0]) + fetch_espn_core_abbrs(s)
     write("espn_abbrs", abbrs, ESPN_ABBR_COLUMNS)
     fetch_colors(s, hosts[0], manifest, espn, unlisted, write)
 
