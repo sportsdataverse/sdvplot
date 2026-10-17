@@ -1,7 +1,7 @@
 [
   {
     "name": "nhl-decades",
-    "alt": "NHL team logos stacked by decade: 1910s: MTL, TOR; 1920s: BOS, CHI, DET, NYR; 1960s: DAL, LA, PHI, PIT, STL; 1970s: BUF, VAN, CGY, NYI, NJ, WSH; 1980s: CAR, COL, EDM, WPG; 1990s: SJ, OTT, TB, ANA, FLA, UTAH, NSH; 2000s: CBJ, MIN; 2010s: VGK; 2020s: SEA.",
+    "alt": "NHL team logos stacked by decade: 1910s: MTL, TOR; 1920s: BOS, CHI, DET, NYR; 1960s: DAL, LA, PHI, PIT, STL; 1970s: BUF, VAN, CGY, NYI, NJ, WSH; 1980s: CAR, COL, EDM, UTAH; 1990s: SJ, OTT, TB, ANA, FLA, NSH; 2000s: WPG, CBJ, MIN; 2010s: VGK; 2020s: SEA.",
     "caption": "add_logos() as scatter points: NHL teams, stacked by the decade their archived logos begin (marks()).",
     "width": 960,
     "height": 600

@@ -105,15 +105,15 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 5.
+**Season to date:** the 2026 season through week 7.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 3 | 1 | 3-1    |
-| 2006    | Akron     | Mid-American  | 1 | 4 | 1-4    |
-| 333     | Alabama   | SEC           | 5 | 0 | 5-0    |
-| 2026    | App State | Sun Belt      | 3 | 1 | 3-1    |
-| 12      | Arizona   | Big 12        | 4 | 1 | 4-1    |
+| 2005    | Air Force | Mountain West | 4 | 1 | 4-1    |
+| 2006    | Akron     | Mid-American  | 1 | 5 | 1-5    |
+| 333     | Alabama   | SEC           | 5 | 1 | 5-1    |
+| 2026    | App State | Sun Belt      | 3 | 2 | 3-2    |
+| 12      | Arizona   | Big 12        | 5 | 1 | 5-1    |
 
 </div>
 
@@ -171,13 +171,13 @@ top25.head()
 
 <div class="sdv-output">
 
-| rank | team_id | school       | conference       | record | off      | dfn       | net      |
-|------|---------|--------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame   | FBS Independents | 5-0    | 0.281153 | -0.178627 | 0.45978  |
-| 2    | 333     | Alabama      | SEC              | 5-0    | 0.243624 | -0.178609 | 0.422233 |
-| 3    | 254     | Utah         | Big 12           | 4-0    | 0.281749 | -0.134768 | 0.416518 |
-| 4    | 77      | Northwestern | Big Ten          | 3-1    | 0.376074 | -0.034502 | 0.410575 |
-| 5    | 275     | Wisconsin    | Big Ten          | 4-1    | 0.180678 | -0.201931 | 0.382609 |
+| rank | team_id | school     | conference       | record | off      | dfn       | net      |
+|------|---------|------------|------------------|--------|----------|-----------|----------|
+| 1    | 87      | Notre Dame | FBS Independents | 6-0    | 0.316304 | -0.217101 | 0.533405 |
+| 2    | 333     | Alabama    | SEC              | 5-1    | 0.25625  | -0.138999 | 0.395249 |
+| 3    | 275     | Wisconsin  | Big Ten          | 4-1    | 0.156399 | -0.23409  | 0.390489 |
+| 4    | 61      | Georgia    | SEC              | 6-0    | 0.282527 | -0.105661 | 0.388188 |
+| 5    | 84      | Indiana    | Big Ten          | 6-0    | 0.277365 | -0.102185 | 0.379549 |
 
 </div>
 
