@@ -21,11 +21,12 @@ from urllib.parse import quote
 
 import narwhals as nw
 from great_tables import GT, google_font, html, loc, md, style, vals
+from great_tables._data_color.palettes import GradientPalette
 from great_tables._gt_data import Body, Boxhead, ColInfo
 from great_tables._locations import resolve_cols_c, resolve_rows_i
 from great_tables._text import _process_text
 
-from sdvplot._contrast import hex6, mix, on_color, solid
+from sdvplot._contrast import hex6, on_color, solid
 from sdvplot._errors import warn
 from sdvplot._tables import row_positions
 from sdvplot.great_tables._marks import (
@@ -1028,22 +1029,26 @@ def _palette(palette: Sequence[str], pal_type: str) -> list[str]:
     return colors
 
 
-def _ramp(palette: list[str], domain: tuple[float, float]) -> Callable[[float], str | None]:
-    """Piecewise-linear sRGB between evenly spaced stops over ``domain``, as great_tables' ``data_color``.
+def _ramp_at(palette: list[str], t: float) -> str:
+    """The color ``t`` (0-1, clamped) of the way along ``palette``, through evenly spaced stops.
 
-    Returns ``None`` for a value outside the domain.
+    It is great_tables' own ``data_color`` gradient, so sdvplot's pills, bars and legends match its cells on every
+    great_tables version: piecewise-linear sRGB before 1.1, CIELAB from 1.1 (as R's ``scales::col_numeric``, which
+    sdvplotR and R gt use).
     """
+    if len(palette) == 1:
+        return palette[0]
+    return cast(str, GradientPalette(palette)([min(max(t, 0.0), 1.0)])[0])  # None only for NaN / inf
+
+
+def _ramp(palette: list[str], domain: tuple[float, float]) -> Callable[[float], str | None]:
+    """``_ramp_at`` over ``domain``, as great_tables' ``data_color``. Returns ``None`` for a value outside it."""
     lo, hi = domain
-    k = len(palette) - 1
 
     def color(v: float) -> str | None:
         if not lo <= v <= hi:
             return None
-        if k == 0:
-            return palette[0]
-        t = 0.5 if hi == lo else (v - lo) / (hi - lo)
-        i = min(int(t * k), k - 1)
-        return mix(palette[i], palette[i + 1], t * k - i)
+        return _ramp_at(palette, 0.5 if hi == lo else (v - lo) / (hi - lo))
 
     return color
 

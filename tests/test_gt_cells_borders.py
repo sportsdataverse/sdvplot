@@ -130,7 +130,7 @@ def test_border_bars_top_sit_above_the_title_and_keep_the_subtitle(lib):
 def test_border_bars_top_on_a_table_without_a_title_is_just_the_bars(lib):
     out = gt_border_bars_top(GT(frame(lib, CARS)), ["#1B7837", "#FFFFFF"])
     h = out.as_raw_html()
-    cell = re.search(r'class="gt_heading gt_title[^"]*">(.*?)</td>', h, re.S).group(1)
+    cell = re.search(r'class="gt_heading gt_title[^"]*"(?: id="[^"]*")?>(.*?)</td>', h, re.S).group(1)
     assert re.findall(r"background-color: (#\w+);", cell) == ["#1B7837", "#FFFFFF"]
     assert "padding: 4px 5px" not in cell
 

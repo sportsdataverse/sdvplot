@@ -114,6 +114,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   Iowa's no longer fade into the near-black background. A team with no dark mark draws its default one, with no
   warning; the light theme still draws the default logos. Pass `variant="default"` for the old look (sdvplotR's), or
   any variant `add_logos` takes.
+- great_tables 1.1 is supported. Its `data_color` now interpolates in CIELAB, as R gt and `scales::col_numeric` do,
+  so `gt_color_ranks` fills match sdvplotR's exactly under it; `gt_color_pills`, `gt_percentile_bar` and the
+  `gt_legend_continuous` steps now draw great_tables' own gradient, so they stay equal to `data_color` cells on every
+  version (CIELAB from 1.1, sRGB before) and match sdvplotR's colors from 1.1 (they were sRGB approximations).
 
 ### Fixed
 
@@ -142,6 +146,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   functions read, after every team alias. `resolve()` still answers no conference, and CFB's `MAC` is still
   Macalester; `resolve("Mid-American Conference", "cfb")` no longer gives Macalester (it went through sdvplotR's
   `MAC` canon): it is `None`, and its logo is the conference's.
+- `gt_tiers` no longer writes two `alt` attributes on an image under great_tables 1.1, whose `fmt_image` adds an
+  empty `alt=""`: the image's alt text replaces it.
 
 ## [0.1.0] - 2026-10-05
 

@@ -16,12 +16,13 @@ from sdvplot.great_tables import (  # noqa: E402
     gt_theme_midnight,
 )
 from tests.gt_frames import KINDS, frame  # noqa: E402
+from tests.gt_html import raw_html  # noqa: E402
 
 TEAMS = {"team": ["LV", "KC", "BUF"], "wins": [10, 12, 11], "color": ["#A5ACAF", "#E31837", "#00338D"]}
 
 
 def rows_of(gt):
-    return [r.strip() for r in re.findall(r"<tr>(.*?)</tr>", gt.as_raw_html().replace("\n", ""))]
+    return [r.strip() for r in re.findall(r"<tr>(.*?)</tr>", raw_html(gt).replace("\n", ""))]
 
 
 def source_notes(gt):
@@ -144,7 +145,7 @@ def test_row_accent_maps_a_palette_onto_the_stub():
 def test_outliers_flag_by_iqr_with_a_symbol_and_note(kind):
     df = frame(kind, {"team": list("ABCDEFG"), "pts": [21, 24, 20, 23, 22, 25, 61], "name": list("abcdefg")})
     gt = gt_outliers(GT(df), ["pts", "name"], symbol="†", note=True)
-    h = gt.as_raw_html()
+    h = raw_html(gt)
     assert '<td style="color: #B3261E !important; font-weight: bold !important;" class="gt_row gt_right">61†</td>' in h
     assert h.count("#B3261E") == 1
     assert source_notes(gt) == ["Marked values fall outside 1.5 × IQR of the column quartiles."]

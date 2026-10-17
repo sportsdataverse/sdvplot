@@ -19,6 +19,7 @@ from sdvplot.great_tables import (  # noqa: E402
     gt_tiers,
 )
 from tests.gt_frames import KINDS, frame  # noqa: E402
+from tests.gt_html import ramp  # noqa: E402
 
 PCT = {"metric": ["Barrel %", "Exit velocity", "Chase rate"], "pct": [94.0, 41.0, None]}
 SEGMENT = re.compile(r"flex:1 0 auto; (?:height:[\d.]+px; )?background-color:(#[0-9a-f]{6});")
@@ -60,10 +61,10 @@ def test_legend_takes_the_domain_from_columns(kind):
 def test_legend_reads_the_scale_recorded_by_a_coloring_call():
     gt = gt_percentile_bar(GT(pl.DataFrame(PCT)), "pct", palette=["#000000", "#ffffff"], domain=(0, 50), reverse=True)
     h = gt_legend_continuous(gt, type="blocks", n_bins=2).as_raw_html()
-    assert SEGMENT.findall(h) == ["#bfbfbf", "#404040"]  # reversed: white end first
+    assert SEGMENT.findall(h) == [ramp("#ffffff", "#000000", t) for t in (0.25, 0.75)]  # reversed: white end first
     assert "<span>0</span><span>50</span>" in h
     h = gt_legend_continuous(gt, palette=["#ff0000", "#0000ff"], reverse=False, type="steps", n_bins=2).as_raw_html()
-    assert SEGMENT.findall(h) == ["#bf0040", "#4000bf"]  # explicit arguments win over the record
+    assert SEGMENT.findall(h) == [ramp("#ff0000", "#0000ff", t) for t in (0.25, 0.75)]  # explicit arguments win
 
 
 def test_legend_matches_the_cells_of_wave_c1s_coloring_functions():
@@ -151,7 +152,8 @@ def test_percentile_bars_draw_values_and_a_missing_row(kind):
     h = gt.as_raw_html()
     assert h.count('<div style="position:relative; width:100%; height:26px;">') == 2
     assert "left:calc(11.00px + 0.9400 * (100% - 22.00px));" in h
-    assert "background:#d14058; color:#FFFFFF; font-size:11.0px; font-weight:700;" in h and ">94</div>" in h
+    fill = ramp("#C9C9C9", "#D22D49", 0.88)  # 94 on (0, 100): 88% of the way up the second of two segments
+    assert f"background:{fill}; color:#FFFFFF; font-size:11.0px; font-weight:700;" in h and ">94</div>" in h
     assert ">—</span>" in h  # the missing row: a broken track with an em dash
     assert "width:220px" in h
     assert gt.__dict__["_sdvplot_scale"] == {

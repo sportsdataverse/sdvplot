@@ -1,3 +1,4 @@
+import importlib.metadata
 import re
 
 import pytest
@@ -5,11 +6,11 @@ import pytest
 pytest.importorskip("great_tables")
 from great_tables import GT  # noqa: E402
 
-from sdvplot._contrast import mix, on_color  # noqa: E402
+from sdvplot._contrast import on_color  # noqa: E402
 from sdvplot._errors import SdvplotWarning  # noqa: E402
 from sdvplot.great_tables import gt_color_pills, gt_color_ranks, gt_indicator_boxes  # noqa: E402
 from sdvplot.great_tables._cells import _natural  # noqa: E402
-from tests.gt_html import body_rows, frame  # noqa: E402
+from tests.gt_html import body_rows, frame, ramp, raw_html  # noqa: E402
 
 CARS = {"car": ["Mazda", "Datsun", "Fiat"], "mpg": [21.0, 18.5, 30.2], "hp": [110, 175, 66]}
 RED, GREEN = "#C84630", "#5DA271"
@@ -34,7 +35,7 @@ def test_pills_fill_by_value_on_the_domain_with_readable_ink(lib):
     out = gt_color_pills(GT(frame(lib, CARS)), "hp", domain=(50, 200))
     got = [pill(c) for c in column(out, 2)]
     for (fill, ink, width, text), value in zip(got, CARS["hp"], strict=True):
-        assert fill == mix(RED, GREEN, (value - 50) / 150)
+        assert fill == ramp(RED, GREEN, (value - 50) / 150)
         assert ink == on_color(fill) and width == "3ch" and text == str(value)
     assert "border-radius: 10px" in column(out, 2)[0] and "height: 25px; line-height: 25px" in column(out, 2)[0]
 
@@ -43,23 +44,23 @@ def test_pills_share_one_domain_but_size_each_column_on_its_own(lib):
     out = gt_color_pills(GT(frame(lib, CARS)), ["mpg", "hp"], domain=(0, 200))
     assert [pill(c)[2] for c in column(out, 1)] == ["4ch"] * 3  # "18.5" is the widest mpg
     assert [pill(c)[2] for c in column(out, 2)] == ["3ch"] * 3
-    assert pill(column(out, 1)[0])[0] == mix(RED, GREEN, 21 / 200)
+    assert pill(column(out, 1)[0])[0] == ramp(RED, GREEN, 21 / 200)
 
 
 def test_pills_without_a_domain_warn_and_use_the_observed_range(lib):
     with pytest.warns(SdvplotWarning, match=r"observed range \(18.5 to 175\)"):
         out = gt_color_pills(GT(frame(lib, CARS)), ["mpg", "hp"])
     assert out._sdvplot_scale["domain"] == (18.5, 175.0)
-    assert pill(column(out, 2)[1])[0] == mix(RED, GREEN, 1.0)
+    assert pill(column(out, 2)[1])[0] == ramp(RED, GREEN, 1.0)
 
 
 def test_pills_by_rank_rank_each_column_against_itself(lib):
     out = gt_color_pills(GT(frame(lib, CARS)), "hp", fill_type="rank", domain=(1, 3), digits=0)
     # descending: 175 ranks 1 (the palette's first color), 110 ranks 2, 66 ranks 3
-    assert [pill(c)[0] for c in column(out, 2)] == [mix(RED, GREEN, 0.5), mix(RED, GREEN, 0), mix(RED, GREEN, 1)]
+    assert [pill(c)[0] for c in column(out, 2)] == [ramp(RED, GREEN, 0.5), ramp(RED, GREEN, 0), ramp(RED, GREEN, 1)]
     assert [pill(c)[3] for c in column(out, 2)] == ["110", "175", "66"]
     tied = gt_color_pills(GT(frame(lib, {"x": [5, 5, 1]})), "x", fill_type="rank", rank_order="asc", domain=(1, 3))
-    assert [pill(c)[0] for c in column(tied, 0)] == [mix(RED, GREEN, 0.75)] * 2 + [mix(RED, GREEN, 0)]
+    assert [pill(c)[0] for c in column(tied, 0)] == [ramp(RED, GREEN, 0.75)] * 2 + [ramp(RED, GREEN, 0)]
 
 
 def test_pills_stay_with_their_rows_when_groups_reorder_the_table(lib):
@@ -69,7 +70,7 @@ def test_pills_stay_with_their_rows_when_groups_reorder_the_table(lib):
     # rendered order is East (B, D) then West (A, C): each pill must still carry its own row's value and color
     got = [pill(row[0][1]) for row in body_rows(out)]
     assert [g[3] for g in got] == ["20", "40", "10", "30"]
-    assert [g[0] for g in got] == [mix(RED, GREEN, v / 40) for v in (20, 40, 10, 30)]
+    assert [g[0] for g in got] == [ramp(RED, GREEN, v / 40) for v in (20, 40, 10, 30)]
 
 
 def test_pills_only_on_chosen_rows_and_missing_values(lib):
@@ -95,7 +96,7 @@ def test_pills_format_values_like_sdvplotr(lib):
 def test_pills_outside_the_domain_are_grey_with_one_warning(lib):
     with pytest.warns(SdvplotWarning, match=r"2 value\(s\) fall outside the domain"):
         out = gt_color_pills(GT(frame(lib, CARS)), "hp", domain=(100, 150))
-    assert [pill(c)[0] for c in column(out, 2)] == [mix(RED, GREEN, 0.2), "#808080", "#808080"]
+    assert [pill(c)[0] for c in column(out, 2)] == [ramp(RED, GREEN, 0.2), "#808080", "#808080"]
 
 
 def test_pills_record_the_scale_on_a_copy_and_it_survives_later_calls(lib):
@@ -111,7 +112,7 @@ def test_pills_record_the_scale_on_a_copy_and_it_survives_later_calls(lib):
     }
     assert out._sdvplot_scale == expected
     assert out.tab_header("Later").opt_row_striping()._sdvplot_scale == expected
-    assert pill(column(out, 2)[0])[0] == mix("#FFFFFF", "#000000", 110 / 200)  # reversed
+    assert pill(column(out, 2)[0])[0] == ramp("#FFFFFF", "#000000", 110 / 200)  # reversed
 
 
 @pytest.mark.parametrize(
@@ -158,7 +159,7 @@ def test_color_ranks_match_the_shared_ramp_across_columns(lib):
     out = gt_color_ranks(GT(frame(lib, RANKED)), ["off", "def"])
     # the domain is shared (1 to 5), so every stop lands on a palette color; 2.5 sits halfway between two stops
     assert fills(out, 1) == [c.lower() for c in FIVE]
-    assert fills(out, 2) == [FIVE[4].lower(), mix(FIVE[1], FIVE[2], 0.5), FIVE[0].lower(), FIVE[2].lower(), "#ffffff"]
+    assert fills(out, 2) == [FIVE[4].lower(), ramp(FIVE[1], FIVE[2], 0.5), FIVE[0].lower(), FIVE[2].lower(), "#ffffff"]
     assert out._sdvplot_scale == {
         "columns": ["off", "def"],
         "palette": FIVE,
@@ -168,9 +169,18 @@ def test_color_ranks_match_the_shared_ramp_across_columns(lib):
     }
 
 
+def test_the_ramp_is_srgb_before_great_tables_1_1_and_r_s_cielab_from_1_1():
+    # every ramp here is great_tables' data_color gradient (tests.gt_html.ramp); pin it to literal colors. From 1.1 it
+    # is R's: scales::col_numeric(c("#000000", "#FFFFFF"), c(0, 1))(4 / 9) is "#696969", and
+    # scales::col_numeric(FIVE, c(1, 5))(2.5) is "#C5D3B9"
+    lab = tuple(int(p) for p in importlib.metadata.version("great-tables").split(".")[:2]) >= (1, 1)
+    assert ramp("#000000", "#FFFFFF", 4 / 9) == ("#696969" if lab else "#717171")
+    assert ramp(FIVE[1], FIVE[2], 0.5) == ("#c5d3b9" if lab else "#c5d2ba")
+
+
 def test_color_ranks_rows_domain_and_reverse(lib):
     out = gt_color_ranks(GT(frame(lib, RANKED)), "off", rows=[0, 4], domain=(1, 10), palette=["#000000", "#FFFFFF"])
-    assert fills(out, 1) == ["#000000", None, None, None, mix("#000000", "#FFFFFF", 4 / 9)]
+    assert fills(out, 1) == ["#000000", None, None, None, ramp("#000000", "#FFFFFF", 4 / 9)]
     rev = gt_color_ranks(
         GT(frame(lib, RANKED)), "off", palette=["#000000", "#FFFFFF"], reverse=True, pal_type="continuous"
     )
@@ -194,7 +204,7 @@ def test_indicator_boxes_fill_the_yes_values_and_center_the_columns(lib):
     assert [box(c)[2] for c in column(out, 2)] == ["#EEEEEE", "#EEEEEE", "#FCCF10"]  # a missing value is color_no
     assert box(column(out, 1)[0]) == ("20px", "20px", "#FCCF10", "#000000", "")
     assert column(out, 3) == ["31.25", "12.0", "0.5"]  # a key column is untouched
-    centered = re.findall(r'<td class="gt_row (gt_\w+)">', out.as_raw_html())
+    centered = re.findall(r'<td class="gt_row (gt_\w+)">', raw_html(out))
     assert centered[:4] == ["gt_left", "gt_center", "gt_center", "gt_right"]
 
 
