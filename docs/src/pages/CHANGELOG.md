@@ -43,6 +43,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `sdvplot.itables.itables_sdv_theme(name, mode=, table_id=)` returns `classes`, `style` and a scoped `css` string
+  (with a Google Fonts import) that styles an `itables.show` table like any of the 122 surveyed themes.
 - `sdvplot.plottable.plottable_sdv_theme(name, mode=)` returns the `plottable.Table` keywords (text, dividers, stripes) for
   any of the 122 surveyed themes, plus a `facecolor` to pop and apply to the figure; a font matplotlib cannot find falls
   back to its generic family with one warning per family.

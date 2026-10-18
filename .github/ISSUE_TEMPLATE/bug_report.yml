@@ -68,6 +68,7 @@ body:
         - great_tables
         - reactable
         - plottable
+        - itables
         - sportypy (surface)
     validations:
       required: true

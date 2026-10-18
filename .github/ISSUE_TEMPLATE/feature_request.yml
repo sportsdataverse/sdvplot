@@ -69,7 +69,7 @@ body:
         - clear_cache
         - an adapter submodule (sdvplot.matplotlib, sdvplot.plotly, ...)
         - sdvplot.great_tables helpers
-        - sdvplot.reactable or sdvplot.plottable column helpers
+        - sdvplot.reactable or sdvplot.plottable column helpers, sdvplot.itables themes
         - a new adapter (a library sdvplot does not draw on yet)
         - a new league or data source
         - something else

@@ -178,7 +178,7 @@ def test_the_issue_templates_offer_what_sdvplot_supports():
         _dropdown("bug_report.yml", "league") == set(index["league"]) == _dropdown("wrong_team_or_logo.yml", "league")
     )
     assert _dropdown("wrong_team_or_logo.yml", "color_source") == set(index["color_source"])
-    assert _dropdown("bug_report.yml", "library") == set(_dispatch.ADAPTERS) | {"reactable", "plottable"}
+    assert _dropdown("bug_report.yml", "library") == set(_dispatch.ADAPTERS) | {"reactable", "plottable", "itables"}
     assert _dropdown("feature_request.yml", "scope") == {
         n for n in sdvplot.__all__ if inspect.isfunction(getattr(sdvplot, n))
     }
