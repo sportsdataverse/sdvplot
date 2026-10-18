@@ -51,8 +51,9 @@ _DARK_DEFAULTS = {  # light fallbacks are unreadable on a dark ground
 _REACTABLE_PORTS = ("espn", "fivethirtyeight", "pff")
 _MONO = re.compile(r"mono|code|courier", re.I)
 _SERIF = re.compile(
-    r"serif|slab|bodoni|caslon|garamond|playfair|lora|newsreader|tinos|spectral|gelasio|merriweather", re.I
-)
+    r"serif|slab|bodoni|caslon|garamond|playfair|lora|newsreader|tinos|spectral|gelasio|merriweather|crimson|fraunces",
+    re.I,
+)  # keep identical to sdvtables registry.ts SERIF and sdvplotR .tt_generic_family
 
 
 def _generic_family(family: str | None) -> str:

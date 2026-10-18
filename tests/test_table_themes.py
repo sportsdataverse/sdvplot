@@ -87,3 +87,21 @@ def test_font_stack_picks_a_generic_from_the_name():
     assert _font_stack("Source Sans 3") == '"Source Sans 3", sans-serif'
     assert _font_stack("JetBrains Mono") == '"JetBrains Mono", monospace'
     assert _font_stack(None) == "sans-serif"
+
+
+# the same two lists are asserted in sdvtables and sdvplotR, so the three heuristics agree on every registry face
+REGISTRY_SERIF = {
+    "Crimson Text", "Fraunces", "Gelasio", "Libre Bodoni", "Libre Caslon Display", "Libre Caslon Text", "Lora",
+    "Newsreader", "Playfair Display", "Roboto Slab", "Source Serif 4", "Spectral", "Tinos",
+}  # fmt: skip
+REGISTRY_MONO = {"Courier Prime", "DM Mono", "IBM Plex Mono", "JetBrains Mono", "Roboto Mono"}
+
+
+def test_every_registry_face_gets_the_shared_generic_family():
+    from sdvplot._table_themes import _font_stack, _generic_family
+
+    faces = {v for t in REG.values() for v in t["fonts"].values() if isinstance(v, str)}
+    assert {f for f in faces if _generic_family(f) == "serif"} == REGISTRY_SERIF
+    assert {f for f in faces if _generic_family(f) == "monospace"} == REGISTRY_MONO
+    assert _font_stack(table_theme_spec("evolving-hockey").fonts["body"]) == '"Crimson Text", serif'
+    assert _font_stack(table_theme_spec("gtextras-dot-matrix").fonts["body"]) == '"Courier Prime", monospace'
