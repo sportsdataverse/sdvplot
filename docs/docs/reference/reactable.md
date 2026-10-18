@@ -628,9 +628,9 @@ stripes, hover and the current page button tinted with the primary, and every te
 | `team` | `Any` | The team, any value ``resolve`` accepts (an abbreviation, a name, an id). |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `font_size` | `float \| None` | The body font size in pixels. |
-| `font_color` | `str \| None` | The body text color; None for black or white, whichever reads better on the background. |
+| `font_color` | `str \| None` | The body text color as a hex color; None for black or white, whichever reads better on the background. |
 | `header_font_size` | `float \| None` | The header font size in pixels. |
-| `header_font_color` | `str \| None` | The header text color; None for black or white, whichever reads better on the primary. |
+| `header_font_color` | `str \| None` | The header text color as a hex color; None for black or white, whichever reads better on the primary. |
 | `background_color` | `str \| None` | The table background as a hex color; None for white (the page shows through). |
 | `cell_padding` | `float \| str \| None` | The cell padding, pixels or a CSS string. |
 | `centered` | `bool` | Center cell content vertically (useful with images). |
@@ -643,7 +643,7 @@ stripes, hover and the current page button tinted with the primary, and every te
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``centered`` is not a bool, or ``background_color`` is not a hex color.
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``centered`` is not a bool, or ``background_color``, ``font_color`` or ``header_font_color`` is not a hex color.
 - `UnresolvedTeamError`: (a ValueError) If ``team`` does not resolve.
 
 ### Example
