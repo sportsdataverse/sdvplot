@@ -26,6 +26,8 @@ PUBLIC = {
     "add_headshots",
     "axis_logos",
     "surface",
+    "table_theme_spec",
+    "sdv_table_themes",
     "court_coords",
     "pitch_coords",
     "SdvplotWarning",
@@ -131,7 +133,7 @@ def test_a_raised_sdvplot_error_is_caught_by_the_base():
 SUBMODULES = sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
 # the optional library each adapter module needs: the registered adapters, plus the two column helpers. Any other
 # submodule (sdvplot.testing, or a new one) is imported unguarded, so it cannot hide behind a skip
-LIBRARY = {"reactable": "reactable", "plottable": "plottable"}
+LIBRARY = {"reactable": "reactable", "plottable": "plottable", "itables": "itables"}
 for _a in _dispatch.ADAPTERS.values():
     _name = _a.module.split(".")[1]
     if _name not in LIBRARY or _a.package == _name:  # seaborn also routes to sdvplot.matplotlib
@@ -369,6 +371,7 @@ EXTRAS = {
     "matplotlib": ("matplotlib", "mpl"),
     "plotnine": ("plotnine", "plotnine"),
     "plottable": ("plottable", "plottable"),
+    "itables": ("itables", "itables"),
     "plotly": ("plotly", "plotly"),
     "altair": ("altair", "altair"),
     "bokeh": ("bokeh", "bokeh"),

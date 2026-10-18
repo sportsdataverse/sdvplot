@@ -2115,7 +2115,11 @@ def gt_theme_preview(
         raise ValueError(f"n must be a positive whole number of rows, got {n!r}")
     if density is not None:
         _density(density)
-    available = sorted(name for name in sgt.__all__ if name.startswith("gt_theme_") and name != "gt_theme_preview")
+    from sdvplot.great_tables._gt_shortcuts import __all__ as registry_shortcuts
+
+    # the house themes: gt_theme_source needs a theme name and the registry shortcuts are the survey's, not ours
+    skip = {"gt_theme_preview", "gt_theme_source", *registry_shortcuts}
+    available = sorted(name for name in sgt.__all__ if name.startswith("gt_theme_") and name not in skip)
     names = available if themes is None else [themes] if isinstance(themes, str) else list(themes)
     missing = [name for name in names if name not in available]
     if missing:

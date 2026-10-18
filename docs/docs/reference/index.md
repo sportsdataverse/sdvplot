@@ -57,6 +57,14 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [sdvplot.great_tables](great_tables.md) | great_tables helpers (``pip install sdvplot[tables]``), ported from sdvplotR's ``gt_*`` functions. |
 | [sdvplot.reactable](reactable.md) | reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR's ``reactable_sdv_*`` functions, plus reactablefmtr's cell formatters (data bars, color tiles and scales, pills, icons, merged columns, highlights, bubbles). |
 | [sdvplot.plottable](plottable.md) | plottable columns of team logos, wordmarks and player headshots. |
+| [sdvplot.itables](itables.md) | itables styling (``pip install sdvplot[itables]``): a surveyed table theme as DataTables CSS and ``show`` options. |
+
+## Table themes
+
+| Function | What it does |
+|---|---|
+| [table_theme_spec](table_theme_spec.md) | Resolve a surveyed table theme (e.g. ``datagolf``, ``wikipedia``, ``nejm``) by its source name. |
+| [sdv_table_themes](sdv_table_themes.md) | List the surveyed table themes, optionally only those usable in a mode or in one category. |
 
 ## Housekeeping
 

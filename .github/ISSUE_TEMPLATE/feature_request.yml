@@ -63,11 +63,13 @@ body:
         - surface
         - court_coords
         - pitch_coords
+        - table_theme_spec
+        - sdv_table_themes
         - versions
         - clear_cache
         - an adapter submodule (sdvplot.matplotlib, sdvplot.plotly, ...)
         - sdvplot.great_tables helpers
-        - sdvplot.reactable or sdvplot.plottable column helpers
+        - sdvplot.reactable or sdvplot.plottable column helpers, sdvplot.itables themes
         - a new adapter (a library sdvplot does not draw on yet)
         - a new league or data source
         - something else

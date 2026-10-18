@@ -52,7 +52,16 @@
       "reference/pygal",
       "reference/great_tables",
       "reference/reactable",
-      "reference/plottable"
+      "reference/plottable",
+      "reference/itables"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Table themes",
+    "items": [
+      "reference/table_theme_spec",
+      "reference/sdv_table_themes"
     ]
   },
   {

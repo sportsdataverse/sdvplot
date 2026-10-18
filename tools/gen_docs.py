@@ -44,6 +44,7 @@ SECTIONS = [
         "Plots and tables",
         ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface", "court_coords", "pitch_coords"],
     ),
+    ("Table themes", ["table_theme_spec", "sdv_table_themes"]),
     ("Housekeeping", ["versions", "clear_cache"]),
 ]
 ERRORS = [
@@ -65,7 +66,7 @@ ERRORS = [
 MODULE_SECTIONS = {
     "Plots and tables": [
         "matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal",
-        "great_tables", "reactable", "plottable",
+        "great_tables", "reactable", "plottable", "itables",
     ],
     "Housekeeping": ["testing", "typing"],
 }  # fmt: skip

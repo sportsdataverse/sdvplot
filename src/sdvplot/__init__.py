@@ -28,6 +28,7 @@ from sdvplot._marks import logo_url, marks
 from sdvplot._pitch import pitch_coords
 from sdvplot._resolve import resolve, suggest
 from sdvplot._surface import surface
+from sdvplot._table_themes import sdv_table_themes, table_theme_spec
 from sdvplot._versions import versions
 
 try:
@@ -62,8 +63,10 @@ __all__ = [
     "palette",
     "pitch_coords",
     "resolve",
+    "sdv_table_themes",
     "suggest",
     "surface",
+    "table_theme_spec",
     "team_colors",
     "teams",
     "versions",

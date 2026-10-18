@@ -54,6 +54,7 @@ Paths:
 | Specific chart types | PyWaffle | Axes (a `Waffle` Figure with one Axes) | `tests/test_compat_charts.py::test_a_pywaffle_figure_takes_logos` |
 | Tables | great_tables | adapter `sdvplot.great_tables` | its tests (sub-project 4) |
 | Tables | plottable | `sdvplot.plottable` columns | `tests/test_plottable.py` |
+| Tables | itables | `sdvplot.itables` theme CSS | `tests/test_itables_themes.py` |
 
 Not on the gallery list, also supported: pygal (adapter `sdvplot.pygal`, `tests/test_pygal.py`), HoloViews (adapter
 `sdvplot.holoviews`, sub-project 3), sportypy surfaces (`sdvplot.surface()`, `tests/test_surface.py`) and mplsoccer

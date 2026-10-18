@@ -54,27 +54,48 @@ great_tables helpers (``pip install sdvplot[tables]``), ported from sdvplotR's `
 | [gt_social_tag](#gt_social_tag) | Sign a table with social handles, each behind its platform's icon, under an optional caption. |
 | [gt_spotlight](#gt_spotlight) | Light up some rows (bold, a fill, an accent bar) and dim everything else. |
 | [gt_stack_tables](#gt_stack_tables) | Stack several tables vertically in one block, with an optional shared heading and footer. |
+| [gt_theme_aer](#gt_theme_aer) | Style a table like American Economic Review (AEA style) (``gt_theme_source(gt, "aer")``). |
 | [gt_theme_almanac](#gt_theme_almanac) | Record-book theme: a slab body, narrow condensed labels, tight rows and banded rows, like a statistical abstract. |
 | [gt_theme_athletic](#gt_theme_athletic) | The Athletic's table look: a monospaced body, uppercase sans labels, dotted row rules and thin column rules. |
+| [gt_theme_barttorvik](#gt_theme_barttorvik) | Style a table like Bart Torvik (T-Rank) (``gt_theme_source(gt, "barttorvik")``). |
+| [gt_theme_basketball_reference](#gt_theme_basketball_reference) | Style a table like Basketball-Reference (``gt_theme_source(gt, "basketball-reference")``). |
+| [gt_theme_bbc_sport](#gt_theme_bbc_sport) | Style a table like BBC Sport (``gt_theme_source(gt, "bbc-sport")``). |
+| [gt_theme_bloomberg_markets](#gt_theme_bloomberg_markets) | Style a table like Bloomberg.com Markets (``gt_theme_source(gt, "bloomberg-markets")``). |
 | [gt_theme_booktabs](#gt_theme_booktabs) | Academic booktabs theme: three horizontal rules and nothing else, the way LaTeX booktabs draws them. |
 | [gt_theme_broadsheet](#gt_theme_broadsheet) | Newspaper theme: a serif body on warm paper, small letterspaced sans labels, hairlines between rows. |
 | [gt_theme_brutalist](#gt_theme_brutalist) | Brutalist theme: heavy black frame, a knocked-out black label bar and one loud accent. |
+| [gt_theme_cleaning_the_glass](#gt_theme_cleaning_the_glass) | Style a table like Cleaning the Glass (``gt_theme_source(gt, "cleaning-the-glass")``). |
+| [gt_theme_datagolf](#gt_theme_datagolf) | Style a table like DataGolf (``gt_theme_source(gt, "datagolf")``). |
 | [gt_theme_drench](#gt_theme_drench) | Drenched theme: the whole table in one color, with rules, bands and muted text all derived from it. |
+| [gt_theme_dunks_and_threes](#gt_theme_dunks_and_threes) | Style a table like Dunks & Threes (``gt_theme_source(gt, "dunks-and-threes")``). |
+| [gt_theme_economist](#gt_theme_economist) | Style a table like The Economist (``gt_theme_source(gt, "economist")``). |
+| [gt_theme_espn_site](#gt_theme_espn_site) | Style a table like ESPN (BPI / FPI tables) (``gt_theme_source(gt, "espn-site")``). |
+| [gt_theme_fivethirtyeight_site](#gt_theme_fivethirtyeight_site) | Style a table like FiveThirtyEight (forecast tables) (``gt_theme_source(gt, "fivethirtyeight-site")``). |
+| [gt_theme_formula1](#gt_theme_formula1) | Style a table like Formula 1 (``gt_theme_source(gt, "formula1")``). |
+| [gt_theme_gov_uk](#gt_theme_gov_uk) | Style a table like GOV.UK Design System table (``gt_theme_source(gt, "gov-uk")``). |
 | [gt_theme_gtutils](#gt_theme_gtutils) | The gtUtils look: Almarai and Signika Negative on cream, taupe row rules and a taupe row-group band. |
+| [gt_theme_guardian](#gt_theme_guardian) | Style a table like The Guardian (``gt_theme_source(gt, "guardian")``). |
 | [gt_theme_kenpom](#gt_theme_kenpom) | KenPom's table look: blue-banded rows, a pale-blue label band with blue labels, black row rules. |
 | [gt_theme_midnight](#gt_theme_midnight) | Dark theme: light type on a near-black ground, a raised label band and one cool accent. |
 | [gt_theme_ncaa](#gt_theme_ncaa) | NCAA stats-site look: Open Sans, a black label band with white uppercase labels, striped rows, wide left inset. |
+| [gt_theme_nzz](#gt_theme_nzz) | Style a table like NZZ (Q table) (``gt_theme_source(gt, "nzz")``). |
+| [gt_theme_opta_analyst](#gt_theme_opta_analyst) | Style a table like Opta Analyst (``gt_theme_source(gt, "opta-analyst")``). |
+| [gt_theme_our_world_in_data](#gt_theme_our_world_in_data) | Style a table like Our World in Data (``gt_theme_source(gt, "our-world-in-data")``). |
 | [gt_theme_pl](#gt_theme_pl) | Premier League look: DM Sans in the league's deep purple, purple rules, a lilac row-group band. |
 | [gt_theme_preview](#gt_theme_preview) | The same few rows in every table theme, one ``GT`` per theme, to compare them side by side. |
+| [gt_theme_reuters_graphics](#gt_theme_reuters_graphics) | Style a table like Reuters Graphics (``gt_theme_source(gt, "reuters-graphics")``). |
 | [gt_theme_savant](#gt_theme_savant) | Baseball Savant's table look: Roboto Condensed, striped rows, a black row-group band, a centered heading. |
 | [gt_theme_scoreboard](#gt_theme_scoreboard) | Scoreboard theme: condensed uppercase type under a solid header band, like a broadcast stat panel. |
 | [gt_theme_sdv](#gt_theme_sdv) | The SportsDataverse house table: Chivo labels, a Lato body, and the SDV gradient under the column labels. |
 | [gt_theme_sdv_team](#gt_theme_sdv_team) | ``gt_theme_sdv`` in one team's colors: a title block in the primary color, the line in the secondary. |
 | [gt_theme_sofa](#gt_theme_sofa) | SofaScore's table look: Sofia Sans Condensed on a warm cream (or dark navy) ground, no rules between rows. |
+| [gt_theme_source](#gt_theme_source) | Style a table like one of the 122 surveyed sources (``"datagolf"``, ``"wikipedia"``, ``"economist"``, ...). |
 | [gt_theme_swiss](#gt_theme_swiss) | International Typographic Style theme: a grotesque, generous space instead of rules, one accent rule. |
 | [gt_theme_terminal](#gt_theme_terminal) | Terminal theme: a monospaced readout on a near-black ground, with a rule on every row. |
 | [gt_theme_tier](#gt_theme_tier) | Tier-list look: Oswald on a near-black (or white) ground, centered columns, a rule under every row. |
 | [gt_theme_tufte](#gt_theme_tufte) | Tufte theme: an old-style serif on cream, italic labels, one hairline under the labels and almost no ink. |
+| [gt_theme_washington_post](#gt_theme_washington_post) | Style a table like The Washington Post (WPDS) (``gt_theme_source(gt, "washington-post")``). |
+| [gt_theme_wikipedia](#gt_theme_wikipedia) | Style a table like Wikipedia wikitable (``gt_theme_source(gt, "wikipedia")``). |
 | [gt_tiers](#gt_tiers) | Build a tier list: a tier label column filled in each tier's color, the other columns rendered as images. |
 | [gt_title_header](#gt_title_header) | Add a styled header: an optional kicker line, the title, the subtitle and a date line. |
 | [gt_watermark](#gt_watermark) | Put a faint text or image watermark behind the table body. |
@@ -3118,6 +3139,56 @@ gt_stack_tables([offense, defense], title="Two tables", title_style={"font": "Os
 
 - [gt_grid: tables side by side. Ported from sdvplotR ``gt_stack_tables()``](https://sdvplotR.sportsdataverse.org/reference/gt_stack_tables.html)
 
+## gt_theme_aer
+
+<div class="sdv-signature">
+
+```python
+gt_theme_aer(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like American Economic Review (AEA style) (``gt_theme_source(gt, "aer")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_aer
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_aer(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
 ## gt_theme_almanac
 
 <div class="sdv-signature">
@@ -3234,6 +3305,206 @@ gt_theme_athletic(GT(df), density="compact")
 ### See also
 
 - [Ported from sdvplotR ``gt_theme_athletic()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_athletic.html)
+
+## gt_theme_barttorvik
+
+<div class="sdv-signature">
+
+```python
+gt_theme_barttorvik(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Bart Torvik (T-Rank) (``gt_theme_source(gt, "barttorvik")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_barttorvik
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_barttorvik(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_basketball_reference
+
+<div class="sdv-signature">
+
+```python
+gt_theme_basketball_reference(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Basketball-Reference (``gt_theme_source(gt, "basketball-reference")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_basketball_reference
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_basketball_reference(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_bbc_sport
+
+<div class="sdv-signature">
+
+```python
+gt_theme_bbc_sport(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like BBC Sport (``gt_theme_source(gt, "bbc-sport")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_bbc_sport
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_bbc_sport(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_bloomberg_markets
+
+<div class="sdv-signature">
+
+```python
+gt_theme_bloomberg_markets(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Bloomberg.com Markets (``gt_theme_source(gt, "bloomberg-markets")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_bloomberg_markets
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_bloomberg_markets(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
 
 ## gt_theme_booktabs
 
@@ -3408,6 +3679,106 @@ gt_theme_brutalist(GT(df), accent="#0047FF")
 
 - [Ported from sdvplotR ``gt_theme_brutalist()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_brutalist.html)
 
+## gt_theme_cleaning_the_glass
+
+<div class="sdv-signature">
+
+```python
+gt_theme_cleaning_the_glass(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Cleaning the Glass (``gt_theme_source(gt, "cleaning-the-glass")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_cleaning_the_glass
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_cleaning_the_glass(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_datagolf
+
+<div class="sdv-signature">
+
+```python
+gt_theme_datagolf(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like DataGolf (``gt_theme_source(gt, "datagolf")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_datagolf
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_datagolf(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
 ## gt_theme_drench
 
 <div class="sdv-signature">
@@ -3468,6 +3839,306 @@ gt_theme_drench(GT(df), color="#E31837")
 
 - [Ported from sdvplotR ``gt_theme_drench()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_drench.html)
 
+## gt_theme_dunks_and_threes
+
+<div class="sdv-signature">
+
+```python
+gt_theme_dunks_and_threes(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Dunks & Threes (``gt_theme_source(gt, "dunks-and-threes")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_dunks_and_threes
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_dunks_and_threes(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_economist
+
+<div class="sdv-signature">
+
+```python
+gt_theme_economist(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like The Economist (``gt_theme_source(gt, "economist")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_economist
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_economist(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_espn_site
+
+<div class="sdv-signature">
+
+```python
+gt_theme_espn_site(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like ESPN (BPI / FPI tables) (``gt_theme_source(gt, "espn-site")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_espn_site
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_espn_site(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_fivethirtyeight_site
+
+<div class="sdv-signature">
+
+```python
+gt_theme_fivethirtyeight_site(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like FiveThirtyEight (forecast tables) (``gt_theme_source(gt, "fivethirtyeight-site")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_fivethirtyeight_site
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_fivethirtyeight_site(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_formula1
+
+<div class="sdv-signature">
+
+```python
+gt_theme_formula1(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Formula 1 (``gt_theme_source(gt, "formula1")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_formula1
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_formula1(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_gov_uk
+
+<div class="sdv-signature">
+
+```python
+gt_theme_gov_uk(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like GOV.UK Design System table (``gt_theme_source(gt, "gov-uk")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_gov_uk
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_gov_uk(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
 ## gt_theme_gtutils
 
 <div class="sdv-signature">
@@ -3522,6 +4193,56 @@ gt_theme_gtutils(GT(df))
 ### See also
 
 - [Ported from sdvplotR ``gt_theme_gtutils()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_gtutils.html)
+
+## gt_theme_guardian
+
+<div class="sdv-signature">
+
+```python
+gt_theme_guardian(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like The Guardian (``gt_theme_source(gt, "guardian")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_guardian
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_guardian(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
 
 ## gt_theme_kenpom
 
@@ -3694,6 +4415,156 @@ gt_theme_ncaa(GT(df))
 
 - [Ported from sdvplotR ``gt_theme_ncaa()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_ncaa.html)
 
+## gt_theme_nzz
+
+<div class="sdv-signature">
+
+```python
+gt_theme_nzz(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like NZZ (Q table) (``gt_theme_source(gt, "nzz")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_nzz
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_nzz(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_opta_analyst
+
+<div class="sdv-signature">
+
+```python
+gt_theme_opta_analyst(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Opta Analyst (``gt_theme_source(gt, "opta-analyst")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_opta_analyst
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_opta_analyst(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_our_world_in_data
+
+<div class="sdv-signature">
+
+```python
+gt_theme_our_world_in_data(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Our World in Data (``gt_theme_source(gt, "our-world-in-data")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_our_world_in_data
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_our_world_in_data(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
 ## gt_theme_pl
 
 <div class="sdv-signature">
@@ -3810,6 +4681,56 @@ tables["gt_theme_kenpom"]
 ### See also
 
 - [Ported from sdvplotR ``gt_theme_preview()``, which lays the tables out with ``gt_grid()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_preview.html)
+
+## gt_theme_reuters_graphics
+
+<div class="sdv-signature">
+
+```python
+gt_theme_reuters_graphics(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Reuters Graphics (``gt_theme_source(gt, "reuters-graphics")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_reuters_graphics
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_reuters_graphics(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
 
 ## gt_theme_savant
 
@@ -4106,6 +5027,62 @@ gt_theme_sofa(GT(df), style="dark")
 
 - [Ported from sdvplotR ``gt_theme_sofa()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_sofa.html)
 
+## gt_theme_source
+
+<div class="sdv-signature">
+
+```python
+gt_theme_source(
+    gt: great_tables.gt.GT,
+    name: str,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like one of the 122 surveyed sources (``"datagolf"``, ``"wikipedia"``, ``"economist"``, ...).
+
+Fonts, ground, text and rule colors, row rules, column rules, striping, label case and tracking, and padding
+come from the theme's spec (``table_theme_spec(name, mode)``); ``density`` rescales its sizes.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `name` | `str` | A registry theme id, as listed by ``sdv_table_themes()``. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises for a light-only theme. |
+| `density` | `str` | The type and padding scale: "comfortable" (the spec's own sizes), "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``name`` is unknown, or ``mode`` is invalid or unavailable for the theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_source
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_source(GT(df), "datagolf", mode="dark")
+```
+
+### See also
+
+- sdvplot.table_theme_spec: the resolved fonts, palette and structure
+- sdvplot.sdv_table_themes: the available ids
+
 ## gt_theme_swiss
 
 <div class="sdv-signature">
@@ -4333,6 +5310,106 @@ gt_theme_tufte(GT(df), accent="#A0522D")
 ### See also
 
 - [Ported from sdvplotR ``gt_theme_tufte()``](https://sdvplotR.sportsdataverse.org/reference/gt_theme_tufte.html)
+
+## gt_theme_washington_post
+
+<div class="sdv-signature">
+
+```python
+gt_theme_washington_post(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like The Washington Post (WPDS) (``gt_theme_source(gt, "washington-post")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_washington_post
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_washington_post(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
+
+## gt_theme_wikipedia
+
+<div class="sdv-signature">
+
+```python
+gt_theme_wikipedia(
+    gt: great_tables.gt.GT,
+    mode: str = 'light',
+    density: str = 'comfortable',
+) -> great_tables.gt.GT
+```
+
+</div>
+
+Style a table like Wikipedia wikitable (``gt_theme_source(gt, "wikipedia")``).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `gt` | `great_tables.gt.GT` | The great_tables ``GT`` to theme. |
+| `mode` | `str` | ``"light"`` or ``"dark"``; ``"dark"`` raises when this theme is light-only. |
+| `density` | `str` | The type and padding scale: "comfortable", "compact" or "social". |
+
+### Returns
+
+`GT` — A new ``GT`` with the theme applied.
+
+### Raises
+
+- `TypeError`: ``gt`` is not a great_tables ``GT``.
+- `InputError`: (a ValueError) ``mode`` is invalid, or ``"dark"`` for a light-only theme.
+- `ValueError`: ``density`` is not one of the three scales.
+
+### Example
+
+```python
+from great_tables import GT
+import polars as pl
+from sdvplot.great_tables import gt_theme_wikipedia
+
+df = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+
+gt_theme_wikipedia(GT(df))
+```
+
+### See also
+
+- sdvplot.great_tables.gt_theme_source: any of the 122 surveyed themes by id
 
 ## gt_tiers
 

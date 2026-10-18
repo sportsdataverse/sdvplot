@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+import warnings
 from typing import Any
 
 from sdvplot._errors import requires_extra
@@ -9,10 +11,13 @@ from sdvplot._errors import requires_extra
 with requires_extra("plottable"):
     from plottable import ColumnDefinition
 
+from sdvplot._contrast import contrast
 from sdvplot._placement import place
+from sdvplot._surface import _has_font
+from sdvplot._table_themes import _generic_family, table_theme_spec
 from sdvplot.matplotlib import _image
 
-__all__ = ["headshot_column", "logo_column"]
+__all__ = ["headshot_column", "logo_column", "plottable_sdv_theme"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -140,3 +145,101 @@ def headshot_column(
     """
     draw = _cell("headshot", league, None, "default", id_system)
     return ColumnDefinition(name=name, plot_fn=draw, **column_definition_kwargs)
+
+
+_warned_fonts: set[str] = set()  # families already warned about in this process
+_LINESTYLES = {
+    "solid": "-",
+    "dotted": ":",
+    "dashed": "--",
+}  # "double" and the rest draw solid: matplotlib has no double
+
+
+def _divider(css: str) -> dict[str, Any] | None:
+    """A matplotlib line spec from a resolved CSS border ("1px dotted #ccc"), or None for "none"."""
+    m = re.fullmatch(r"([\d.]+)px\s+(\w+)\s+(\S+)", css.strip())
+    if not m:
+        return None
+    return {"linewidth": float(m.group(1)) * 0.75, "linestyle": _LINESTYLES.get(m.group(2), "-"), "color": m.group(3)}
+
+
+def _family(family: str) -> str:
+    """``family`` if matplotlib has it, else its generic fallback with one UserWarning per family per process."""
+    if _has_font(family):
+        return family
+    fallback = _generic_family(family)
+    if family not in _warned_fonts:
+        _warned_fonts.add(family)
+        warnings.warn(
+            f"font {family!r} is not installed for matplotlib; using the {fallback!r} family instead",
+            UserWarning,
+            stacklevel=3,
+        )
+    return fallback
+
+
+def plottable_sdv_theme(name: str, *, mode: str = "light") -> dict[str, Any]:
+    """The ``plottable.Table`` keywords that style a table like one of the 122 surveyed themes.
+
+    Args:
+        name: The theme id, as listed by ``sdv_table_themes()`` (see ``table_theme_spec``).
+        mode: ``"light"`` or ``"dark"``; dark raises on a light-only theme.
+
+    Returns:
+        dict: Keywords for ``Table`` (``textprops``, ``row_dividers``, ``row_divider_kw``, ``col_label_divider``,
+        ``col_label_divider_kw``, ``col_label_cell_kw``, ``footer_divider``, ``footer_divider_kw``,
+        ``column_border_kw``, ``odd_row_color``, ``even_row_color``) plus ``facecolor``, which ``Table`` does not
+        accept: pop it and apply it with ``fig.set_facecolor`` (and ``ax.set_facecolor``). ``col_label_cell_kw`` is
+        the header fill (the theme's ``labelBg``), empty unless body text keeps 3:1 contrast on it: plottable styles
+        header text with the body ``textprops``, so ``labelColor`` and ``labelWeight`` cannot be applied. A body font
+        matplotlib cannot find falls back to its generic family (serif, monospace or sans-serif) with one UserWarning
+        per family per process.
+
+    Raises:
+        InputError: As ``table_theme_spec``: an unknown name or mode, or ``mode="dark"`` on a light-only theme.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            from plottable import Table
+            from sdvplot.plottable import plottable_sdv_theme
+
+            kw = plottable_sdv_theme("fangraphs")
+            fig, ax = plt.subplots()
+            fig.set_facecolor(kw.pop("facecolor"))
+            Table(pd.DataFrame({"team": ["KC", "BUF"], "wins": [12, 10]}), ax=ax, **kw)
+
+    See Also:
+        sdvplot.table_theme_spec: the resolved spec ;
+        sdvplot.reactable.reactable_sdv_theme: the same themes for reactable
+    """
+    spec = table_theme_spec(name, mode)  # type: ignore[arg-type]
+    pal, st = spec.palette, spec.structure
+    row, head, foot, col = (_divider(st[k]) for k in ("rowRule", "labelBorderBottom", "tableBorderBottom", "colRule"))
+    label_bg = pal.get("labelBg")
+    # plottable's col_label_cell_kw goes to the header Rectangle only: header text takes the body textprops, so the
+    # theme's labelColor/labelWeight cannot be applied. Fill the header only where body text stays readable on it.
+    header = (
+        {"facecolor": label_bg} if label_bg and label_bg != pal["bg"] and contrast(label_bg, pal["text"]) >= 3 else {}
+    )
+    return {
+        "textprops": {
+            "fontfamily": _family(spec.fonts["body"]),
+            "fontsize": spec.sizes["body"] * 0.75,
+            "fontweight": spec.fonts["bodyWeight"],
+            "color": pal["text"],
+        },
+        "row_dividers": row is not None,
+        "row_divider_kw": row or {},
+        "col_label_cell_kw": header,
+        "col_label_divider": head is not None,
+        "col_label_divider_kw": head or {},
+        "footer_divider": foot is not None,
+        "footer_divider_kw": foot or {},
+        "column_border_kw": col or {},
+        "odd_row_color": pal["stripe"] if st["stripe"] else None,
+        "even_row_color": None,
+        "facecolor": pal["bg"],
+    }

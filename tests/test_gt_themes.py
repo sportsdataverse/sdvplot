@@ -10,14 +10,16 @@ import great_tables  # noqa: E402
 from great_tables import GT  # noqa: E402
 
 import sdvplot.great_tables as sgt  # noqa: E402
-from sdvplot.great_tables import _layout, _marks, _themes  # noqa: E402
+from sdvplot.great_tables import _gt_shortcuts, _layout, _marks, _themes  # noqa: E402
 
 ROWS = {"conf": ["AFC West", "AFC West", "NFC West"], "team": ["LV", "KC", "LAR"], "w": [8, 15, 10], "l": [9, 2, 7]}
 # wave A's two themes are tested there; these are this module's
 THEMES = sorted(
     n
     for n in sgt.__all__
-    if n.startswith("gt_theme_") and n not in ("gt_theme_preview", "gt_theme_sdv", "gt_theme_sdv_team")
+    if n.startswith("gt_theme_")
+    and n not in ("gt_theme_preview", "gt_theme_sdv", "gt_theme_sdv_team", "gt_theme_source")
+    and n not in _gt_shortcuts.__all__  # the registry shortcuts are tested in test_gt_source_themes.py
 )
 
 
