@@ -142,6 +142,14 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_19.png" alt="Every shot of Manchester City vs Aston Villa on a dark mplsoccer pitch, goals drawn as the scorer&#x27;s logo" loading="lazy"/><br/>Premier League shot map with goal logos on an mplsoccer pitch<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#9-a-soccer-shot-map-on-an-mplsoccer-pitch)
 
+[<img src="/img/gallery/cookbooks/plottable_3.png" alt="A plottable table of the WNBA&#x27;s ten leading scorers with player headshots, team logos and a bar for points per game" loading="lazy"/><br/>WNBA scoring leaders in plottable, headshots and bars<br/><small>plottable</small>](cookbooks/plottable.md#1-headshots-and-bars-the-wnbas-leading-scorers)
+
+[<img src="/img/gallery/cookbooks/plottable_11.png" alt="A 1080 by 1080 dark plottable table of men&#x27;s college basketball&#x27;s top ten teams by adjusted efficiency margin, with dark-variant logos" loading="lazy"/><br/>A square plottable table for social, dark logos<br/><small>plottable</small>](cookbooks/plottable.md#5-a-square-image-for-social-mens-college-basketball-dark)
+
+[<img src="/img/gallery/cookbooks/pygal_15.png" alt="pygal scatter of SEC men&#x27;s basketball adjusted offense against adjusted defense with team logos" loading="lazy"/><br/>SEC adjusted efficiency, a pygal chart exported to PNG<br/><small>pygal</small>](cookbooks/pygal.md#7-export-a-png)
+
+[<img src="/img/gallery/cookbooks/holoviews_15.png" alt="HoloViews scatter of MLB runs scored and allowed per game with team logos, rendered through the matplotlib backend" loading="lazy"/><br/>MLB runs scored vs allowed, a HoloViews chart rendered with matplotlib<br/><small>HoloViews</small>](cookbooks/holoviews.md#6-a-static-png-through-the-matplotlib-backend)
+
 </div>
 
 ## Recipes

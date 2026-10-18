@@ -1,0 +1,21 @@
+{
+  "section": "cookbooks",
+  "stem": "plottable",
+  "label": "plottable",
+  "position": 8,
+  "page": "cookbooks/plottable.md",
+  "items": [
+    {
+      "title": "WNBA scoring leaders in plottable, headshots and bars",
+      "alt": "A plottable table of the WNBA's ten leading scorers with player headshots, team logos and a bar for points per game",
+      "image": "/img/gallery/cookbooks/plottable_3.png",
+      "anchor": "1-headshots-and-bars-the-wnbas-leading-scorers"
+    },
+    {
+      "title": "A square plottable table for social, dark logos",
+      "alt": "A 1080 by 1080 dark plottable table of men's college basketball's top ten teams by adjusted efficiency margin, with dark-variant logos",
+      "image": "/img/gallery/cookbooks/plottable_11.png",
+      "anchor": "5-a-square-image-for-social-mens-college-basketball-dark"
+    }
+  ]
+}

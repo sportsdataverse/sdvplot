@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_sdv_7_0_0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 520.0px;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+
+&lt;/head&gt;
+&lt;body&gt;
+
+
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_sdv_7_0_0&quot; &gt;&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;script&gt;
+
+
+            var map_sdv_7_0_0 = L.map(
+                &quot;map_sdv_7_0_0&quot;,
+                {
+                    center: [38.5, -96.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 4,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+
+
+
+
+            var tile_layer_sdv_7_0_1 = L.tileLayer(
+                &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 16,
+  &quot;maxNativeZoom&quot;: 16,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;Tiles \u0026copy; Esri \u0026mdash; Esri, DeLorme, NAVTEQ&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+
+
+            tile_layer_sdv_7_0_1.addTo(map_sdv_7_0_0);
+
+
+            var circle_marker_sdv_7_0_2 = L.circleMarker(
+                [38.57994, -121.51246],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003831&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#003831&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 9.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_3 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_4 = $(`&lt;div id=&quot;html_sdv_7_0_4&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f4/f430543a6db8d652e4fb1a81c4ac99ee32022ae587834234a029830a9653b8d2.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Athletics&lt;/b&gt;&lt;br&gt;Sutter Health Park, Sacramento&lt;br&gt;64-98, run differential -238&lt;/div&gt;`)[0];
+                popup_sdv_7_0_3.setContent(html_sdv_7_0_4);
+
+
+
+        circle_marker_sdv_7_0_2.bindPopup(popup_sdv_7_0_3)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_5 = L.circleMarker(
+                [33.890672, -84.467641],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0c2340&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#0c2340&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 19.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_6 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_7 = $(`&lt;div id=&quot;html_sdv_7_0_7&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c36c62410bbed29624672b006173af58bcdfbb066ae9d6f7c4cb99205e861d2.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Atlanta Braves&lt;/b&gt;&lt;br&gt;Truist Park, Atlanta&lt;br&gt;94-68, run differential +116&lt;/div&gt;`)[0];
+                popup_sdv_7_0_6.setContent(html_sdv_7_0_7);
+
+
+
+        circle_marker_sdv_7_0_5.bindPopup(popup_sdv_7_0_6)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_8 = L.circleMarker(
+                [33.445302, -112.066687],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#aa182c&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#aa182c&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 17.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_9 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_10 = $(`&lt;div id=&quot;html_sdv_7_0_10&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b0/b060f0fcc21d64b978be260f0c24880c50094f0ec8e640d14896dc5045bf0b21.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Arizona Diamondbacks&lt;/b&gt;&lt;br&gt;Chase Field, Phoenix&lt;br&gt;86-76, run differential +9&lt;/div&gt;`)[0];
+                popup_sdv_7_0_9.setContent(html_sdv_7_0_10);
+
+
+
+        circle_marker_sdv_7_0_8.bindPopup(popup_sdv_7_0_9)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_11 = L.circleMarker(
+                [39.283787, -76.621689],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#df4601&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#df4601&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_12 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_13 = $(`&lt;div id=&quot;html_sdv_7_0_13&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e9/e96827050e6079674fa20221f5b8b8acbd4f80843f861dbb4d0261b309741472.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Baltimore Orioles&lt;/b&gt;&lt;br&gt;Oriole Park at Camden Yards, Baltimore&lt;br&gt;79-82, run differential -21&lt;/div&gt;`)[0];
+                popup_sdv_7_0_12.setContent(html_sdv_7_0_13);
+
+
+
+        circle_marker_sdv_7_0_11.bindPopup(popup_sdv_7_0_12)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_14 = L.circleMarker(
+                [42.346456, -71.097441],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0d2b56&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#0d2b56&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 17.333333333333332, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_15 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_16 = $(`&lt;div id=&quot;html_sdv_7_0_16&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/47/471966c3b3f4ab7b567b9cd29e7eefc138963182e98b31c01c922335ad265597.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Boston Red Sox&lt;/b&gt;&lt;br&gt;Fenway Park, Boston&lt;br&gt;87-75, run differential +78&lt;/div&gt;`)[0];
+                popup_sdv_7_0_15.setContent(html_sdv_7_0_16);
+
+
+
+        circle_marker_sdv_7_0_14.bindPopup(popup_sdv_7_0_15)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_17 = L.circleMarker(
+                [41.948171, -87.655503],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0e3386&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#0e3386&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 18.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_18 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_19 = $(`&lt;div id=&quot;html_sdv_7_0_19&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39a2b071f52778bbaa9f7d58432db3dcf638bb9a25eb17a901d3551d5d859086.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Chicago Cubs&lt;/b&gt;&lt;br&gt;Wrigley Field, Chicago&lt;br&gt;89-73, run differential +147&lt;/div&gt;`)[0];
+                popup_sdv_7_0_18.setContent(html_sdv_7_0_19);
+
+
+
+        circle_marker_sdv_7_0_17.bindPopup(popup_sdv_7_0_18)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_20 = L.circleMarker(
+                [39.097389, -84.506611],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#c6011f&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#c6011f&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 13.333333333333334, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_21 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_22 = $(`&lt;div id=&quot;html_sdv_7_0_22&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57f685ca691ba291d8ed31378e489a44b71648b310bfb7ceb8017bd21373f23c.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Cincinnati Reds&lt;/b&gt;&lt;br&gt;Great American Ball Park, Cincinnati&lt;br&gt;75-87, run differential -160&lt;/div&gt;`)[0];
+                popup_sdv_7_0_21.setContent(html_sdv_7_0_22);
+
+
+
+        circle_marker_sdv_7_0_20.bindPopup(popup_sdv_7_0_21)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_23 = L.circleMarker(
+                [41.495861, -81.685255],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#002b5c&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#002b5c&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_24 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_25 = $(`&lt;div id=&quot;html_sdv_7_0_25&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/8883a4e8b7c6bb75f308f1fb27a39eb7cf81ce431ba781edbc4afe082164410f.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Cleveland Guardians&lt;/b&gt;&lt;br&gt;Progressive Field, Cleveland&lt;br&gt;85-77, run differential +11&lt;/div&gt;`)[0];
+                popup_sdv_7_0_24.setContent(html_sdv_7_0_25);
+
+
+
+        circle_marker_sdv_7_0_23.bindPopup(popup_sdv_7_0_24)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_26 = L.circleMarker(
+                [39.756042, -104.994136],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#33006f&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#33006f&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 7.666666666666667, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_27 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_28 = $(`&lt;div id=&quot;html_sdv_7_0_28&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd21e7588f021af3b44cc0aeab2b281ddc515b7d6b6a68e4c823086ed585ea75.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Colorado Rockies&lt;/b&gt;&lt;br&gt;Coors Field, Denver&lt;br&gt;58-104, run differential -192&lt;/div&gt;`)[0];
+                popup_sdv_7_0_27.setContent(html_sdv_7_0_28);
+
+
+
+        circle_marker_sdv_7_0_26.bindPopup(popup_sdv_7_0_27)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_29 = L.circleMarker(
+                [41.83, -87.634167],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#000000&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#000000&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16.333333333333332, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_30 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_31 = $(`&lt;div id=&quot;html_sdv_7_0_31&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f9/f92f9c32cea65d9e697a254d09a8ae16326889796f380649b2fee64396cc4640.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Chicago White Sox&lt;/b&gt;&lt;br&gt;Rate Field, Chicago&lt;br&gt;84-78, run differential +56&lt;/div&gt;`)[0];
+                popup_sdv_7_0_30.setContent(html_sdv_7_0_31);
+
+
+
+        circle_marker_sdv_7_0_29.bindPopup(popup_sdv_7_0_30)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_32 = L.circleMarker(
+                [42.3391151, -83.048695],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0a2240&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#0a2240&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 13.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_33 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_34 = $(`&lt;div id=&quot;html_sdv_7_0_34&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/00/0037b82f8f714da9f40b6a2ac036c5086f06ccb139473891135c3321a7a08750.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Detroit Tigers&lt;/b&gt;&lt;br&gt;Comerica Park, Detroit&lt;br&gt;76-86, run differential +71&lt;/div&gt;`)[0];
+                popup_sdv_7_0_33.setContent(html_sdv_7_0_34);
+
+
+
+        circle_marker_sdv_7_0_32.bindPopup(popup_sdv_7_0_33)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_35 = L.circleMarker(
+                [29.756967, -95.355509],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#002d62&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#002d62&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.333333333333334, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_36 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_37 = $(`&lt;div id=&quot;html_sdv_7_0_37&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b7e6858d9d11fe9fade351624bfbab74ec12451749feef37bd1f083d59eb4f7b.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Houston Astros&lt;/b&gt;&lt;br&gt;Daikin Park, Houston&lt;br&gt;81-81, run differential -32&lt;/div&gt;`)[0];
+                popup_sdv_7_0_36.setContent(html_sdv_7_0_37);
+
+
+
+        circle_marker_sdv_7_0_35.bindPopup(popup_sdv_7_0_36)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_38 = L.circleMarker(
+                [39.051567, -94.480483],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#004687&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#004687&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 11.333333333333334, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_39 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_40 = $(`&lt;div id=&quot;html_sdv_7_0_40&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95188fdcf6d74b4e5437549ad33e20548ce8f3e696621765680354da25a0207b.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Kansas City Royals&lt;/b&gt;&lt;br&gt;Kauffman Stadium, Kansas City&lt;br&gt;69-93, run differential -120&lt;/div&gt;`)[0];
+                popup_sdv_7_0_39.setContent(html_sdv_7_0_40);
+
+
+
+        circle_marker_sdv_7_0_38.bindPopup(popup_sdv_7_0_39)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_41 = L.circleMarker(
+                [33.80019044, -117.8823996],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#ba0021&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#ba0021&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 9.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_42 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_43 = $(`&lt;div id=&quot;html_sdv_7_0_43&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/71/712a4a6f37cac63156de1d17a170532fd6bbbf3a9690b276fec2a6aac751809f.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Los Angeles Angels&lt;/b&gt;&lt;br&gt;Angel Stadium, Anaheim&lt;br&gt;62-100, run differential -97&lt;/div&gt;`)[0];
+                popup_sdv_7_0_42.setContent(html_sdv_7_0_43);
+
+
+
+        circle_marker_sdv_7_0_41.bindPopup(popup_sdv_7_0_42)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_44 = L.circleMarker(
+                [34.07368, -118.24053],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#005a9c&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#005a9c&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 21.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_45 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_46 = $(`&lt;div id=&quot;html_sdv_7_0_46&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aab854c59098d4f465c1c6f31b580f2a38d2ed4f5c0c03df2da76f62f5378dc4.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Los Angeles Dodgers&lt;/b&gt;&lt;br&gt;UNIQLO Field at Dodger Stadium, Los Angeles&lt;br&gt;100-62, run differential +201&lt;/div&gt;`)[0];
+                popup_sdv_7_0_45.setContent(html_sdv_7_0_46);
+
+
+
+        circle_marker_sdv_7_0_44.bindPopup(popup_sdv_7_0_45)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_47 = L.circleMarker(
+                [25.77796236, -80.21951795],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#00a3e0&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#00a3e0&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_48 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_49 = $(`&lt;div id=&quot;html_sdv_7_0_49&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ef/ef37342904a50d2807c45432909de83c62c6795e9e54ebe42ac85fdd5e24c91f.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Miami Marlins&lt;/b&gt;&lt;br&gt;loanDepot park, Miami&lt;br&gt;80-82, run differential +3&lt;/div&gt;`)[0];
+                popup_sdv_7_0_48.setContent(html_sdv_7_0_49);
+
+
+
+        circle_marker_sdv_7_0_47.bindPopup(popup_sdv_7_0_48)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_50 = L.circleMarker(
+                [43.02838, -87.97099],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#13294b&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#13294b&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 22.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_51 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_52 = $(`&lt;div id=&quot;html_sdv_7_0_52&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d4f8fe1b5be4b266a7cb1520a46a863973467361a1d3fd528502e223cbe35490.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Milwaukee Brewers&lt;/b&gt;&lt;br&gt;American Family Field, Milwaukee&lt;br&gt;103-59, run differential +214&lt;/div&gt;`)[0];
+                popup_sdv_7_0_51.setContent(html_sdv_7_0_52);
+
+
+
+        circle_marker_sdv_7_0_50.bindPopup(popup_sdv_7_0_51)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_53 = L.circleMarker(
+                [44.981829, -93.277891],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#031f40&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#031f40&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_54 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_55 = $(`&lt;div id=&quot;html_sdv_7_0_55&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3fbce769013cd44f2370505f8982d732c58c511eac9ede4e4d9bbe1b24ad4d39.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Minnesota Twins&lt;/b&gt;&lt;br&gt;Target Field, Minneapolis&lt;br&gt;77-85, run differential -58&lt;/div&gt;`)[0];
+                popup_sdv_7_0_54.setContent(html_sdv_7_0_55);
+
+
+
+        circle_marker_sdv_7_0_53.bindPopup(popup_sdv_7_0_54)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_56 = L.circleMarker(
+                [40.75753012, -73.84559155],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#002d72&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#002d72&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 13.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_57 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_58 = $(`&lt;div id=&quot;html_sdv_7_0_58&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/94/94c334280d388936cb193fca6c3b620d2ed6abb7b932f352fa575630ce6243bd.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;New York Mets&lt;/b&gt;&lt;br&gt;Citi Field, Flushing&lt;br&gt;74-88, run differential -32&lt;/div&gt;`)[0];
+                popup_sdv_7_0_57.setContent(html_sdv_7_0_58);
+
+
+
+        circle_marker_sdv_7_0_56.bindPopup(popup_sdv_7_0_57)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_59 = L.circleMarker(
+                [40.82919482, -73.9264977],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#132448&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#132448&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 19.333333333333332, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_60 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_61 = $(`&lt;div id=&quot;html_sdv_7_0_61&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d98856c36bc8d3b0fb0bab5fabd79d2ae057619164365845cbc817b04ae74a26.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;New York Yankees&lt;/b&gt;&lt;br&gt;Yankee Stadium, Bronx&lt;br&gt;93-68, run differential +138&lt;/div&gt;`)[0];
+                popup_sdv_7_0_60.setContent(html_sdv_7_0_61);
+
+
+
+        circle_marker_sdv_7_0_59.bindPopup(popup_sdv_7_0_60)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_62 = L.circleMarker(
+                [39.90539086, -75.16716957],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#e81828&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#e81828&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 17.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_63 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_64 = $(`&lt;div id=&quot;html_sdv_7_0_64&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95997c9aaac40ec5d718b667c374561b782e5cb88665d69daf3178a16401d683.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Philadelphia Phillies&lt;/b&gt;&lt;br&gt;Citizens Bank Park, Philadelphia&lt;br&gt;88-74, run differential +15&lt;/div&gt;`)[0];
+                popup_sdv_7_0_63.setContent(html_sdv_7_0_64);
+
+
+
+        circle_marker_sdv_7_0_62.bindPopup(popup_sdv_7_0_63)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_65 = L.circleMarker(
+                [40.446904, -80.005753],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#000000&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#000000&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_66 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_67 = $(`&lt;div id=&quot;html_sdv_7_0_67&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0a/0af791c91bc01b4c654a65c90c983c3f907bf2605c67cfaaed731985efff34a1.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Pittsburgh Pirates&lt;/b&gt;&lt;br&gt;PNC Park, Pittsburgh&lt;br&gt;82-80, run differential +28&lt;/div&gt;`)[0];
+                popup_sdv_7_0_66.setContent(html_sdv_7_0_67);
+
+
+
+        circle_marker_sdv_7_0_65.bindPopup(popup_sdv_7_0_66)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_68 = L.circleMarker(
+                [32.707861, -117.157278],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#2f241d&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2f241d&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 18.666666666666668, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_69 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_70 = $(`&lt;div id=&quot;html_sdv_7_0_70&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bb012967768a5f476ff427f433e89960149217777c6371d80eafb8725c2f175.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;San Diego Padres&lt;/b&gt;&lt;br&gt;Petco Park, San Diego&lt;br&gt;91-71, run differential +41&lt;/div&gt;`)[0];
+                popup_sdv_7_0_69.setContent(html_sdv_7_0_70);
+
+
+
+        circle_marker_sdv_7_0_68.bindPopup(popup_sdv_7_0_69)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_71 = L.circleMarker(
+                [47.591333, -122.33251],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#005c5c&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#005c5c&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 13.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_72 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_73 = $(`&lt;div id=&quot;html_sdv_7_0_73&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/9273d78e456969b14ef9031f39fc0511d8e875a919d887daa6b0898b1ff52226.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Seattle Mariners&lt;/b&gt;&lt;br&gt;T-Mobile Park, Seattle&lt;br&gt;76-86, run differential -58&lt;/div&gt;`)[0];
+                popup_sdv_7_0_72.setContent(html_sdv_7_0_73);
+
+
+
+        circle_marker_sdv_7_0_71.bindPopup(popup_sdv_7_0_72)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_74 = L.circleMarker(
+                [37.778383, -122.389448],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#000000&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#000000&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_75 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_76 = $(`&lt;div id=&quot;html_sdv_7_0_76&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/da/dad3e0a51931bb8281ebb0215624849e0fd6cbec81aafc6a12d2260f583c04e5.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;San Francisco Giants&lt;/b&gt;&lt;br&gt;Oracle Park, San Francisco&lt;br&gt;65-97, run differential -91&lt;/div&gt;`)[0];
+                popup_sdv_7_0_75.setContent(html_sdv_7_0_76);
+
+
+
+        circle_marker_sdv_7_0_74.bindPopup(popup_sdv_7_0_75)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_77 = L.circleMarker(
+                [38.62256667, -90.19286667],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#be0a14&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#be0a14&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_78 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_79 = $(`&lt;div id=&quot;html_sdv_7_0_79&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b738c8aaac9b726336cfa3e42745a4ddcc4c8d9537a9dc0b6abba02c5952e417.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;St. Louis Cardinals&lt;/b&gt;&lt;br&gt;Busch Stadium, St. Louis&lt;br&gt;77-85, run differential -29&lt;/div&gt;`)[0];
+                popup_sdv_7_0_78.setContent(html_sdv_7_0_79);
+
+
+
+        circle_marker_sdv_7_0_77.bindPopup(popup_sdv_7_0_78)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_80 = L.circleMarker(
+                [27.767778, -82.6525],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#092c5c&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#092c5c&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 21.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_81 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_82 = $(`&lt;div id=&quot;html_sdv_7_0_82&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f16f721cfdbb929fac08c9e1d8f9e1ab410be8b409eed5dac9b5f5c9a7af5ae.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Tampa Bay Rays&lt;/b&gt;&lt;br&gt;Tropicana Field, St. Petersburg&lt;br&gt;98-64, run differential +86&lt;/div&gt;`)[0];
+                popup_sdv_7_0_81.setContent(html_sdv_7_0_82);
+
+
+
+        circle_marker_sdv_7_0_80.bindPopup(popup_sdv_7_0_81)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_83 = L.circleMarker(
+                [32.747299, -97.081818],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003278&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#003278&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_84 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_85 = $(`&lt;div id=&quot;html_sdv_7_0_85&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b19ee28a151164ed231d98cafbcebe471faaa876a202e9c558b925be3ac3dac9.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Texas Rangers&lt;/b&gt;&lt;br&gt;Globe Life Field, Arlington&lt;br&gt;80-82, run differential -46&lt;/div&gt;`)[0];
+                popup_sdv_7_0_84.setContent(html_sdv_7_0_85);
+
+
+
+        circle_marker_sdv_7_0_83.bindPopup(popup_sdv_7_0_84)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_86 = L.circleMarker(
+                [43.64155, -79.38915],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#134a8e&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#134a8e&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.666666666666666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_87 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_88 = $(`&lt;div id=&quot;html_sdv_7_0_88&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af6d5454549834ea4b8cd6687618a76f936209ecf39eabdb17deaf76d21dd989.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Toronto Blue Jays&lt;/b&gt;&lt;br&gt;Rogers Centre, Toronto&lt;br&gt;79-83, run differential -46&lt;/div&gt;`)[0];
+                popup_sdv_7_0_87.setContent(html_sdv_7_0_88);
+
+
+
+        circle_marker_sdv_7_0_86.bindPopup(popup_sdv_7_0_87)
+        ;
+
+
+
+
+            var circle_marker_sdv_7_0_89 = L.circleMarker(
+                [38.872861, -77.007501],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#ab0003&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#ab0003&quot;, &quot;fillOpacity&quot;: 0.45, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_sdv_7_0_0);
+
+
+        var popup_sdv_7_0_90 = L.popup({
+  &quot;maxWidth&quot;: 240,
+});
+
+
+
+                var html_sdv_7_0_91 = $(`&lt;div id=&quot;html_sdv_7_0_91&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;&lt;img src=&quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d65931fe979aec3fe59a60b2d9df900e3f84da0eca81eb1646d0ea3a93fc810.png&quot; width=&quot;48&quot;&gt;&lt;br&gt;&lt;b&gt;Washington Nationals&lt;/b&gt;&lt;br&gt;Nationals Park, Washington&lt;br&gt;77-85, run differential +6&lt;/div&gt;`)[0];
+                popup_sdv_7_0_90.setContent(html_sdv_7_0_91);
+
+
+
+        circle_marker_sdv_7_0_89.bindPopup(popup_sdv_7_0_90)
+        ;
+
+
+
+
+            var feature_group_sdv_7_0_92 = L.featureGroup(
+                {
+}
+            );
+
+
+            var marker_sdv_7_0_93 = L.marker(
+                [38.57994, -121.51246],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_94 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f4/f430543a6db8d652e4fb1a81c4ac99ee32022ae587834234a029830a9653b8d2.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_93.bindTooltip(
+                `&lt;div&gt;
+                     Athletics
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_93.setIcon(icon_sdv_7_0_94);
+
+
+            var marker_sdv_7_0_95 = L.marker(
+                [33.890672, -84.467641],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_96 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c36c62410bbed29624672b006173af58bcdfbb066ae9d6f7c4cb99205e861d2.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_95.bindTooltip(
+                `&lt;div&gt;
+                     Atlanta Braves
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_95.setIcon(icon_sdv_7_0_96);
+
+
+            var marker_sdv_7_0_97 = L.marker(
+                [33.445302, -112.066687],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_98 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b0/b060f0fcc21d64b978be260f0c24880c50094f0ec8e640d14896dc5045bf0b21.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_97.bindTooltip(
+                `&lt;div&gt;
+                     Arizona Diamondbacks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_97.setIcon(icon_sdv_7_0_98);
+
+
+            var marker_sdv_7_0_99 = L.marker(
+                [39.283787, -76.621689],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_100 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e9/e96827050e6079674fa20221f5b8b8acbd4f80843f861dbb4d0261b309741472.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_99.bindTooltip(
+                `&lt;div&gt;
+                     Baltimore Orioles
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_99.setIcon(icon_sdv_7_0_100);
+
+
+            var marker_sdv_7_0_101 = L.marker(
+                [42.346456, -71.097441],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_102 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/47/471966c3b3f4ab7b567b9cd29e7eefc138963182e98b31c01c922335ad265597.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_101.bindTooltip(
+                `&lt;div&gt;
+                     Boston Red Sox
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_101.setIcon(icon_sdv_7_0_102);
+
+
+            var marker_sdv_7_0_103 = L.marker(
+                [41.948171, -87.655503],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_104 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39a2b071f52778bbaa9f7d58432db3dcf638bb9a25eb17a901d3551d5d859086.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_103.bindTooltip(
+                `&lt;div&gt;
+                     Chicago Cubs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_103.setIcon(icon_sdv_7_0_104);
+
+
+            var marker_sdv_7_0_105 = L.marker(
+                [39.097389, -84.506611],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_106 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57f685ca691ba291d8ed31378e489a44b71648b310bfb7ceb8017bd21373f23c.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_105.bindTooltip(
+                `&lt;div&gt;
+                     Cincinnati Reds
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_105.setIcon(icon_sdv_7_0_106);
+
+
+            var marker_sdv_7_0_107 = L.marker(
+                [41.495861, -81.685255],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_108 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/8883a4e8b7c6bb75f308f1fb27a39eb7cf81ce431ba781edbc4afe082164410f.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_107.bindTooltip(
+                `&lt;div&gt;
+                     Cleveland Guardians
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_107.setIcon(icon_sdv_7_0_108);
+
+
+            var marker_sdv_7_0_109 = L.marker(
+                [39.756042, -104.994136],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_110 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd21e7588f021af3b44cc0aeab2b281ddc515b7d6b6a68e4c823086ed585ea75.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_109.bindTooltip(
+                `&lt;div&gt;
+                     Colorado Rockies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_109.setIcon(icon_sdv_7_0_110);
+
+
+            var marker_sdv_7_0_111 = L.marker(
+                [41.83, -87.634167],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_112 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f9/f92f9c32cea65d9e697a254d09a8ae16326889796f380649b2fee64396cc4640.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_111.bindTooltip(
+                `&lt;div&gt;
+                     Chicago White Sox
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_111.setIcon(icon_sdv_7_0_112);
+
+
+            var marker_sdv_7_0_113 = L.marker(
+                [42.3391151, -83.048695],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_114 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/00/0037b82f8f714da9f40b6a2ac036c5086f06ccb139473891135c3321a7a08750.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_113.bindTooltip(
+                `&lt;div&gt;
+                     Detroit Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_113.setIcon(icon_sdv_7_0_114);
+
+
+            var marker_sdv_7_0_115 = L.marker(
+                [29.756967, -95.355509],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_116 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b7e6858d9d11fe9fade351624bfbab74ec12451749feef37bd1f083d59eb4f7b.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_115.bindTooltip(
+                `&lt;div&gt;
+                     Houston Astros
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_115.setIcon(icon_sdv_7_0_116);
+
+
+            var marker_sdv_7_0_117 = L.marker(
+                [39.051567, -94.480483],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_118 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95188fdcf6d74b4e5437549ad33e20548ce8f3e696621765680354da25a0207b.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_117.bindTooltip(
+                `&lt;div&gt;
+                     Kansas City Royals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_117.setIcon(icon_sdv_7_0_118);
+
+
+            var marker_sdv_7_0_119 = L.marker(
+                [33.80019044, -117.8823996],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_120 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/71/712a4a6f37cac63156de1d17a170532fd6bbbf3a9690b276fec2a6aac751809f.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_119.bindTooltip(
+                `&lt;div&gt;
+                     Los Angeles Angels
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_119.setIcon(icon_sdv_7_0_120);
+
+
+            var marker_sdv_7_0_121 = L.marker(
+                [34.07368, -118.24053],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_122 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aab854c59098d4f465c1c6f31b580f2a38d2ed4f5c0c03df2da76f62f5378dc4.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_121.bindTooltip(
+                `&lt;div&gt;
+                     Los Angeles Dodgers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_121.setIcon(icon_sdv_7_0_122);
+
+
+            var marker_sdv_7_0_123 = L.marker(
+                [25.77796236, -80.21951795],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_124 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ef/ef37342904a50d2807c45432909de83c62c6795e9e54ebe42ac85fdd5e24c91f.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_123.bindTooltip(
+                `&lt;div&gt;
+                     Miami Marlins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_123.setIcon(icon_sdv_7_0_124);
+
+
+            var marker_sdv_7_0_125 = L.marker(
+                [43.02838, -87.97099],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_126 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d4f8fe1b5be4b266a7cb1520a46a863973467361a1d3fd528502e223cbe35490.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_125.bindTooltip(
+                `&lt;div&gt;
+                     Milwaukee Brewers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_125.setIcon(icon_sdv_7_0_126);
+
+
+            var marker_sdv_7_0_127 = L.marker(
+                [44.981829, -93.277891],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_128 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3fbce769013cd44f2370505f8982d732c58c511eac9ede4e4d9bbe1b24ad4d39.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_127.bindTooltip(
+                `&lt;div&gt;
+                     Minnesota Twins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_127.setIcon(icon_sdv_7_0_128);
+
+
+            var marker_sdv_7_0_129 = L.marker(
+                [40.75753012, -73.84559155],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_130 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/94/94c334280d388936cb193fca6c3b620d2ed6abb7b932f352fa575630ce6243bd.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_129.bindTooltip(
+                `&lt;div&gt;
+                     New York Mets
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_129.setIcon(icon_sdv_7_0_130);
+
+
+            var marker_sdv_7_0_131 = L.marker(
+                [40.82919482, -73.9264977],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_132 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d98856c36bc8d3b0fb0bab5fabd79d2ae057619164365845cbc817b04ae74a26.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_131.bindTooltip(
+                `&lt;div&gt;
+                     New York Yankees
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_131.setIcon(icon_sdv_7_0_132);
+
+
+            var marker_sdv_7_0_133 = L.marker(
+                [39.90539086, -75.16716957],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_134 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95997c9aaac40ec5d718b667c374561b782e5cb88665d69daf3178a16401d683.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_133.bindTooltip(
+                `&lt;div&gt;
+                     Philadelphia Phillies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_133.setIcon(icon_sdv_7_0_134);
+
+
+            var marker_sdv_7_0_135 = L.marker(
+                [40.446904, -80.005753],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_136 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0a/0af791c91bc01b4c654a65c90c983c3f907bf2605c67cfaaed731985efff34a1.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_135.bindTooltip(
+                `&lt;div&gt;
+                     Pittsburgh Pirates
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_135.setIcon(icon_sdv_7_0_136);
+
+
+            var marker_sdv_7_0_137 = L.marker(
+                [32.707861, -117.157278],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_138 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bb012967768a5f476ff427f433e89960149217777c6371d80eafb8725c2f175.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_137.bindTooltip(
+                `&lt;div&gt;
+                     San Diego Padres
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_137.setIcon(icon_sdv_7_0_138);
+
+
+            var marker_sdv_7_0_139 = L.marker(
+                [47.591333, -122.33251],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_140 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/9273d78e456969b14ef9031f39fc0511d8e875a919d887daa6b0898b1ff52226.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_139.bindTooltip(
+                `&lt;div&gt;
+                     Seattle Mariners
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_139.setIcon(icon_sdv_7_0_140);
+
+
+            var marker_sdv_7_0_141 = L.marker(
+                [37.778383, -122.389448],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_142 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/da/dad3e0a51931bb8281ebb0215624849e0fd6cbec81aafc6a12d2260f583c04e5.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_141.bindTooltip(
+                `&lt;div&gt;
+                     San Francisco Giants
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_141.setIcon(icon_sdv_7_0_142);
+
+
+            var marker_sdv_7_0_143 = L.marker(
+                [38.62256667, -90.19286667],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_144 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b738c8aaac9b726336cfa3e42745a4ddcc4c8d9537a9dc0b6abba02c5952e417.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_143.bindTooltip(
+                `&lt;div&gt;
+                     St. Louis Cardinals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_143.setIcon(icon_sdv_7_0_144);
+
+
+            var marker_sdv_7_0_145 = L.marker(
+                [27.767778, -82.6525],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_146 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f16f721cfdbb929fac08c9e1d8f9e1ab410be8b409eed5dac9b5f5c9a7af5ae.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_145.bindTooltip(
+                `&lt;div&gt;
+                     Tampa Bay Rays
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_145.setIcon(icon_sdv_7_0_146);
+
+
+            var marker_sdv_7_0_147 = L.marker(
+                [32.747299, -97.081818],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_148 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b19ee28a151164ed231d98cafbcebe471faaa876a202e9c558b925be3ac3dac9.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_147.bindTooltip(
+                `&lt;div&gt;
+                     Texas Rangers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_147.setIcon(icon_sdv_7_0_148);
+
+
+            var marker_sdv_7_0_149 = L.marker(
+                [43.64155, -79.38915],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_150 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af6d5454549834ea4b8cd6687618a76f936209ecf39eabdb17deaf76d21dd989.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_149.bindTooltip(
+                `&lt;div&gt;
+                     Toronto Blue Jays
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_149.setIcon(icon_sdv_7_0_150);
+
+
+            var marker_sdv_7_0_151 = L.marker(
+                [38.872861, -77.007501],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_7_0_92);
+
+
+        var icon_sdv_7_0_152 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d65931fe979aec3fe59a60b2d9df900e3f84da0eca81eb1646d0ea3a93fc810.png&quot;,
+  &quot;iconSize&quot;: [18, 18],
+  &quot;iconAnchor&quot;: [9, 9],
+});
+
+
+            marker_sdv_7_0_151.bindTooltip(
+                `&lt;div&gt;
+                     Washington Nationals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_7_0_151.setIcon(icon_sdv_7_0_152);
+
+
+            feature_group_sdv_7_0_92.addTo(map_sdv_7_0_0);
+
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
