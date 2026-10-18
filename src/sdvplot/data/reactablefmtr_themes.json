@@ -1,0 +1,2161 @@
+{
+  "reactablefmtr": "2.1.0",
+  "themes": {
+    "cerulean": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#141415",
+        "header_font_size": 15,
+        "header_font_color": "#cfe9f7",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#e9ecef",
+        "borderWidth": "1px",
+        "stripedColor": "#e9ecef",
+        "highlightColor": "#e9ecef",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#3ba9e8",
+          "borderBottomColor": "#eaedf0",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#1782c0"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "rgba(52, 156, 244, 0.5)"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#141415"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#141415",
+          "&:focus": {
+            "color": "#141415"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#2fa4e7",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#e9ecef",
+            "color": "#2fa4e7"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#2fa4e7",
+          "&:hover": {
+            "backgroundColor": "#e9ecef",
+            "color": "#2fa4e7"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#e9ecef",
+          "color": "#2fa4e7"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#2fa4e7",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#2fa4e7",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "clean": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "header_font_color": "#222222",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#ffffff",
+        "stripedColor": "#e0e0e0",
+        "highlightColor": "#e0e0e0",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "borderColor": "#3b3b3b",
+          "color": "@header_font_color@",
+          "fontSize": "@header_font_size@"
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#e0e0e0"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "cosmo": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#141415",
+        "header_font_size": 15,
+        "header_font_color": "#ffffff",
+        "background_color": "#f8f9fa",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#f8f9fa",
+        "borderWidth": "1px",
+        "stripedColor": "white",
+        "highlightColor": "white",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#373a3c",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#111111"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#78c2ad",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#9a9a9a"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#9a9a9a",
+          "borderColor": "#b3cecc",
+          "&:focus": {
+            "color": "#888888"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#2780e3",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#2780e3",
+          "&:hover": {
+            "backgroundColor": "#2780e3",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#2780e3",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#2780e3",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#2780e3",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "cyborg": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#888888",
+        "header_font_size": 15,
+        "header_font_color": "#7b7b7b",
+        "background_color": "#060606",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#888888",
+        "borderWidth": "1px",
+        "stripedColor": "#282828",
+        "highlightColor": "#282828",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#060606",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "backgroundColor": "#2a9fd6",
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "backgroundColor": "#2a9fd6",
+            "color": "#ffffff"
+          },
+          "fontSize": "15px"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#349cf4"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#2a9fd6",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#888888"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#888888",
+          "&:focus": {
+            "color": "#888888"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#282828",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#2a9fd6",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#282828",
+          "color": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#2a9fd6",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#2a9fd6",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#2a9fd6",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#2a9fd6",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "dark": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#FFFFFF",
+        "header_font_size": 16,
+        "header_font_color": "#FFFFFF",
+        "background_color": "#252525",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#434343",
+        "borderWidth": "1px",
+        "stripedColor": "#303030",
+        "highlightColor": "#303030",
+        "cellPadding": "@cell_padding@",
+        "style": {
+          "backgroundColor": "#252525"
+        },
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#252525",
+          "color": "@header_font_color@",
+          "borderColor": "#ececec",
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "backgroundColor": "#252525",
+          "fontSize": "@header_font_size@",
+          "color": "@font_color@"
+        },
+        "rowSelectedStyle": {
+          "backgroundImage": "linear-gradient(#191919, #252525)"
+        },
+        "cellStyle": {
+          "display": "flex"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#252525"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#252525"
+        },
+        "selectStyle": {
+          "backgroundImage": "linear-gradient(#191919, #252525)",
+          "backgroundColor": "#999999",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "paginationStyle": {
+          "backgroundImage": "linear-gradient(#191919, #252525)"
+        },
+        "pageButtonStyle": {
+          "backgroundImage": "linear-gradient(#191919, #252525)"
+        },
+        "pageButtonHoverStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "darkly": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#ffffff",
+        "header_font_size": 15,
+        "header_font_color": "#afbdcc",
+        "background_color": "#222222",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#222222",
+        "borderWidth": "1px",
+        "stripedColor": "#adb5bd",
+        "highlightColor": "#adb5bd",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#375a7f",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#afbdcc"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#375a7f",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529",
+          "borderColor": "#222222",
+          "&:focus": {
+            "color": "#212529"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#00bc8c",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#00efb2"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#00bc8c",
+          "color": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#00efb2"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#00efb2",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#00efb2",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#00efb2",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "default": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#333333",
+        "header_font_size": 15,
+        "header_font_color": "#333333",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "color": "@header_font_color@",
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "color": "@font_color@",
+          "fontSize": "@header_font_size@"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "espn": {
+      "defaults": {
+        "font_size": 12,
+        "font_color": "#6C6D6F",
+        "header_font_size": 11,
+        "header_font_color": "#48494a",
+        "background_color": null,
+        "cell_padding": 7
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#ededed",
+        "borderWidth": "1px",
+        "stripedColor": "#fafafa",
+        "highlightColor": "#fafafa",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderTop": "1px solid #e1e2e4",
+          "borderBottom": "1px solid #e1e2e4",
+          "padding": "4px",
+          "background": "#ffffff",
+          "borderColor": "#ffffff",
+          "color": "@header_font_color@",
+          "textTransform": "uppercase",
+          "&:hover": {
+            "color": "#004D9A"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "borderTop": "1px solid #e1e2e4",
+          "borderLeft": "1px solid #e1e2e4",
+          "borderRight": "1px solid #e1e2e4",
+          "backgroundColor": "#ffffff",
+          "textTransform": "uppercase",
+          "fontSize": "11px",
+          "color": "@font_color@"
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#48494a"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#6C6D6F"
+        },
+        "searchInputStyle": {
+          "color": "#6C6D6F",
+          "fontSize": "13px"
+        },
+        "selectStyle": {
+          "color": "#48494a"
+        },
+        "paginationStyle": {
+          "color": "#48494a",
+          "fontSize": "13px"
+        },
+        "pageButtonStyle": {
+          "color": "#48494a",
+          "fontSize": "13px"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "fivethirtyeight": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 12,
+        "header_font_color": "#000000",
+        "background_color": null,
+        "cell_padding": 5
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#dddddd",
+        "borderWidth": "1px",
+        "stripedColor": "#dddddd",
+        "highlightColor": "#f0f0f0",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@",
+          "borderBottom": "3px solid #222222"
+        },
+        "headerStyle": {
+          "borderWidth": "3px",
+          "paddingTop": "12px",
+          "verticalAlign": "bottom",
+          "textAlign": "bottom",
+          "background": "#ffffff",
+          "textTransform": "uppercase",
+          "borderColor": "#222222",
+          "color": "@header_font_color@",
+          "&:hover": {
+            "background": "#dddddd"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "background": "#5b5e5f",
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "paddingBottom": "3px",
+            "verticalAlign": "bottom",
+            "textAlign": "bottom",
+            "backgroundColor": "#ffffff",
+            "textTransform": "uppercase",
+            "fontSize": "@header_font_size@",
+            "color": "@font_color@"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#dddddd"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#222222"
+        },
+        "searchInputStyle": {
+          "textTransform": "uppercase",
+          "color": "#222222",
+          "fontSize": "14px"
+        },
+        "paginationStyle": {
+          "textTransform": "uppercase",
+          "fontSize": "14px"
+        },
+        "pageButtonStyle": {
+          "textTransform": "uppercase",
+          "fontSize": "14px"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "flatly": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#212529",
+        "header_font_size": 15,
+        "header_font_color": "#ffffff",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#ffffff",
+        "borderWidth": "1px",
+        "stripedColor": "#ecf0f1",
+        "highlightColor": "#ecf0f1",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#2c3e50",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#1cbc9c"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#1cbc9c"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#1cbc9c"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#2c3e50",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529",
+          "&:focus": {
+            "color": "#212529"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#18bc9c",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#0f7864"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#18bc9c",
+          "color": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#0f7864"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#0f7864",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#0f7864",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#0f7864",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "hoverdark": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "background_color": null,
+        "cell_padding": 4
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "grey",
+        "borderWidth": "1px",
+        "stripedColor": "#D6D6D6",
+        "highlightColor": "#CACACA",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "transitionDuration": "2s",
+          "&:hover": {
+            "backgroundColor": "black",
+            "color": "#ffffff"
+          },
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "&:hover": {
+            "borderColor": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "hoverlight": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#ffffff",
+        "header_font_size": 15,
+        "background_color": "#000000",
+        "cell_padding": 4
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "grey",
+        "borderWidth": "1px",
+        "stripedColor": "lightgrey",
+        "highlightColor": "lightgrey",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "transitionDuration": "2s",
+          "&:hover": {
+            "backgroundColor": "white",
+            "color": "#000000"
+          },
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "&:hover": {
+            "borderColor": "black"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "paginationStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "black"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "journal": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "header_font_color": "#fad9d8",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#aaaaaa",
+        "borderWidth": "1px",
+        "stripedColor": "#eeeeee",
+        "highlightColor": "#eeeeee",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#ef8683",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#000000"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#f9d5d4",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#212529",
+          "borderColor": "#df9696",
+          "&:focus": {
+            "color": "#212529"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#eb6864",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#eb6864",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#eb6864",
+          "&:hover": {
+            "backgroundColor": "#eb6864",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#eb6864",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#eb6864",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#eb6864",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "lux": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#8c8c8c",
+        "header_font_size": 15,
+        "header_font_color": "#7f7f7f",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#f7f7f9",
+        "borderWidth": "1px",
+        "stripedColor": "#dadada",
+        "highlightColor": "#f7f7f9",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#1a1a1a",
+          "color": "@header_font_color@",
+          "textTransform": "uppercase",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "textTransform": "uppercase",
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#000000"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#1a1a1a",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#f7f7f9",
+          "color": "#8c8c8c"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#f7f7f9",
+          "color": "#8c8c8c",
+          "borderColor": "#f7f7f9",
+          "&:focus": {
+            "color": "#888888"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#282828",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#f7f7f9",
+            "color": "#1a1a1a"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#1a1a1a",
+          "&:hover": {
+            "backgroundColor": "#f7f7f9",
+            "color": "#1a1a1a"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#f7f7f9",
+          "color": "#1a1a1a"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#1a1a1a",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#1a1a1a",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "midnight": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#727272",
+        "header_font_size": 15,
+        "header_font_color": "#666666",
+        "background_color": "#141518",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderWidth": "0px",
+        "stripedColor": "#00468c",
+        "highlightColor": "#00468c",
+        "cellPadding": "@cell_padding@",
+        "style": {
+          "backgroundColor": "#000000"
+        },
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "0px",
+          "backgroundColor": "#000000",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "transitionTimingFunction": "ease-out",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending']": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='descending']": {
+            "color": "#ffffff",
+            "borderBottomColor": "#ffffff",
+            "borderWidth": "1px"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "backgroundColor": "#000000",
+          "fontSize": "@header_font_size@",
+          "color": "@font_color@",
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "tableBodyStyle": {
+          "backgroundImage": "linear-gradient(#000000, #0d0d0d, #191919)"
+        },
+        "rowSelectedStyle": {
+          "backgroundImage": "linear-gradient(#191919, #262626)"
+        },
+        "cellStyle": {
+          "&:hover": {
+            "transitionDuration": "0.25s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#262626"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#262626",
+          "&:focus": {
+            "color": "#262626"
+          }
+        },
+        "selectStyle": {
+          "backgroundImage": "linear-gradient(#191919, #262626)",
+          "backgroundColor": "#00468c",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "paginationStyle": {
+          "backgroundImage": "linear-gradient(#191919, #262626)"
+        },
+        "pageButtonStyle": {
+          "backgroundImage": "linear-gradient(#191919, #262626)",
+          "&:hover": {
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "&:hover": {
+          "transitionDuration": "0.25s",
+          "transitionTimingFunction": "ease-out",
+          "color": "#ffffff"
+        }
+      }
+    },
+    "midnightblue": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#bababa",
+        "header_font_size": 15,
+        "header_font_color": "lightgrey",
+        "background_color": "#002853",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderWidth": "0px",
+        "stripedColor": "#00468c",
+        "highlightColor": "#00468c",
+        "cellPadding": "@cell_padding@",
+        "style": {
+          "backgroundColor": "#001021"
+        },
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "1px",
+          "backgroundColor": "#001021",
+          "borderColor": "#001021",
+          "color": "@header_font_color@",
+          "transitionDuration": "1s",
+          "transitionTimingFunction": "ease-out",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending']": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='descending']": {
+            "color": "#ffffff",
+            "borderBottomColor": "#ffffff",
+            "borderWidth": "1px"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "backgroundColor": "#001021",
+          "fontSize": "@header_font_size@",
+          "color": "@font_color@",
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "tableBodyStyle": {
+          "backgroundImage": "linear-gradient(#001021, #001c3a, #002853)"
+        },
+        "rowSelectedStyle": {
+          "backgroundImage": "linear-gradient(#002853, #003766)"
+        },
+        "cellStyle": {
+          "&:hover": {
+            "transitionDuration": "0.25s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#141415"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#141415",
+          "&:focus": {
+            "color": "#141415"
+          }
+        },
+        "selectStyle": {
+          "backgroundImage": "linear-gradient(#002853, #003766)",
+          "backgroundColor": "#00468c",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "paginationStyle": {
+          "backgroundImage": "linear-gradient(#002853, #003766)"
+        },
+        "pageButtonStyle": {
+          "backgroundImage": "linear-gradient(#002853, #003766)",
+          "&:hover": {
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "&:hover": {
+          "transitionDuration": "0.25s",
+          "transitionTimingFunction": "ease-out",
+          "color": "#ffffff"
+        }
+      }
+    },
+    "minty": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#9a9a9a",
+        "header_font_size": 16,
+        "header_font_color": "#c9e7de",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#f7f7f9",
+        "borderWidth": "1px",
+        "stripedColor": "#ededed",
+        "highlightColor": "#f7f7f9",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#78c2ad",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#111111"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#78c2ad",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#9a9a9a"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#9a9a9a",
+          "borderColor": "#b3cecc",
+          "&:focus": {
+            "color": "#888888"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#f3969a",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#78c2ad",
+          "color": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#f3969a",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#f3969a",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#f3969a",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#f3969a",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "no_lines": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "header_font_color": "#222222",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "stripedColor": "lightgrey",
+        "highlightColor": "lightgrey",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "color": "@header_font_color@",
+          "borderColor": "transparent",
+          "fontSize": "@header_font_size@"
+        },
+        "cellStyle": {
+          "borderColor": "transparent"
+        },
+        "selectStyle": {
+          "color": "transparent"
+        },
+        "paginationStyle": {
+          "color": "transparent",
+          "borderColor": "transparent"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "borderColor": "transparent"
+      }
+    },
+    "nytimes": {
+      "defaults": {
+        "font_size": 13,
+        "font_color": "#333333",
+        "header_font_size": 11,
+        "header_font_color": "#999999",
+        "background_color": null,
+        "border_color": "#e7e7e7",
+        "border_width": "1px",
+        "cell_padding": 5
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "@border_color@",
+        "borderWidth": "@border_width@",
+        "stripedColor": "#e7e7e7",
+        "highlightColor": "#eeeeee",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "0px",
+          "padding": "5px",
+          "background": "#ffffff",
+          "borderColor": "#ffffff",
+          "color": "@header_font_color@",
+          "fontWeight": "500",
+          "textTransform": "uppercase",
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "borderWidth": "0px",
+            "backgroundColor": "#ffffff",
+            "textTransform": "uppercase",
+            "fontSize": "@header_font_size@",
+            "borderColor": "#ffffff",
+            "color": "@font_color@"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#e9edf0"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#333333"
+        },
+        "searchInputStyle": {
+          "color": "#333333",
+          "fontSize": "13px"
+        },
+        "selectStyle": {
+          "color": "#333333"
+        },
+        "paginationStyle": {
+          "color": "#333333",
+          "fontSize": "14px"
+        },
+        "pageButtonStyle": {
+          "color": "#333333",
+          "fontSize": "14px"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "pff": {
+      "defaults": {
+        "font_size": 16,
+        "font_color": "#878e94",
+        "header_font_size": 12,
+        "header_font_color": "#ffffff",
+        "background_color": null,
+        "cell_padding": 4
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderWidth": "0px",
+        "stripedColor": "#f9f9fb",
+        "highlightColor": "#f1f3f4",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "1px",
+          "padding": "7px",
+          "borderTop": "1px solid #595d63",
+          "backgroundColor": "#595d63",
+          "textTransform": "uppercase",
+          "borderColor": "#595d63",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.1s",
+          "&:hover[aria-sort]": {
+            "backgroundColor": "#4d5056",
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending']": {
+            "backgroundColor": "#393c40",
+            "color": "#ffffff",
+            "boxShadow": "inset 0 3px 0 0 #ffffff"
+          },
+          "&[aria-sort='descending']": {
+            "backgroundColor": "#393c40",
+            "color": "#ffffff",
+            "boxShadow": "inset 0 -3px 0 0 #ffffff"
+          },
+          "fontSize": "@header_font_size@",
+          "fontWeight": "bold"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "backgroundColor": "#e4e8ed",
+            "textTransform": "uppercase",
+            "fontWeight": "bold",
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@",
+            "boxShadow": "inset 3px 0 0 0 #ffffff"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#e4e8ed"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#878e94"
+        },
+        "searchInputStyle": {
+          "fontSize": "14px",
+          "textTransform": "uppercase",
+          "backgroundColor": "#ffffff",
+          "color": "#878e94",
+          "&:focus": {
+            "color": "#878e94"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#073c57",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "paginationStyle": {
+          "textTransform": "uppercase",
+          "fontSize": "15px"
+        },
+        "pageButtonStyle": {
+          "textTransform": "uppercase",
+          "fontSize": "15px",
+          "backgroundColor": "#ffffff",
+          "color": "#164861",
+          "&:hover": {
+            "backgroundColor": "#052c3f",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#052c3f",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#073c57",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#073c57",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "sandstone": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#3e3f3a",
+        "header_font_size": 16,
+        "header_font_color": "#7c7a78",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#f8f5f0",
+        "borderWidth": "1px",
+        "stripedColor": "#ededed",
+        "highlightColor": "#f8f5f0",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#f8f5f0",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#000000"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#000000"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#000000"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#dfd7ca",
+          "color": "#8e8c84"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#bcbfc1",
+          "color": "#3e3f3a"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#3e3f3a",
+          "borderColor": "#bcbfc1",
+          "&:focus": {
+            "color": "#3e3f3a"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#dfd7ca",
+          "color": "#8e8c84",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#f8f5f0",
+          "color": "#8e8c84",
+          "&:hover": {
+            "backgroundColor": "#f3969a",
+            "color": "#8e8c84"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#dfd7ca",
+          "color": "#8e8c84"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#dfd7ca",
+          "color": "#8e8c84"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#dfd7ca",
+          "color": "#8e8c84"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "sanfran": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "header_font_color": "#212121",
+        "background_color": null,
+        "cell_color": "#f5f5f5",
+        "cell_border_width": 6,
+        "cell_border_color": "#ffffff",
+        "cell_padding": 6,
+        "pagination_color": "#222222"
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#f5f5f5",
+        "stripedColor": "lightgrey",
+        "highlightColor": "lightgrey",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "color": "@header_font_color@",
+          "fontSize": "@header_font_size@"
+        },
+        "cellStyle": {
+          "background": "@cell_color@",
+          "borderWidth": "@cell_border_width@",
+          "borderColor": "@cell_border_color@"
+        },
+        "selectStyle": {
+          "color": "@pagination_color@"
+        },
+        "paginationStyle": {
+          "color": "@pagination_color@"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "background": "@cell_color@",
+        "borderWidth": "@cell_border_width@",
+        "borderColor": "@cell_border_color@"
+      }
+    },
+    "slate": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#aaaaaa",
+        "header_font_size": 16,
+        "header_font_color": "#97999b",
+        "background_color": "#272b30",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#272b30",
+        "borderWidth": "1px",
+        "stripedColor": "#464a4d",
+        "highlightColor": "#464a4d",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#3a3f44",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "backgroundColor": "#141516",
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "backgroundColor": "#141516",
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "#181a1c",
+          "color": "#ffffff"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#aaaaaa"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#aaaaaa",
+          "borderColor": "#dfe3e7",
+          "&:focus": {
+            "color": "#aaaaaa"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#41464c",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#17191b",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonStyle": {
+          "backgroundColor": "#41464c",
+          "color": "#ffffff",
+          "&:hover": {
+            "backgroundColor": "#17191b",
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#17191b",
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#17191b",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#17191b",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "spacelab": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#8e8e8e",
+        "header_font_size": 15,
+        "header_font_color": "#8e8e8e",
+        "background_color": null,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#eeeeee",
+        "borderWidth": "1px",
+        "stripedColor": "#dadada",
+        "highlightColor": "#dadada",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#ededed",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort]": {
+            "color": "#349cf4"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#349cf4"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#349cf4"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "rgba(52, 156, 244, 0.5)"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#8e8e8e"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#8e8e8e",
+          "&:focus": {
+            "color": "#8e8e8e"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "#436d99",
+          "color": "#ffffff",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#ededed",
+          "color": "#8e8e8e"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "#436d99",
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "#436d99",
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "sunrise": {
+      "defaults": {
+        "font_size": 15,
+        "font_color": "#8069ff",
+        "header_font_size": 15,
+        "header_font_color": "#8069ff",
+        "background_color": "#ffcb69",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderWidth": "0px",
+        "stripedColor": "lightblue",
+        "highlightColor": "#ffffff",
+        "cellPadding": "@cell_padding@",
+        "style": {
+          "backgroundColor": "#fffa85"
+        },
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "1px",
+          "backgroundColor": "#fffa85",
+          "borderColor": "#fffa85",
+          "color": "@header_font_color@",
+          "transitionDuration": "1s",
+          "transitionTimingFunction": "ease-out",
+          "&:hover[aria-sort]": {
+            "color": "#699dff"
+          },
+          "&[aria-sort='ascending']": {
+            "color": "#699dff",
+            "boxShadow": "inset 0 1px 0 0 #699dff"
+          },
+          "&[aria-sort='descending']": {
+            "color": "#699dff",
+            "borderBottomColor": "#699dff",
+            "borderWidth": "1px"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "backgroundColor": "#fffa85",
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          }
+        },
+        "tableBodyStyle": {
+          "backgroundImage": "linear-gradient(#fffa85, #ffe269, #ffcb69, #f98d77)"
+        },
+        "rowSelectedStyle": {
+          "backgroundImage": "linear-gradient(#f98d77, #e65c6f)"
+        },
+        "cellStyle": {
+          "&:hover": {
+            "transitionDuration": "0.25s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#699dff"
+          }
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#8069ff"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#8069ff",
+          "&:focus": {
+            "color": "#8069ff"
+          }
+        },
+        "selectStyle": {
+          "backgroundImage": "linear-gradient(#f98d77, #e65c6f)",
+          "backgroundColor": "#00468c",
+          "borderColor": "#ffffff",
+          "outlineColor": "#ffffff"
+        },
+        "paginationStyle": {
+          "backgroundImage": "linear-gradient(#f98d77, #e65c6f)"
+        },
+        "pageButtonStyle": {
+          "backgroundImage": "linear-gradient(#f98d77, #e65c6f)",
+          "&:hover": {
+            "color": "#ffffff"
+          }
+        },
+        "pageButtonHoverStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonActiveStyle": {
+          "color": "#ffffff"
+        },
+        "pageButtonCurrentStyle": {
+          "color": "#ffffff"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "&:hover": {
+          "transitionDuration": "0.25s",
+          "transitionTimingFunction": "ease-out",
+          "color": "#699dff"
+        }
+      }
+    },
+    "superhero": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#ebebeb",
+        "header_font_size": 15,
+        "header_font_color": "#ebebeb",
+        "background_color": "#2b3e50",
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "borderColor": "#2b3e50",
+        "borderWidth": "1px",
+        "stripedColor": "#4a5969",
+        "highlightColor": "#4a5969",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "borderWidth": "2px",
+          "backgroundColor": "#4e5d6c",
+          "color": "@header_font_color@",
+          "transitionDuration": "0.5s",
+          "&:hover[aria-sort], &:focus": {
+            "color": "#ffffff"
+          },
+          "&[aria-sort='ascending'], &[aria-sort='descending']": {
+            "color": "#ffffff"
+          },
+          "fontSize": "@header_font_size@"
+        },
+        "groupHeaderStyle": {
+          "&:not(:empty)": {
+            "color": "@font_color@",
+            "fontSize": "@header_font_size@"
+          },
+          "&:hover": {
+            "fontWeight": "bold",
+            "transitionDuration": "1s",
+            "transitionTimingFunction": "ease-out",
+            "color": "#ffffff"
+          }
+        },
+        "rowSelectedStyle": {
+          "backgroundColor": "rgba(223, 105, 26, 1)"
+        },
+        "inputStyle": {
+          "backgroundColor": "#ffffff",
+          "color": "#2b3e50"
+        },
+        "searchInputStyle": {
+          "backgroundColor": "#ffffff",
+          "border": "none",
+          "&:focus": {
+            "color": "#2b3e50",
+            "border": "none"
+          }
+        },
+        "selectStyle": {
+          "backgroundColor": "rgba(223, 105, 26, 1)",
+          "color": "#ebebeb"
+        },
+        "pageButtonHoverStyle": {
+          "backgroundColor": "#abb6c2"
+        },
+        "pageButtonActiveStyle": {
+          "backgroundColor": "rgba(223, 105, 26, 1)"
+        },
+        "pageButtonCurrentStyle": {
+          "backgroundColor": "rgba(223, 105, 26, 1)"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center"
+      }
+    },
+    "void": {
+      "defaults": {
+        "font_size": 14,
+        "font_color": "#222222",
+        "header_font_size": 15,
+        "header_font_color": "transparent",
+        "background_color": null,
+        "border_color": "transparent",
+        "border_width": 0,
+        "header_border_color": "transparent",
+        "header_border_width": 0,
+        "cell_padding": 6
+      },
+      "theme": {
+        "color": "@font_color@",
+        "backgroundColor": "@background_color@",
+        "stripedColor": "lightgrey",
+        "highlightColor": "lightgrey",
+        "cellPadding": "@cell_padding@",
+        "tableStyle": {
+          "fontSize": "@font_size@"
+        },
+        "headerStyle": {
+          "color": "@header_font_color@",
+          "borderBottom": "@header_border_width@px solid @header_border_color@",
+          "fontSize": "@header_font_size@"
+        },
+        "cellStyle": {
+          "borderColor": "@border_color@",
+          "borderWidth": "@border_width@"
+        },
+        "selectStyle": {
+          "color": "transparent"
+        },
+        "paginationStyle": {
+          "color": "transparent"
+        }
+      },
+      "centered_cell_style": {
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "borderColor": "@border_color@",
+        "borderWidth": "@border_width@"
+      }
+    }
+  }
+}
