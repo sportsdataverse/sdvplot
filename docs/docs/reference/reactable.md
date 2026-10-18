@@ -107,6 +107,7 @@ reactable_sdv_gauge(
     which: Literal['primary', 'secondary'] = 'primary',
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
+    season: Any = None,
     na_color: str = '#b3b3b3',
     min_value: float | None = None,
     max_value: float | None = None,
@@ -138,9 +139,10 @@ A reactable column that draws each cell's number as a half-circle gauge (an inli
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
 | `na_color` | `str` | The color for teams that do not resolve or have no color. |
-| `min_value` | `float \| None` | The value of an empty gauge; None for 0. |
-| `max_value` | `float \| None` | The value of a full gauge; None for the column's largest absolute value. |
+| `min_value` | `float \| None` | The value of an empty gauge; None for 0. As in reactablefmtr, a cell's absolute value is what fills the gauge (-5 fills as 5); the printed value and the aria-label keep the sign. |
+| `max_value` | `float \| None` | The value of a full gauge; None for the column's largest absolute value. Must be above ``min_value``. |
 | `show_min_max` | `bool` | Print the scale's two ends under the gauge. |
 | `number_fmt` | `collections.abc.Callable[[float], str] \| str \| None` | How to print the value (and the ends): a function such as ``"{:.1%}".format``, or a format spec such as ``".3f"``; None prints the number as is. |
 | `size` | `float` | The gauge's scale: 1 is 50 pixels wide (reactablefmtr's ``size = 1``), 2 is 100. |
@@ -157,7 +159,7 @@ A reactable column that draws each cell's number as a half-circle gauge (an inli
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``size`` or ``bias`` is not a positive number, ``opacity`` is outside [0, 1], ``min_value``/``max_value`` is not a finite number, ``fill_color`` holds several colors that are not hex colors, or ``team_col`` is given without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+- `InputError`: (a ValueError) If ``size`` or ``bias`` is not a positive number, ``opacity`` is outside [0, 1], ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``, ``fill_color`` holds several colors that are not hex colors, or ``team_col`` is given without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: if ``min_value`` alone is above the column's largest absolute value, or (with ``team_col``) the table has more rows than ``data``.
 - `ValueError`: If ``team_col`` is not a column of ``data``.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -323,6 +325,7 @@ reactable_sdv_sparkbar(
     which: Literal['primary', 'secondary'] = 'primary',
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
+    season: Any = None,
     na_color: str = '#b3b3b3',
     fill_opacity: float = 1,
     highlight_bars: collections.abc.Sequence[str] | collections.abc.Mapping[str, str] = (),
@@ -360,6 +363,7 @@ Bars stand on zero: positive values rise from it, negative ones hang below it.
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
 | `na_color` | `str` | The color for teams that do not resolve or have no color. |
 | `fill_opacity` | `float` | The bars' opacity, 0 to 1. |
 | `highlight_bars` | `collections.abc.Sequence[str] \| collections.abc.Mapping[str, str]` | Bars to recolor: a mapping such as ``{"max": "gold"}`` (reactablefmtr's ``highlight_bars(max = "gold")``), or a sequence of "first", "last", "min", "max" drawn in red. |
@@ -384,7 +388,7 @@ Bars stand on zero: positive values rise from it, negative ones hang below it.
 
 ### Raises
 
-- `InputError`: (a ValueError) As ``reactable_sdv_sparkline``: a bad pixel size, opacity, option name, decimals or bound, or ``team_col`` without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+- `InputError`: (a ValueError) As ``reactable_sdv_sparkline``: a bad pixel size, opacity, option name, decimals or bounds, or ``team_col`` without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: as ``reactable_sdv_sparkline``.
 - `ValueError`: If ``team_col`` is not a column of ``data``.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -418,6 +422,7 @@ reactable_sdv_sparkline(
     which: Literal['primary', 'secondary'] = 'primary',
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
+    season: Any = None,
     na_color: str = '#b3b3b3',
     line_width: float = 1.5,
     show_area: bool = False,
@@ -457,6 +462,7 @@ A reactable column that draws each cell's list of numbers as a sparkline (an inl
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
 | `na_color` | `str` | The color for teams that do not resolve or have no color. |
 | `line_width` | `float` | The line's stroke width in pixels. |
 | `show_area` | `bool` | Fill the area under the line. |
@@ -485,7 +491,7 @@ A reactable column that draws each cell's list of numbers as a sparkline (an inl
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``height``/``width`` is not a number of pixels of at least 1, an opacity is outside [0, 1], ``statline``/``bandline``/``labels``/``highlight_points`` names an unknown option, ``decimals`` is not a whole number, ``min_value``/``max_value`` is not a finite number, or ``team_col`` is given without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+- `InputError`: (a ValueError) If ``height``/``width`` is not a number of pixels of at least 1, an opacity is outside [0, 1], ``statline``/``bandline``/``labels``/``highlight_points`` names an unknown option, ``decimals`` is not a whole number, ``line_width``/``point_size`` is not a positive number, ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``, or ``team_col`` is given without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: if one bound crosses the row's data, or (with ``team_col``) the table has more rows than ``data``.
 - `ValueError`: If ``team_col`` is not a column of ``data``.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 

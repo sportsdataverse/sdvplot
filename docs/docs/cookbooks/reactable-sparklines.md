@@ -51,9 +51,7 @@ def standard_games(schedule):
     return pl.col("game_id").is_in(games["game_id"].implode())
 
 
-nba_games = nba.load_nba_team_boxscore(seasons=[SEASON]).filter(
-    standard_games(nba.load_nba_schedule(seasons=[SEASON]))
-)
+nba_games = nba.load_nba_team_boxscore(seasons=[SEASON]).filter(standard_games(nba.load_nba_schedule(seasons=[SEASON])))
 nba_margins = (
     nba_games.sort("game_date")
     .group_by("team_abbreviation", maintain_order=True)
@@ -66,7 +64,7 @@ nba_margins = (
     .sort("avg", descending=True)
     .select("logo", "team_abbreviation", "w", "gp", "avg", "margin")
 )
-assert nba_margins.height == 30 and nba_margins["gp"].min() == 82
+assert nba_margins.height == 30 and nba_margins["gp"].min() == nba_margins["gp"].max() == 82
 Reactable(
     nba_margins,
     columns=[
@@ -205,7 +203,7 @@ Reactable(
 
 `reactable_sdv_gauge` turns one number per row into a half-circle gauge with the value inside. With `min_value` and
 `max_value` the scale is fixed (a win percentage runs from 0 to 1); without them it runs from 0 to the column's
-largest value. `team_col` fills each gauge in the team's color, and `number_fmt` takes a function or a format spec.
+largest absolute value (a negative value fills the gauge by its size, as in reactablefmtr). `team_col` fills each gauge in the team's color, and `number_fmt` takes a function or a format spec.
 The ten best regular-season records:
 
 ```python
@@ -251,7 +249,9 @@ Reactable(
 
 Save percentage lives in a narrow band, so a gauge from 0 to 1 would look full for every team. Fixing the scale to
 .880-.920 spreads the 32 teams out, and a two-color `fill_color` ramps from red (the column's lowest) to green (its
-highest). NHL regular-season game ids carry `02` after the season's year.
+highest). NHL regular-season game ids carry `02` after the season's year. Shots on goal here are saves plus goals
+against, and goals against include empty-net goals, so these team figures run a little below goaltenders' own save
+percentages.
 
 ```python
 nhl_games = nhl.load_nhl_team_boxscore(seasons=[SEASON]).filter(

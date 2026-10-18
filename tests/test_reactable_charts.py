@@ -228,3 +228,101 @@ def test_gauge_rejects_bad_arguments(kwargs, match):
 def test_attribute_values_are_escaped():
     svg = _cell(reactable_sdv_sparkline(None, line_color='red" onload="x'), [1, 2])
     assert 'onload="x' not in svg and "&quot;" in svg
+
+
+# --- review fixes: non-finite values, season, validation, row guard, labels ---------------------------------------
+
+
+def test_infinities_and_numpy_nan_are_gaps_not_invalid_svg():
+    np = pytest.importorskip("numpy")
+    line = _cell(reactable_sdv_sparkline(None), [1, float("inf"), 2])
+    assert "inf" not in line and "nan" not in line
+    assert _attr(line, "path", "d") == "M13,20 M87,3"
+    assert "inf" not in _cell(reactable_sdv_sparkbar(None), [1, float("-inf"), 2])
+    assert _attr(_cell(reactable_sdv_sparkline(None), [1, np.float32("nan"), 2]), "path", "d") == "M13,20 M87,3"
+    df = pd.DataFrame({"g": [0.5, float("inf"), 1.0]})
+    gauge = reactable_sdv_gauge(df)
+    assert 'aria-label="Gauge: 0.5 on a scale from 0 to 1"' in _cell(gauge, 0.5, column="g")  # inf is not the max
+    assert _cell(gauge, float("inf"), column="g") == "" and _cell(gauge, np.float32("nan"), column="g") == ""
+
+
+def test_season_reaches_team_colors(monkeypatch):
+    import sdvplot._reactable_charts as charts
+
+    seen = []
+
+    def fake(league, teams, **kw):
+        seen.append(kw["season"])
+        return ["#123456"] * len(teams)
+
+    monkeypatch.setattr(charts, "team_colors", fake)
+    df = pl.DataFrame({"team": ["OAK"], "s": [[1, 2]], "g": [1.0]})
+    for make in (reactable_sdv_sparkline, reactable_sdv_sparkbar):
+        assert "#123456" in _cell(make(df, team_col="team", league="nfl", season=2019), [1, 2])
+    reactable_sdv_gauge(df, team_col="team", league="nfl", season=2019)
+    assert seen == [2019, 2019, 2019]
+
+
+def test_season_is_validated_through_team_colors():
+    with pytest.raises(InputError, match="season 1800"):
+        reactable_sdv_sparkline(pl.DataFrame({"team": ["LV"]}), team_col="team", league="nfl", season=1800)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"line_width": float("nan")}, "line_width"),
+        ({"line_width": "2"}, "line_width"),
+        ({"line_width": 0}, "line_width"),
+        ({"point_size": float("inf")}, "point_size"),
+        ({"point_size": -1}, "point_size"),
+        ({"min_value": 5, "max_value": 5}, "below max_value"),
+        ({"min_value": 6, "max_value": 5}, "below max_value"),
+    ],
+)
+def test_sparkline_rejects_bad_sizes_and_bounds(kwargs, match):
+    with pytest.raises(InputError, match=match):
+        reactable_sdv_sparkline(None, **kwargs)
+
+
+def test_bounds_must_not_cross():
+    with pytest.raises(InputError, match="below max_value"):
+        reactable_sdv_sparkbar(None, min_value=1, max_value=0)
+    with pytest.raises(InputError, match="below max_value"):
+        reactable_sdv_gauge(pl.DataFrame({"w": [1]}), min_value=1, max_value=1)
+    with pytest.raises(InputError, match="row 0: .*cross"):
+        _cell(reactable_sdv_sparkline(None, min_value=10), [1, 2])
+    with pytest.raises(InputError, match="row 0: .*cross"):
+        _cell(reactable_sdv_gauge(pl.DataFrame({"w": [1, 2]}), min_value=5), 1, column="w")
+
+
+def test_gauge_says_when_it_gauges_an_absolute_value():
+    df = pl.DataFrame({"m": [-5.0, 10.0]})
+    svg = _cell(reactable_sdv_gauge(df), -5.0, column="m")
+    assert 'aria-label="Gauge: -5 (its absolute value, 5, is gauged) on a scale from 0 to 10"' in svg
+    assert "absolute" not in _cell(reactable_sdv_gauge(df), 5.0, column="m")
+
+
+def test_a_table_longer_than_data_raises_a_clear_error():
+    df = pl.DataFrame({"team": ["LV"], "s": [[1, 2]], "g": [1.0]})
+    for col, value in (
+        (reactable_sdv_sparkline(df, team_col="team", league="nfl"), [1, 2]),
+        (reactable_sdv_sparkbar(df, team_col="team", league="nfl"), [1, 2]),
+        (reactable_sdv_gauge(df, team_col="team", league="nfl"), 1.0),
+    ):
+        with pytest.raises(InputError, match="row 1 is beyond the 1 rows of data"):
+            _cell(col, value, row=1, column="g")
+
+
+def test_labels_use_the_cell_text_color_and_aria_notes_stat_and_band_lines():
+    df = pl.DataFrame({"team": ["LV"], "s": [[1, 2]]})
+    line = _cell(reactable_sdv_sparkline(df, team_col="team", league="nfl", labels="all"), [1, 2])
+    assert set(re.findall(r'class="sdv-label"[^>]*fill="([^"]+)"', line)) == {"currentColor"}
+    bars = _cell(reactable_sdv_sparkbar(None, labels="max", statline="mean", bandline="range", decimals=1), [1, 2])
+    assert re.search(r'class="sdv-label"[^>]*fill="currentColor"', bars)
+    assert 'aria-label="Bar chart of 2 values: min 1, max 2, last 2; mean line at 1.5; band over the range"' in bars
+
+
+def test_tiny_values_keep_significant_figures_in_the_label():
+    svg = _cell(reactable_sdv_sparkline(None), [0.0000125, 0.00002])
+    assert "min 0.0000125, max 0.00002" in svg

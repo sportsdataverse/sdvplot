@@ -53,14 +53,32 @@ def _n(value: float) -> str:
 
 
 def _plain(value: float) -> str:
-    """A number as people write it: 12, 0.523, 1234567.5 (never 1.23e+06)."""
-    if float(value).is_integer():
-        return str(int(value))
-    return f"{round(float(value), 4):f}".rstrip("0").rstrip(".")
+    """A number as people write it: 12, 0.523, 0.00001235, 1234567.5 (never 1.23e+06); four significant figures at
+    least, so a small value never prints as 0."""
+    v = float(value)
+    if v.is_integer():
+        return str(int(v))
+    places = max(4, 3 - math.floor(math.log10(abs(v))))
+    return f"{v:.{places}f}".rstrip("0").rstrip(".")
+
+
+def _number(value: Any) -> bool:
+    """A number of any type (numpy scalars too), not a bool; finite or not."""
+    return isinstance(value, numbers.Real) and not isinstance(value, bool)
 
 
 def _real(value: Any) -> bool:
-    return isinstance(value, numbers.Real) and not isinstance(value, bool) and not _missing(value)
+    """A finite number: NaN and infinities (of any float type, numpy's included) are gaps."""
+    try:
+        return _number(value) and math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _positive(name: str, value: Any) -> float:
+    if not _real(value) or value <= 0:
+        raise InputError(f"{name} must be a positive number, got {value!r}")
+    return float(value)
 
 
 def _series(value: Any) -> list[float | None] | None:
@@ -108,14 +126,39 @@ def _decimals(decimals: Any) -> int:
 def _bound(name: str, value: Any) -> float | None:
     if value is None:
         return None
-    if not _real(value) or not math.isfinite(value):
+    if not _real(value):
         raise InputError(f"{name} must be None or a finite number, got {value!r}")
     return float(value)
 
 
+def _bounds(min_value: Any, max_value: Any) -> tuple[float | None, float | None]:
+    lo, hi = _bound("min_value", min_value), _bound("max_value", max_value)
+    if lo is not None and hi is not None and lo >= hi:
+        raise InputError(f"min_value must be below max_value, got {min_value!r} and {max_value!r}")
+    return lo, hi
+
+
+def _crossed(lo: float, hi: float, row: int) -> None:
+    """One bound given, the other the row's own: they must not cross."""
+    if lo > hi:
+        raise InputError(
+            f"row {row}: min_value/max_value cross the row's data (bottom {_plain(lo)} is above top {_plain(hi)}); "
+            "give both bounds, or one the data stays on the right side of"
+        )
+
+
+def _fill(fills: list[str], row: int) -> str:
+    if row >= len(fills):
+        raise InputError(
+            f"row {row} is beyond the {len(fills)} rows of data: pass the same frame as data= and to Reactable"
+        )
+    return fills[row]
+
+
 def _team_fills(
-    data: Any, team_col: str | None, league: str | None, which: Which, na_color: str, id_system: IdSystem, strict: bool
-) -> list[str] | None:
+    data: Any, team_col: str | None, league: str | None, which: Which, na_color: str, id_system: IdSystem, strict: bool,
+    season: Any,
+) -> list[str] | None:  # fmt: skip
     """Each row's team color (``na_color`` where a team has none), or None without ``team_col``."""
     if team_col is None:
         return None
@@ -124,7 +167,8 @@ def _team_fills(
     frame = nw.from_native(data, eager_only=True)
     if team_col not in frame.columns:
         raise ValueError(f"column {team_col!r} not found in data; columns are {frame.columns}")
-    colors = team_colors(league, frame[team_col].to_list(), which=which, id_system=id_system, strict=strict)
+    teams = frame[team_col].to_list()
+    colors = team_colors(league, teams, which=which, season=season, id_system=id_system, strict=strict)
     return [c or na_color for c in colors]
 
 
@@ -178,6 +222,14 @@ class _Chart:
             f'<text class="sdv-statline-label" x="{_n(self.right + 5)}" y="{y}" dominant-baseline="middle" '
             f'fill="{_a(color)}" font-weight="bold" font-size="{_a(size)}">{v:.{decimals}f}</text>'
         )
+
+    @staticmethod
+    def describe(statline: str | None, bandline: str | None, values: list[float], decimals: int) -> str:
+        """The aria-label's note of the statline and bandline, when drawn."""
+        out = f"; {statline} line at {_STAT[statline](values):.{decimals}f}" if statline else ""
+        if bandline:
+            out += "; band over the " + ("inner quartiles" if bandline == "innerquartiles" else "range")
+        return out
 
     def bandline(self, kind: str | None, values: list[float], color: str, opacity: float) -> str:
         if kind is None:
@@ -239,7 +291,7 @@ def _area(pts: dict[int, tuple[float, float]], n: int, bottom: float) -> str:
 
 def _point_labels(
     values: list[float | None], pts: dict[int, tuple[float, float]], at: dict[str, int], names: tuple[str, ...],
-    color: str, size: str, places: int,
+    size: str, places: int,
 ) -> str:  # fmt: skip
     """The value labels of a sparkline: first/last alone sit beside their points (as reactablefmtr), others above."""
     labeled = set(pts) if "all" in names else {at[name] for name in names}
@@ -253,7 +305,7 @@ def _point_labels(
             pos = f'x="{_n(x + 6)}" y="{_n(y)}" text-anchor="start" dominant-baseline="middle"'
         else:
             pos = f'x="{_n(x)}" y="{_n(y - 7)}" text-anchor="middle"'
-        out += f'<text class="sdv-label" {pos} fill="{_a(color)}" font-size="{_a(size)}">{values[i]:.{places}f}</text>'
+        out += f'<text class="sdv-label" {pos} fill="currentColor" font-size="{_a(size)}">{values[i]:.{places}f}</text>'
     return out
 
 
@@ -266,6 +318,7 @@ def reactable_sdv_sparkline(
     which: Which = "primary",
     id_system: IdSystem = "auto",
     strict: bool = False,
+    season: Any = None,
     na_color: str = "#b3b3b3",
     line_width: float = 1.5,
     show_area: bool = False,
@@ -300,6 +353,7 @@ def reactable_sdv_sparkline(
         which: "primary" or "secondary" team color.
         id_system: The id system of ``team_col``, as in ``resolve``.
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+        season: One season for every row's team color, for teams whose colors changed; None for today's.
         na_color: The color for teams that do not resolve or have no color.
         line_width: The line's stroke width in pixels.
         show_area: Fill the area under the line.
@@ -333,8 +387,11 @@ def reactable_sdv_sparkline(
     Raises:
         InputError: (a ValueError) If ``height``/``width`` is not a number of pixels of at least 1, an opacity is
             outside [0, 1], ``statline``/``bandline``/``labels``/``highlight_points`` names an unknown option,
-            ``decimals`` is not a whole number, ``min_value``/``max_value`` is not a finite number, or ``team_col`` is
-            given without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+            ``decimals`` is not a whole number, ``line_width``/``point_size`` is not a positive number,
+            ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``, or
+            ``team_col`` is given without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown.
+            When a cell is drawn: if one bound crosses the row's data, or (with ``team_col``) the table has more rows
+            than ``data``.
         ValueError: If ``team_col`` is not a column of ``data``.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -363,16 +420,18 @@ def reactable_sdv_sparkline(
     _choice("bandline", bandline, _BANDLINES)
     marks, label_names = _highlights("highlight_points", highlight_points), _names("labels", labels)
     a_opacity, b_opacity, places = check_alpha(area_opacity), check_alpha(bandline_opacity), _decimals(decimals)
-    lo, hi = _bound("min_value", min_value), _bound("max_value", max_value)
-    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict)
+    stroke, radius = _positive("line_width", line_width), _positive("point_size", point_size)
+    lo, hi = _bounds(min_value, max_value)
+    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict, season)
 
     def cell(info: CellInfo) -> str:
         values = _series(info.value)
         present = [v for v in values or [] if v is not None]
         if not values or not present:
             return ""
-        color = fills[info.row_index] if fills is not None else line_color or "slategray"
+        color = _fill(fills, info.row_index) if fills is not None else line_color or "slategray"
         chart = _Chart(present, label_names, statline, False, h, w, lo, hi)
+        _crossed(chart.lo, chart.hi, info.row_index)
         n = len(values)
         step = (chart.right - chart.left) / (n - 1) if n > 1 else 0.0
         xs = [chart.left + i * step if n > 1 else (chart.left + chart.right) / 2 for i in range(n)]
@@ -388,7 +447,7 @@ def reactable_sdv_sparkline(
             area = _area(pts, n, chart.bottom)
             body += f'<path class="sdv-area" d="{area}" fill="{_a(area_color or color)}" fill-opacity="{a_opacity:g}"/>'
         body += (
-            f'<path class="sdv-line" d="{line}" fill="none" stroke="{_a(color)}" stroke-width="{line_width:g}" '
+            f'<path class="sdv-line" d="{line}" fill="none" stroke="{_a(color)}" stroke-width="{stroke:g}" '
             'stroke-linejoin="round" stroke-linecap="round"/>'
         )
         body += chart.statline(statline, present, statline_color, statline_label_size, places)
@@ -401,11 +460,12 @@ def reactable_sdv_sparkline(
                 point_color[at[name]] = marks[name]
         for i, c in sorted(point_color.items()):
             body += (
-                f'<circle class="sdv-point" cx="{_n(pts[i][0])}" cy="{_n(pts[i][1])}" r="{point_size:g}" '
+                f'<circle class="sdv-point" cx="{_n(pts[i][0])}" cy="{_n(pts[i][1])}" r="{radius:g}" '
                 f'fill="{_a(c)}" stroke="{_a(c)}"/>'
             )
-        body += _point_labels(values, pts, at, label_names, color, label_size, places)
-        return _svg("sparkline", w, chart.h, _summary("Sparkline", present), body)
+        body += _point_labels(values, pts, at, label_names, label_size, places)
+        label = _summary("Sparkline", present) + chart.describe(statline, bandline, present, places)
+        return _svg("sparkline", w, chart.h, label, body)
 
     return Column(**{"html": True, **column_kwargs, "cell": cell})
 
@@ -419,6 +479,7 @@ def reactable_sdv_sparkbar(
     which: Which = "primary",
     id_system: IdSystem = "auto",
     strict: bool = False,
+    season: Any = None,
     na_color: str = "#b3b3b3",
     fill_opacity: float = 1,
     highlight_bars: Sequence[str] | Mapping[str, str] = (),
@@ -450,6 +511,7 @@ def reactable_sdv_sparkbar(
         which: "primary" or "secondary" team color.
         id_system: The id system of ``team_col``, as in ``resolve``.
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+        season: One season for every row's team color, for teams whose colors changed; None for today's.
         na_color: The color for teams that do not resolve or have no color.
         fill_opacity: The bars' opacity, 0 to 1.
         highlight_bars: Bars to recolor: a mapping such as ``{"max": "gold"}`` (reactablefmtr's
@@ -475,7 +537,8 @@ def reactable_sdv_sparkbar(
 
     Raises:
         InputError: (a ValueError) As ``reactable_sdv_sparkline``: a bad pixel size, opacity, option name, decimals
-            or bound, or ``team_col`` without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+            or bounds, or ``team_col`` without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is
+            unknown. When a cell is drawn: as ``reactable_sdv_sparkline``.
         ValueError: If ``team_col`` is not a column of ``data``.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -499,16 +562,17 @@ def reactable_sdv_sparkbar(
     _choice("bandline", bandline, _BANDLINES)
     marks, label_names = _highlights("highlight_bars", highlight_bars), _names("labels", labels)
     f_opacity, b_opacity, places = check_alpha(fill_opacity), check_alpha(bandline_opacity), _decimals(decimals)
-    lo, hi = _bound("min_value", min_value), _bound("max_value", max_value)
-    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict)
+    lo, hi = _bounds(min_value, max_value)
+    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict, season)
 
     def cell(info: CellInfo) -> str:
         values = _series(info.value)
         present = [v for v in values or [] if v is not None]
         if not values or not present:
             return ""
-        color = fills[info.row_index] if fills is not None else fill_color or "slategray"
+        color = _fill(fills, info.row_index) if fills is not None else fill_color or "slategray"
         chart = _Chart(present, label_names, statline, True, h, w, lo, hi)
+        _crossed(chart.lo, chart.hi, info.row_index)
         n = len(values)
         band = (chart.right - chart.left) / n
         bar_w, base = band * 0.8, chart.y(min(max(0.0, chart.lo), chart.hi))
@@ -535,9 +599,10 @@ def reactable_sdv_sparkbar(
             assert value is not None
             body += (
                 f'<text class="sdv-label" x="{_n(tops[i][0])}" y="{_n(tops[i][1] - 3)}" text-anchor="middle" '
-                f'fill="{_a(color)}" font-size="{_a(label_size)}">{value:.{places}f}</text>'
+                f'fill="currentColor" font-size="{_a(label_size)}">{value:.{places}f}</text>'
             )
-        return _svg("sparkbar", w, chart.h, _summary("Bar chart", present), body)
+        label = _summary("Bar chart", present) + chart.describe(statline, bandline, present, places)
+        return _svg("sparkbar", w, chart.h, label, body)
 
     return Column(**{"html": True, **column_kwargs, "cell": cell})
 
@@ -601,6 +666,7 @@ def reactable_sdv_gauge(
     which: Which = "primary",
     id_system: IdSystem = "auto",
     strict: bool = False,
+    season: Any = None,
     na_color: str = "#b3b3b3",
     min_value: float | None = None,
     max_value: float | None = None,
@@ -627,9 +693,12 @@ def reactable_sdv_gauge(
         which: "primary" or "secondary" team color.
         id_system: The id system of ``team_col``, as in ``resolve``.
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+        season: One season for every row's team color, for teams whose colors changed; None for today's.
         na_color: The color for teams that do not resolve or have no color.
-        min_value: The value of an empty gauge; None for 0.
-        max_value: The value of a full gauge; None for the column's largest absolute value.
+        min_value: The value of an empty gauge; None for 0. As in reactablefmtr, a cell's absolute value is what
+            fills the gauge (-5 fills as 5); the printed value and the aria-label keep the sign.
+        max_value: The value of a full gauge; None for the column's largest absolute value. Must be above
+            ``min_value``.
         show_min_max: Print the scale's two ends under the gauge.
         number_fmt: How to print the value (and the ends): a function such as ``"{:.1%}".format``, or a format spec
             such as ``".3f"``; None prints the number as is.
@@ -647,8 +716,11 @@ def reactable_sdv_gauge(
 
     Raises:
         InputError: (a ValueError) If ``size`` or ``bias`` is not a positive number, ``opacity`` is outside [0, 1],
-            ``min_value``/``max_value`` is not a finite number, ``fill_color`` holds several colors that are not hex
-            colors, or ``team_col`` is given without ``league``; if ``league``, ``id_system`` or ``which`` is unknown.
+            ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``,
+            ``fill_color`` holds several colors that are not hex colors, or ``team_col`` is given without ``league``;
+            if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: if ``min_value``
+            alone is above the column's largest absolute value, or (with ``team_col``) the table has more rows than
+            ``data``.
         ValueError: If ``team_col`` is not a column of ``data``.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -667,13 +739,11 @@ def reactable_sdv_gauge(
         Equivalent of reactablefmtr::gauge_chart (an SVG arc rather than nested divs, so the value sits on the cell's
         own background in any theme; the "min" end reads the scale's real lower bound).
     """
-    for name, v in (("size", size), ("bias", bias)):
-        if not _real(v) or not math.isfinite(v) or v <= 0:
-            raise InputError(f"{name} must be a positive number, got {v!r}")
+    size, bias = _positive("size", size), _positive("bias", bias)
     alpha = check_alpha(opacity)
-    lo_arg, hi_arg = _bound("min_value", min_value), _bound("max_value", max_value)
+    lo_arg, hi_arg = _bounds(min_value, max_value)
     ramp, fmt = _ramp_colors(fill_color), _formatter(number_fmt)
-    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict)
+    fills = _team_fills(data, team_col, league, which, na_color, id_system, strict, season)
     frame = nw.from_native(data, eager_only=True)
     ranges: dict[str, tuple[float, float, float]] = {}
 
@@ -692,17 +762,18 @@ def reactable_sdv_gauge(
 
     def cell(info: CellInfo) -> str:
         value = info.value
-        if _missing(value):
-            return ""
+        if _missing(value) or (_number(value) and not _real(value)):
+            return ""  # NaN and infinities (numpy's too) are gaps
         if not _real(value):
             return html.escape(str(value))
         v = float(value)
         cmin, cmax, cabs = column_range(info.column_name)
         lo = 0.0 if lo_arg is None else lo_arg
         hi = cabs if hi_arg is None else hi_arg
+        _crossed(lo, hi, info.row_index)
         frac = 0.0 if hi == lo else min(max((abs(v) - lo) / (hi - lo), 0.0), 1.0)
         if fills is not None:
-            color = fills[info.row_index]
+            color = _fill(fills, info.row_index)
         else:
             color = _ramp(ramp, 1.0 if cmax == cmin else (v - cmin) / (cmax - cmin), bias)
         label = html.escape(fmt(v))
@@ -725,7 +796,8 @@ def reactable_sdv_gauge(
                 f'<text class="sdv-max" x="{_n(w)}" y="{y}" text-anchor="end" fill="{ink}" font-size="0.7em">'
                 f"{html.escape(fmt(hi))}</text>"
             )
-        aria = f"Gauge: {fmt(v)} on a scale from {fmt(lo)} to {fmt(hi)}"
+        gauged = f" (its absolute value, {fmt(abs(v))}, is gauged)" if v < 0 else ""
+        aria = f"Gauge: {fmt(v)}{gauged} on a scale from {fmt(lo)} to {fmt(hi)}"
         return _svg("gauge", w, h, aria, body)
 
     return Column(**{"html": True, **column_kwargs, "cell": cell})
