@@ -57,15 +57,22 @@ embed_css()
 `reactable_sdv_data_bars` draws each value as a bar, its length the value's share of the column's largest. With
 `team_col` and `league` every bar takes its team's primary color, the number inside switches to white on a dark bar,
 and `mark="logo"` puts the team's logo at the end of the bar. `tooltip=True` gives each cell a hover title. The data is
-the 2025-26 NBA regular season, summed from ESPN team box scores.
+the 2025-26 NBA regular season, summed from ESPN team box scores of the regular-season schedule's games (the NBA Cup final, played in December, is not one).
 
 ```python
-nba_teams = (
+# regular-season games only: season_type 2 also holds the NBA Cup final, which does not count in the standings
+nba_schedule = nba.load_nba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
+)
+nba_season = (
     nba.load_nba_team_boxscore(seasons=[SEASON])
-    .filter(pl.col("season_type") == 2)
+    .filter(pl.col("game_id").is_in(nba_schedule["game_id"].implode()))
     .group_by("team_abbreviation", "team_display_name", maintain_order=True)
     .agg(gp=pl.len(), wins=pl.col("team_winner").sum())
-    .filter(pl.col("gp") > 10)
+)
+assert nba_season["gp"].max() <= 82, "more games than an 82-game regular season"
+nba_teams = (
+    nba_season.filter(pl.col("gp") > 10)
     .sort(["wins", "team_abbreviation"], descending=[True, False])
     .head(12)
     .drop("gp")

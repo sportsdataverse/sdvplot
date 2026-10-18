@@ -73,13 +73,13 @@ A bubble is the value's share of the column's largest magnitude, up to 100 pixel
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it). |
 | `shape` | `Literal['circles', 'squares']` | "circles" or "squares". |
 | `colors` | `collections.abc.Sequence[str]` | Hex colors forming the scale from the column's minimum to its maximum. |
-| `color_ref` | `str \| None` | A column of ``data`` holding each row's bubble color. |
+| `color_ref` | `str \| None` | A column of ``data`` holding each row's bubble color: hex, a CSS color name, or rgb()/hsl(); any other value is warned about once and that row keeps the scale color. |
 | `team_col` | `str \| None` | A column of team values; each bubble takes that team's color (``which``). Teams that do not resolve keep the scale color. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``team_col``. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
 | `color_by` | `str \| None` | Another numeric column whose values set the colors and sizes. |
 | `min_value` | `float \| None` | The value of an empty bubble; None measures from zero. |
-| `max_value` | `float \| None` | The value of a 100-pixel bubble; None for the column's largest magnitude. |
+| `max_value` | `float \| None` | The value of a 100-pixel bubble; None for the column's largest magnitude. Sizes are clamped to 0-100 pixels, as data bars are to their track. |
 | `opacity` | `float` | The bubble's opacity, 0 to 1. |
 | `bias` | `float` | Spacing of the scale's colors; above 1 spreads the high end (``grDevices::colorRamp``). |
 | `number_fmt` | `collections.abc.Callable[[Any], str] \| str \| None` | A function of the value returning its text, or a format spec such as ",.1f". |
@@ -165,7 +165,7 @@ A reactable column whose cell backgrounds are filled on a color scale, by a colo
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it). |
 | `colors` | `collections.abc.Sequence[str]` | Hex colors forming the scale from the column's minimum to its maximum. |
-| `color_ref` | `str \| None` | A column of ``data`` holding each row's fill color. |
+| `color_ref` | `str \| None` | A column of ``data`` holding each row's fill color: hex, a CSS color name, or rgb()/hsl(); any other value is warned about once and that row keeps the scale color. |
 | `team_col` | `str \| None` | A column of team values; each cell takes that team's color (``which``). Teams that do not resolve keep the scale color. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``team_col``. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
@@ -259,7 +259,7 @@ The text on each tile stays readable.
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it). |
 | `colors` | `collections.abc.Sequence[str]` | Hex colors forming the scale from the column's minimum to its maximum. |
-| `color_ref` | `str \| None` | A column of ``data`` holding each row's fill color. |
+| `color_ref` | `str \| None` | A column of ``data`` holding each row's fill color: hex, a CSS color name, or rgb()/hsl(); any other value is warned about once and that row keeps the scale color. |
 | `team_col` | `str \| None` | A column of team values; each tile takes that team's color (``which``). Teams that do not resolve keep the scale color. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``team_col``. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
@@ -437,18 +437,18 @@ bars right, colored by the first and last of two ``fill_color`` colors.
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it). |
 | `fill_color` | `str \| collections.abc.Sequence[str]` | One color, or several colors forming a scale from the column's minimum to its maximum. |
-| `fill_color_ref` | `str \| None` | A column of ``data`` holding each row's bar color. |
+| `fill_color_ref` | `str \| None` | A column of ``data`` holding each row's bar color: hex, a CSS color name, or rgb()/hsl(); any other value is warned about once and that row keeps the scale color. |
 | `team_col` | `str \| None` | A column of team values; each bar takes that team's color (``which``). Teams that do not resolve keep the scale color. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``team_col`` and ``mark``. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
-| `fill_by` | `str \| None` | Another numeric column whose values set the bar lengths and colors. |
+| `fill_by` | `str \| None` | Another numeric column whose values set the bar lengths and colors (a text column is an error). |
 | `fill_opacity` | `float` | The bar's opacity, 0 to 1. |
 | `bias` | `float` | Spacing of the scale's colors; above 1 spreads the high end (``grDevices::colorRamp``). |
 | `min_value` | `float \| None` | The value of an empty bar; None measures from zero. |
-| `max_value` | `float \| None` | The value of a full bar; None for the column's largest magnitude. |
+| `max_value` | `float \| None` | The value of a full bar; None for the column's largest magnitude. Bars are clamped to 0-100% of the track, so a value beyond ``max_value`` draws a full bar. |
 | `align` | `Literal['left', 'right']` | "left" or "right": the side bars grow from. |
-| `text_position` | `Literal['inside-end', 'outside-end', 'inside-base', 'outside-base', 'center', 'above', 'none']` | "inside-end", "outside-end", "inside-base", "outside-base", "center", "above" or "none". |
-| `text_color` | `str \| None` | The text color; None for black, or white on a dark bar. |
+| `text_position` | `Literal['inside-end', 'outside-end', 'inside-base', 'outside-base', 'center', 'above', 'none']` | "inside-end", "outside-end", "inside-base", "outside-base", "center", "above" or "none" ("none" keeps the value as visually hidden text for screen readers). |
+| `text_color` | `str \| None` | The text color (hex, a CSS color name, or rgb()/hsl()); None for black, or white on a dark bar. |
 | `brighten_text` | `bool` | Switch text inside a bar to black or white when ``text_color`` is unreadable on it. |
 | `bold_text` | `bool` | Bold text. |
 | `number_fmt` | `collections.abc.Callable[[Any], str] \| str \| None` | A function of the value returning its text, or a format spec such as ",.1f". |
@@ -457,7 +457,7 @@ bars right, colored by the first and last of two ``fill_color`` colors.
 | `mark_height` | `float` | The mark's height in pixels. |
 | `round_edges` | `bool` | Round the bar's ends. |
 | `bar_height` | `float \| None` | The bar's height in pixels; None for 18 (5 with ``text_position="above"``). |
-| `background` | `str` | The CSS color of the empty track behind each bar. |
+| `background` | `str` | The color of the empty track behind each bar (hex, a CSS color name, or rgb()/hsl()). |
 | `gradient` | `bool` | Fill each bar with a left-to-right gradient of ``fill_color`` (two colors or more). |
 | `pos_neg` | `bool` | Split every cell at zero even when no value is negative. |
 | `box_shadow` | `bool` | A drop shadow under each bar. |
@@ -565,6 +565,7 @@ reactable_sdv_highlight(
     which: Literal['max', 'min', 'min_max'] = 'max',
     font_color: str | tuple[str, str] | None = None,
     highlighter: str | tuple[str | None, str | None] | None = None,
+    tooltip: bool = False,
     **column_kwargs: Any,
 ) -> reactable.models.Column
 ```
@@ -578,18 +579,19 @@ A reactable column whose highest (or lowest, or both) values are bold, in a colo
 | Name | Type | Description |
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (the column's extremes are read from it). |
-| `which` | `Literal['max', 'min', 'min_max']` | "max", "min", or "min_max" for both. |
+| `which` | `Literal['max', 'min', 'min_max']` | "max", "min", or "min_max" for both: which extreme to highlight. (Unlike the team-color ``which`` of the other formatters, "primary"/"secondary", this is reactablefmtr's highlight_max/_min/_min_max.) |
 | `font_color` | `str \| tuple[str, str] \| None` | The CSS text color; None for green on the maximum and red on the minimum. For "min_max", a ``(min, max)`` pair. |
 | `highlighter` | `str \| tuple[str \| None, str \| None] \| None` | A CSS background color, or a ``(min, max)`` pair for "min_max"; None for no background. |
+| `tooltip` | `bool` | Give each cell a ``title`` (hover text) of its value. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``; ``id`` names the column drawn. |
 
 ### Returns
 
-`reactable.Column` — The column, with a ``style`` function.
+`reactable.Column` — The column, with a ``style`` function (and a cell renderer when ``tooltip`` is on).
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``which`` is unknown, or a pair is not two values.
+- `InputError`: (a ValueError) If ``which`` is unknown, a pair is not two values, or a color is not a hex color, a CSS color name, or rgb()/hsl().
 
 ### Example
 
@@ -653,7 +655,7 @@ The icons are inline SVG; see ``reactable_sdv_icon_sets`` for the names.
 | `icon_size` | `float` | The icon's size in pixels. |
 | `buckets` | `int \| None` | Cut the column into this many quantile buckets and fill one icon per bucket reached. |
 | `number_fmt` | `collections.abc.Callable[[Any], str] \| str \| None` | A function of the value returning its text, or a format spec such as ",.1f". |
-| `seq_by` | `float` | One icon per this many units of value (values are rounded half up first). |
+| `seq_by` | `float` | One icon per this many units of value (values are rounded half up first). A cell draws at most 100 icons (with a warning); a column that would need more than 1,000 is an error. |
 | `show_values` | `Literal['none', 'left', 'right', 'above', 'below']` | "none", or where to show the value: "left", "right", "above" or "below". |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``; ``id`` names the column drawn. |
 
@@ -723,9 +725,9 @@ heart and person.
 | `colors` | `collections.abc.Sequence[str]` | Hex colors from the lowest bucket to the highest. |
 | `opacity` | `float` | The icons' opacity, 0 to 1. |
 | `icon_position` | `Literal['left', 'right', 'above', 'below', 'over']` | "right", "left", "above", "below", or "over" (the icon replaces the value). |
-| `icon_ref` | `str \| None` | A column of ``data`` holding each row's icon name (overrides ``icons``). |
+| `icon_ref` | `str \| None` | A column of ``data`` holding each row's icon name (overrides ``icons``); a missing value draws no icon. |
 | `icon_size` | `float` | The icon's size in pixels. |
-| `icon_color_ref` | `str \| None` | A column of ``data`` holding each row's icon color (overrides ``colors``). |
+| `icon_color_ref` | `str \| None` | A column of ``data`` holding each row's icon color (overrides ``colors``): hex, a CSS color name, or rgb()/hsl(); a missing value or any other value (warned about once) draws no icon. |
 | `number_fmt` | `collections.abc.Callable[[Any], str] \| str \| None` | A function of the value returning its text, or a format spec such as ",.1f". |
 | `tooltip` | `bool` | Give each cell a ``title`` (hover text) of its formatted value. |
 | `**column_kwargs` | `Any` | Passed to ``reactable.Column``; ``id`` names the column drawn. |
@@ -764,7 +766,7 @@ reactable_sdv_icon_trend(
     data: Any,
     *,
     icons: Literal['arrow', 'chevron', 'triangle'] = 'arrow',
-    colors: collections.abc.Sequence[str] = ('#15607A', '#B2B2B2', '#FA8C00'),
+    colors: collections.abc.Sequence[str] = ('#15607A', '#767676', '#B35900'),
     icon_position: Literal['left', 'right', 'above', 'below', 'over'] = 'right',
     icon_size: float = 16,
     show_zero_label: bool = False,
@@ -787,10 +789,10 @@ A reactable column that marks each change with an up arrow, a down arrow or a da
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable``. |
 | `icons` | `Literal['arrow', 'chevron', 'triangle']` | "arrow", "chevron" or "triangle". |
-| `colors` | `collections.abc.Sequence[str]` | Three hex colors: down, zero, up. |
+| `colors` | `collections.abc.Sequence[str]` | Three hex colors: down, zero, up. The default is reactablefmtr's ``#15607A`` with ``#767676`` and ``#B35900``, both 4.5:1 or better on white, in place of reactablefmtr's ``#B2B2B2`` and ``#FA8C00`` (about 2.1:1 and 2.4:1, too faint for the text, which takes these colors). |
 | `icon_position` | `Literal['left', 'right', 'above', 'below', 'over']` | "right", "left", "above", "below", or "over" (the icon replaces the value). |
 | `icon_size` | `float` | The icon's size in pixels. |
-| `show_zero_label` | `bool` | Show the value when it is zero (otherwise only the dash). |
+| `show_zero_label` | `bool` | Show the value when it is zero (otherwise only the dash is drawn, and the zero is kept as visually hidden text for screen readers). |
 | `number_fmt` | `collections.abc.Callable[[Any], str] \| str \| None` | A function of the value returning its text, or a format spec such as "+.1f". |
 | `opacity` | `float` | The icons' opacity, 0 to 1. |
 | `text_color` | `str \| None` | One color for every value's text; None colors it like its icon. |
@@ -915,6 +917,7 @@ reactable_sdv_merge_column(
     team_col: str | None = None,
     league: str | None = None,
     mark_height: float = 30,
+    tooltip: bool = False,
     season: Any = None,
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
@@ -936,10 +939,10 @@ A player and his team, a team and its record; the mark is the row's logo, headsh
 | `merged_name` | `str` | The column of ``data`` merged into this one (hide it with ``Column(show=False)`` if it is shown). |
 | `merged_position` | `Literal['right', 'left', 'above', 'below']` | "right", "left", "above" or "below". |
 | `merged_size` | `float` | The merged text's size in pixels. |
-| `merged_color` | `str` | The merged text's CSS color. |
+| `merged_color` | `str` | The merged text's color (hex, a CSS color name, or rgb()/hsl()). |
 | `merged_weight` | `Literal['normal', 'bold']` | "normal" or "bold" for the merged text. |
 | `size` | `float` | The main text's size in pixels. |
-| `color` | `str \| None` | The main text's CSS color; None inherits the table's. |
+| `color` | `str \| None` | The main text's color (hex, a CSS color name, or rgb()/hsl()); None inherits the table's. |
 | `weight` | `Literal['normal', 'bold']` | "normal" or "bold" for the main text. |
 | `spacing` | `float` | Extra pixels between the two values. |
 | `mark` | `Literal['logo', 'headshot', 'wordmark'] \| None` | "logo", "headshot" or "wordmark": an image before the text. |
@@ -947,6 +950,7 @@ A player and his team, a team and its record; the mark is the row's logo, headsh
 | `team_col` | `str \| None` | A column of team values for the logo or wordmark. |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``mark``. |
 | `mark_height` | `float` | The mark's height in pixels. |
+| `tooltip` | `bool` | Give each cell a ``title`` (hover text) of its value and the merged value. |
 | `season` | `Any` | One season whose marks to use; None for today's. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the mark's column, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
@@ -958,7 +962,7 @@ A player and his team, a team and its record; the mark is the row's logo, headsh
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``merged_position``, a weight or ``mark`` is unknown, or ``mark`` comes without ``league`` or a column to read it from.
+- `InputError`: (a ValueError) If ``merged_position``, a weight or ``mark`` is unknown, a color is not a color, or ``mark`` comes without ``league`` or a column to read it from.
 - `ValueError`: If a named column is not in ``data``.
 - `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -1025,7 +1029,7 @@ Numbers are colored on the scale, text takes the first color.
 |---|---|---|
 | `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it). |
 | `colors` | `str \| collections.abc.Sequence[str]` | One hex color, or several forming a scale from the column's minimum to its maximum (numbers only). |
-| `color_ref` | `str \| None` | A column of ``data`` holding each row's pill color. |
+| `color_ref` | `str \| None` | A column of ``data`` holding each row's pill color: hex, a CSS color name, or rgb()/hsl(); any other value is warned about once and that row keeps the scale color. |
 | `team_col` | `str \| None` | A column of team values; each pill takes that team's color (``which``). |
 | `league` | `str \| None` | The SDV league key, e.g. "nfl"; needed by ``team_col``. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |

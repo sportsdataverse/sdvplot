@@ -96,7 +96,7 @@ def test_data_bars_take_team_colors_and_a_logo(manifest):
         ("inside-base", lambda c: "justify-content:flex-start" in c and ">15</div>" in c),
         ("center", lambda c: "justify-content:center" in c),
         ("above", lambda c: c.count(">15<") == 1 and "height:5px" in c),
-        ("none", lambda c: ">15<" not in c),
+        ("none", lambda c: c.count(">15<") == 1 and re.search(r'<span style="position:absolute[^"]*">15</span>', c)),
     ],
 )
 def test_data_bars_text_positions(position, check):
@@ -273,8 +273,9 @@ def test_icon_assign_counts_icons():
 def test_icon_trend_points_up_down_and_flat():
     df = _afc()
     cells = _cells(reactable_sdv_icon_trend(df, number_fmt="+d", icons="triangle", id="diff"), df, "diff")
-    assert "M8 1.5 15 14.5H1z" in cells[0] and "color:#fa8c00" in cells[0] and ">+4</span>" in cells[0]
-    assert "<rect" in cells[1] and "></span>" in cells[1]  # zero: a dash and no label
+    assert "M8 1.5 15 14.5H1z" in cells[0] and "color:#b35900" in cells[0] and ">+4</span>" in cells[0]
+    # zero: a dash, the label only as visually hidden text
+    assert "<rect" in cells[1] and re.search(r'<span style="position:absolute[^"]*">\+0</span>', cells[1])
     assert "M1 1.5h14L8 14.5z" in cells[2] and "color:#15607a" in cells[2]
     with pytest.raises(InputError, match="three colors"):
         reactable_sdv_icon_trend(df, colors=["#000000"], id="diff")
@@ -315,3 +316,133 @@ def test_team_columns_warn_for_unknown_teams():
     with pytest.warns(SdvplotWarning, match="'XXX'"):
         col = reactable_sdv_color_tiles(df, team_col="team", league="nfl", id="wins")
     assert [_css(c, "background")[0] for c in _cells(col, df, "wins")] == [LV, "#fa8c00"]  # falls back to the scale
+
+
+# --- review fixes: injection, a11y, caps, validation ----------------------------------------------------------------
+
+_PAYLOAD = "red;position:fixed;inset:0;z-index:9999"
+
+
+@pytest.mark.parametrize(
+    "make",
+    [
+        lambda df: reactable_sdv_data_bars(df, fill_color_ref="color", id="wins"),
+        lambda df: reactable_sdv_color_tiles(df, color_ref="color", id="wins"),
+        lambda df: reactable_sdv_pill_buttons(df, color_ref="color", id="wins"),
+        lambda df: reactable_sdv_bubble_grid(df, color_ref="color", id="wins"),
+        lambda df: reactable_sdv_icon_sets(df, icon_color_ref="color", id="wins"),
+    ],
+)
+def test_color_columns_never_inject_css(make):
+    df = pd.DataFrame({"wins": [15, 13, 12], "color": [_PAYLOAD, "url(https://x/a.png)", "#00ff00"]})
+    with pytest.warns(SdvplotWarning, match="not a hex color") as record:
+        cells = _cells(make(df), df, "wins")
+    assert len(record) == 2  # once per distinct bad value
+    joined = "".join(cells)
+    assert "position:fixed" not in joined and "z-index:9999" not in joined and "url(" not in joined
+    assert "#00ff00" in cells[2]
+
+
+def test_color_scales_column_and_css_backstop():
+    from sdvplot._reactable_formatters import _css
+
+    df = pd.DataFrame({"wins": [15, 13], "color": [_PAYLOAD, "rgb(0, 128, 0)"]})
+    with pytest.warns(SdvplotWarning, match="not a hex color"):
+        styles = _cells(reactable_sdv_color_scales(df, color_ref="color", id="wins"), df, "wins")
+    assert "position" not in str(styles) and styles[1]["background"] == "rgb(0, 128, 0)"
+    assert _css(background=_PAYLOAD, color="url(x)", width="5px") == "width:5px"
+
+
+@pytest.mark.parametrize(
+    "make",
+    [
+        lambda df: reactable_sdv_data_bars(df, text_color=_PAYLOAD, id="wins"),
+        lambda df: reactable_sdv_data_bars(df, background="url(x)", id="wins"),
+        lambda df: reactable_sdv_color_tiles(df, text_color=_PAYLOAD, id="wins"),
+        lambda df: reactable_sdv_icon_trend(df, text_color=_PAYLOAD, id="diff"),
+        lambda df: reactable_sdv_merge_column(df, merged_name="record", merged_color=_PAYLOAD, id="team"),
+        lambda df: reactable_sdv_merge_column(df, merged_name="record", color="red}", id="team"),
+        lambda df: reactable_sdv_highlight(df, font_color=_PAYLOAD, id="wins"),
+        lambda df: reactable_sdv_highlight(df, which="min_max", highlighter=("#fee", "url(x)"), id="wins"),
+    ],
+)
+def test_color_arguments_are_checked(make):
+    with pytest.raises(InputError, match="CSS color name"):
+        make(_afc())
+
+
+def test_named_and_functional_colors_are_accepted():
+    df = _afc()
+    styles = _cells(reactable_sdv_highlight(df, font_color="darkgreen", highlighter="hsl(120, 50%, 90%)", id="wins"),
+                    df, "wins")  # fmt: skip
+    assert styles[0] == {"font-weight": "bold", "color": "darkgreen", "background": "hsl(120, 50%, 90%)"}
+
+
+def test_data_bars_and_bubbles_check_range_and_bias_up_front():
+    df = _afc()
+    for make in (reactable_sdv_data_bars, reactable_sdv_bubble_grid):
+        with pytest.raises(InputError, match="min_value must be below max_value"):
+            make(df, min_value=10, max_value=5, id="wins")
+        with pytest.raises(InputError, match="finite"):
+            make(df, max_value=float("inf"), id="wins")
+        with pytest.raises(InputError, match="bias"):
+            make(df, bias=0, id="wins")
+    with pytest.raises(InputError, match="bias"):
+        reactable_sdv_data_bars(df, bias=float("nan"), id="wins")
+
+
+def test_fill_by_must_be_numeric():
+    with pytest.raises(InputError, match="fill_by must name a numeric column"):
+        reactable_sdv_data_bars(_afc(), fill_by="record", id="wins")
+
+
+def test_peaks_are_computed_once_per_column(monkeypatch):
+    from sdvplot import _reactable_formatters as fm
+
+    df = pd.DataFrame({"wins": list(range(1, 51))})
+    scans = []
+
+    class Counted(list):  # counts full passes over the column's values (indexing one row is not a pass)
+        def __iter__(self):
+            scans.append(1)
+            return super().__iter__()
+
+    real_values = fm._Scale.values
+    monkeypatch.setattr(fm._Scale, "values", lambda self, name: Counted(real_values(self, name)))
+    for make in (reactable_sdv_data_bars, reactable_sdv_bubble_grid):
+        scans.clear()
+        cells = _cells(make(df, id="wins"), df, "wins")
+        assert len(cells) == 50 and len(scans) == 1  # one pass for the column's peak, not one per cell
+
+
+def test_bubbles_clamp_to_100_pixels():
+    df = _afc()
+    cells = _cells(reactable_sdv_bubble_grid(df, max_value=13, id="wins"), df, "wins")
+    assert _css(cells[0], "width")[0] == "100px"
+
+
+def test_icon_assign_caps_icons_per_cell():
+    df = pd.DataFrame({"team": ["LV", "LAR"], "yards": [150, 20]})
+    with pytest.warns(SdvplotWarning, match="at most 100 icons"):
+        cells = _cells(reactable_sdv_icon_assign(df, id="yards"), df, "yards")
+    assert cells[0].count("<svg") == 100
+    big = pd.DataFrame({"team": ["LV"], "yards": [5000]})
+    with pytest.raises(InputError, match="at most 1000"):
+        _cells(reactable_sdv_icon_assign(big, id="yards"), big, "yards")
+
+
+def test_icon_sets_missing_icon_ref_draws_nothing_silently():
+    df = pd.DataFrame({"wins": [15, 13], "icon": ["star", None]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        cells = _cells(reactable_sdv_icon_sets(df, icon_ref="icon", id="wins"), df, "wins")
+    assert "<svg" in cells[0] and "<svg" not in cells[1]
+
+
+def test_merge_column_and_highlight_tooltips():
+    df = _afc()
+    merged = _cells(reactable_sdv_merge_column(df, merged_name="record", tooltip=True, id="team"), df, "team")
+    assert merged[0].startswith('<div title="LV 15-2">')
+    col = reactable_sdv_highlight(df, tooltip=True, id="wins")
+    assert _cells(col, df, "wins")[0] == '<span title="15">15</span>'
+    assert col.style is not None

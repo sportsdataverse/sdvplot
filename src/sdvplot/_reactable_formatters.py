@@ -13,6 +13,7 @@ from __future__ import annotations
 import html
 import math
 import numbers
+import re
 from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
@@ -35,7 +36,16 @@ Mark = Literal["logo", "headshot", "wordmark"]
 _RAMP = ("#15607A", "#FFFFFF", "#FA8C00")  # reactablefmtr's default color_tiles/color_scales/bubble_grid colors
 _FILL = "#15607A"  # reactablefmtr's default single fill
 _ICON_COLORS = ("#15607A", "#B0B0B0", "#FA8C00")  # icon_sets
-_TREND_COLORS = ("#15607A", "#B2B2B2", "#FA8C00")  # icon_trend_indicator: down, zero, up
+# icon_trend down, zero, up: reactablefmtr's blue with a gray and an orange darkened to 4.5:1 on white (its own
+# #B2B2B2 and #FA8C00 are 2.1:1 and 2.4:1, too faint for the text that takes these colors)
+_TREND_COLORS = ("#15607A", "#767676", "#B35900")
+_MAX_ICONS = 100  # icon_assign draws at most this many icons per cell, and refuses columns needing over 1,000
+_HARD_MAX_ICONS = 1000
+# visually hidden text: read by screen readers, not drawn
+_SR_ONLY = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"
+_CSS_NAME = re.compile(r"[a-zA-Z]{3,24}")  # a named color: letters only
+_CSS_FUNC = re.compile(r"(?:rgb|hsl)a?\([\w\s.%+\-,/]*\)", re.IGNORECASE)  # rgb()/hsl(): no ; { } or quotes
+_CSS_UNSAFE = re.compile(r"[;{}\\]|url\(|expression\(", re.IGNORECASE)
 _SHADOW = "0 6px 6px -4px #888888"
 
 # 16x16 inline SVG bodies. ponytail: a small fixed set; add a path here when a recipe needs another shape.
@@ -117,8 +127,53 @@ def _check_fmt(number_fmt: Any) -> NumberFmt:
 
 
 def _css(**rules: Any) -> str:
-    """An inline style: snake_case keys become CSS properties, None values are left out."""
-    return ";".join(f"{k.replace('_', '-')}:{html.escape(str(v))}" for k, v in rules.items() if v is not None)
+    """An inline style: snake_case keys become CSS properties, None values are left out.
+
+    A backstop behind the color checks: a value that could end its declaration or load a resource (``;``, braces, a
+    backslash, ``url(``) is dropped, so no value can add properties of its own.
+    """
+    return ";".join(
+        f"{k.replace('_', '-')}:{html.escape(str(v))}"
+        for k, v in rules.items()
+        if v is not None and not _CSS_UNSAFE.search(str(v))
+    )
+
+
+def _css_color(value: Any) -> str | None:
+    """``value`` as a CSS color if it is one we can write into a style safely: hex (``#`` optional), a named color, or
+    ``rgb()``/``hsl()``; None otherwise."""
+    if not isinstance(value, str):
+        return None
+    s = value.strip()
+    try:
+        hex6(s, drop_alpha=True)
+        return s if s.startswith("#") else f"#{s}"
+    except ValueError:
+        pass
+    return s if _CSS_NAME.fullmatch(s) or _CSS_FUNC.fullmatch(s) else None
+
+
+def _check_color(value: Any, name: str) -> str:
+    """A color argument: hex, a named color, or ``rgb()``/``hsl()``; InputError for anything else."""
+    color = _css_color(value)
+    if color is None:
+        raise InputError(f"{name} must be a hex color, a CSS color name, or rgb()/hsl(), got {value!r}")
+    return color
+
+
+def _data_colors(values: list[Any], what: str) -> list[str | None]:
+    """A color column's values: each a CSS color, or None where it is missing or not a color (warned once per value)."""
+    bad: set[str] = set()
+    out: list[str | None] = []
+    for v in values:
+        color = None if _missing(v) else _css_color(v)
+        if color is None and not _missing(v) and str(v) not in bad:
+            bad.add(str(v))
+            warn(
+                f"{what} value {str(v)!r} is not a hex color, a CSS color name, or rgb()/hsl(); the cell is not filled"
+            )
+        out.append(color)
+    return out
 
 
 def _title(text: str, tooltip: bool) -> str:
@@ -222,7 +277,7 @@ def _row_refs(
     if color_ref is not None and team_col is not None:
         raise InputError("give color_ref or team_col, not both")
     if color_ref is not None:
-        return [None if _missing(c) else str(c) for c in _column(frame, color_ref, "color_ref")]
+        return _data_colors(_column(frame, color_ref, "color_ref"), "color_ref")
     if team_col is None:
         return None
     if league is None:
@@ -258,13 +313,14 @@ def _row_marks(
 class _Scale:
     """A column's value range and buckets, computed once per column of the frame (the cell sees its column's name)."""
 
-    def __init__(self, frame: Any, *, by: str | None, min_value: Any, max_value: Any, span: Any, check: bool) -> None:
-        for name, v in (("min_value", min_value), ("max_value", max_value)):
-            if v is not None and not _real(v):
-                raise InputError(f"{name} must be a number, got {v!r}")
+    def __init__(self, frame: Any, *, by: str | None, min_value: Any, max_value: Any, span: Any, check: bool,
+                 by_arg: str = "color_by") -> None:  # fmt: skip
+        _check_range(min_value, max_value)
         self.frame, self.by, self.min, self.max, self.check = frame, by, min_value, max_value, check
-        if by is not None:
-            _column(frame, by, "color_by")
+        if by is not None:  # reactablefmtr stops on a non-numeric color_by / fill_by
+            text = [v for v in _column(frame, by, by_arg) if not _missing(v) and not _real(v)]
+            if text:
+                raise InputError(f"{by_arg} must name a numeric column; {by!r} holds {text[0]!r}")
         numeric = [c for c in frame.columns if any(_real(v) for v in frame[c].to_list())]
         if span is True:
             self.span: list[str] | None = numeric
@@ -275,9 +331,17 @@ class _Scale:
             if not set(self.span) <= set(numeric):
                 raise InputError(f"span names numeric columns of data; numeric columns are {numeric}")
         self._cache: dict[str, tuple[list[float | None], float, float]] = {}
+        self._peaks: dict[str, tuple[float, float]] = {}
 
     def values(self, name: str) -> list[float | None]:
         return self._get(name)[0]
+
+    def peak(self, name: str) -> tuple[float, float]:
+        """The column's largest magnitude and its minimum (0 for an empty column), computed once per column."""
+        if name not in self._peaks:
+            seen = [v for v in self.values(name) if v is not None]
+            self._peaks[name] = (max((abs(v) for v in seen), default=0.0), min(seen, default=0.0))
+        return self._peaks[name]
 
     def _get(self, name: str) -> tuple[list[float | None], float, float]:
         if name not in self._cache:
@@ -301,6 +365,20 @@ class _Scale:
         vals, lo, hi = self._get(name)
         v = vals[row]
         return None if v is None else _norm(v, lo, hi)
+
+
+def _check_range(min_value: Any, max_value: Any) -> None:
+    for name, v in (("min_value", min_value), ("max_value", max_value)):
+        if v is not None and (not _real(v) or not math.isfinite(v)):
+            raise InputError(f"{name} must be a finite number, got {v!r}")
+    if min_value is not None and max_value is not None and min_value >= max_value:
+        raise InputError(f"min_value must be below max_value, got {min_value!r} and {max_value!r}")
+
+
+def _check_bias(bias: Any) -> float:
+    if not _real(bias) or not math.isfinite(bias) or bias <= 0:
+        raise InputError(f"bias must be a positive number, got {bias!r}")
+    return float(bias)
 
 
 def _icon(name: str, color: str, size: float, *, style: str = "") -> str:
@@ -385,19 +463,22 @@ def reactable_sdv_data_bars(
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it).
         fill_color: One color, or several colors forming a scale from the column's minimum to its maximum.
-        fill_color_ref: A column of ``data`` holding each row's bar color.
+        fill_color_ref: A column of ``data`` holding each row's bar color: hex, a CSS color name, or rgb()/hsl();
+            any other value is warned about once and that row keeps the scale color.
         team_col: A column of team values; each bar takes that team's color (``which``). Teams that do not resolve keep
             the scale color.
         league: The SDV league key, e.g. "nfl"; needed by ``team_col`` and ``mark``.
         which: "primary" or "secondary" team color.
-        fill_by: Another numeric column whose values set the bar lengths and colors.
+        fill_by: Another numeric column whose values set the bar lengths and colors (a text column is an error).
         fill_opacity: The bar's opacity, 0 to 1.
         bias: Spacing of the scale's colors; above 1 spreads the high end (``grDevices::colorRamp``).
         min_value: The value of an empty bar; None measures from zero.
-        max_value: The value of a full bar; None for the column's largest magnitude.
+        max_value: The value of a full bar; None for the column's largest magnitude. Bars are clamped to 0-100% of
+            the track, so a value beyond ``max_value`` draws a full bar.
         align: "left" or "right": the side bars grow from.
-        text_position: "inside-end", "outside-end", "inside-base", "outside-base", "center", "above" or "none".
-        text_color: The text color; None for black, or white on a dark bar.
+        text_position: "inside-end", "outside-end", "inside-base", "outside-base", "center", "above" or "none"
+            ("none" keeps the value as visually hidden text for screen readers).
+        text_color: The text color (hex, a CSS color name, or rgb()/hsl()); None for black, or white on a dark bar.
         brighten_text: Switch text inside a bar to black or white when ``text_color`` is unreadable on it.
         bold_text: Bold text.
         number_fmt: A function of the value returning its text, or a format spec such as ",.1f".
@@ -406,7 +487,7 @@ def reactable_sdv_data_bars(
         mark_height: The mark's height in pixels.
         round_edges: Round the bar's ends.
         bar_height: The bar's height in pixels; None for 18 (5 with ``text_position="above"``).
-        background: The CSS color of the empty track behind each bar.
+        background: The color of the empty track behind each bar (hex, a CSS color name, or rgb()/hsl()).
         gradient: Fill each bar with a left-to-right gradient of ``fill_color`` (two colors or more).
         pos_neg: Split every cell at zero even when no value is negative.
         box_shadow: A drop shadow under each bar.
@@ -450,20 +531,23 @@ def reactable_sdv_data_bars(
     if gradient and len(fills) < 2:
         raise InputError("gradient needs at least two colors in fill_color")
     fmt = _check_fmt(number_fmt)
+    bias = _check_bias(bias)
+    _check_range(min_value, max_value)
+    text_color = None if text_color is None else _check_color(text_color, "text_color")
+    background = _check_color(background, "background")
     h = check_px(bar_height) if bar_height is not None else (5.0 if text_position == "above" else 18.0)
     refs = _row_refs(frame, color_ref=fill_color_ref, team_col=team_col, league=league, which=which, season=season,
                      id_system=id_system, strict=strict)  # fmt: skip
     marks = _row_marks(frame, mark=mark, mark_col=mark_col or team_col, league=league, height=check_px(mark_height),
                        season=season, id_system=id_system, strict=strict)  # fmt: skip
-    scale = _Scale(frame, by=fill_by, min_value=None, max_value=None, span=False, check=False)
+    scale = _Scale(frame, by=fill_by, min_value=None, max_value=None, span=False, check=False, by_arg="fill_by")
     radius = f"{h / 2:g}px" if round_edges else "0px"
     shadow = _SHADOW if box_shadow else None
     weight = "bold" if bold_text else "normal"
     grad = f"linear-gradient(to right, {', '.join(_alpha(c, op) for c in fills)})" if gradient else None
 
     def length(name: str, v: float) -> float:
-        vals = [abs(x) for x in scale.values(name) if x is not None]
-        top = max_value if max_value is not None else max(vals, default=0.0)
+        top = max_value if max_value is not None else scale.peak(name)[0]
         lo = min_value or 0.0
         pct = 0.0 if top == lo else 100 * (abs(v) - lo) / (top - lo)
         return min(max(pct, 0.0), 100.0)
@@ -474,7 +558,7 @@ def reactable_sdv_data_bars(
         if v is None:
             return "" if _missing(info.value) else html.escape(str(info.value))
         label = _fmt(info.value, fmt)
-        two_sided = pos_neg or min((x for x in scale.values(name) if x is not None), default=0.0) < 0
+        two_sided = pos_neg or scale.peak(name)[1] < 0
         ref = refs[row] if refs is not None else None
         if ref is not None:
             fill = _alpha(ref, op)
@@ -519,6 +603,8 @@ def reactable_sdv_data_bars(
             body = f'<div style="{_css(text_align=align)}">{label}</div>{track}'
         else:
             body = track
+        if text_position == "none":  # no visible number: screen readers still get the value
+            body += f'<span style="{_SR_ONLY}">{label}</span>'
         style = _css(font_weight=weight, color=None if inside else text_color)
         return f'<div style="{style}"{_title(label, tooltip)}>{body}</div>'
 
@@ -534,9 +620,7 @@ class _Colorer:
 
     def __init__(self, frame: Any, *, colors: Any, refs: list[str | None] | None, scale: _Scale, bias: float,
                  opacity: float, even_breaks: bool, text_color: str | None, brighten: bool) -> None:  # fmt: skip
-        if not _real(bias) or bias <= 0:
-            raise InputError(f"bias must be a positive number, got {bias!r}")
-        self.colors, self.refs, self.scale, self.bias = _hexes(colors, "colors"), refs, scale, float(bias)
+        self.colors, self.refs, self.scale, self.bias = _hexes(colors, "colors"), refs, scale, _check_bias(bias)
         self.opacity, self.even, self.text, self.brighten = opacity, even_breaks, text_color, brighten
         self._buckets: dict[str, list[int | None]] = {}
 
@@ -566,6 +650,7 @@ def _color_setup(
 ) -> tuple[Any, _Colorer]:  # fmt: skip
     frame = _frame(data)
     op = _check_opacity(opacity)
+    text_color = None if text_color is None else _check_color(text_color, "text_color")
     refs = _row_refs(frame, color_ref=color_ref, team_col=team_col, league=league, which=which, season=season,
                      id_system=id_system, strict=strict)  # fmt: skip
     scale = _Scale(frame, by=color_by, min_value=min_value, max_value=max_value, span=span, check=True)
@@ -611,7 +696,8 @@ def reactable_sdv_color_tiles(
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it).
         colors: Hex colors forming the scale from the column's minimum to its maximum.
-        color_ref: A column of ``data`` holding each row's fill color.
+        color_ref: A column of ``data`` holding each row's fill color: hex, a CSS color name, or rgb()/hsl();
+            any other value is warned about once and that row keeps the scale color.
         team_col: A column of team values; each tile takes that team's color (``which``). Teams that do not resolve
             keep the scale color.
         league: The SDV league key, e.g. "nfl"; needed by ``team_col``.
@@ -717,7 +803,8 @@ def reactable_sdv_color_scales(
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it).
         colors: Hex colors forming the scale from the column's minimum to its maximum.
-        color_ref: A column of ``data`` holding each row's fill color.
+        color_ref: A column of ``data`` holding each row's fill color: hex, a CSS color name, or rgb()/hsl();
+            any other value is warned about once and that row keeps the scale color.
         team_col: A column of team values; each cell takes that team's color (``which``). Teams that do not resolve
             keep the scale color.
         league: The SDV league key, e.g. "nfl"; needed by ``team_col``.
@@ -820,7 +907,8 @@ def reactable_sdv_pill_buttons(
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it).
         colors: One hex color, or several forming a scale from the column's minimum to its maximum (numbers only).
-        color_ref: A column of ``data`` holding each row's pill color.
+        color_ref: A column of ``data`` holding each row's pill color: hex, a CSS color name, or rgb()/hsl();
+            any other value is warned about once and that row keeps the scale color.
         team_col: A column of team values; each pill takes that team's color (``which``).
         league: The SDV league key, e.g. "nfl"; needed by ``team_col``.
         which: "primary" or "secondary" team color.
@@ -872,7 +960,7 @@ def reactable_sdv_pill_buttons(
         ref = colorer.refs[info.row_index] if colorer.refs is not None else None
         if ref is None and not _real(info.value):  # text: the first color
             fill = _alpha(colorer.colors[0], colorer.opacity)
-            got: tuple[str, str] | None = (fill, _ink(fill, text_color, brighten_text))
+            got: tuple[str, str] | None = (fill, _ink(fill, colorer.text, brighten_text))
         else:
             got = colorer(info.column_name, info.row_index)
         label = _fmt(info.value, fmt)
@@ -921,14 +1009,16 @@ def reactable_sdv_bubble_grid(
         data: The pandas or polars DataFrame passed to ``Reactable`` (ranges and per-row colors are read from it).
         shape: "circles" or "squares".
         colors: Hex colors forming the scale from the column's minimum to its maximum.
-        color_ref: A column of ``data`` holding each row's bubble color.
+        color_ref: A column of ``data`` holding each row's bubble color: hex, a CSS color name, or rgb()/hsl();
+            any other value is warned about once and that row keeps the scale color.
         team_col: A column of team values; each bubble takes that team's color (``which``). Teams that do not resolve
             keep the scale color.
         league: The SDV league key, e.g. "nfl"; needed by ``team_col``.
         which: "primary" or "secondary" team color.
         color_by: Another numeric column whose values set the colors and sizes.
         min_value: The value of an empty bubble; None measures from zero.
-        max_value: The value of a 100-pixel bubble; None for the column's largest magnitude.
+        max_value: The value of a 100-pixel bubble; None for the column's largest magnitude. Sizes are clamped to
+            0-100 pixels, as data bars are to their track.
         opacity: The bubble's opacity, 0 to 1.
         bias: Spacing of the scale's colors; above 1 spreads the high end (``grDevices::colorRamp``).
         number_fmt: A function of the value returning its text, or a format spec such as ",.1f".
@@ -970,24 +1060,21 @@ def reactable_sdv_bubble_grid(
     _choice(shape, "shape", ("circles", "squares"))
     _, colorer = _color_setup(data, colors, color_ref, team_col, league, which, color_by, bias, opacity, None, None,
                               False, False, text_color, brighten_text, season, id_system, strict)  # fmt: skip
-    for name, v in (("min_value", min_value), ("max_value", max_value)):
-        if v is not None and not _real(v):
-            raise InputError(f"{name} must be a number, got {v!r}")
+    _check_range(min_value, max_value)
     fmt = _check_fmt(number_fmt)
     shadow = _SHADOW if box_shadow else None
 
     def cell(info: CellInfo) -> str:
         if colorer.refs is None and color_by is None and not _real(info.value):
             return _passthrough(info.value)
-        vals = colorer.scale.values(info.column_name)
-        v = vals[info.row_index]
+        v = colorer.scale.values(info.column_name)[info.row_index]
         got = colorer(info.column_name, info.row_index)
         label = _fmt(info.value, fmt)
         if v is None or got is None:
             return "" if _missing(info.value) else label
-        top = max_value if max_value is not None else max(abs(x) for x in vals if x is not None)
+        top = max_value if max_value is not None else colorer.scale.peak(info.column_name)[0]
         lo = min_value or 0.0
-        size = 0.0 if top == lo else max(0.0, 100 * (abs(v) - lo) / (top - lo))
+        size = 0.0 if top == lo else min(max(0.0, 100 * (abs(v) - lo) / (top - lo)), 100.0)  # clamped, as data bars
         fill, ink = got
         style = _css(background=fill, color=ink if show_text else "transparent", display="inline-flex",
                      justify_content="center", align_items="center", text_align="center", height=f"{size:.4g}px",
@@ -1031,9 +1118,11 @@ def reactable_sdv_icon_sets(
         colors: Hex colors from the lowest bucket to the highest.
         opacity: The icons' opacity, 0 to 1.
         icon_position: "right", "left", "above", "below", or "over" (the icon replaces the value).
-        icon_ref: A column of ``data`` holding each row's icon name (overrides ``icons``).
+        icon_ref: A column of ``data`` holding each row's icon name (overrides ``icons``); a missing value draws no
+            icon.
         icon_size: The icon's size in pixels.
-        icon_color_ref: A column of ``data`` holding each row's icon color (overrides ``colors``).
+        icon_color_ref: A column of ``data`` holding each row's icon color (overrides ``colors``): hex, a CSS color
+            name, or rgb()/hsl(); a missing value or any other value (warned about once) draws no icon.
         number_fmt: A function of the value returning its text, or a format spec such as ",.1f".
         tooltip: Give each cell a ``title`` (hover text) of its formatted value.
         **column_kwargs: Passed to ``reactable.Column``; ``id`` names the column drawn.
@@ -1069,7 +1158,11 @@ def reactable_sdv_icon_sets(
     size = check_px(icon_size)
     fmt = _check_fmt(number_fmt)
     row_icons = _column(frame, icon_ref, "icon_ref") if icon_ref is not None else None
-    row_colors = _column(frame, icon_color_ref, "icon_color_ref") if icon_color_ref is not None else None
+    row_colors = (
+        _data_colors(_column(frame, icon_color_ref, "icon_color_ref"), "icon_color_ref")
+        if icon_color_ref is not None
+        else None
+    )
     buckets: dict[str, tuple[list[int | None], list[int | None]]] = {}
     unknown: set[str] = set()
 
@@ -1081,8 +1174,11 @@ def reactable_sdv_icon_sets(
             vals = _numbers(_column(frame, name))
             buckets[name] = (_ntile(vals, len(names)), _ntile(vals, len(hexes)))
         ib, cb = buckets[name][0][row], buckets[name][1][row]
-        icon_name = str(row_icons[row]) if row_icons is not None else (names[ib - 1] if ib else None)
-        color = str(row_colors[row]) if row_colors is not None else (hexes[cb - 1] if cb else None)
+        if row_icons is not None:  # a missing icon_ref value draws no icon, without a warning
+            icon_name = None if _missing(row_icons[row]) else str(row_icons[row])
+        else:
+            icon_name = names[ib - 1] if ib else None
+        color = row_colors[row] if row_colors is not None else (hexes[cb - 1] if cb else None)
         label = _fmt(info.value, fmt) if not _missing(info.value) else ""
         if icon_name is None or color is None:
             return label
@@ -1131,7 +1227,8 @@ def reactable_sdv_icon_assign(
         icon_size: The icon's size in pixels.
         buckets: Cut the column into this many quantile buckets and fill one icon per bucket reached.
         number_fmt: A function of the value returning its text, or a format spec such as ",.1f".
-        seq_by: One icon per this many units of value (values are rounded half up first).
+        seq_by: One icon per this many units of value (values are rounded half up first). A cell draws at most 100
+            icons (with a warning); a column that would need more than 1,000 is an error.
         show_values: "none", or where to show the value: "left", "right", "above" or "below".
         **column_kwargs: Passed to ``reactable.Column``; ``id`` names the column drawn.
 
@@ -1172,6 +1269,7 @@ def reactable_sdv_icon_assign(
     fmt = _check_fmt(number_fmt)
     on, off = _icon(icon, full, size), _icon(icon, empty, size)
     cache: dict[str, tuple[list[float | None], list[int | None] | None, float]] = {}
+    capped: set[str] = set()
 
     def cell(info: CellInfo) -> str:
         if _missing(info.value):
@@ -1192,7 +1290,17 @@ def reactable_sdv_icon_assign(
         else:  # one icon per seq_by units up to the column's (rounded) maximum
             filled = math.floor(value + 0.5)
             start = 1.0 if top != 0 else 0.0
-            steps = [start + k * seq_by for k in range(int((top - start) / seq_by) + 1)] if top >= start else []
+            count = int((top - start) / seq_by) + 1 if top >= start else 0
+            if count > _HARD_MAX_ICONS:
+                raise InputError(f"icon_assign would draw {count} icons per cell in {name!r} (at most "
+                                 f"{_HARD_MAX_ICONS}); raise seq_by or use buckets")  # fmt: skip
+            if count > _MAX_ICONS:
+                if name not in capped:
+                    capped.add(name)
+                    warn(f"icon_assign draws at most {_MAX_ICONS} icons per cell; {name!r} needs {count}, so only "
+                         f"the first {_MAX_ICONS} are drawn (raise seq_by or use buckets)")  # fmt: skip
+                count = _MAX_ICONS
+            steps = [start + k * seq_by for k in range(count)]
             text = f"{_fmt(value, None)} out of {top:g}"
         lit = (lambda i: i <= filled) if top != 0 or bins is not None else (lambda i: i < filled)
         seq = "".join(on if lit(i) else off for i in steps)
@@ -1231,10 +1339,13 @@ def reactable_sdv_icon_trend(
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable``.
         icons: "arrow", "chevron" or "triangle".
-        colors: Three hex colors: down, zero, up.
+        colors: Three hex colors: down, zero, up. The default is reactablefmtr's ``#15607A`` with ``#767676`` and
+            ``#B35900``, both 4.5:1 or better on white, in place of reactablefmtr's ``#B2B2B2`` and ``#FA8C00``
+            (about 2.1:1 and 2.4:1, too faint for the text, which takes these colors).
         icon_position: "right", "left", "above", "below", or "over" (the icon replaces the value).
         icon_size: The icon's size in pixels.
-        show_zero_label: Show the value when it is zero (otherwise only the dash).
+        show_zero_label: Show the value when it is zero (otherwise only the dash is drawn, and the zero is kept as
+            visually hidden text for screen readers).
         number_fmt: A function of the value returning its text, or a format spec such as "+.1f".
         opacity: The icons' opacity, 0 to 1.
         text_color: One color for every value's text; None colors it like its icon.
@@ -1273,6 +1384,7 @@ def reactable_sdv_icon_trend(
     size = check_px(icon_size)
     fmt = _check_fmt(number_fmt)
     del data  # the trend needs no range; data is taken for the same call shape as the other formatters
+    text_color = None if text_color is None else _check_color(text_color, "text_color")
     weight = "bold" if bold_text else "normal"
 
     def cell(info: CellInfo) -> str:
@@ -1283,8 +1395,10 @@ def reactable_sdv_icon_trend(
         if icons == "arrow" and v != 0:
             name = "arrow-up" if v > 0 else "arrow-down"
         label = _fmt(info.value, fmt)
-        shown = "" if v == 0 and not show_zero_label else label
-        text = f'<span style="{_css(color=text_color or hexes[k], font_weight=weight)}">{shown}</span>'
+        if v == 0 and not show_zero_label:  # the dash alone is drawn; screen readers still hear the zero
+            text = f'<span style="{_SR_ONLY}">{label}</span>'
+        else:
+            text = f'<span style="{_css(color=text_color or hexes[k], font_weight=weight)}">{label}</span>'
         icon = _icon(name, hexes[k], size, style="transition:1s ease")
         return f"<div{_title(label, tooltip)}>{_place(text, icon, icon_position)}</div>"
 
@@ -1311,6 +1425,7 @@ def reactable_sdv_merge_column(
     team_col: str | None = None,
     league: str | None = None,
     mark_height: float = 30,
+    tooltip: bool = False,
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
@@ -1325,10 +1440,10 @@ def reactable_sdv_merge_column(
         merged_name: The column of ``data`` merged into this one (hide it with ``Column(show=False)`` if it is shown).
         merged_position: "right", "left", "above" or "below".
         merged_size: The merged text's size in pixels.
-        merged_color: The merged text's CSS color.
+        merged_color: The merged text's color (hex, a CSS color name, or rgb()/hsl()).
         merged_weight: "normal" or "bold" for the merged text.
         size: The main text's size in pixels.
-        color: The main text's CSS color; None inherits the table's.
+        color: The main text's color (hex, a CSS color name, or rgb()/hsl()); None inherits the table's.
         weight: "normal" or "bold" for the main text.
         spacing: Extra pixels between the two values.
         mark: "logo", "headshot" or "wordmark": an image before the text.
@@ -1337,6 +1452,7 @@ def reactable_sdv_merge_column(
         team_col: A column of team values for the logo or wordmark.
         league: The SDV league key, e.g. "nfl"; needed by ``mark``.
         mark_height: The mark's height in pixels.
+        tooltip: Give each cell a ``title`` (hover text) of its value and the merged value.
         season: One season whose marks to use; None for today's.
         id_system: The id system of the mark's column, as in ``resolve``.
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
@@ -1346,8 +1462,8 @@ def reactable_sdv_merge_column(
         reactable.Column: The column, with ``html=True`` and a cell renderer.
 
     Raises:
-        InputError: (a ValueError) If ``merged_position``, a weight or ``mark`` is unknown, or ``mark`` comes without
-            ``league`` or a column to read it from.
+        InputError: (a ValueError) If ``merged_position``, a weight or ``mark`` is unknown, a color is not a color,
+            or ``mark`` comes without ``league`` or a column to read it from.
         ValueError: If a named column is not in ``data``.
         UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
 
@@ -1381,6 +1497,8 @@ def reactable_sdv_merge_column(
     for name, v in (("size", size), ("merged_size", merged_size), ("spacing", spacing)):
         if not _real(v) or v < 0:
             raise InputError(f"{name} must be a number of pixels, got {v!r}")
+    color = None if color is None else _check_color(color, "color")
+    merged_color = _check_color(merged_color, "merged_color")
     main_css = _css(font_size=f"{size:g}px", color=color, font_weight=weight)
     sub_css = _css(font_size=f"{merged_size:g}px", color=merged_color, font_weight=merged_weight)
     gap = f"{spacing + 3:g}px"
@@ -1399,9 +1517,10 @@ def reactable_sdv_merge_column(
         else:
             text = f'<span style="{main_css};margin-right:{gap}">{value}</span><span style="{sub_css}">{other}</span>'
         img = marks[info.row_index] if marks is not None else None
+        title = _title(f"{value} {other}".strip(), tooltip)
         if img is None:
-            return f"<div>{text}</div>"
-        return f'<div style="display:flex;align-items:center;gap:8px">{img}<div>{text}</div></div>'
+            return f"<div{title}>{text}</div>"
+        return f'<div style="display:flex;align-items:center;gap:8px"{title}>{img}<div>{text}</div></div>'
 
     return Column(**{"html": True, **column_kwargs, "cell": cell})
 
@@ -1412,23 +1531,27 @@ def reactable_sdv_highlight(
     which: Literal["max", "min", "min_max"] = "max",
     font_color: str | tuple[str, str] | None = None,
     highlighter: str | tuple[str | None, str | None] | None = None,
+    tooltip: bool = False,
     **column_kwargs: Any,
 ) -> Column:
     """A reactable column whose highest (or lowest, or both) values are bold, in a color, optionally on a highlight.
 
     Args:
         data: The pandas or polars DataFrame passed to ``Reactable`` (the column's extremes are read from it).
-        which: "max", "min", or "min_max" for both.
+        which: "max", "min", or "min_max" for both: which extreme to highlight. (Unlike the team-color ``which``
+            of the other formatters, "primary"/"secondary", this is reactablefmtr's highlight_max/_min/_min_max.)
         font_color: The CSS text color; None for green on the maximum and red on the minimum. For "min_max", a
             ``(min, max)`` pair.
         highlighter: A CSS background color, or a ``(min, max)`` pair for "min_max"; None for no background.
+        tooltip: Give each cell a ``title`` (hover text) of its value.
         **column_kwargs: Passed to ``reactable.Column``; ``id`` names the column drawn.
 
     Returns:
-        reactable.Column: The column, with a ``style`` function.
+        reactable.Column: The column, with a ``style`` function (and a cell renderer when ``tooltip`` is on).
 
     Raises:
-        InputError: (a ValueError) If ``which`` is unknown, or a pair is not two values.
+        InputError: (a ValueError) If ``which`` is unknown, a pair is not two values, or a color is not a hex color,
+            a CSS color name, or rgb()/hsl().
 
     Example:
         ::
@@ -1456,8 +1579,9 @@ def reactable_sdv_highlight(
             return value[0], value[1]
         return (value, value)
 
-    lo_color, hi_color = pair(font_color, ("red", "green"), "font_color")
-    lo_bg, hi_bg = pair(highlighter, (None, None), "highlighter")
+    lo_color, hi_color = (_check_color(c, "font_color") for c in pair(font_color, ("red", "green"), "font_color"))
+    lo_bg, hi_bg = (None if c is None else _check_color(c, "highlighter")
+                    for c in pair(highlighter, (None, None), "highlighter"))  # fmt: skip
     frame = _frame(data)
     extremes: dict[str, tuple[float, float]] = {}
 
@@ -1478,4 +1602,9 @@ def reactable_sdv_highlight(
             return {}
         return {"font-weight": "bold", "color": color, **({"background": bg} if bg is not None else {})}
 
-    return Column(**{**column_kwargs, "style": style})
+    def cell(info: CellInfo) -> str:
+        label = _fmt(info.value, None) if _real(info.value) else _passthrough(info.value)
+        return f"<span{_title(label, True)}>{label}</span>"
+
+    shown = {"html": True, "cell": cell} if tooltip else {}
+    return Column(**{**shown, **column_kwargs, "style": style})
