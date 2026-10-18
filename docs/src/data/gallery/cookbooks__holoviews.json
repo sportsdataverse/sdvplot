@@ -1,0 +1,15 @@
+{
+  "section": "cookbooks",
+  "stem": "holoviews",
+  "label": "HoloViews",
+  "position": 11,
+  "page": "cookbooks/holoviews.md",
+  "items": [
+    {
+      "title": "MLB runs scored vs allowed, a HoloViews chart rendered with matplotlib",
+      "alt": "HoloViews scatter of MLB runs scored and allowed per game with team logos, rendered through the matplotlib backend",
+      "image": "/img/gallery/cookbooks/holoviews_15.png",
+      "anchor": "6-a-static-png-through-the-matplotlib-backend"
+    }
+  ]
+}

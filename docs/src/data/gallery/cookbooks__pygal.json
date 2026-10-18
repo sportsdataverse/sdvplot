@@ -1,0 +1,15 @@
+{
+  "section": "cookbooks",
+  "stem": "pygal",
+  "label": "pygal",
+  "position": 9,
+  "page": "cookbooks/pygal.md",
+  "items": [
+    {
+      "title": "SEC adjusted efficiency, a pygal chart exported to PNG",
+      "alt": "pygal scatter of SEC men's basketball adjusted offense against adjusted defense with team logos",
+      "image": "/img/gallery/cookbooks/pygal_15.png",
+      "anchor": "7-export-a-png"
+    }
+  ]
+}
