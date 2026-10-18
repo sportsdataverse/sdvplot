@@ -121,6 +121,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `center_field_distance` across (60 ft at 263.6 ft from home plate on an MLB field), from the league's field
   parameters and `field_updates`, in the dark-background variant for the grass. Every surface's center logo now
   also follows `x_trans` / `y_trans` and `rotation`, as the surface does (it stayed at the origin).
+- `surface(..., center_logo=True)` draws the team's dark-background logo variant on grass, football fields and soccer
+  pitches as well as diamonds, as sdvplotR does: the variant is `"dark"` wherever white reads better than black on
+  the sport's regulation surface color (basketball's wood and hockey's ice keep the default). A team without a dark
+  variant falls back to its default logo.
 - `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
   The surfaces extra now needs sportypy 1.2.0.
 

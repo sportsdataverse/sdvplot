@@ -84,7 +84,15 @@ NO_TEAMS = frozenset({
     "ncaa_volleyball", "wcf", "curling_canada",
 })  # fmt: skip
 SOCCER_PITCH = {"pitch_length": 105, "pitch_width": 68}  # sportypy's fifa default is FIFA's 120 x 90 m maximum
-SURFACE_BASE = {"basketball": "#d2ab6f", "football": "#196f0c", "hockey": "#ffffff"}  # sportyR's default colors
+# sportyR's regulation surface colors (sdvplotR's surface_base): the ground a team's center logo sits on
+SURFACE_BASE = {
+    "basketball": "#d2ab6f",
+    "football": "#196f0c",
+    "hockey": "#ffffff",
+    "soccer": "#196f0c",
+    "baseball": "#395d33",
+    "softball": "#395d33",
+}
 _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
 DIAMONDS = ("baseball", "softball")  # origin at home plate: the center logo goes in shallow center field
 FIELD_LOGO_FRACTION = 0.15  # a diamond's logo is this fraction of the center-field distance across (as sdvplotR)
@@ -234,7 +242,8 @@ def surface(
             height fraction. A baseball or softball field's origin is home plate, so there the logo goes in shallow
             center field, as in sdvplotR: at x = 0, midway between second base (``baseline_distance * sqrt(2)``)
             and the center-field fence, 0.15 x ``center_field_distance`` across (True; a fraction still sets the
-            height), from the league's field parameters and ``field_updates``, in the dark-background variant.
+            height), from the league's field parameters and ``field_updates``. On grass (football, soccer, baseball,
+            softball) the logo is the team's dark-background variant, as in sdvplotR.
         **sportypy_kwargs: Passed to sportypy: ``display_range``, ``xlim``, ``ylim`` and ``rotation`` go to
             ``draw()``; the rest (``field_updates``, ``color_updates``, ``units``, ...) to the surface class.
 
@@ -305,6 +314,7 @@ def surface(
             low, high = drawn.get_ylim()
             height = min(size / abs(high - low), 1.0)
         top = max((a.get_zorder() for a in drawn.get_children()), default=0)
-        variant = "dark" if sport in DIAMONDS else "default"  # the dark-background mark on a diamond's grass
+        # the dark-background mark where white reads on the regulation surface (grass), as sdvplotR
+        variant = "dark" if on_color(SURFACE_BASE[sport]) == "#ffffff" else "default"
         add_logos(drawn, [x], [y], [team], league=league, season=season, zorder=top + 1, height=height, variant=variant)
     return drawn

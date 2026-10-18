@@ -376,3 +376,26 @@ def test_the_mlb_center_logo_is_drawn_in_shallow_center_field(mark_images):
     lo, hi = ax.get_ylim()
     assert (team, x, y) == ("7", 0.0, pytest.approx(263.6396103068, abs=1e-9))
     assert height * (hi - lo) == pytest.approx(60, rel=0.02)  # measured from the drawn image's pixels
+
+
+# sdvplotR's rule (R/sdv_surface.R surface_logo_layer): the dark-background variant where white reads better than black
+# on the sport's regulation surface color (surface_base), whatever the caller's color_updates
+@pytest.mark.parametrize(
+    ("league", "variant"),
+    [
+        ("nfl", "dark"),  # football: grass #196f0c
+        ("soccer", "dark"),  # grass #196f0c
+        ("mlb", "dark"),  # baseball: outfield grass #395d33
+        ("ncaa_softball", "dark"),  # outfield grass #395d33
+        ("nba", "default"),  # basketball: wood #d2ab6f
+        ("nhl", "default"),  # ice #ffffff
+    ],
+)
+def test_the_center_logo_variant_follows_the_surface_color_as_in_sdvplotr(league, variant, monkeypatch):
+    import sdvplot.matplotlib
+
+    seen = {}
+    monkeypatch.setattr(sdvplot.matplotlib, "add_logos", lambda ax, x, y, teams, **kw: seen.update(kw))
+    monkeypatch.setattr(_surface, "team_colors", lambda *a, **k: ["#123456"])
+    sdvplot.surface(league, "X", center_logo=True, color_updates={"plot_background": "#ffffff"})
+    assert seen["variant"] == variant
