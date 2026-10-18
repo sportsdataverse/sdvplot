@@ -37,6 +37,8 @@ from sdvplot._reactable_formatters import (
     reactable_sdv_merge_column,
     reactable_sdv_pill_buttons,
 )
+from sdvplot._reactable_frame import reactable_sdv_frame, reactable_sdv_icon_legend, reactable_sdv_legend
+from sdvplot._reactable_themes import reactable_sdv_theme, reactable_sdv_theme_team
 from sdvplot._tables import check_px, img_tag, mark_html
 from sdvplot._types import IdSystem, Which
 
@@ -46,12 +48,15 @@ __all__ = [
     "reactable_sdv_color_tiles",
     "reactable_sdv_cols_label",
     "reactable_sdv_data_bars",
+    "reactable_sdv_frame",
     "reactable_sdv_gauge",
     "reactable_sdv_headshots",
     "reactable_sdv_highlight",
     "reactable_sdv_icon_assign",
+    "reactable_sdv_icon_legend",
     "reactable_sdv_icon_sets",
     "reactable_sdv_icon_trend",
+    "reactable_sdv_legend",
     "reactable_sdv_logos",
     "reactable_sdv_merge_column",
     "reactable_sdv_pill_buttons",
@@ -59,6 +64,8 @@ __all__ = [
     "reactable_sdv_sparkline",
     "reactable_sdv_team_color_bar",
     "reactable_sdv_team_color_bg",
+    "reactable_sdv_theme",
+    "reactable_sdv_theme_team",
     "reactable_sdv_wordmarks",
 ]
 

@@ -15,12 +15,15 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 | [reactable_sdv_color_tiles](#reactable_sdv_color_tiles) | A reactable column of rounded tiles filled on a color scale, by a color column, or in the row's team color. |
 | [reactable_sdv_cols_label](#reactable_sdv_cols_label) | One reactable column per team-named column of ``data`` (a ``KC`` column, a ``BUF`` column, ...), its header |
 | [reactable_sdv_data_bars](#reactable_sdv_data_bars) | A reactable column of horizontal bars sized by value, in a scale color, a color column or the team color. |
+| [reactable_sdv_frame](#reactable_sdv_frame) | A ``Reactable`` with a title and subtitle above it and a legend and source line under it, in a Google font. |
 | [reactable_sdv_gauge](#reactable_sdv_gauge) | A reactable column that draws each cell's number as a half-circle gauge (an inline SVG) with the value inside. |
 | [reactable_sdv_headshots](#reactable_sdv_headshots) | A reactable column that shows each cell's player id as the player's headshot. |
 | [reactable_sdv_highlight](#reactable_sdv_highlight) | A reactable column whose highest (or lowest, or both) values are bold, in a color, optionally on a highlight. |
 | [reactable_sdv_icon_assign](#reactable_sdv_icon_assign) | A reactable column that repeats an icon, filled up to the value: a rating in stars, a count in dots. |
+| [reactable_sdv_icon_legend](#reactable_sdv_icon_legend) | An icon legend: each icon, in its color, before its label, for ``reactable_sdv_frame(legend=...)``. |
 | [reactable_sdv_icon_sets](#reactable_sdv_icon_sets) | A reactable column that puts an icon beside each number, chosen by the value's quantile bucket. |
 | [reactable_sdv_icon_trend](#reactable_sdv_icon_trend) | A reactable column that marks each change with an up arrow, a down arrow or a dash, the value colored to match. |
+| [reactable_sdv_legend](#reactable_sdv_legend) | A color legend: a row of swatches with a label under each, for ``reactable_sdv_frame(legend=...)``. |
 | [reactable_sdv_logos](#reactable_sdv_logos) | A reactable column that shows each cell's team as its logo. |
 | [reactable_sdv_merge_column](#reactable_sdv_merge_column) | A reactable column that shows a second column's value beside or below each value, after an optional mark. |
 | [reactable_sdv_pill_buttons](#reactable_sdv_pill_buttons) | A reactable column whose values sit in rounded pills, in a scale color, a color column or the team color. |
@@ -28,6 +31,8 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 | [reactable_sdv_sparkline](#reactable_sdv_sparkline) | A reactable column that draws each cell's list of numbers as a sparkline (an inline SVG). |
 | [reactable_sdv_team_color_bar](#reactable_sdv_team_color_bar) | A reactable column whose cells hold a bar in the row's team color, as long as the value's share of the maximum. |
 | [reactable_sdv_team_color_bg](#reactable_sdv_team_color_bg) | A reactable column whose cells are filled with the row's team color, mostly transparent. |
+| [reactable_sdv_theme](#reactable_sdv_theme) | One of reactablefmtr's 27 table themes, with reactablefmtr's own colors, fonts, borders and paddings. |
+| [reactable_sdv_theme_team](#reactable_sdv_theme_team) | A table theme in a team's colors: the header filled with the primary color over a rule in the secondary, |
 | [reactable_sdv_wordmarks](#reactable_sdv_wordmarks) | A reactable column that shows each cell's team as its wordmark. |
 
 ## reactable_sdv_bubble_grid
@@ -496,6 +501,73 @@ Reactable(df, columns=[reactable_sdv_data_bars(df, team_col="team", league="nfl"
 
 - [Equivalent of reactablefmtr::data_bars](https://kcuilla.github.io/reactablefmtr/reference/data_bars.html)
 
+## reactable_sdv_frame
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_frame(
+    table: Any,
+    *,
+    title: Any = None,
+    subtitle: Any = None,
+    source: Any = None,
+    legend: Any = None,
+    font: str | None = None,
+    align: str = 'left',
+) -> htmltools._core.TagList
+```
+
+</div>
+
+A ``Reactable`` with a title and subtitle above it and a legend and source line under it, in a Google font.
+
+The result shows in a notebook just as a ``Reactable`` does (call ``reactable.embed_css()`` once first). Its
+sizes are reactablefmtr's: a 32 px bold title, a 24 px bold subtitle and a 16 px source line, no margins; the
+text color is inherited from the page rather than reactablefmtr's black, so a dark page keeps it readable.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `table` | `Any` | The ``reactable.Reactable``. |
+| `title` | `Any` | The title text (or an htmltools tag). |
+| `subtitle` | `Any` | The subtitle text (or tag). |
+| `source` | `Any` | The source line under the table, e.g. "Data: sportsdataverse-py". |
+| `legend` | `Any` | A legend from ``reactable_sdv_legend`` or ``reactable_sdv_icon_legend`` (any htmltools tag), shown under the table. |
+| `font` | `str \| None` | A Google Fonts family name, e.g. "Poppins" or "Roboto Condensed", for the title, table and source; None keeps the page's font. The font is loaded from fonts.googleapis.com when the page is shown. |
+| `align` | `str` | "left", "center" or "right", for the title, subtitle, legend and source. |
+
+### Returns
+
+`htmltools.TagList` — The framed table.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``align`` is not "left", "center" or "right", or ``font`` is not a font name.
+
+### Example
+
+```python
+import pandas as pd
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_frame, reactable_sdv_legend
+
+df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+reactable_sdv_frame(
+    Reactable(df),
+    title="AFC leaders",
+    subtitle="2025 regular season",
+    source="Data: sportsdataverse-py",
+    legend=reactable_sdv_legend(colors=["#ffffff", "#1a9641"], labels=["fewer", "more"]),
+    font="Poppins",
+)
+```
+
+### See also
+
+- [Equivalent of reactablefmtr::add_title, add_subtitle, add_source and google_font](https://kcuilla.github.io/reactablefmtr/reference/add_title.html)
+
 ## reactable_sdv_gauge
 
 <div class="sdv-signature">
@@ -775,6 +847,55 @@ Reactable(df, columns=[reactable_sdv_icon_assign(df, icon="star", show_values="r
 
 - [Equivalent of reactablefmtr::icon_assign](https://kcuilla.github.io/reactablefmtr/reference/icon_assign.html)
 
+## reactable_sdv_icon_legend
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_icon_legend(
+    *,
+    icons: Any,
+    colors: Any,
+    labels: Any,
+    title: Any = None,
+    footer: Any = None,
+) -> htmltools._core.Tag
+```
+
+</div>
+
+An icon legend: each icon, in its color, before its label, for ``reactable_sdv_frame(legend=...)``.
+
+### Arguments
+
+| Name | Description |
+|---|---|
+| `icons` | One shape per entry: "circle", "square", "triangle", "diamond" or "star" (drawn as inline SVG, no icon font), or a single shape for all. |
+| `colors` | One hex color per entry, or a single color for all. |
+| `labels` | One label per entry. |
+| `title` | Text above the icons. |
+| `footer` | Small grey text under them. |
+
+### Returns
+
+`htmltools.Tag` — The legend.
+
+### Raises
+
+- `InputError`: (a ValueError) If a shape is unknown, a color is not a hex color, or ``icons``/``colors`` do not have one entry per label.
+
+### Example
+
+```python
+from sdvplot.reactable import reactable_sdv_icon_legend
+
+reactable_sdv_icon_legend(icons="circle", colors=["#1a9641", "#d7191c"], labels=["won", "lost"])
+```
+
+### See also
+
+- [Equivalent of reactablefmtr::add_icon_legend (inline SVG shapes instead of Font Awesome)](https://kcuilla.github.io/reactablefmtr/reference/add_icon_legend.html)
+
 ## reactable_sdv_icon_sets
 
 <div class="sdv-signature">
@@ -915,6 +1036,56 @@ Reactable(df, columns=[reactable_sdv_icon_trend(df, number_fmt="+d", id="win_cha
 ### See also
 
 - [Equivalent of reactablefmtr::icon_trend_indicator](https://kcuilla.github.io/reactablefmtr/reference/icon_trend_indicator.html)
+
+## reactable_sdv_legend
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_legend(
+    *,
+    colors: Any,
+    labels: Any = None,
+    bins: int | None = None,
+    title: Any = None,
+    footer: Any = None,
+) -> htmltools._core.Tag
+```
+
+</div>
+
+A color legend: a row of swatches with a label under each, for ``reactable_sdv_frame(legend=...)``.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `colors` | `Any` | The legend's colors, low to high, as hex strings. |
+| `labels` | `Any` | One label per swatch (numbers or text); None for swatches alone. |
+| `bins` | `int \| None` | The number of swatches, spread evenly along ``colors`` as a ramp (reactablefmtr's ``bins``); None for one swatch per color. |
+| `title` | `Any` | Text above the swatches. |
+| `footer` | `Any` | Small grey text under them. |
+
+### Returns
+
+`htmltools.Tag` — The legend.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``colors`` is empty or not hex colors, ``bins`` is not a whole number of at least 2, or ``labels`` does not have one entry per swatch.
+
+### Example
+
+```python
+from sdvplot.reactable import reactable_sdv_legend
+
+reactable_sdv_legend(colors=["#15607a", "#ffffff", "#fa8c00"], bins=5, labels=[-0.2, -0.1, 0, 0.1, 0.2],
+                     title="EPA per play", footer="lower is better on defense")
+```
+
+### See also
+
+- [Equivalent of reactablefmtr::add_legend (the swatches are given, not computed from a column)](https://kcuilla.github.io/reactablefmtr/reference/add_legend.html)
 
 ## reactable_sdv_logos
 
@@ -1505,6 +1676,138 @@ Reactable(df, columns=[reactable_sdv_team_color_bg(df, "team", league="nfl", id=
 ### See also
 
 - [Ported from sdvplotR ``reactable_sdv_team_color_bg()``](https://sdvplotR.sportsdataverse.org/reference/reactable_sdv_team_color.html)
+
+## reactable_sdv_theme
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_theme(
+    name: str,
+    *,
+    font_size: float | None = None,
+    font_color: str | None = None,
+    header_font_size: float | None = None,
+    header_font_color: str | None = None,
+    background_color: str | None = None,
+    cell_padding: float | str | None = None,
+    centered: bool = False,
+    **theme_args: Any,
+) -> reactable.models.Theme
+```
+
+</div>
+
+One of reactablefmtr's 27 table themes, with reactablefmtr's own colors, fonts, borders and paddings.
+
+Pass the result to ``Reactable(theme=...)``. (``reactable.options.theme`` would set it for every table in the
+session, so the theme is returned rather than set.) The themes do not load a font: give
+``reactable_sdv_frame(font=...)`` a Google font for that.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `name` | `str` | The theme: "cerulean", "clean", "cosmo", "cyborg", "dark", "darkly", "default", "espn", "fivethirtyeight", "flatly", "hoverdark", "hoverlight", "journal", "lux", "midnight", "midnightblue", "minty", "no_lines", "nytimes", "pff", "sandstone", "sanfran", "slate", "spacelab", "sunrise", "superhero" or "void". |
+| `font_size` | `float \| None` | The body font size in pixels; None for the theme's. |
+| `font_color` | `str \| None` | The body text color; None for the theme's. |
+| `header_font_size` | `float \| None` | The header font size in pixels; None for the theme's. |
+| `header_font_color` | `str \| None` | The header text color; None for the theme's. "hoverdark" and "hoverlight" have none. |
+| `background_color` | `str \| None` | The table background; None for the theme's (most light themes have none: the page shows). |
+| `cell_padding` | `float \| str \| None` | The cell padding, pixels or a CSS string; None for the theme's. |
+| `centered` | `bool` | Center cell content vertically (useful with images). |
+| `**theme_args` | `Any` | The theme's own extra arguments, by their reactablefmtr names: "nytimes" ``border_color``, ``border_width``; "sanfran" ``cell_color``, ``cell_border_width``, ``cell_border_color``, ``pagination_color``; "void" ``border_color``, ``border_width``, ``header_border_color``, ``header_border_width``. |
+
+### Returns
+
+`reactable.Theme` — The theme.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``name`` is not one of the 27 themes (the message lists them), ``centered`` is not a bool, or an argument is not one the theme takes.
+
+### Example
+
+```python
+import pandas as pd
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_theme
+
+df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+Reactable(df, theme=reactable_sdv_theme("espn"))
+Reactable(df, theme=reactable_sdv_theme("midnight", font_size=13, centered=True))
+```
+
+### See also
+
+- [Equivalent of reactablefmtr::espn, reactablefmtr::nytimes, reactablefmtr::fivethirtyeight and the other reactablefmtr themes](https://kcuilla.github.io/reactablefmtr/reference/index.html#themes)
+
+## reactable_sdv_theme_team
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_theme_team(
+    team: Any,
+    league: str,
+    *,
+    font_size: float | None = 15,
+    font_color: str | None = None,
+    header_font_size: float | None = 15,
+    header_font_color: str | None = None,
+    background_color: str | None = None,
+    cell_padding: float | str | None = 6,
+    centered: bool = False,
+    season: Any = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+) -> reactable.models.Theme
+```
+
+</div>
+
+A table theme in a team's colors: the header filled with the primary color over a rule in the secondary,
+
+stripes, hover and the current page button tinted with the primary, and every text color readable on its fill.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `team` | `Any` | The team, any value ``resolve`` accepts (an abbreviation, a name, an id). |
+| `league` | `str` | The SDV league key, e.g. "nfl". |
+| `font_size` | `float \| None` | The body font size in pixels. |
+| `font_color` | `str \| None` | The body text color as a hex color; None for black or white, whichever reads better on the background. |
+| `header_font_size` | `float \| None` | The header font size in pixels. |
+| `header_font_color` | `str \| None` | The header text color as a hex color; None for black or white, whichever reads better on the primary. |
+| `background_color` | `str \| None` | The table background as a hex color; None for white (the page shows through). |
+| `cell_padding` | `float \| str \| None` | The cell padding, pixels or a CSS string. |
+| `centered` | `bool` | Center cell content vertically (useful with images). |
+| `season` | `Any` | The season whose colors to use; None for today's. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``. |
+
+### Returns
+
+`reactable.Theme` — The theme.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``league`` or ``id_system`` is unknown, ``centered`` is not a bool, or ``background_color``, ``font_color`` or ``header_font_color`` is not a hex color.
+- `UnresolvedTeamError`: (a ValueError) If ``team`` does not resolve.
+
+### Example
+
+```python
+import pandas as pd
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_theme_team
+
+df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+Reactable(df, theme=reactable_sdv_theme_team("KC", "nfl"))
+```
+
+### See also
+
+- [sdvplot's addition to the reactablefmtr themes (reactablefmtr::espn and friends)](https://kcuilla.github.io/reactablefmtr/reference/index.html#themes)
 
 ## reactable_sdv_wordmarks
 
