@@ -67,10 +67,25 @@ def test_every_registry_theme_renders_its_fonts_ground_and_stripe(theme):
     assert ("tr:nth-child(even) td.gt_row" in out) == bool(sp.structure["stripe"])
 
 
+def table_font_rule(out, tid="t"):
+    """The font-family of the stylesheet rule ``#t .gt_table`` that comes last (ours, after gt's own)."""
+    return re.findall(rf"#{tid} \.gt_table \{{[^}}]*?font-family: ([^;]*);", out)[-1]
+
+
 def test_faces_fall_back_to_their_generic_family():
-    assert '"Source Serif 4", serif' in html("aer")  # a serif title face
+    out = html("aer")  # Source Serif 4 title and body
+    assert '"Source Serif 4", serif' in out
+    assert table_font_rule(out).startswith('"Source Serif 4", serif, system-ui')
     mono = next(i for i in (t["id"] for t in sdv_table_themes()) if "mono" in table_theme_spec(i).fonts["body"].lower())
-    assert f'"{table_theme_spec(mono).fonts["body"]}", monospace' in html(mono)
+    body = table_theme_spec(mono).fonts["body"]
+    assert table_font_rule(html(mono)).startswith(f'"{body}", monospace, system-ui')
+
+
+@pytest.mark.parametrize("theme", [t["id"] for t in sdv_table_themes()])
+def test_no_family_is_quoted_as_one_name(theme):
+    out = html(theme)
+    assert "'\"" not in out  # great_tables single-quotes a font name that holds a comma: one bogus family
+    assert table_font_rule(out).startswith(f'"{table_theme_spec(theme).fonts["body"]}", ')
 
 
 def test_dark_and_density_apply():

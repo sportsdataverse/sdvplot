@@ -13,7 +13,7 @@ from typing import Any
 from great_tables import GT, loc, px
 
 from sdvplot._table_themes import _font_stack, table_theme_spec
-from sdvplot.great_tables._marks import DENSITY, _check_gt, _density, _table_font, _table_id
+from sdvplot.great_tables._marks import DENSITY, R_FONTS, _check_gt, _density, _table_font, _table_id
 from sdvplot.great_tables._themes import _css, _Font, _on_spanners, _tabular_nums, _text
 
 __all__ = ["gt_theme_source"]
@@ -29,6 +29,10 @@ class _Face(_Font):
 
 def _font(family: str) -> _Face:
     return _Face(family)
+
+
+def _quote(name: str) -> str:
+    return f'"{name}"' if " " in name else name
 
 
 def _tr(size: float, k: float) -> float:
@@ -86,7 +90,7 @@ def gt_theme_source(gt: GT, name: str, mode: str = "light", density: str = "comf
 
     label = type_("label", fonts["label"], fonts["labelWeight"], pal["labelColor"], **case(st["labelTransform"]))
     gt = (
-        _table_font(gt, _font(fonts["body"]))
+        _table_font(gt, _Font(fonts["body"]))  # plain: great_tables quotes a table font as one name
         .tab_style(type_("body", fonts["body"], fonts["bodyWeight"], pal["text"]), loc.body())
         .tab_style(
             type_("title", fonts["title"], fonts["titleWeight"], pal["text"], **case(st["titleTransform"])),
@@ -136,6 +140,8 @@ def gt_theme_source(gt: GT, name: str, mode: str = "light", density: str = "comf
     heads = [".gt_col_heading", ".gt_column_spanner"]
     css = [
         _tabular_nums(tid),
+        # the table font with its generic family in front of gt's system fallbacks (opt_table_font cannot spell it)
+        _css(tid, ".gt_table", "font-family: " + ", ".join([_font_stack(fonts["body"]), *map(_quote, R_FONTS)]) + ";"),
         _css(tid, ".gt_table", f"border-top: {st['tableBorderTop']}; border-bottom: {st['tableBorderBottom']};"),
         _css(tid, ".gt_col_headings", f"border-top: {st['labelBorderTop']}; border-bottom: {st['labelBorderBottom']};"),
         _css(tid, "td.gt_row", f"border-top: none; border-bottom: {st['rowRule']};"),
