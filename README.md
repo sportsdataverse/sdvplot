@@ -190,15 +190,6 @@ covers the sdvplot code only; team data belongs to its respective owners and sou
 
 See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 
-## Star History
-
-<a href="https://github.com/sportsdataverse/sdvplot/stargazers">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history-dark.svg">
-    <img alt="Star history of sportsdataverse/sdvplot" src="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history.png" width="600">
-  </picture>
-</a>
-
 ## **Follow the [SportsDataverse](https://x.com/SportsDataverse) on X and star this repo**
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
@@ -209,6 +200,13 @@ See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 - [Saiem Gilani](https://x.com/saiemgilani)
   <a href="https://x.com/saiemgilani" target="blank"><img src="https://img.shields.io/twitter/follow/saiemgilani?color=blue&label=%40saiemgilani&logo=x&style=for-the-badge" alt="@saiemgilani" /></a>
   <a href="https://github.com/saiemgilani" target="blank"><img src="https://img.shields.io/github/followers/saiemgilani?color=eee&logo=Github&style=for-the-badge" alt="@saiemgilani" /></a>
+
+<a href="https://github.com/sportsdataverse/sdvplot/stargazers">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history-dark.svg">
+    <img alt="Star history of sportsdataverse/sdvplot" src="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history.png" width="600">
+  </picture>
+</a>
 
 ## **Citations**
 
