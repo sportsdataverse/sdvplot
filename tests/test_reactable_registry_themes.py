@@ -50,6 +50,13 @@ def test_overrides_apply():
     assert t.color == "#123456" and t.background_color == "#fafafa" and t.cell_padding == "9px"
 
 
+def test_named_colour_overrides_keep_the_name():
+    # mix() only blends hex: the hover colour comes from the palette, so a CSS name override must not raise
+    t = reactable_sdv_theme("wikipedia", background_color="white", font_color="black")
+    assert t.background_color == "white" and t.color == "black"
+    assert t.highlight_color.startswith("#")
+
+
 def test_dark_on_light_only_raises():
     with pytest.raises(InputError, match="light-only"):
         reactable_sdv_theme("nejm", mode="dark")

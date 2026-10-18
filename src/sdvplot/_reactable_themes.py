@@ -195,7 +195,8 @@ def _registry_theme(
         "background_color": bg,
         "border_color": pal["hline"],
         "striped_color": pal["stripe"],
-        "highlight_color": mix(bg, ink, 0.06),
+        # palette colours only: a caller override may be a CSS name (``"white"``), which mix() cannot blend
+        "highlight_color": mix(pal["bg"], pal["text"], 0.06),
         "cell_padding": f"{pad}px" if isinstance(pad, (int, float)) else pad,
         "style": {
             "fontFamily": _font_stack(fonts["body"]),
