@@ -1,4 +1,8 @@
-"""Drift gate: the vendored table-theme registry must match its sha256 sidecar."""
+"""Drift gate: the vendored table-theme registry must match its sha256 sidecar.
+
+This guards a hand-edited JSON only; editing both the JSON and its .sha256 together is caught only by re-running
+the sync script (the canonical copy lives in sdvplot-js).
+"""
 
 from __future__ import annotations
 
