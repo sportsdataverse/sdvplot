@@ -398,38 +398,42 @@ basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves t
 `surface("fiba")` draws, in meters, and turns the free throws into nulls. Which sideline is positive is unverified
 in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game:
 
+This recipe needs sportsdataverse 0.1.5 or newer (`sportsdataverse.euroleague`); with an older one it prints that and draws nothing.
+
 ```python
-import sportsdataverse.euroleague as euroleague
+from importlib.metadata import version
 
-euro = sdvplot.court_coords(
-    euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
-)
-print(euro.select("player", "action", "coord_x", "coord_y", "court_x", "court_y").head(3))
-shots = euro.drop_nulls("court_x")  # free throws are -1,-1 in the source and null here
-made, missed = shots.filter(pl.col("points") > 0), shots.filter(pl.col("points") == 0)
+from packaging.version import Version
 
-fig, ax = plt.subplots(figsize=(7, 6.5))
-sdvplot.surface("fiba", ax=ax, display_range="defense")
-ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=16, linewidths=0.8, color="#3d3d3d", alpha=0.6,
-           zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
-ax.scatter(made["court_x"], made["court_y"], s=20, color="#e8552b", edgecolors="black", linewidths=0.4, zorder=21,
-           label=f"Made ({made.height})")  # fmt: skip
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
-ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
-plt.show()
+SDV = version("sportsdataverse")
+if Version(SDV) < Version("0.1.5"):
+    print(f"This recipe needs sportsdataverse 0.1.5 or newer (sportsdataverse.euroleague); {SDV} is installed.")
+else:
+    import sportsdataverse.euroleague as euroleague
+
+    euro = sdvplot.court_coords(
+        euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
+    )
+    print(euro.select("player", "action", "coord_x", "coord_y", "court_x", "court_y").head(3))
+    shots = euro.drop_nulls("court_x")  # free throws are -1,-1 in the source and null here
+    made, missed = shots.filter(pl.col("points") > 0), shots.filter(pl.col("points") == 0)
+
+    fig, ax = plt.subplots(figsize=(7, 6.5))
+    sdvplot.surface("fiba", ax=ax, display_range="defense")
+    ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=16, linewidths=0.8, color="#3d3d3d", alpha=0.6,
+               zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
+    ax.scatter(made["court_x"], made["court_y"], s=20, color="#e8552b", edgecolors="black", linewidths=0.4,
+               zorder=21, label=f"Made ({made.height})")  # fmt: skip
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
+    ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
+    plt.show()
 ```
 
 <div class="sdv-output">
 
 ```text
-| player        | action               | coord_x | coord_y | court_x | court_y |
-|---------------|----------------------|---------|---------|---------|---------|
-| JONES, KAI    | Two Pointer          | -12     | -6      | -12.485 | -0.12   |
-| LARKIN, SHANE | Missed Three Pointer | 414     | 602     | -6.405  | 4.14    |
-| OSMANI, ERCAN | Two Pointer          | -307    | 0       | -12.425 | -3.07   |
+This recipe needs sportsdataverse 0.1.5 or newer (sportsdataverse.euroleague); 0.1.4 is installed.
 ```
-
-![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_23_1.png)
 
 </div>
 
