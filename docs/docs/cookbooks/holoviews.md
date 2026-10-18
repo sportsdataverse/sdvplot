@@ -38,7 +38,7 @@ basketball ratings with each team's conference, and the NBA's leading scorers.
 
 ```python
 nfl_weeks = nfl.load_nfl_team_stats([NFL_SEASON]).filter(pl.col("season_type") == "REG")
-epa = pl.col("passing_epa").fill_null(0) + pl.col("rushing_epa").fill_null(0)
+epa = pl.col("passing_epa") + pl.col("rushing_epa")
 plays = pl.col("attempts") + pl.col("sacks_suffered") + pl.col("carries")
 nfl_off = nfl_weeks.group_by("team").agg(off_epa=epa.sum() / plays.sum())
 
@@ -56,11 +56,19 @@ mbb_ratings = mbb.load_mbb_ratings(SEASON).join(
     sdvplot.teams("mbb").select("team_id", "name", "conference"), on="team_id"
 )
 
-nba_box = nba.load_nba_player_boxscore(seasons=[SEASON]).filter(
-    pl.col("season_type") == 2, pl.col("did_not_play").not_()
+# ESPN files the All-Star games and the NBA Cup final as regular-season games: keep the standard ones
+schedule = nba.load_nba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
 )
-scorers = (
-    nba_box.group_by("athlete_id", "athlete_display_name")
+season_games = pl.concat([schedule["home_id"], schedule["away_id"]]).value_counts()["count"].max()
+nba_box = nba.load_nba_player_boxscore(seasons=[SEASON]).filter(
+    pl.col("game_id").is_in(schedule["game_id"].implode()),
+    pl.col("did_not_play").not_(),
+    pl.col("minutes").is_not_null(),
+)
+per_player = (
+    nba_box.sort("game_date")
+    .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
         games=pl.len(),
         team=pl.col("team_abbreviation").last(),
@@ -68,10 +76,9 @@ scorers = (
         ts=pl.col("points").sum()
         / (2 * (pl.col("field_goals_attempted").sum() + 0.44 * pl.col("free_throws_attempted").sum())),
     )
-    .filter(pl.col("games") >= 50)
-    .sort(["ppg", "athlete_id"], descending=[True, False])
-    .head(12)
 )
+assert per_player["games"].max() <= season_games, "a player has more games than the schedule"
+scorers = per_player.filter(pl.col("games") >= 50).sort(["ppg", "athlete_id"], descending=[True, False]).head(12)
 nfl_off.height, wnba_teams.height, mbb_ratings.height, scorers.height
 ```
 

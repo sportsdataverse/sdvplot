@@ -121,8 +121,8 @@ show_svg(chart)
 ## 3. Team colors on a bar chart
 
 `team_style()` works on every pygal chart, not only XY: it returns a `Style` whose colors follow the order you add
-the series. Add one series per team and each bar takes its team's primary color. The ten NBA teams that took the
-most threes per game:
+the series. Add one series per team and each bar takes its team's primary color; a `label` on each value and
+`print_labels=True` write the team on its bar. The ten NBA teams that took the most threes per game:
 
 ```python
 nba_threes = (
@@ -138,11 +138,11 @@ nba_threes = (
 
 style = sdvplot.pygal.team_style(nba_threes["team_id"], league="nba", font_family="sans-serif")
 chart = pygal.Bar(
-    style=style, width=800, height=480, legend_at_bottom=True, legend_at_bottom_columns=5,
+    style=style, width=800, height=480, show_legend=False, print_labels=True,
     title=f"NBA three-point attempts per game, {SEASON - 1}-{SEASON % 100} (top 10)", y_title="3PA per game",
 )  # fmt: skip
 for team, fg3a in nba_threes.select("team_abbreviation", "fg3a").iter_rows():
-    chart.add(team, [round(fg3a, 1)])
+    chart.add(team, [{"value": round(fg3a, 1), "label": team}])
 show_svg(chart)
 ```
 
@@ -158,12 +158,24 @@ show_svg(chart)
 game (players with at least 20 games):
 
 ```python
-wnba_players = (
+# ESPN files the All-Star Game and the Commissioner's Cup final as regular-season games: keep the standard ones
+schedule = wnba.load_wnba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
+)
+season_games = pl.concat([schedule["home_id"], schedule["away_id"]]).value_counts()["count"].max()
+per_player = (
     wnba.load_wnba_player_boxscore(seasons=[SEASON])
-    .filter((pl.col("season_type") == 2) & pl.col("did_not_play").not_() & pl.col("minutes").is_not_null())
+    .filter(
+        pl.col("game_id").is_in(schedule["game_id"].implode())
+        & pl.col("did_not_play").not_()
+        & pl.col("minutes").is_not_null()
+    )
     .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(games=pl.len(), mpg=pl.col("minutes").mean(), ppg=pl.col("points").mean())
-    .filter(pl.col("games") >= 20)
+)
+assert per_player["games"].max() <= season_games, "a player has more games than the schedule"
+wnba_players = (
+    per_player.filter(pl.col("games") >= 20)
     .sort("ppg", descending=True)
     .head(12)
     .with_columns(pl.col("athlete_id").cast(pl.Int64).cast(pl.Utf8))
@@ -196,24 +208,23 @@ show_svg(chart)
 ## 5. A date line: team colors and a logo at the end of each line
 
 `DateLine` is in the XY family, so the logos take dates for x. Here `team_style()` colors the lines and
-`add_logos` marks where each team finished. Cumulative wins for four WNBA teams spread across the standings (1st, 5th, 9th and 13th):
+`add_logos` marks where each team finished. Cumulative wins in the standard games
+of the schedule above, for four WNBA teams spread evenly from the top of the standings to the bottom:
 
 ```python
 wnba_games = (
     wnba.load_wnba_team_boxscore(seasons=[SEASON])
-    .filter(pl.col("season_type") == 2)
+    .filter(pl.col("game_id").is_in(schedule["game_id"].implode()))
     .sort("game_date")
     .with_columns(wins=pl.col("team_winner").cast(pl.Int64).cum_sum().over("team_abbreviation"))
 )
-leaders = (
-    (
-        wnba_games.group_by("team_abbreviation")
-        .agg(pl.col("wins").max())
-        .sort(["wins", "team_abbreviation"], descending=[True, False])
-    )["team_abbreviation"]
-    .gather([0, 4, 8, 12])
-    .to_list()
-)  # spread across the standings
+standings = (
+    wnba_games.group_by("team_abbreviation")
+    .agg(pl.col("wins").max())
+    .sort(["wins", "team_abbreviation"], descending=[True, False])
+)["team_abbreviation"]
+n = standings.len()
+leaders = standings.gather([round(i * (n - 1) / 3) for i in range(4)]).to_list()  # first, last and two between
 ends_max = wnba_games["wins"].max()
 
 chart = pygal.DateLine(
@@ -240,7 +251,7 @@ show_svg(chart)
 
 `team_style()` passes any other `Style` option through, so one call sets the team colors and a dark background.
 `variant="dark"` picks each team's logo drawn for dark backgrounds. NHL goals for and against per game, with each
-team its own series so the dots and legend carry its secondary color:
+team its own series so its dot takes its secondary color (the logos name the teams, so the legend is off):
 
 ```python
 nhl_teams = (

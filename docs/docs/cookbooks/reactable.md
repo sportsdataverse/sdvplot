@@ -58,13 +58,20 @@ def heat(frame, column, cmap="RdYlGn", reverse=False, alpha=0.55):
 `reactable_sdv_headshots` turns a column of ESPN athlete ids into player photos, and `reactable_sdv_team_color_bg`
 fills another column with each row's team color at low opacity, so the player's name sits on a tint of the team
 they finished the season with. Both read the team from a column of the same frame: here `team`, which the table
-hides once it has done that job. The 2026 regular season, 20 or more games:
+hides once it has done that job. ESPN files the All-Star Game and the Commissioner's Cup final under the regular season too, so the box scores
+are first cut to the schedule's standard games, and the cell checks that no one played more games than a team's
+schedule holds. The 2026 regular season, 20 or more games:
 
 ```python
-players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).filter(
-    (pl.col("season_type") == 2) & ~pl.col("did_not_play")
+# ESPN files the All-Star Game and the Commissioner's Cup final as regular-season games: keep the standard ones
+schedule = wnba.load_wnba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
 )
-leaders = (
+season_games = pl.concat([schedule["home_id"], schedule["away_id"]]).value_counts()["count"].max()
+players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).filter(
+    pl.col("game_id").is_in(schedule["game_id"].implode()) & ~pl.col("did_not_play")
+)
+per_player = (
     players.sort("game_date")
     .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
@@ -74,7 +81,10 @@ leaders = (
         rpg=pl.col("rebounds").mean().round(1),
         apg=pl.col("assists").mean().round(1),
     )
-    .filter(pl.col("gp") >= 20)
+)
+assert per_player["gp"].max() <= season_games, "a player has more games than the schedule"
+leaders = (
+    per_player.filter(pl.col("gp") >= 20)
     .sort("ppg", descending=True)
     .head(15)
     .with_columns(photo=pl.col("athlete_id"), logo=pl.col("team"))

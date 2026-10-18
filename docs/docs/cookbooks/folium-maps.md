@@ -100,6 +100,7 @@ the park, record and run differential. The circles are larger than the logos, so
 popup.
 
 ```python
+lo, hi = parks["wins"].min(), parks["wins"].max()
 m = folium.Map(location=[38.5, -96], zoom_start=4, height=520, tiles="Esri.WorldGrayCanvas")
 colors = sdvplot.team_colors("mlb", parks["abbr"])
 for row, color in zip(parks.iter_rows(named=True), colors, strict=True):
@@ -110,7 +111,7 @@ for row, color in zip(parks.iter_rows(named=True), colors, strict=True):
     )
     folium.CircleMarker(
         [row["latitude"], row["longitude"]],
-        radius=(row["wins"] - 35) / 3,  # 7 px for 56 wins up to about 22 px for 100
+        radius=8 + 14 * (row["wins"] - lo) / (hi - lo),  # 8 px for the fewest wins, 22 px for the most
         color=color,
         weight=2,
         fill=True,

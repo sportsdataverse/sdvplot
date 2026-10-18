@@ -28,7 +28,7 @@ import sportsdataverse.nhl as nhl
 import sportsdataverse.wnba as wnba
 from IPython.display import Image, display
 from matplotlib import colormaps
-from matplotlib.colors import to_rgba
+from matplotlib.colors import LinearSegmentedColormap, to_rgba
 from plottable import ColumnDefinition, Table
 from plottable.cmap import normed_cmap
 from plottable.plots import bar
@@ -45,13 +45,20 @@ OUT = Path(tempfile.mkdtemp())  # saved images go here, not into your working fo
 
 `headshot_column` draws each row's player from an ESPN athlete id, and `logo_column` draws the team beside the
 name. The points column uses plottable's `bar` plot function, so each scoring average is a bar with its value
-written next to it. The 2026 regular season's top ten scorers with 20 or more games:
+written next to it. ESPN files the All-Star Game and the Commissioner's Cup final under the regular season too, so the box scores
+are first cut to the schedule's standard games, and the cell checks that no one played more games than a team's
+schedule holds. The 2026 regular season's top ten scorers with 20 or more games:
 
 ```python
-players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).filter(
-    (pl.col("season_type") == 2) & ~pl.col("did_not_play")
+# ESPN files the All-Star Game and the Commissioner's Cup final as regular-season games: keep the standard ones
+schedule = wnba.load_wnba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
 )
-scorers = (
+season_games = pl.concat([schedule["home_id"], schedule["away_id"]]).value_counts()["count"].max()
+players = wnba.load_wnba_player_boxscore(seasons=[SEASON]).filter(
+    pl.col("game_id").is_in(schedule["game_id"].implode()) & ~pl.col("did_not_play")
+)
+per_player = (
     players.sort("game_date")
     .group_by("athlete_id", "athlete_display_name", maintain_order=True)
     .agg(
@@ -61,7 +68,10 @@ scorers = (
         rpg=pl.col("rebounds").mean().round(1),
         apg=pl.col("assists").mean().round(1),
     )
-    .filter(pl.col("gp") >= 20)
+)
+assert per_player["gp"].max() <= season_games, "a player has more games than the schedule"
+scorers = (
+    per_player.filter(pl.col("gp") >= 20)
     .sort("ppg", descending=True)
     .head(10)
     .with_columns(rank=pl.int_range(1, 11))
@@ -87,7 +97,13 @@ Table(
             title="Points per game",
             width=1.6,
             plot_fn=bar,
-            plot_kw={"xlim": (0, 30), "annotate": True, "color": "#e4572e", "height": 0.5, "formatter": "{:.1f}"},
+            plot_kw={
+                "xlim": (0, scorers["ppg"].max() * 1.1),
+                "annotate": True,
+                "color": "#e4572e",
+                "height": 0.5,
+                "formatter": "{:.1f}",
+            },
         ),
         ColumnDefinition("rpg", title="REB", width=0.5),
         ColumnDefinition("apg", title="AST", width=0.5),
@@ -241,7 +257,8 @@ plt.show()
 
 `logo_column` takes any id system sdvplot resolves; cfbfastR's ratings carry ESPN team ids, so the column reads
 them with `id_system="espn"` and no name lookup. Two rating systems sit under their own group headers, each
-column's text colored by its value (`text_cmap`). The top fifteen of 2025 by net adjusted EPA per play:
+column's text colored by its value (`text_cmap` with plottable's `normed_cmap`): green is good, red is
+poor, and the defensive columns use the reversed scale because allowing less is better. The top fifteen of 2025 by net adjusted EPA per play:
 
 ```python
 summaries = cfb.load_cfb_team_summaries(NFL_SEASON).select("team_id", "pos_team", "conference")
@@ -267,7 +284,14 @@ top15 = (
     .set_index("net_rank", drop=False)
 )
 epa_fmt, fei_fmt = "{:+.3f}", "{:+.2f}"
-text = {"good": colormaps["viridis"], "bad": colormaps["viridis"].reversed()}
+good = LinearSegmentedColormap.from_list("good", ["#b2182b", "#8c8c8c", "#1a7837"])  # dark enough to read as text
+
+
+def scale(column, cmap=good):
+    """Color a column's text by its value, centered on its median."""
+    return normed_cmap(top15[column], cmap=cmap, num_stds=2)
+
+
 fig, ax = plt.subplots(figsize=(12, 8))
 Table(
     top15,
@@ -278,14 +302,34 @@ Table(
         logo_column("logo", league="cfb", id_system="espn", title="", width=0.5),
         ColumnDefinition("team", title="Team", width=1.4, textprops={"ha": "left", "weight": "bold"}),
         ColumnDefinition("conf", title="Conf.", width=1.5, textprops={"ha": "left", "color": "#555555"}),
-        ColumnDefinition("off", title="Off.", group="Adjusted EPA per play", formatter=epa_fmt),
-        ColumnDefinition("dfn", title="Def.", group="Adjusted EPA per play", formatter=epa_fmt),
+        ColumnDefinition("off", title="Off.", group="Adjusted EPA per play", formatter=epa_fmt, text_cmap=scale("off")),
         ColumnDefinition(
-            "net", title="Net", group="Adjusted EPA per play", formatter=epa_fmt, textprops={"weight": "bold"}
+            "dfn",
+            title="Def.",
+            group="Adjusted EPA per play",
+            formatter=epa_fmt,
+            text_cmap=scale("dfn", good.reversed()),
         ),
-        ColumnDefinition("fei_off", title="Off.", group="FEI", formatter=fei_fmt),
-        ColumnDefinition("fei_def", title="Def.", group="FEI", formatter=fei_fmt),
-        ColumnDefinition("fei_net", title="Net", group="FEI", formatter=fei_fmt, textprops={"weight": "bold"}),
+        ColumnDefinition(
+            "net",
+            title="Net",
+            group="Adjusted EPA per play",
+            formatter=epa_fmt,
+            text_cmap=scale("net"),
+            textprops={"weight": "bold"},
+        ),
+        ColumnDefinition("fei_off", title="Off.", group="FEI", formatter=fei_fmt, text_cmap=scale("fei_off")),
+        ColumnDefinition(
+            "fei_def", title="Def.", group="FEI", formatter=fei_fmt, text_cmap=scale("fei_def", good.reversed())
+        ),
+        ColumnDefinition(
+            "fei_net",
+            title="Net",
+            group="FEI",
+            formatter=fei_fmt,
+            text_cmap=scale("fei_net"),
+            textprops={"weight": "bold"},
+        ),
     ],
     even_row_color="#f6f6f6",
 )

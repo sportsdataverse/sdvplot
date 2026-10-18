@@ -75,13 +75,31 @@ show(p)
 shooting:
 
 ```python
+# ESPN files the All-Star games and the NBA Cup final as regular-season games: keep the standard ones
+schedule = nba.load_nba_schedule(seasons=[SEASON]).filter(
+    (pl.col("season_type") == 2) & (pl.col("type_abbreviation") == "STD")
+)
+season_games = pl.concat([schedule["home_id"], schedule["away_id"]]).value_counts()["count"].max()
 fga, fta = pl.col("field_goals_attempted"), pl.col("free_throws_attempted")
-nba_scorers = (
+per_player = (
     nba.load_nba_player_boxscore(seasons=[SEASON])
-    .filter((pl.col("season_type") == 2) & pl.col("did_not_play").not_() & pl.col("minutes").is_not_null())
-    .group_by("athlete_id", "athlete_display_name", "team_abbreviation", maintain_order=True)
-    .agg(games=pl.len(), ppg=pl.col("points").mean(), ts=pl.col("points").sum() / (2 * (fga.sum() + 0.44 * fta.sum())))
-    .filter(pl.col("games") >= 40)
+    .filter(
+        pl.col("game_id").is_in(schedule["game_id"].implode())
+        & pl.col("did_not_play").not_()
+        & pl.col("minutes").is_not_null()
+    )
+    .sort("game_date")
+    .group_by("athlete_id", "athlete_display_name", maintain_order=True)
+    .agg(
+        games=pl.len(),
+        team_abbreviation=pl.col("team_abbreviation").last(),  # the team he finished with
+        ppg=pl.col("points").mean(),
+        ts=pl.col("points").sum() / (2 * (fga.sum() + 0.44 * fta.sum())),
+    )
+)
+assert per_player["games"].max() <= season_games, "a player has more games than the schedule"
+nba_scorers = (
+    per_player.filter(pl.col("games") >= 40)
     .sort("ppg", descending=True)
     .head(15)
     .with_columns(pl.col("athlete_id").cast(pl.Int64).cast(pl.Utf8))
@@ -118,7 +136,8 @@ show(p)
 ## 3. Wordmarks on a horizontal bar chart
 
 `add_wordmarks` works on a categorical y axis the same way: pass the team names as y. The wordmarks sit inside the
-plot at the end of each bar, colored with each team's primary color and outlined in its secondary. The NFL's ten
+plot at the end of each bar, and each bar is filled with its team's primary color and outlined in its
+secondary. The NFL's ten
 best offenses by EPA per play:
 
 ```python
