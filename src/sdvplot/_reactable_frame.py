@@ -11,6 +11,7 @@ element such as ``<link>`` breaks React (it is handed a children list), so the f
 
 from __future__ import annotations
 
+import re
 from typing import Any
 from urllib.parse import quote_plus
 
@@ -250,7 +251,8 @@ def reactable_sdv_frame(
     """
     if align not in _ALIGN:
         raise InputError(f"align must be one of {', '.join(_ALIGN)}, got {align!r}")
-    if font is not None and (not isinstance(font, str) or not font.strip() or any(c in font for c in ";:'\"<>")):
+    # Google Fonts family names are letters, digits and spaces ("Press Start 2P"); nothing else can reach the CSS
+    if font is not None and (not isinstance(font, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ]*", font.strip())):
         raise InputError(f"font must be a Google Fonts family name such as 'Poppins', got {font!r}")
     parts: list[Any] = []
     if font:
@@ -270,5 +272,6 @@ def reactable_sdv_frame(
     if source is not None:
         parts.append(tags.p(source, style=_style(font_size="16px", font_weight="normal", margin="6px 0 0 0",
                                                  text_align=align)))  # fmt: skip
-    family = f"{font.strip()}, sans-serif" if font else None
+    # quoted: a family with a word starting with a digit ("Press Start 2P") is invalid CSS unquoted, and the rule drops
+    family = f"'{font.strip()}', sans-serif" if font else None
     return _Framed(tags.div(*parts, style=_style(font_family=family) or None))

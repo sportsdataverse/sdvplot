@@ -181,7 +181,7 @@ def test_frame_optional_parts_and_align():
 
 def test_frame_font_loads_the_google_font_for_the_whole_frame():
     (div,) = reactable_sdv_frame(_table(), title="x", font="Roboto Condensed")
-    assert div.attrs["style"] == "font-family:Roboto Condensed, sans-serif"
+    assert div.attrs["style"] == "font-family:'Roboto Condensed', sans-serif"
     style = div.children[0]
     assert style.name == "style"
     assert list(style.children) == [
@@ -244,3 +244,20 @@ def test_icon_legend_draws_svg_shapes():
         reactable_sdv_icon_legend(icons="heart", colors="#000000", labels=["x"])
     with pytest.raises(InputError, match="one entry per label"):
         reactable_sdv_icon_legend(icons=["circle"], colors="#000000", labels=["x", "y"])
+
+
+def test_frame_quotes_the_font_family_so_digit_words_stay_valid_css():
+    (div,) = reactable_sdv_frame(_table(), font="Press Start 2P")
+    assert div.attrs["style"] == "font-family:'Press Start 2P', sans-serif"
+
+
+@pytest.mark.parametrize("font", ["Robo;to", "a)b", "x{y}", "  "])
+def test_frame_rejects_font_names_outside_letters_digits_spaces(font):
+    with pytest.raises(InputError, match="Google Fonts family name"):
+        reactable_sdv_frame(_table(), font=font)
+
+
+@pytest.mark.parametrize("arg", ["font_color", "header_font_color", "background_color"])
+def test_theme_team_rejects_non_hex_colors_with_input_error(arg):
+    with pytest.raises(InputError, match=f"{arg} must be a hex color"):
+        reactable_sdv_theme_team("KC", "nfl", **{arg: "black"})

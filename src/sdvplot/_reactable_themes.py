@@ -157,9 +157,11 @@ def reactable_sdv_theme_team(
         team: The team, any value ``resolve`` accepts (an abbreviation, a name, an id).
         league: The SDV league key, e.g. "nfl".
         font_size: The body font size in pixels.
-        font_color: The body text color; None for black or white, whichever reads better on the background.
+        font_color: The body text color as a hex color; None for black or white, whichever reads better on the
+            background.
         header_font_size: The header font size in pixels.
-        header_font_color: The header text color; None for black or white, whichever reads better on the primary.
+        header_font_color: The header text color as a hex color; None for black or white, whichever reads better on
+            the primary.
         background_color: The table background as a hex color; None for white (the page shows through).
         cell_padding: The cell padding, pixels or a CSS string.
         centered: Center cell content vertically (useful with images).
@@ -171,7 +173,7 @@ def reactable_sdv_theme_team(
 
     Raises:
         InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, ``centered`` is not a bool, or
-            ``background_color`` is not a hex color.
+            ``background_color``, ``font_color`` or ``header_font_color`` is not a hex color.
         UnresolvedTeamError: (a ValueError) If ``team`` does not resolve.
 
     Example:
@@ -190,13 +192,19 @@ def reactable_sdv_theme_team(
     """
     if not isinstance(centered, bool):
         raise InputError(f"centered must be True or False, got {centered!r}")
+    colors = {"background_color": background_color, "font_color": font_color, "header_font_color": header_font_color}
+    try:  # validate every caller color up front, so a bad one fails here with InputError, not deep inside mix()
+        background_color, font_color, header_font_color = (None if v is None else hex6(v) for v in colors.values())
+    except ValueError:
+        bad = next(k for k, v in colors.items() if v is not None and not _is_hex(v))
+        raise InputError(f"{bad} must be a hex color such as '#1a1a1a', got {colors[bad]!r}") from None
     kw: dict[str, Any] = {"season": season, "id_system": id_system, "strict": True}
     primary = hex6(str(team_colors(league, team, which="primary", **kw)))
     secondary = team_colors(league, team, which="secondary", **kw)
     rule = hex6(secondary) if secondary else primary
     if rule == primary:
         rule = on_color(primary)  # a rule in the header's own color would vanish
-    page = hex6(background_color) if background_color is not None else "#ffffff"
+    page = background_color if background_color is not None else "#ffffff"
     ink = font_color or on_color(page)
     tint = mix(page, primary, 0.12)  # stripes and hover: light enough that the body ink still reads
     head_ink = header_font_color or on_color(primary)
@@ -222,3 +230,11 @@ def reactable_sdv_theme_team(
     if centered:
         props["cellStyle"] = {"display": "flex", "flexDirection": "column", "justifyContent": "center"}
     return _theme(_fill(props, {}))
+
+
+def _is_hex(value: Any) -> bool:
+    try:
+        hex6(value)
+    except ValueError:
+        return False
+    return True
