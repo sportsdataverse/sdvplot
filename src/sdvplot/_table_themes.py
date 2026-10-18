@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from sdvplot._errors import InputError
 
-__all__ = ["TableThemeSpec", "sdv_table_themes", "table_theme_spec"]
+__all__ = ["TableThemeSpec", "sdv_table_themes", "table_theme_spec"]  # _font_stack is shared, not public
 
 # Same values and semantics as shoot.py ``palette()`` and sdvtables' registry.ts, so every language agrees.
 _DEFAULTS = {
@@ -49,6 +49,23 @@ _DARK_DEFAULTS = {  # light fallbacks are unreadable on a dark ground
     "bg": "#14171c",
 }
 _REACTABLE_PORTS = ("espn", "fivethirtyeight", "pff")
+_MONO = re.compile(r"mono|code|courier", re.I)
+_SERIF = re.compile(
+    r"serif|slab|bodoni|caslon|garamond|playfair|lora|newsreader|tinos|spectral|gelasio|merriweather", re.I
+)
+
+
+def _font_stack(family: str | None) -> str:
+    """A CSS font-family value: the quoted family then a generic guessed from its name (same rule as shoot.py)."""
+    if not family:
+        return "sans-serif"
+    if _MONO.search(family):
+        generic = "monospace"
+    elif _SERIF.search(family) and "sans" not in family.lower():
+        generic = "serif"
+    else:
+        generic = "sans-serif"
+    return f'"{family}", {generic}'
 
 
 @dataclass(frozen=True)

@@ -36,7 +36,7 @@ def test_wikipedia_mapping():
     t = reactable_sdv_theme("wikipedia")
     assert t.border_color == spec.palette["hline"]
     assert t.header_style["background"] == spec.palette["labelBg"]
-    assert t.style["fontFamily"].startswith("Arimo")
+    assert t.style["fontFamily"].startswith('"Arimo", ')
     assert reactable_sdv_args("wikipedia")["bordered"] is True
 
 

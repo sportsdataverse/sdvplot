@@ -77,3 +77,13 @@ def test_listing_filters():
 
 def test_exported():
     assert "table_theme_spec" in sdvplot.__all__ and "sdv_table_themes" in sdvplot.__all__
+
+
+def test_font_stack_picks_a_generic_from_the_name():
+    from sdvplot._table_themes import _font_stack
+
+    assert _font_stack("Arimo") == '"Arimo", sans-serif'
+    assert _font_stack("Source Serif 4") == '"Source Serif 4", serif'
+    assert _font_stack("Source Sans 3") == '"Source Sans 3", sans-serif'
+    assert _font_stack("JetBrains Mono") == '"JetBrains Mono", monospace'
+    assert _font_stack(None) == "sans-serif"

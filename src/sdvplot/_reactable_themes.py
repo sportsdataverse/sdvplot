@@ -21,7 +21,7 @@ with requires_extra("reactable"):
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import hex6, mix, on_color
-from sdvplot._table_themes import _registry, table_theme_spec
+from sdvplot._table_themes import _font_stack, _registry, table_theme_spec
 from sdvplot._types import IdSystem
 
 __all__ = ["reactable_sdv_args", "reactable_sdv_theme", "reactable_sdv_theme_team"]
@@ -186,7 +186,7 @@ def _registry_theme(
         "fontWeight": fonts["labelWeight"],
         "textTransform": st["labelTransform"],
         "letterSpacing": st["labelTracking"],
-        "fontFamily": fonts["label"],
+        "fontFamily": _font_stack(fonts["label"]),
         "borderBottom": st["labelBorderBottom"],
         "fontSize": header_font_size if header_font_size is not None else sizes["label"],
     }
@@ -197,7 +197,10 @@ def _registry_theme(
         "striped_color": pal["stripe"],
         "highlight_color": mix(bg, ink, 0.06),
         "cell_padding": f"{pad}px" if isinstance(pad, (int, float)) else pad,
-        "style": {"fontFamily": fonts["body"], "fontSize": font_size if font_size is not None else sizes["body"]},
+        "style": {
+            "fontFamily": _font_stack(fonts["body"]),
+            "fontSize": font_size if font_size is not None else sizes["body"],
+        },
         "header_style": head,
         "table_style": {"borderTop": st["tableBorderTop"]},
     }
