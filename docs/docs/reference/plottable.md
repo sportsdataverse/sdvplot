@@ -12,6 +12,7 @@ plottable columns of team logos, wordmarks and player headshots.
 |---|---|
 | [headshot_column](#headshot_column) | A plottable column that shows each row's player as a headshot. |
 | [logo_column](#logo_column) | A plottable column that shows each row's team as its logo (or wordmark). |
+| [plottable_sdv_theme](#plottable_sdv_theme) | The ``plottable.Table`` keywords that style a table like one of the 122 surveyed themes. |
 
 ## headshot_column
 
@@ -139,3 +140,53 @@ Table(df, column_definitions=[logo_column("team", league="nfl", title="")])
 ### See also
 
 - [plottable](https://plottable.readthedocs.io/)
+
+## plottable_sdv_theme
+
+<div class="sdv-signature">
+
+```python
+plottable_sdv_theme(
+    name: str,
+    *,
+    mode: str = 'light',
+) -> dict[str, Any]
+```
+
+</div>
+
+The ``plottable.Table`` keywords that style a table like one of the 122 surveyed themes.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `name` | `str` | The theme id, as listed by ``sdv_table_themes()`` (see ``table_theme_spec``). |
+| `mode` | `str` | ``"light"`` or ``"dark"``; dark raises on a light-only theme. |
+
+### Returns
+
+`dict` — Keywords for ``Table`` (``textprops``, ``row_dividers``, ``row_divider_kw``, ``col_label_divider``, ``col_label_divider_kw``, ``footer_divider``, ``footer_divider_kw``, ``column_border_kw``, ``odd_row_color``, ``even_row_color``) plus ``facecolor``, which ``Table`` does not accept: pop it and apply it with ``fig.set_facecolor`` (and ``ax.set_facecolor``). A body font matplotlib cannot find falls back to its generic family (serif, monospace or sans-serif) with one UserWarning per family per process.
+
+### Raises
+
+- `InputError`: As ``table_theme_spec``: an unknown name or mode, or ``mode="dark"`` on a light-only theme.
+
+### Example
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+from plottable import Table
+from sdvplot.plottable import plottable_sdv_theme
+
+kw = plottable_sdv_theme("fangraphs")
+fig, ax = plt.subplots()
+fig.set_facecolor(kw.pop("facecolor"))
+Table(pd.DataFrame({"team": ["KC", "BUF"], "wins": [12, 10]}), ax=ax, **kw)
+```
+
+### See also
+
+- sdvplot.table_theme_spec: the resolved spec
+- sdvplot.reactable.reactable_sdv_theme: the same themes for reactable

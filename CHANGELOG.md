@@ -43,6 +43,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `sdvplot.plottable.plottable_sdv_theme(name, mode=)` returns the `plottable.Table` keywords (text, dividers, stripes) for
+  any of the 122 surveyed themes, plus a `facecolor` to pop and apply to the figure; a font matplotlib cannot find falls
+  back to its generic family with one warning per family.
 - `table_theme_spec()` and `sdv_table_themes()`: resolve and list the 122 surveyed table themes (light and dark).
 - `sdvplot.great_tables.gt_theme_source(gt, name, mode=, density=)` styles a table like any of the 122 surveyed
   themes, plus 20 named shortcuts (`gt_theme_datagolf`, `gt_theme_economist`, `gt_theme_basketball_reference`, ...)
