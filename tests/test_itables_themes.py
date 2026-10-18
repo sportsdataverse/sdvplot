@@ -28,10 +28,25 @@ def test_every_rule_is_scoped_and_classes_follow_the_spec(tid):
     assert set(out) == {"classes", "style", "css"}
     body = re.sub(r"@import[^\n]*\n", "", out["css"])
     assert all(r.strip().startswith("#sdv-itable") for r in _rules(body))
-    assert ("tr:nth-child(odd)" in body) is bool(spec.structure["stripe"])
+    assert ("tr:nth-child(even)" in body) is bool(spec.structure["stripe"])
     cls = out["classes"].split()
     assert ("compact" in cls) is (spec.sizes["padY"] <= 4)
-    assert ("stripe" in cls) is bool(spec.structure["stripe"])
+    assert "stripe" not in cls  # DataTables' own stripe class shades rows 1, 3, ...: the css stripes instead
+
+
+def test_stripe_lands_on_the_second_data_row():
+    # one parity across adapters (sdvtables, gt/sdvplotR, great_tables, plottable): data rows 2, 4, ... are striped.
+    # DataTables draws the body rows as plain <tr> children of <tbody>, so the selector is matched on that markup.
+    bs4 = pytest.importorskip("bs4")
+    tid = next(t for t in IDS if table_theme_spec(t).structure["stripe"])
+    css = itables_sdv_theme(tid)["css"]
+    sel = re.search(r"([^{}\n]*nth-child\([^)]*\)[^{}]*)\{", css).group(1).strip()
+    body = "".join(f"<tr><td>{i}</td><td>{i}</td></tr>" for i in range(1, 5))
+    table = f'<table id="sdv-itable"><thead><tr><th>a</th></tr></thead><tbody>{body}</tbody></table>'
+    soup = bs4.BeautifulSoup(table, "html.parser")
+    striped = set(map(id, soup.select(sel)))
+    rows = soup.select("#sdv-itable tbody tr")
+    assert [any(id(td) in striped for td in tr.find_all("td")) for tr in rows] == [False, True, False, True]
 
 
 def test_table_id_scopes_and_is_validated():

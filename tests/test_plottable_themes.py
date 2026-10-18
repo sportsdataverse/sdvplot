@@ -32,6 +32,21 @@ def test_text_color_and_stripe_follow_the_spec():
         assert plottable_sdv_theme(tid)["odd_row_color"] == want
 
 
+def test_stripe_lands_on_the_second_data_row():
+    # one parity across adapters (sdvtables, gt/sdvplotR, great_tables, itables): data rows 2, 4, ... are striped.
+    # plottable counts rows from 0 at the top, so its "odd" rows are data rows 2, 4, ...
+    tid = next(t["id"] for t in sdv_table_themes() if table_theme_spec(t["id"]).structure["stripe"])
+    stripe = table_theme_spec(tid).palette["stripe"].lower()
+    kw = plottable_sdv_theme(tid)
+    kw.pop("facecolor")
+    fig, ax = plt.subplots()
+    tbl = Table(pd.DataFrame({"team": ["A", "B", "C", "D"]}), ax=ax, **kw)
+    rows = sorted(tbl.rows.values(), key=lambda r: r.cells[0].rectangle_patch.get_y())
+    assert ax.yaxis_inverted() and [r.cells[1].content for r in rows] == ["A", "B", "C", "D"]  # top to bottom
+    fills = [matplotlib.colors.to_hex(r.cells[0].rectangle_patch.get_facecolor()) == stripe for r in rows]
+    assert fills == [False, True, False, True]
+
+
 def test_header_fill_is_label_bg_and_rendered():
     spec = table_theme_spec("basketball-reference")
     kw = plottable_sdv_theme("basketball-reference")

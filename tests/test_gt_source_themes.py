@@ -106,3 +106,15 @@ def test_errors():
         html("economist", density="roomy")
     with pytest.raises(TypeError):
         sgt.gt_theme_source(DF, "economist")
+
+
+def test_stripe_lands_on_the_second_data_row():
+    # one parity across adapters (sdvtables, gt/sdvplotR, itables, plottable): data rows 2, 4, ... are striped
+    bs4 = pytest.importorskip("bs4")
+    theme = next(t["id"] for t in sdv_table_themes() if table_theme_spec(t["id"]).structure["stripe"])
+    out = html(theme)
+    sel = re.search(r"([^{}]*nth-child\([^)]*\)[^{}]*)\{", out).group(1).strip()
+    soup = bs4.BeautifulSoup(out, "html.parser")
+    striped = set(map(id, soup.select(sel)))
+    rows = soup.select("#t tbody tr")
+    assert [any(id(td) in striped for td in tr.find_all("td")) for tr in rows] == [False, True, False]

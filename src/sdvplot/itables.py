@@ -107,7 +107,9 @@ def itables_sdv_theme(
         border_bottom=st.get("tableBorderBottom"),
     )
     css += rule(f"{sel} thead th", **head) + rule(f"{sel} tbody td", **cells)
+    # stripe the 2nd, 4th, ... body rows, as gt, sdvtables and the other adapters do. DataTables' own "stripe" class
+    # shades the 1st, 3rd, ... (its "odd" rows), so it is never set.
     if st["stripe"]:
-        css += rule(f"{sel} tbody tr:nth-child(odd) td", background=p["stripe"])
-    classes = ["nowrap"] + (["compact"] if z["padY"] <= 4 else []) + (["stripe"] if st["stripe"] else [])
+        css += rule(f"{sel} tbody tr:nth-child(even) td", background=p["stripe"])
+    classes = ["nowrap"] + (["compact"] if z["padY"] <= 4 else [])
     return {"classes": " ".join(classes), "style": f"background: {p['bg']}; color: {p['text']}", "css": css}

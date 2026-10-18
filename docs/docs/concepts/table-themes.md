@@ -26,7 +26,8 @@ theme = reactable_sdv_theme("datagolf")  # a reactable.Theme
 
 `plottable_sdv_theme` and `itables_sdv_theme` take the same id. Pass `mode="dark"` to the themes with a dark palette
 (`native` was measured, `derived` was derived from the light palette); `mode="dark"` on a light-only theme raises,
-naming three dark-capable themes in its category. The full gallery with inline previews and the call for every
+naming three dark-capable themes in its category. A striped theme shades the 2nd, 4th, ... body rows in great_tables,
+itables and plottable, as sdvplotR and sdvtables do. The full gallery with inline previews and the call for every
 library is at [plot.sportsdataverse.org](https://plot.sportsdataverse.org/guides/table-theme-registry).
 
 ## Every theme
