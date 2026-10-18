@@ -39,7 +39,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Concepts',
-      items: ['concepts/identity', 'concepts/seasons-and-eras', 'concepts/logos', 'concepts/colors', 'concepts/cache'],
+      items: ['concepts/identity', 'concepts/seasons-and-eras', 'concepts/logos', 'concepts/colors', 'concepts/cache', 'concepts/table-themes'],
     },
     {
       type: 'category',
