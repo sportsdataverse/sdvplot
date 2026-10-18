@@ -15,6 +15,7 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 | [reactable_sdv_color_tiles](#reactable_sdv_color_tiles) | A reactable column of rounded tiles filled on a color scale, by a color column, or in the row's team color. |
 | [reactable_sdv_cols_label](#reactable_sdv_cols_label) | One reactable column per team-named column of ``data`` (a ``KC`` column, a ``BUF`` column, ...), its header |
 | [reactable_sdv_data_bars](#reactable_sdv_data_bars) | A reactable column of horizontal bars sized by value, in a scale color, a color column or the team color. |
+| [reactable_sdv_gauge](#reactable_sdv_gauge) | A reactable column that draws each cell's number as a half-circle gauge (an inline SVG) with the value inside. |
 | [reactable_sdv_headshots](#reactable_sdv_headshots) | A reactable column that shows each cell's player id as the player's headshot. |
 | [reactable_sdv_highlight](#reactable_sdv_highlight) | A reactable column whose highest (or lowest, or both) values are bold, in a color, optionally on a highlight. |
 | [reactable_sdv_icon_assign](#reactable_sdv_icon_assign) | A reactable column that repeats an icon, filled up to the value: a rating in stars, a count in dots. |
@@ -23,6 +24,8 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 | [reactable_sdv_logos](#reactable_sdv_logos) | A reactable column that shows each cell's team as its logo. |
 | [reactable_sdv_merge_column](#reactable_sdv_merge_column) | A reactable column that shows a second column's value beside or below each value, after an optional mark. |
 | [reactable_sdv_pill_buttons](#reactable_sdv_pill_buttons) | A reactable column whose values sit in rounded pills, in a scale color, a color column or the team color. |
+| [reactable_sdv_sparkbar](#reactable_sdv_sparkbar) | A reactable column that draws each cell's list of numbers as a small bar chart (an inline SVG). |
+| [reactable_sdv_sparkline](#reactable_sdv_sparkline) | A reactable column that draws each cell's list of numbers as a sparkline (an inline SVG). |
 | [reactable_sdv_team_color_bar](#reactable_sdv_team_color_bar) | A reactable column whose cells hold a bar in the row's team color, as long as the value's share of the maximum. |
 | [reactable_sdv_team_color_bg](#reactable_sdv_team_color_bg) | A reactable column whose cells are filled with the row's team color, mostly transparent. |
 | [reactable_sdv_wordmarks](#reactable_sdv_wordmarks) | A reactable column that shows each cell's team as its wordmark. |
@@ -492,6 +495,94 @@ Reactable(df, columns=[reactable_sdv_data_bars(df, team_col="team", league="nfl"
 ### See also
 
 - [Equivalent of reactablefmtr::data_bars](https://kcuilla.github.io/reactablefmtr/reference/data_bars.html)
+
+## reactable_sdv_gauge
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_gauge(
+    data: Any,
+    *,
+    fill_color: str | collections.abc.Sequence[str] | None = None,
+    background: str = '#EEEEEE',
+    team_col: str | None = None,
+    league: str | None = None,
+    which: Literal['primary', 'secondary'] = 'primary',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
+    season: Any = None,
+    na_color: str = '#b3b3b3',
+    min_value: float | None = None,
+    max_value: float | None = None,
+    show_min_max: bool = False,
+    number_fmt: collections.abc.Callable[[float], str] | str | None = None,
+    size: float = 1,
+    text_color: str | None = None,
+    bold_text: bool = False,
+    text_size: str | None = None,
+    bias: float = 1,
+    opacity: float = 1,
+    **column_kwargs: Any,
+) -> reactable.models.Column
+```
+
+</div>
+
+A reactable column that draws each cell's number as a half-circle gauge (an inline SVG) with the value inside.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable``: the gauged column's range (for the default scale and the color ramp) and ``team_col`` are read from it. |
+| `fill_color` | `str \| collections.abc.Sequence[str] \| None` | The gauge's CSS color, or several hex colors to ramp through from the column's smallest value to its largest (as reactablefmtr); None for reactablefmtr's "#15607A" (or the row's team color). |
+| `background` | `str` | The color of the gauge's unfilled track. |
+| `team_col` | `str \| None` | A column of ``data`` holding each row's team: the gauge takes that team's color. |
+| `league` | `str \| None` | The SDV league key of ``team_col``'s teams, e.g. "nhl"; required with ``team_col``. |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
+| `na_color` | `str` | The color for teams that do not resolve or have no color. |
+| `min_value` | `float \| None` | The value of an empty gauge; None for 0. As in reactablefmtr, a cell's absolute value is what fills the gauge (-5 fills as 5); the printed value and the aria-label keep the sign. |
+| `max_value` | `float \| None` | The value of a full gauge; None for the column's largest absolute value. Must be above ``min_value``. |
+| `show_min_max` | `bool` | Print the scale's two ends under the gauge. |
+| `number_fmt` | `collections.abc.Callable[[float], str] \| str \| None` | How to print the value (and the ends): a function such as ``"{:.1%}".format``, or a format spec such as ``".3f"``; None prints the number as is. |
+| `size` | `float` | The gauge's scale: 1 is 50 pixels wide (reactablefmtr's ``size = 1``), 2 is 100. |
+| `text_color` | `str \| None` | The value's color; None for the cell's text color. |
+| `bold_text` | `bool` | Print the value in bold. |
+| `text_size` | `str \| None` | The value's CSS font size; None for the cell's. |
+| `bias` | `float` | The ramp's spacing (grDevices::colorRamp's ``bias``): above 1 spreads the colors toward the high end. |
+| `opacity` | `float` | The fill's opacity, 0 to 1. |
+| `**column_kwargs` | `Any` | Passed to ``reactable.Column`` (``id`` is required by reactable). |
+
+### Returns
+
+`reactable.Column` — The column, with ``html=True`` and a cell renderer; each gauge is an ``<svg role="img">`` whose ``aria-label`` gives the value and the scale. A missing value is left blank; text passes through.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``size`` or ``bias`` is not a positive number, ``opacity`` is outside [0, 1], ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``, ``fill_color`` holds several colors that are not hex colors, or ``team_col`` is given without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: if ``min_value`` alone is above the column's largest absolute value, or (with ``team_col``) the table has more rows than ``data``.
+- `ValueError`: If ``team_col`` is not a column of ``data``.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
+
+### Example
+
+```python
+import polars as pl
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_gauge
+
+df = pl.DataFrame({"team": ["BOS", "TOR", "FLA"], "save_pct": [0.915, 0.902, 0.908]})
+Reactable(df, columns=[reactable_sdv_gauge(df, id="save_pct", team_col="team", league="nhl",
+                                           min_value=0.88, max_value=0.93, number_fmt=".3f")])
+```
+
+### See also
+
+- Equivalent of reactablefmtr::gauge_chart (an SVG arc rather than nested divs, so the value sits on the cell's own background in any theme
+- the "min" end reads the scale's real lower bound).
 
 ## reactable_sdv_headshots
 
@@ -1071,6 +1162,211 @@ Reactable(df, columns=[reactable_sdv_pill_buttons(df, team_col="team", league="n
 ### See also
 
 - [Equivalent of reactablefmtr::pill_buttons](https://kcuilla.github.io/reactablefmtr/reference/pill_buttons.html)
+
+## reactable_sdv_sparkbar
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_sparkbar(
+    data: Any,
+    *,
+    fill_color: str | None = None,
+    team_col: str | None = None,
+    league: str | None = None,
+    which: Literal['primary', 'secondary'] = 'primary',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
+    season: Any = None,
+    na_color: str = '#b3b3b3',
+    fill_opacity: float = 1,
+    highlight_bars: collections.abc.Sequence[str] | collections.abc.Mapping[str, str] = (),
+    statline: str | None = None,
+    statline_color: str = 'red',
+    statline_label_size: str = '0.8em',
+    bandline: str | None = None,
+    bandline_color: str = 'red',
+    bandline_opacity: float = 0.2,
+    labels: collections.abc.Sequence[str] | str = (),
+    label_size: str = '0.8em',
+    decimals: int = 0,
+    min_value: float | None = None,
+    max_value: float | None = None,
+    height: float = 22,
+    width: float | None = None,
+    **column_kwargs: Any,
+) -> reactable.models.Column
+```
+
+</div>
+
+A reactable column that draws each cell's list of numbers as a small bar chart (an inline SVG).
+
+Bars stand on zero: positive values rise from it, negative ones hang below it.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable``; read only for ``team_col``. The column itself holds one list per row; a missing entry leaves a gap, an empty, missing or non-list cell is left blank. |
+| `fill_color` | `str \| None` | The bars' CSS color; None for reactablefmtr's "slategray" (or the row's team color). |
+| `team_col` | `str \| None` | A column of ``data`` holding each row's team: the bars take that team's color. |
+| `league` | `str \| None` | The SDV league key of ``team_col``'s teams, e.g. "wnba"; required with ``team_col``. |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
+| `na_color` | `str` | The color for teams that do not resolve or have no color. |
+| `fill_opacity` | `float` | The bars' opacity, 0 to 1. |
+| `highlight_bars` | `collections.abc.Sequence[str] \| collections.abc.Mapping[str, str]` | Bars to recolor: a mapping such as ``{"max": "gold"}`` (reactablefmtr's ``highlight_bars(max = "gold")``), or a sequence of "first", "last", "min", "max" drawn in red. |
+| `statline` | `str \| None` | A dashed reference line at the series' "mean", "median", "min" or "max", labeled at its right. |
+| `statline_color` | `str` | The reference line's and its label's color. |
+| `statline_label_size` | `str` | The reference line label's CSS font size. |
+| `bandline` | `str \| None` | A shaded band across the series' "innerquartiles" or "range". |
+| `bandline_color` | `str` | The band's color. |
+| `bandline_opacity` | `float` | The band's opacity, 0 to 1. |
+| `labels` | `collections.abc.Sequence[str] \| str` | Values to print above their bars: "first", "last", "min", "max" or "all". |
+| `label_size` | `str` | The labels' CSS font size. |
+| `decimals` | `int` | Decimal places of the labels and the statline label. |
+| `min_value` | `float \| None` | The value at the bottom of every cell's chart; None for the lower of 0 and the series' minimum. |
+| `max_value` | `float \| None` | The value at the top of every cell's chart; None for the higher of 0 and the series' maximum. |
+| `height` | `float` | The chart's height in pixels. |
+| `width` | `float \| None` | The chart's width in pixels; None for 100. |
+| `**column_kwargs` | `Any` | Passed to ``reactable.Column`` (``id`` is required by reactable). |
+
+### Returns
+
+`reactable.Column` — The column, with ``html=True`` and a cell renderer; each chart is an ``<svg role="img">`` whose ``aria-label`` gives the number of bars, the minimum, the maximum and the last value.
+
+### Raises
+
+- `InputError`: (a ValueError) As ``reactable_sdv_sparkline``: a bad pixel size, opacity, option name, decimals or bounds, or ``team_col`` without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: as ``reactable_sdv_sparkline``.
+- `ValueError`: If ``team_col`` is not a column of ``data``.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
+
+### Example
+
+```python
+import pandas as pd
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_sparkbar
+
+df = pd.DataFrame({"team": ["LV", "NY"], "pts": [[88, 95, 79, 101], [92, 85, 99, 90]]})
+Reactable(df, columns=[reactable_sdv_sparkbar(df, id="pts", team_col="team", league="wnba",
+                                              highlight_bars={"max": "gold"})])
+```
+
+### See also
+
+- Equivalent of reactablefmtr::react_sparkbar (drawn without dataui: no hover tooltips per bar, bars rooted at zero so the smallest bar still shows).
+
+## reactable_sdv_sparkline
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_sparkline(
+    data: Any,
+    *,
+    line_color: str | None = None,
+    team_col: str | None = None,
+    league: str | None = None,
+    which: Literal['primary', 'secondary'] = 'primary',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    strict: bool = False,
+    season: Any = None,
+    na_color: str = '#b3b3b3',
+    line_width: float = 1.5,
+    show_area: bool = False,
+    area_color: str | None = None,
+    area_opacity: float = 0.1,
+    highlight_points: collections.abc.Sequence[str] | collections.abc.Mapping[str, str] = (),
+    point_size: float = 1.5,
+    statline: str | None = None,
+    statline_color: str = 'red',
+    statline_label_size: str = '0.8em',
+    bandline: str | None = None,
+    bandline_color: str = 'red',
+    bandline_opacity: float = 0.2,
+    labels: collections.abc.Sequence[str] | str = (),
+    label_size: str = '0.8em',
+    decimals: int = 0,
+    min_value: float | None = None,
+    max_value: float | None = None,
+    height: float = 22,
+    width: float | None = None,
+    **column_kwargs: Any,
+) -> reactable.models.Column
+```
+
+</div>
+
+A reactable column that draws each cell's list of numbers as a sparkline (an inline SVG).
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `data` | `Any` | The pandas or polars DataFrame passed to ``Reactable``; read only for ``team_col``. The column itself holds one list per row (a polars ``List`` column, or a pandas column of lists); a missing entry breaks the line, an empty, missing or non-list cell is left blank. |
+| `line_color` | `str \| None` | The line's CSS color; None for reactablefmtr's "slategray" (or the row's team color). |
+| `team_col` | `str \| None` | A column of ``data`` holding each row's team: the line (and area) take that team's color. |
+| `league` | `str \| None` | The SDV league key of ``team_col``'s teams, e.g. "nba"; required with ``team_col``. |
+| `which` | `Literal['primary', 'secondary']` | "primary" or "secondary" team color. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``. |
+| `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `season` | `Any` | One season for every row's team color, for teams whose colors changed; None for today's. |
+| `na_color` | `str` | The color for teams that do not resolve or have no color. |
+| `line_width` | `float` | The line's stroke width in pixels. |
+| `show_area` | `bool` | Fill the area under the line. |
+| `area_color` | `str \| None` | The area's color; None for the line's. |
+| `area_opacity` | `float` | The area's opacity, 0 to 1. |
+| `highlight_points` | `collections.abc.Sequence[str] \| collections.abc.Mapping[str, str]` | Points to mark: a mapping such as ``{"min": "red", "max": "blue"}`` (reactablefmtr's ``highlight_points(min = "red", max = "blue")``), or a sequence of names drawn in red. Names are "first", "last", "min", "max" and "all". |
+| `point_size` | `float` | The radius of a highlighted point, in pixels. |
+| `statline` | `str \| None` | A dashed reference line at the series' "mean", "median", "min" or "max", labeled at its right. |
+| `statline_color` | `str` | The reference line's and its label's color. |
+| `statline_label_size` | `str` | The reference line label's CSS font size. |
+| `bandline` | `str \| None` | A shaded band across the series' "innerquartiles" (25th to 75th percentile) or "range". |
+| `bandline_color` | `str` | The band's color. |
+| `bandline_opacity` | `float` | The band's opacity, 0 to 1. |
+| `labels` | `collections.abc.Sequence[str] \| str` | Values to print by their point: names as for ``highlight_points`` ("all" labels every point). |
+| `label_size` | `str` | The labels' CSS font size. |
+| `decimals` | `int` | Decimal places of the labels and the statline label. |
+| `min_value` | `float \| None` | The value at the bottom of every cell's chart; None for each series' own minimum. |
+| `max_value` | `float \| None` | The value at the top of every cell's chart; None for each series' own maximum. |
+| `height` | `float` | The chart's height in pixels; the default 22 grows to 28 or 30 to make room for labels above the points, as in reactablefmtr. |
+| `width` | `float \| None` | The chart's width in pixels; None for 100. |
+| `**column_kwargs` | `Any` | Passed to ``reactable.Column`` (``id`` is required by reactable). |
+
+### Returns
+
+`reactable.Column` — The column, with ``html=True`` and a cell renderer. Each chart is an ``<svg role="img">`` whose ``aria-label`` (and ``<title>`` tooltip) gives the number of points, the minimum, the maximum and the last value.
+
+### Raises
+
+- `InputError`: (a ValueError) If ``height``/``width`` is not a number of pixels of at least 1, an opacity is outside [0, 1], ``statline``/``bandline``/``labels``/``highlight_points`` names an unknown option, ``decimals`` is not a whole number, ``line_width``/``point_size`` is not a positive number, ``min_value``/``max_value`` is not a finite number or ``min_value`` is not below ``max_value``, or ``team_col`` is given without ``league``; if ``league``, ``id_system``, ``which`` or ``season`` is unknown. When a cell is drawn: if one bound crosses the row's data, or (with ``team_col``) the table has more rows than ``data``.
+- `ValueError`: If ``team_col`` is not a column of ``data``.
+- `UnresolvedTeamError`: (a ValueError) If ``strict=True`` and a team does not resolve.
+
+### Example
+
+```python
+import polars as pl
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_sparkline
+
+df = pl.DataFrame({"team": ["BOS", "NY"], "margin": [[12, -4, 8, 21], [3, 7, -10, 5]]})
+Reactable(
+    df,
+    columns=[
+        reactable_sdv_sparkline(df, id="margin", team_col="team", league="nba",
+                                highlight_points={"min": "red", "max": "blue"}, statline="mean"),
+    ],
+)
+```
+
+### See also
+
+- Equivalent of reactablefmtr::react_sparkline (drawn without dataui: no hover tooltips per point, a solid rather than hatched band, straight rather than cardinal-curve segments).
 
 ## reactable_sdv_team_color_bar
 

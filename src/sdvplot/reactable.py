@@ -24,6 +24,7 @@ from sdvplot._colors import team_colors
 from sdvplot._contrast import hex6
 from sdvplot._normalize import norm_season
 from sdvplot._placement import KINDS, _missing, check_alpha
+from sdvplot._reactable_charts import reactable_sdv_gauge, reactable_sdv_sparkbar, reactable_sdv_sparkline
 from sdvplot._reactable_formatters import (
     reactable_sdv_bubble_grid,
     reactable_sdv_color_scales,
@@ -45,6 +46,7 @@ __all__ = [
     "reactable_sdv_color_tiles",
     "reactable_sdv_cols_label",
     "reactable_sdv_data_bars",
+    "reactable_sdv_gauge",
     "reactable_sdv_headshots",
     "reactable_sdv_highlight",
     "reactable_sdv_icon_assign",
@@ -53,6 +55,8 @@ __all__ = [
     "reactable_sdv_logos",
     "reactable_sdv_merge_column",
     "reactable_sdv_pill_buttons",
+    "reactable_sdv_sparkbar",
+    "reactable_sdv_sparkline",
     "reactable_sdv_team_color_bar",
     "reactable_sdv_team_color_bg",
     "reactable_sdv_wordmarks",
