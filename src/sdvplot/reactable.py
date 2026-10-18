@@ -38,11 +38,12 @@ from sdvplot._reactable_formatters import (
     reactable_sdv_pill_buttons,
 )
 from sdvplot._reactable_frame import reactable_sdv_frame, reactable_sdv_icon_legend, reactable_sdv_legend
-from sdvplot._reactable_themes import reactable_sdv_theme, reactable_sdv_theme_team
+from sdvplot._reactable_themes import reactable_sdv_args, reactable_sdv_theme, reactable_sdv_theme_team
 from sdvplot._tables import check_px, img_tag, mark_html
 from sdvplot._types import IdSystem, Which
 
 __all__ = [
+    "reactable_sdv_args",
     "reactable_sdv_bubble_grid",
     "reactable_sdv_color_scales",
     "reactable_sdv_color_tiles",

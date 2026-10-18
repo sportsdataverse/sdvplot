@@ -7,6 +7,7 @@ argument defaults. A theme is built by swapping the sentinels for the caller's v
 
 from __future__ import annotations
 
+import difflib
 import json
 import re
 from functools import cache
@@ -20,11 +21,13 @@ with requires_extra("reactable"):
 
 from sdvplot._colors import team_colors
 from sdvplot._contrast import hex6, mix, on_color
+from sdvplot._table_themes import _registry, table_theme_spec
 from sdvplot._types import IdSystem
 
-__all__ = ["reactable_sdv_theme", "reactable_sdv_theme_team"]
+__all__ = ["reactable_sdv_args", "reactable_sdv_theme", "reactable_sdv_theme_team"]
 
 _SENTINEL = re.compile(r"@([a-z_]+)@")
+_DARK_FMTR = ("cyborg", "dark", "darkly", "hoverdark", "midnight", "midnightblue", "slate", "superhero")
 
 
 @cache
@@ -60,6 +63,7 @@ def _theme(props: dict[str, Any]) -> Theme:
 def reactable_sdv_theme(
     name: str,
     *,
+    mode: str = "light",
     font_size: float | None = None,
     font_color: str | None = None,
     header_font_size: float | None = None,
@@ -69,7 +73,12 @@ def reactable_sdv_theme(
     centered: bool = False,
     **theme_args: Any,
 ) -> Theme:
-    """One of reactablefmtr's 27 table themes, with reactablefmtr's own colors, fonts, borders and paddings.
+    """One of reactablefmtr's 27 table themes, or any of the 122 surveyed registry themes (``sdv_table_themes()``).
+
+    A reactablefmtr name wins over a registry id. ``"espn"``, ``"fivethirtyeight"`` and ``"pff"`` are the
+    reactablefmtr ports; the surveyed look of those sites is ``"espn-site"``, ``"fivethirtyeight-site"`` and
+    ``"pff-site"``. A registry theme is built from its palette, fonts and sizes: the text, background, hairline,
+    stripe and hover colors, the header label style, the body font and the cell padding.
 
     Pass the result to ``Reactable(theme=...)``. (``reactable.options.theme`` would set it for every table in the
     session, so the theme is returned rather than set.) The themes do not load a font: give
@@ -79,7 +88,10 @@ def reactable_sdv_theme(
         name: The theme: "cerulean", "clean", "cosmo", "cyborg", "dark", "darkly", "default", "espn",
             "fivethirtyeight", "flatly", "hoverdark", "hoverlight", "journal", "lux", "midnight", "midnightblue",
             "minty", "no_lines", "nytimes", "pff", "sandstone", "sanfran", "slate", "spacelab", "sunrise",
-            "superhero" or "void".
+            "superhero" or "void"; or a registry id such as "wikipedia", "datagolf" or "nejm".
+        mode: "light" (default) or "dark". A reactablefmtr theme has no dark variant, so "dark" is accepted only for
+            the themes that are dark already ("cyborg", "dark", "darkly", "hoverdark", "midnight", "midnightblue",
+            "slate", "superhero") and raises for the rest. A registry theme raises when it is light-only.
         font_size: The body font size in pixels; None for the theme's.
         font_color: The body text color; None for the theme's.
         header_font_size: The header font size in pixels; None for the theme's.
@@ -96,8 +108,9 @@ def reactable_sdv_theme(
         reactable.Theme: The theme.
 
     Raises:
-        InputError: (a ValueError) If ``name`` is not one of the 27 themes (the message lists them), ``centered`` is
-            not a bool, or an argument is not one the theme takes.
+        InputError: (a ValueError) If ``name`` is neither a reactablefmtr theme nor a registry id (close matches
+            are named), ``mode`` is not "light" or "dark", ``mode="dark"`` is asked of a light theme, ``centered``
+            is not a bool, or an argument is not one the theme takes.
 
     Example:
         ::
@@ -109,16 +122,24 @@ def reactable_sdv_theme(
             df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
             Reactable(df, theme=reactable_sdv_theme("espn"))
             Reactable(df, theme=reactable_sdv_theme("midnight", font_size=13, centered=True))
+            Reactable(df, theme=reactable_sdv_theme("wikipedia"))
 
     See Also:
         Equivalent of reactablefmtr::espn, reactablefmtr::nytimes, reactablefmtr::fivethirtyeight and the other
         reactablefmtr themes: https://kcuilla.github.io/reactablefmtr/reference/index.html#themes
     """
-    spec = _themes().get(name)
-    if spec is None:
-        raise InputError(f"unknown theme {name!r}; the themes are {', '.join(THEME_NAMES)}")
+    if mode not in ("light", "dark"):
+        raise InputError(f"mode must be 'light' or 'dark', not {mode!r}")
     if not isinstance(centered, bool):
         raise InputError(f"centered must be True or False, got {centered!r}")
+    spec = _themes().get(name)
+    if spec is None:
+        if theme_args:
+            raise InputError(f"theme {name!r} takes no theme-specific arguments: {', '.join(sorted(theme_args))}")
+        return _registry_theme(name, mode, font_size, font_color, header_font_size, header_font_color,
+                               background_color, cell_padding, centered)  # fmt: skip
+    if mode == "dark" and name not in _DARK_FMTR:
+        raise InputError(f"reactablefmtr theme {name!r} has no dark variant; the dark ones are {', '.join(_DARK_FMTR)}")
     given = {"font_size": font_size, "font_color": font_color, "header_font_size": header_font_size,
              "header_font_color": header_font_color, "background_color": background_color,
              "cell_padding": cell_padding}  # fmt: skip
@@ -134,6 +155,97 @@ def reactable_sdv_theme(
     if centered:
         props["cellStyle"] = spec["centered_cell_style"]
     return _theme(_fill(props, args))
+
+
+def _registry_theme(
+    name: str,
+    mode: str,
+    font_size: float | None,
+    font_color: str | None,
+    header_font_size: float | None,
+    header_font_color: str | None,
+    background_color: str | None,
+    cell_padding: float | str | None,
+    centered: bool,
+) -> Theme:
+    if name not in _registry() and name not in ("espn", "fivethirtyeight", "pff"):
+        close = difflib.get_close_matches(name, [*_registry(), *THEME_NAMES], n=3)
+        hint = f" (did you mean {', '.join(map(repr, close))}?)" if close else ""
+        raise InputError(
+            f"unknown theme {name!r}{hint}; the reactablefmtr themes are {', '.join(THEME_NAMES)}, "
+            "or give a registry id (see sdv_table_themes())"
+        )
+    sp = table_theme_spec(name, mode)  # type: ignore[arg-type]  # mode is validated by the caller
+    pal, fonts, sizes, st = sp.palette, sp.fonts, sp.sizes, sp.structure
+    bg = background_color or pal["bg"]
+    ink = font_color or pal["text"]
+    pad = cell_padding if cell_padding is not None else f"{sizes['padY']}px {sizes['padX']}px"
+    head: dict[str, Any] = {
+        "background": pal["labelBg"],
+        "color": header_font_color or pal["labelColor"],
+        "fontWeight": fonts["labelWeight"],
+        "textTransform": st["labelTransform"],
+        "letterSpacing": st["labelTracking"],
+        "fontFamily": fonts["label"],
+        "borderBottom": st["labelBorderBottom"],
+        "fontSize": header_font_size if header_font_size is not None else sizes["label"],
+    }
+    props: dict[str, Any] = {
+        "color": ink,
+        "background_color": bg,
+        "border_color": pal["hline"],
+        "striped_color": pal["stripe"],
+        "highlight_color": mix(bg, ink, 0.06),
+        "cell_padding": f"{pad}px" if isinstance(pad, (int, float)) else pad,
+        "style": {"fontFamily": fonts["body"], "fontSize": font_size if font_size is not None else sizes["body"]},
+        "header_style": head,
+        "table_style": {"borderTop": st["tableBorderTop"]},
+    }
+    if centered:
+        props["cell_style"] = {"display": "flex", "flexDirection": "column", "justifyContent": "center"}
+    return Theme(**props)
+
+
+def reactable_sdv_args(name: str, *, mode: str = "light") -> dict[str, Any]:
+    """The ``Reactable`` keyword arguments that make a table look like a registry or reactablefmtr theme.
+
+    Args:
+        name: A reactablefmtr theme or a registry id, as in ``reactable_sdv_theme``.
+        mode: "light" or "dark", as in ``reactable_sdv_theme``.
+
+    Returns:
+        dict: ``theme`` (a ``reactable.Theme``), ``striped``, ``highlight`` (always True), ``bordered`` (the
+        theme draws column rules) and ``compact`` (its cell padding is 4 pixels or less). A reactablefmtr theme
+        returns its own ``Theme`` with the other keys at reactable's defaults.
+
+    Raises:
+        InputError: (a ValueError) As ``reactable_sdv_theme``.
+
+    Example:
+        ::
+
+            import pandas as pd
+            from reactable import Reactable
+            from sdvplot.reactable import reactable_sdv_args
+
+            df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+            Reactable(df, **reactable_sdv_args("wikipedia"))
+            Reactable(df, **reactable_sdv_args("datagolf", mode="dark"))
+
+    See Also:
+        reactable_sdv_theme: just the ``Theme``
+    """
+    theme = reactable_sdv_theme(name, mode=mode)
+    if name in _themes():
+        return {"theme": theme, "striped": False, "highlight": True, "bordered": False, "compact": False}
+    sp = table_theme_spec(name, mode)  # type: ignore[arg-type]
+    return {
+        "theme": theme,
+        "striped": bool(sp.structure["stripe"]),
+        "highlight": True,
+        "bordered": sp.structure["colRule"] != "none",
+        "compact": sp.sizes["padY"] <= 4,
+    }
 
 
 def reactable_sdv_theme_team(

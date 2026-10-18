@@ -10,6 +10,7 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 
 | Name | What it is |
 |---|---|
+| [reactable_sdv_args](#reactable_sdv_args) | The ``Reactable`` keyword arguments that make a table look like a registry or reactablefmtr theme. |
 | [reactable_sdv_bubble_grid](#reactable_sdv_bubble_grid) | A reactable column of circles (or squares) sized and colored by value, by a color column, or by team. |
 | [reactable_sdv_color_scales](#reactable_sdv_color_scales) | A reactable column whose cell backgrounds are filled on a color scale, by a color column, or in team colors. |
 | [reactable_sdv_color_tiles](#reactable_sdv_color_tiles) | A reactable column of rounded tiles filled on a color scale, by a color column, or in the row's team color. |
@@ -31,9 +32,56 @@ reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR'
 | [reactable_sdv_sparkline](#reactable_sdv_sparkline) | A reactable column that draws each cell's list of numbers as a sparkline (an inline SVG). |
 | [reactable_sdv_team_color_bar](#reactable_sdv_team_color_bar) | A reactable column whose cells hold a bar in the row's team color, as long as the value's share of the maximum. |
 | [reactable_sdv_team_color_bg](#reactable_sdv_team_color_bg) | A reactable column whose cells are filled with the row's team color, mostly transparent. |
-| [reactable_sdv_theme](#reactable_sdv_theme) | One of reactablefmtr's 27 table themes, with reactablefmtr's own colors, fonts, borders and paddings. |
+| [reactable_sdv_theme](#reactable_sdv_theme) | One of reactablefmtr's 27 table themes, or any of the 122 surveyed registry themes (``sdv_table_themes()``). |
 | [reactable_sdv_theme_team](#reactable_sdv_theme_team) | A table theme in a team's colors: the header filled with the primary color over a rule in the secondary, |
 | [reactable_sdv_wordmarks](#reactable_sdv_wordmarks) | A reactable column that shows each cell's team as its wordmark. |
+
+## reactable_sdv_args
+
+<div class="sdv-signature">
+
+```python
+reactable_sdv_args(
+    name: str,
+    *,
+    mode: str = 'light',
+) -> dict[str, Any]
+```
+
+</div>
+
+The ``Reactable`` keyword arguments that make a table look like a registry or reactablefmtr theme.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `name` | `str` | A reactablefmtr theme or a registry id, as in ``reactable_sdv_theme``. |
+| `mode` | `str` | "light" or "dark", as in ``reactable_sdv_theme``. |
+
+### Returns
+
+`dict` — ``theme`` (a ``reactable.Theme``), ``striped``, ``highlight`` (always True), ``bordered`` (the theme draws column rules) and ``compact`` (its cell padding is 4 pixels or less). A reactablefmtr theme returns its own ``Theme`` with the other keys at reactable's defaults.
+
+### Raises
+
+- `InputError`: (a ValueError) As ``reactable_sdv_theme``.
+
+### Example
+
+```python
+import pandas as pd
+from reactable import Reactable
+from sdvplot.reactable import reactable_sdv_args
+
+df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
+Reactable(df, **reactable_sdv_args("wikipedia"))
+Reactable(df, **reactable_sdv_args("datagolf", mode="dark"))
+```
+
+### See also
+
+- reactable_sdv_theme: just the ``Theme``
 
 ## reactable_sdv_bubble_grid
 
@@ -1685,6 +1733,7 @@ Reactable(df, columns=[reactable_sdv_team_color_bg(df, "team", league="nfl", id=
 reactable_sdv_theme(
     name: str,
     *,
+    mode: str = 'light',
     font_size: float | None = None,
     font_color: str | None = None,
     header_font_size: float | None = None,
@@ -1698,7 +1747,12 @@ reactable_sdv_theme(
 
 </div>
 
-One of reactablefmtr's 27 table themes, with reactablefmtr's own colors, fonts, borders and paddings.
+One of reactablefmtr's 27 table themes, or any of the 122 surveyed registry themes (``sdv_table_themes()``).
+
+A reactablefmtr name wins over a registry id. ``"espn"``, ``"fivethirtyeight"`` and ``"pff"`` are the
+reactablefmtr ports; the surveyed look of those sites is ``"espn-site"``, ``"fivethirtyeight-site"`` and
+``"pff-site"``. A registry theme is built from its palette, fonts and sizes: the text, background, hairline,
+stripe and hover colors, the header label style, the body font and the cell padding.
 
 Pass the result to ``Reactable(theme=...)``. (``reactable.options.theme`` would set it for every table in the
 session, so the theme is returned rather than set.) The themes do not load a font: give
@@ -1708,7 +1762,8 @@ session, so the theme is returned rather than set.) The themes do not load a fon
 
 | Name | Type | Description |
 |---|---|---|
-| `name` | `str` | The theme: "cerulean", "clean", "cosmo", "cyborg", "dark", "darkly", "default", "espn", "fivethirtyeight", "flatly", "hoverdark", "hoverlight", "journal", "lux", "midnight", "midnightblue", "minty", "no_lines", "nytimes", "pff", "sandstone", "sanfran", "slate", "spacelab", "sunrise", "superhero" or "void". |
+| `name` | `str` | The theme: "cerulean", "clean", "cosmo", "cyborg", "dark", "darkly", "default", "espn", "fivethirtyeight", "flatly", "hoverdark", "hoverlight", "journal", "lux", "midnight", "midnightblue", "minty", "no_lines", "nytimes", "pff", "sandstone", "sanfran", "slate", "spacelab", "sunrise", "superhero" or "void"; or a registry id such as "wikipedia", "datagolf" or "nejm". |
+| `mode` | `str` | "light" (default) or "dark". A reactablefmtr theme has no dark variant, so "dark" is accepted only for the themes that are dark already ("cyborg", "dark", "darkly", "hoverdark", "midnight", "midnightblue", "slate", "superhero") and raises for the rest. A registry theme raises when it is light-only. |
 | `font_size` | `float \| None` | The body font size in pixels; None for the theme's. |
 | `font_color` | `str \| None` | The body text color; None for the theme's. |
 | `header_font_size` | `float \| None` | The header font size in pixels; None for the theme's. |
@@ -1724,7 +1779,7 @@ session, so the theme is returned rather than set.) The themes do not load a fon
 
 ### Raises
 
-- `InputError`: (a ValueError) If ``name`` is not one of the 27 themes (the message lists them), ``centered`` is not a bool, or an argument is not one the theme takes.
+- `InputError`: (a ValueError) If ``name`` is neither a reactablefmtr theme nor a registry id (close matches are named), ``mode`` is not "light" or "dark", ``mode="dark"`` is asked of a light theme, ``centered`` is not a bool, or an argument is not one the theme takes.
 
 ### Example
 
@@ -1736,6 +1791,7 @@ from sdvplot.reactable import reactable_sdv_theme
 df = pd.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
 Reactable(df, theme=reactable_sdv_theme("espn"))
 Reactable(df, theme=reactable_sdv_theme("midnight", font_size=13, centered=True))
+Reactable(df, theme=reactable_sdv_theme("wikipedia"))
 ```
 
 ### See also

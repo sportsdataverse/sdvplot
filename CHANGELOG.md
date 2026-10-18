@@ -44,6 +44,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 ### Added
 
 - `table_theme_spec()` and `sdv_table_themes()`: resolve and list the 122 surveyed table themes (light and dark).
+- `reactable_sdv_theme(name, mode=)` accepts every registry theme, and the new `reactable_sdv_args(name, mode=)` returns
+  the `Reactable` keywords (`theme`, `striped`, `highlight`, `bordered`, `compact`) that match it. reactablefmtr names
+  are unchanged; `mode="dark"` on a reactablefmtr theme raises unless the theme is dark already.
 - `teams(league, include_conferences=True)` lists sdvplotR's conference and league rows (its `include_conferences`):
   the 89 college conferences of cfb, mbb and wbb and the AFC, NFC and NFL, with `program` `"conference"` or `"league"`,
   the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
