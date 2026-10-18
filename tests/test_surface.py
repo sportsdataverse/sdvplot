@@ -119,10 +119,16 @@ def test_ncaa_softball_draws_the_field_in_a_teams_identity(monkeypatch):
     import sdvplot.matplotlib
 
     seen = {}
-    monkeypatch.setattr(sdvplot.matplotlib, "add_logos", lambda ax, x, y, teams, **kw: seen.update(teams=teams, **kw))
+    monkeypatch.setattr(
+        sdvplot.matplotlib, "add_logos", lambda ax, x, y, teams, **kw: seen.update(x=x, y=y, teams=teams, **kw)
+    )
     ax = sdvplot.surface("ncaa_softball", "1140", center_logo=True)  # Clemson
     assert ax.patches  # the softball field
     assert seen["teams"] == ["1140"] and seen["league"] == "ncaa_softball"
+    # in shallow center field, not on home plate: sdvplotR's point and size (R/sdv_surface.R surface_logo_layer)
+    assert seen["x"] == [0.0] and seen["y"] == [pytest.approx(152.4264068712, abs=1e-9)]
+    assert seen["height"] * (ax.get_ylim()[1] - ax.get_ylim()[0]) == pytest.approx(33, abs=1e-9)
+    assert seen["variant"] == "dark"
     assert sdvplot.team_colors("ncaa_softball", "1140") == "#f35b0f"
     assert sdvplot.resolve("1140", "ncaa_softball") == "1140"
 
@@ -331,3 +337,42 @@ def test_hairline_court_lines_survive_a_screen_resolution():
     columns = np.flatnonzero(dark.sum(axis=0) > 40)  # a vertical line darkens a long run of one column
     lines = 1 + np.count_nonzero(np.diff(columns) > 1) if columns.size else 0
     assert lines == 5
+
+
+# sdvplotR's shallow-center-field logo (R/sdv_surface.R surface_logo_layer): y = (baseline_distance * sqrt(2) +
+# center_field_distance) / 2 and a square 0.15 * center_field_distance across, in feet from home plate
+DIAMOND_LOGOS = {
+    **dict.fromkeys(["mlb", "milb", "ncaa_baseball", "nfhs_baseball"], (263.6396103068, 60)),
+    "little_league": (142.4264068712, 30),
+    "pony": (214.0685424949, 47.25),
+    "ncaa_softball": (152.4264068712, 33),
+}
+
+
+@pytest.mark.parametrize("league", sorted(DIAMOND_LOGOS))
+def test_a_diamonds_logo_goes_in_shallow_center_field_as_in_sdvplotr(league):
+    y, size = DIAMOND_LOGOS[league]
+    x0, y0, s0 = _surface._logo_box(_surface._drawing(league), _surface.SURFACES[league][0], 0)
+    assert (x0, y0, s0) == (pytest.approx(0, abs=1e-9), pytest.approx(y, abs=1e-9), pytest.approx(size, abs=1e-9))
+
+
+def test_a_diamonds_logo_follows_field_updates_units_translation_and_rotation():
+    drawing = _surface._drawing("mlb", field_updates={"center_field_distance": 410}, units="m", x_trans=10, y_trans=5)
+    x, y, size = _surface._logo_box(drawing, "baseball", 90)
+    offset = (90 * 2**0.5 + 410) / 2 * 0.3048
+    # sportyR translates, then rotates a quarter turn about the origin: (x, y) -> (-y, x)
+    assert (x, y) == (pytest.approx(-(offset + 5), abs=1e-9), pytest.approx(10, abs=1e-9))
+    assert size == pytest.approx(0.15 * 410 * 0.3048, abs=1e-9)
+
+
+def test_other_surfaces_keep_their_logo_at_the_center():
+    x, y, size = _surface._logo_box(_surface._drawing("nfl", x_trans=3), "football", 0)
+    assert (x, y, size) == (3, 0, None)
+
+
+def test_the_mlb_center_logo_is_drawn_in_shallow_center_field(mark_images):
+    ax = sdvplot.surface("mlb", "KC", center_logo=True)
+    ((team, x, y, height, _),) = smpl._drawn_marks(ax)
+    lo, hi = ax.get_ylim()
+    assert (team, x, y) == ("7", 0.0, pytest.approx(263.6396103068, abs=1e-9))
+    assert height * (hi - lo) == pytest.approx(60, rel=0.02)  # measured from the drawn image's pixels

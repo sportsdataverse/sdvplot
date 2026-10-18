@@ -115,6 +115,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- `surface(..., center_logo=True)` on a baseball or softball field (`mlb`, `milb`, `ncaa_baseball`, `ncaa_softball`)
+  draws the logo in shallow center field instead of on home plate, the field's origin, exactly as sdvplotR: at x = 0,
+  midway between second base (`baseline_distance * sqrt(2)`) and the center-field fence, 0.15 x
+  `center_field_distance` across (60 ft at 263.6 ft from home plate on an MLB field), from the league's field
+  parameters and `field_updates`, in the dark-background variant for the grass. Every surface's center logo now
+  also follows `x_trans` / `y_trans` and `rotation`, as the surface does (it stayed at the origin).
 - `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
   The surfaces extra now needs sportypy 1.2.0.
 

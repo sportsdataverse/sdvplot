@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import importlib
+import math
 from collections.abc import Iterator
 from typing import Any
 
@@ -85,6 +86,8 @@ NO_TEAMS = frozenset({
 SOCCER_PITCH = {"pitch_length": 105, "pitch_width": 68}  # sportypy's fifa default is FIFA's 120 x 90 m maximum
 SURFACE_BASE = {"basketball": "#d2ab6f", "football": "#196f0c", "hockey": "#ffffff"}  # sportyR's default colors
 _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
+DIAMONDS = ("baseball", "softball")  # origin at home plate: the center logo goes in shallow center field
+FIELD_LOGO_FRACTION = 0.15  # a diamond's logo is this fraction of the center-field distance across (as sdvplotR)
 _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font (data/surface_dimensions.json)
 
 
@@ -186,6 +189,25 @@ def _drawing(league: str, **sportypy_kwargs: Any) -> Any:
     return getattr(module, cls_name)(**sportypy_kwargs)
 
 
+def _logo_box(drawing: Any, sport: str, rotation: float) -> tuple[float, float, float | None]:
+    """The center logo's point and, on a diamond, its square size in surface units (sdvplotR's surface_logo_layer).
+
+    A diamond's origin is home plate, so its logo goes in shallow center field: x = 0, midway between second base
+    (``baseline_distance * sqrt(2)``) and the center-field fence, ``FIELD_LOGO_FRACTION * center_field_distance``
+    across, from the field's parameters (field_updates applied and units converted, as sportypy draws them). Other
+    surfaces center it and leave the size to ``center_logo``. As sportypy (and sportyR), translate, then rotate about
+    the origin.
+    """
+    offset, size = 0.0, None
+    if sport in DIAMONDS:
+        params = drawing.field_params
+        offset = (params["baseline_distance"] * math.sqrt(2) + params["center_field_distance"]) / 2
+        size = FIELD_LOGO_FRACTION * params["center_field_distance"]
+    x, y = drawing.x_trans, offset + drawing.y_trans
+    cos, sin = math.cos(math.radians(rotation)), math.sin(math.radians(rotation))
+    return x * cos - y * sin, x * sin + y * cos, size
+
+
 def surface(
     league: str,
     team: Any = None,
@@ -209,7 +231,10 @@ def surface(
         season: The season, for teams whose colors changed.
         ax: The matplotlib Axes to draw on; None makes a new figure.
         center_logo: True to draw the team's logo at center ice / court / field (0.25 of the Axes height), or a
-            height fraction.
+            height fraction. A baseball or softball field's origin is home plate, so there the logo goes in shallow
+            center field, as in sdvplotR: at x = 0, midway between second base (``baseline_distance * sqrt(2)``)
+            and the center-field fence, 0.15 x ``center_field_distance`` across (True; a fraction still sets the
+            height), from the league's field parameters and ``field_updates``, in the dark-background variant.
         **sportypy_kwargs: Passed to sportypy: ``display_range``, ``xlim``, ``ylim`` and ``rotation`` go to
             ``draw()``; the rest (``field_updates``, ``color_updates``, ``units``, ...) to the surface class.
 
@@ -273,7 +298,13 @@ def surface(
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 
+        x, y, size = _logo_box(drawing, sport, draw_kwargs.get("rotation") or 0)
+        height = 0.25 if center_logo is True else float(center_logo)
+        if size is not None and center_logo is True:  # a square size surface units across, at the drawn limits
+            drawn.apply_aspect()
+            low, high = drawn.get_ylim()
+            height = min(size / abs(high - low), 1.0)
         top = max((a.get_zorder() for a in drawn.get_children()), default=0)
-        add_logos(drawn, [0.0], [0.0], [team], league=league, season=season, zorder=top + 1,
-                  height=0.25 if center_logo is True else float(center_logo))  # fmt: skip
+        variant = "dark" if sport in DIAMONDS else "default"  # the dark-background mark on a diamond's grass
+        add_logos(drawn, [x], [y], [team], league=league, season=season, zorder=top + 1, height=height, variant=variant)
     return drawn
