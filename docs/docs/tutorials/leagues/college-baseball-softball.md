@@ -255,18 +255,18 @@ gt_color_results(gt, "result")
 ## 5. The champion's softball field
 
 `surface("ncaa_softball")` draws the NCAA softball field. `ncaa_softball` is also a team league, so the champion
-resolves there too, but a softball field has no team-colored parts (as on a baseball field), and `center_logo` would
-put the logo on home plate, the field's origin. So draw the field, cropped with `ylim=`, and place the logo in
-center field with `add_logos`; the title takes the champion's record in Oklahoma City from the table above.
+resolves there too. A softball field has no team-colored parts (as on a baseball field), and its origin is home
+plate, so `center_logo=True` puts the champion's logo in shallow center field, between second base and the fence;
+`ylim=` crops the view. Without an `ax=`, sportypy paints the whole figure as the outfield grass, where the
+logo's dark-background variant reads. The title takes the champion's record in Oklahoma City from the table above.
 
 ```python
 wins = run.filter(pl.col("result") == "W").height
-fig, ax = plt.subplots(figsize=(8, 6.5))
-sdvplot.surface("ncaa_softball", champ, ax=ax, ylim=(-25, 160))  # home plate to shallow center field
-sdvplot.add_logos(ax, [0], [118], [champ], league="ncaa_softball", height=0.2, zorder=40)
+ax = sdvplot.surface("ncaa_softball", champ, ylim=(-25, 230), center_logo=True)  # home plate to the fence
+ax.figure.set_size_inches(8, 6.5)
 ax.set_title(f"{champ_name}: {SEASON} Women's College World Series champions ({wins}-{run.height - wins})",
-             loc="left", fontweight="bold")  # fmt: skip
-fig.text(0.99, 0.02, ESPN, ha="right", fontsize=8, color="grey")
+             loc="left", fontweight="bold", color="white")  # fmt: skip
+ax.figure.text(0.99, 0.02, ESPN, ha="right", fontsize=8, color="white")
 plt.show()
 ```
 

@@ -74,7 +74,7 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/college-baseball-softball_9.png" alt="Step chart of cumulative runs by inning in the 2026 Men&#x27;s College World Series clinching game, with team logos at the line ends." loading="lazy"/><br/>College World Series final, inning by inning<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#3-the-clincher-inning-by-inning)
 
-[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_13.png" alt="The 2026 Women&#x27;s College World Series champion&#x27;s logo in center field of an NCAA softball field drawn by sdvplot.surface()" loading="lazy"/><br/>Women's College World Series champion on a softball field<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#5-the-champions-softball-field)
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_13.png" alt="The 2026 Women&#x27;s College World Series champion&#x27;s logo in shallow center field of an NCAA softball field drawn by sdvplot.surface()" loading="lazy"/><br/>Women's College World Series champion on a softball field<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#5-the-champions-softball-field)
 
 [<img src="/img/gallery/tutorials/leagues/college-baseball-softball_20.png" alt="Scatter of SEC schools&#x27; 2026 baseball winning percentage against softball winning percentage, drawn as logos." loading="lazy"/><br/>SEC schools in baseball and softball<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#8-one-school-two-sports)
 

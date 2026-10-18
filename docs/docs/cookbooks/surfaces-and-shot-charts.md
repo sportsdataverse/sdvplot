@@ -281,19 +281,18 @@ plt.show()
 
 </div>
 
-## 8. A baseball field with a logo in center field
+## 8. A baseball field with a logo in shallow center field
 
-Baseball fields have no team-colored lines, and the field's origin is home plate, so `center_logo` would put
-the logo on the plate. Draw the field, then place the logo yourself with `add_logos`: here in center field,
-for the team with MLB's best 2026 record (ESPN's final standings).
+Baseball fields have no team-colored lines, and the field's origin is home plate, so `center_logo=True` puts the
+logo in shallow center field instead: midway between second base and the fence, 15% of the center-field distance
+across, in the team's dark-background logo. Here for the team with MLB's best 2026 record (ESPN's final standings).
 
 ```python
 import sportsdataverse.mlb as mlb
 
 best = mlb.espn_mlb_standings(season=SEASON).sort("win_percent", descending=True).row(0, named=True)
-ax = sdvplot.surface("mlb")
+ax = sdvplot.surface("mlb", best["team_abbreviation"], center_logo=True)
 ax.figure.set_size_inches(7, 6)
-sdvplot.add_logos(ax, [0], [260], [best["team_abbreviation"]], league="mlb", height=0.18, zorder=40)
 ax.set_title(f"{best['team_display_name']}: MLB's best record in {SEASON} ({best['wins']:.0f}-{best['losses']:.0f})",
              loc="left", fontweight="bold", color="white")  # fmt: skip
 ax.figure.text(0.98, 0.02, "Data: ESPN via sportsdataverse-py", ha="right", fontsize=8, color="white")
