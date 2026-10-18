@@ -6091,7 +6091,7 @@ requires-dist = [
     { name = "great-tables", marker = "extra == 'tables'", specifier = ">=1.0" },
     { name = "holoviews", marker = "extra == 'holoviews'", specifier = ">=1.18" },
     { name = "htmltools", marker = "extra == 'tables'", specifier = ">=0.4.1" },
-    { name = "itables", marker = "extra == 'itables'", specifier = ">=2.0" },
+    { name = "itables", marker = "extra == 'itables'", specifier = ">=2.4" },
     { name = "matplotlib", marker = "extra == 'mpl'", specifier = ">=3.7" },
     { name = "mplsoccer", marker = "extra == 'surfaces'", specifier = ">=1.2" },
     { name = "narwhals", specifier = ">=2.0" },

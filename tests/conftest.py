@@ -402,9 +402,11 @@ _NEEDS_AT_IMPORT = {  # module -> a path it reads while importing
     "test_submodule_examples.py": "tools",
     "test_home_figures.py": "tools",
     "test_notebooks.py": "tools",
+    "test_table_theme_docs.py": "tools",
 }
 _NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
     "tests/test_commit_msg_hook.py": "tools",
+    "tests/test_gt_source_themes.py::test_shortcuts_are_in_sync_with_curated": "tools",
     "tests/test_compat_matrix.py::test_every_test_the_compatibility_page_names_exists": "docs",
     "tests/test_dispatch.py::test_the_contract_pages_minimal_adapter_runs_and_takes_what_the_front_door_passes": "docs",
     "tests/test_gt_themes.py::test_every_theme_has_a_ported_row_in_the_parity_table": "docs",
