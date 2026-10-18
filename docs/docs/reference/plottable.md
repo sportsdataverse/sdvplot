@@ -166,7 +166,7 @@ The ``plottable.Table`` keywords that style a table like one of the 122 surveyed
 
 ### Returns
 
-`dict` — Keywords for ``Table`` (``textprops``, ``row_dividers``, ``row_divider_kw``, ``col_label_divider``, ``col_label_divider_kw``, ``footer_divider``, ``footer_divider_kw``, ``column_border_kw``, ``odd_row_color``, ``even_row_color``) plus ``facecolor``, which ``Table`` does not accept: pop it and apply it with ``fig.set_facecolor`` (and ``ax.set_facecolor``). A body font matplotlib cannot find falls back to its generic family (serif, monospace or sans-serif) with one UserWarning per family per process.
+`dict` — Keywords for ``Table`` (``textprops``, ``row_dividers``, ``row_divider_kw``, ``col_label_divider``, ``col_label_divider_kw``, ``col_label_cell_kw``, ``footer_divider``, ``footer_divider_kw``, ``column_border_kw``, ``odd_row_color``, ``even_row_color``) plus ``facecolor``, which ``Table`` does not accept: pop it and apply it with ``fig.set_facecolor`` (and ``ax.set_facecolor``). ``col_label_cell_kw`` is the header fill (the theme's ``labelBg``), empty unless body text keeps 3:1 contrast on it: plottable styles header text with the body ``textprops``, so ``labelColor`` and ``labelWeight`` cannot be applied. A body font matplotlib cannot find falls back to its generic family (serif, monospace or sans-serif) with one UserWarning per family per process.
 
 ### Raises
 

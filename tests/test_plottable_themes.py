@@ -32,6 +32,24 @@ def test_text_color_and_stripe_follow_the_spec():
         assert plottable_sdv_theme(tid)["odd_row_color"] == want
 
 
+def test_header_fill_is_label_bg_and_rendered():
+    spec = table_theme_spec("basketball-reference")
+    kw = plottable_sdv_theme("basketball-reference")
+    assert spec.palette["labelBg"] != spec.palette["bg"]
+    assert kw["col_label_cell_kw"] == {"facecolor": spec.palette["labelBg"]}
+    fig, ax = plt.subplots()
+    kw.pop("facecolor")
+    tbl = Table(pd.DataFrame({"a": [1]}), ax=ax, **kw)
+    patch = tbl.col_label_row.cells[0].rectangle_patch
+    assert matplotlib.colors.to_hex(patch.get_facecolor()) == spec.palette["labelBg"].lower()
+
+
+def test_dashed_maps_to_dashes_and_double_to_solid():
+    assert sp._divider("1px dashed #abcdef") == {"linewidth": 0.75, "linestyle": "--", "color": "#abcdef"}
+    assert sp._divider("3px double #000000")["linestyle"] == "-"
+    assert sp._divider("none") is None
+
+
 def test_row_rule_maps_to_dividers():
     for tid in (t["id"] for t in sdv_table_themes()):
         rule = table_theme_spec(tid).structure["rowRule"]
@@ -60,5 +78,8 @@ def test_uninstalled_font_falls_back_with_one_warning(monkeypatch):
 def test_every_theme_renders(tid):
     kw = plottable_sdv_theme(tid)
     fig, ax = plt.subplots()
-    fig.set_facecolor(kw.pop("facecolor"))
-    Table(pd.DataFrame({"a": [1, 2], "b": [3, 4]}), ax=ax, **kw)
+    bg = kw.pop("facecolor")
+    fig.set_facecolor(bg)
+    tbl = Table(pd.DataFrame({"a": [1, 2], "b": [3, 4]}), ax=ax, **kw)
+    assert matplotlib.colors.to_hex(fig.get_facecolor()) == bg.lower()
+    assert len(tbl.rows) == 2 and ax.texts
