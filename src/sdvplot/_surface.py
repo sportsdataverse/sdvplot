@@ -274,6 +274,10 @@ def surface(
         fig.patch.set_facecolor(drawing.feature_colors["plot_background"])
     with _polygon_limits(ax):
         drawn = drawing.draw(ax=ax, **draw_kwargs)
+    for patch in drawn.patches:
+        # matplotlib snaps a rectilinear polygon's edges to the pixel grid, and a line thinner than a pixel (a
+        # volleyball or tennis line at screen size) snapped to zero width and vanished: drawn unsnapped, it shows
+        patch.set_snap(False)
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 

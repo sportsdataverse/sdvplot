@@ -143,6 +143,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- `surface()` drew no line thinner than a pixel: matplotlib snapped each straight-edged line to the pixel grid, so at
+  screen size a volleyball court lost its attack and end lines, a tennis court its baselines and alleys, a lacrosse field
+  its sidelines, and an NBA half court its free-throw lane end and hash marks. The surface's shapes are now drawn
+  unsnapped, so every line shows (antialiased); the NBA half-court image baseline is regenerated with them.
 - The surfaces cookbook's soccer shot map (§9) placed ESPN shots at twice their distance from goal (ESPN's
   `field_position_x` is a fraction of half the pitch, not of the whole), mirrored the home team's wings, and kept
   ESPN's `(0, 0)` "no location" events. It now scales by 52.5 m, turns the away team half a turn, and drops them.

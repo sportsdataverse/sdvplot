@@ -316,3 +316,18 @@ def test_fiba_draws_and_refuses_a_team():
     assert 14 < xhi < 20  # a 28 m court
     with pytest.raises(InputError, match="no team identities for 'fiba'"):
         sdvplot.surface("fiba", "ESP")
+
+
+def test_hairline_court_lines_survive_a_screen_resolution():
+    # matplotlib snaps a rectilinear polygon's edges to the pixel grid, so a line thinner than a pixel (a volleyball
+    # court's 5 cm lines at screen size) snapped to zero width and vanished: of the court's five full-width lines
+    # (end lines, attack lines, center line) a 500 px figure showed one or two
+    import numpy as np
+
+    fig, ax = plt.subplots(figsize=(5, 3), dpi=100)
+    sdvplot.surface("fivb", ax=ax)
+    fig.canvas.draw()
+    dark = np.asarray(fig.canvas.buffer_rgba())[..., :3].astype(int).sum(axis=2) < 400
+    columns = np.flatnonzero(dark.sum(axis=0) > 40)  # a vertical line darkens a long run of one column
+    lines = 1 + np.count_nonzero(np.diff(columns) > 1) if columns.size else 0
+    assert lines == 5
