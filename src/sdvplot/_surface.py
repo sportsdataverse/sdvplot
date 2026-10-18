@@ -47,7 +47,7 @@ SURFACES: dict[str, tuple[str, str]] = {
     "ushl": ("hockey", "USHLRink"),
     "phf": ("hockey", "PHFRink"),
     "iihf": ("hockey", "IIHFRink"),
-    "nwhl": ("hockey", "HockeyRink"),  # NWHLRink prints a rename notice on every call
+    "nwhl": ("hockey", "NWHLRink"),
     "ncaa_mhockey": ("hockey", "NCAARink"),
     "ncaa_whockey": ("hockey", "NCAARink"),
     "soccer": ("soccer", "FIFAPitch"),  # drawn 105 x 68 m (SOCCER_PITCH)
@@ -70,13 +70,11 @@ SURFACES: dict[str, tuple[str, str]] = {
     "usta": ("tennis", "USTACourt"),
     "ncaa_tennis": ("tennis", "NCAACourt"),
     "fivb": ("volleyball", "FIVBCourt"),
-    "usa_volleyball": ("volleyball", "VolleyballCourt"),  # sportypy 1.2.0's USAVolleyballCourt draws FIVB's free zone
+    "usa_volleyball": ("volleyball", "USAVolleyballCourt"),
     "ncaa_volleyball": ("volleyball", "NCAACourt"),
     "wcf": ("curling", "WCFSheet"),
     "curling_canada": ("curling", "CurlingCanadaSheet"),
 }
-# The keys drawn by the sport's base class, with this sportypy league code
-LEAGUE_CODES = {"nwhl": "nwhl", "usa_volleyball": "usa volleyball"}
 # The keys that are no SDV team league: a team is refused (as in sdvplotR and sdvplot-js)
 NO_TEAMS = frozenset({
     "cfl", "nfhs_football", "fiba", "nfhs_basketball", "little_league", "pony", "nfhs_baseball", "iihf", "nwhl",
@@ -185,8 +183,6 @@ def _drawing(league: str, **sportypy_kwargs: Any) -> Any:
         raise OptionalDependencyError(
             "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
         ) from e
-    if league in LEAGUE_CODES:
-        sportypy_kwargs["league_code"] = LEAGUE_CODES[league]
     return getattr(module, cls_name)(**sportypy_kwargs)
 
 
@@ -274,10 +270,6 @@ def surface(
         fig.patch.set_facecolor(drawing.feature_colors["plot_background"])
     with _polygon_limits(ax):
         drawn = drawing.draw(ax=ax, **draw_kwargs)
-    for patch in drawn.patches:
-        # matplotlib snaps a rectilinear polygon's edges to the pixel grid, and a line thinner than a pixel (a
-        # volleyball or tennis line at screen size) snapped to zero width and vanished: drawn unsnapped, it shows
-        patch.set_snap(False)
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 
