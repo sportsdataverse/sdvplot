@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import importlib
+import math
 from collections.abc import Iterator
 from typing import Any
 
@@ -11,8 +12,9 @@ from sdvplot._colors import team_colors
 from sdvplot._contrast import contrast, on_color
 from sdvplot._errors import InputError, OptionalDependencyError
 
-# SDV league -> (sportypy.surfaces module, class). Always the sport module: the top-level sportypy.surfaces.NCAACourt
-# is the tennis court and NCAAField the football field, shadowing the basketball court and the baseball field.
+# SDV league -> (sportypy.surfaces module, class): the SDV surface-key table shared with sdvplot-js (src/surfaces.ts)
+# and sdvplotR (surface_map). Always the sport module: the top-level sportypy.surfaces.NCAACourt is the tennis court
+# and NCAAField the football field, shadowing the basketball court and the baseball field.
 SURFACES: dict[str, tuple[str, str]] = {
     "nfl": ("football", "NFLField"),
     "aaf": ("football", "NFLField"),
@@ -20,32 +22,80 @@ SURFACES: dict[str, tuple[str, str]] = {
     "usfl": ("football", "NFLField"),
     "xfl": ("football", "NFLField"),
     "cfb": ("football", "NCAAField"),
+    "cfl": ("football", "CFLField"),
+    "nfhs_football": ("football", "NFHSField"),  # 11-player
     "nba": ("basketball", "NBACourt"),
     "nbagl": ("basketball", "NBAGLeagueCourt"),
     "wnba": ("basketball", "WNBACourt"),
     "mbb": ("basketball", "NCAACourt"),
     "wbb": ("basketball", "NCAACourt"),
+    "fiba": ("basketball", "FIBACourt"),
+    "nfhs_basketball": ("basketball", "NFHSCourt"),
     "mlb": ("baseball", "MLBField"),
     "milb": ("baseball", "MiLBField"),
     "ncaa_baseball": ("baseball", "NCAAField"),
+    "little_league": ("baseball", "LittleLeagueField"),
+    "pony": ("baseball", "PonyField"),
+    "nfhs_baseball": ("baseball", "NFHSField"),
+    "ncaa_softball": ("softball", "NCAASoftballField"),
     "nhl": ("hockey", "NHLRink"),
     "whl": ("hockey", "NHLRink"),
-    "pwhl": ("hockey", "NHLRink"),
+    "pwhl": ("hockey", "PWHLRink"),
     "ahl": ("hockey", "AHLRink"),
     "echl": ("hockey", "ECHLRink"),
     "ohl": ("hockey", "OHLRink"),
     "qmjhl": ("hockey", "QMJHLRink"),
     "ushl": ("hockey", "USHLRink"),
     "phf": ("hockey", "PHFRink"),
+    "iihf": ("hockey", "IIHFRink"),
+    "nwhl": ("hockey", "NWHLRink"),
     "ncaa_mhockey": ("hockey", "NCAARink"),
     "ncaa_whockey": ("hockey", "NCAARink"),
-    "soccer": ("soccer", "FIFAPitch"),
-    "fiba": ("basketball", "FIBACourt"),
+    "soccer": ("soccer", "FIFAPitch"),  # drawn 105 x 68 m (SOCCER_PITCH)
+    "fifa": ("soccer", "FIFAPitch"),
+    "epl": ("soccer", "EPLPitch"),
+    "mls": ("soccer", "MLSPitch"),
+    "nwsl": ("soccer", "NWSLPitch"),
+    "ncaa_soccer": ("soccer", "NCAAPitch"),
+    "nll": ("lacrosse", "NLLField"),
+    "pll": ("lacrosse", "PLLField"),
+    "world_lacrosse": ("lacrosse", "WorldLacrosseField"),
+    "ncaa_mlacrosse": ("lacrosse", "NCAAMLacrosseField"),
+    "ncaa_wlacrosse": ("lacrosse", "NCAAWLacrosseField"),
+    "usa_mlacrosse": ("lacrosse", "USAMLacrosseField"),
+    "usa_wlacrosse": ("lacrosse", "USAWLacrosseField"),
+    "atp": ("tennis", "ATPCourt"),
+    "wta": ("tennis", "WTACourt"),
+    "itf": ("tennis", "ITFCourt"),
+    "ita": ("tennis", "ITACourt"),
+    "usta": ("tennis", "USTACourt"),
+    "ncaa_tennis": ("tennis", "NCAACourt"),
+    "fivb": ("volleyball", "FIVBCourt"),
+    "usa_volleyball": ("volleyball", "USAVolleyballCourt"),
+    "ncaa_volleyball": ("volleyball", "NCAACourt"),
+    "wcf": ("curling", "WCFSheet"),
+    "curling_canada": ("curling", "CurlingCanadaSheet"),
 }
-NO_TEAMS = frozenset({"fiba"})  # surfaces drawn without team identities (FIBA teams arrive with W5)
+# The keys that are no SDV team league: a team is refused (as in sdvplotR and sdvplot-js)
+NO_TEAMS = frozenset({
+    "cfl", "nfhs_football", "fiba", "nfhs_basketball", "little_league", "pony", "nfhs_baseball", "iihf", "nwhl",
+    "fifa", "epl", "mls", "nwsl", "ncaa_soccer", "nll", "pll", "world_lacrosse", "ncaa_mlacrosse", "ncaa_wlacrosse",
+    "usa_mlacrosse", "usa_wlacrosse", "atp", "wta", "itf", "ita", "usta", "ncaa_tennis", "fivb", "usa_volleyball",
+    "ncaa_volleyball", "wcf", "curling_canada",
+})  # fmt: skip
 SOCCER_PITCH = {"pitch_length": 105, "pitch_width": 68}  # sportypy's fifa default is FIFA's 120 x 90 m maximum
-SURFACE_BASE = {"basketball": "#d2ab6f", "football": "#196f0c", "hockey": "#ffffff"}  # sportyR's default colors
+# sportyR's regulation surface colors (sdvplotR's surface_base): the ground a team's center logo sits on
+SURFACE_BASE = {
+    "basketball": "#d2ab6f",
+    "football": "#196f0c",
+    "hockey": "#ffffff",
+    "soccer": "#196f0c",
+    "baseball": "#395d33",
+    "softball": "#395d33",
+}
 _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
+DIAMONDS = ("baseball", "softball")  # origin at home plate: the center logo goes in shallow center field
+FIELD_LOGO_FRACTION = 0.15  # a diamond's logo is this fraction of the center-field distance across (as sdvplotR)
 _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font (data/surface_dimensions.json)
 
 
@@ -108,7 +158,8 @@ def _polygon_limits(ax: Any) -> Iterator[None]:
 def color_updates(sport: str, primary: str, secondary: str | None) -> dict[str, str]:
     """sportypy ``color_updates`` for a team (sdvplotR's ``surface_color_updates()``): basketball paints the lane and
     apron with a readable ink on top, football the end zones, hockey the center line, faceoff circle and spot and the
-    boards (the secondary color when the primary does not read on ice); baseball and soccer nothing."""
+    boards (the secondary color when the primary does not read on ice); baseball, softball, soccer, lacrosse, tennis,
+    volleyball and curling nothing."""
     if sport == "basketball":
         ink = on_color(primary)
         return {
@@ -134,6 +185,37 @@ def color_updates(sport: str, primary: str, secondary: str | None) -> dict[str, 
     return {}
 
 
+def _drawing(league: str, **sportypy_kwargs: Any) -> Any:
+    """The sportypy surface object for an SDV surface key, before it is drawn."""
+    sport, cls_name = SURFACES[league]
+    try:
+        module = importlib.import_module(f"sportypy.surfaces.{sport}")
+    except ModuleNotFoundError as e:
+        raise OptionalDependencyError(
+            "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
+        ) from e
+    return getattr(module, cls_name)(**sportypy_kwargs)
+
+
+def _logo_box(drawing: Any, sport: str, rotation: float) -> tuple[float, float, float | None]:
+    """The center logo's point and, on a diamond, its square size in surface units (sdvplotR's surface_logo_layer).
+
+    A diamond's origin is home plate, so its logo goes in shallow center field: x = 0, midway between second base
+    (``baseline_distance * sqrt(2)``) and the center-field fence, ``FIELD_LOGO_FRACTION * center_field_distance``
+    across, from the field's parameters (field_updates applied and units converted, as sportypy draws them). Other
+    surfaces center it and leave the size to ``center_logo``. As sportypy (and sportyR), translate, then rotate about
+    the origin.
+    """
+    offset, size = 0.0, None
+    if sport in DIAMONDS:
+        params = drawing.field_params
+        offset = (params["baseline_distance"] * math.sqrt(2) + params["center_field_distance"]) / 2
+        size = FIELD_LOGO_FRACTION * params["center_field_distance"]
+    x, y = drawing.x_trans, offset + drawing.y_trans
+    cos, sin = math.cos(math.radians(rotation)), math.sin(math.radians(rotation))
+    return x * cos - y * sin, x * sin + y * cos, size
+
+
 def surface(
     league: str,
     team: Any = None,
@@ -146,14 +228,22 @@ def surface(
     """Draw the league's playing surface with sportypy, in a team's colors.
 
     Args:
-        league: The SDV league key, e.g. "nfl", "nba", "nhl", "cfb", "soccer" (a 105 x 68 m pitch,
-            the frame pitch_coords() returns) or "fiba".
-        team: A team to color the surface by (end zones, lane and apron, center line and boards); None for the plain
-            surface.
+        league: The SDV surface key: a team league ("nfl", "nba", "nhl", "pwhl", "cfb", "mlb", "ncaa_softball",
+            "soccer" (a 105 x 68 m pitch, the frame pitch_coords() returns), ...) or a surface without team identities
+            ("fiba", "fifa", "epl", "cfl", "iihf", "little_league", the lacrosse "nll", "pll", "ncaa_mlacrosse", the
+            tennis "atp", "wta", "ncaa_tennis", the volleyball "fivb", "ncaa_volleyball", the curling "wcf",
+            "curling_canada", ...). Every sportyR surface has a key; an unknown one lists them.
+        team: A team to color the surface by (end zones, lane and apron, center line and boards; baseball, softball and
+            soccer stay in their regulation colors, so the team shows through ``center_logo``); None for the plain
+            surface. Only for a key that is an SDV team league.
         season: The season, for teams whose colors changed.
         ax: The matplotlib Axes to draw on; None makes a new figure.
         center_logo: True to draw the team's logo at center ice / court / field (0.25 of the Axes height), or a
-            height fraction.
+            height fraction. A baseball or softball field's origin is home plate, so there the logo goes in shallow
+            center field, as in sdvplotR: at x = 0, midway between second base (``baseline_distance * sqrt(2)``)
+            and the center-field fence, 0.15 x ``center_field_distance`` across (True; a fraction still sets the
+            height), from the league's field parameters and ``field_updates``. On grass (football, soccer, baseball,
+            softball) the logo is the team's dark-background variant, as in sdvplotR.
         **sportypy_kwargs: Passed to sportypy: ``display_range``, ``xlim``, ``ylim`` and ``rotation`` go to
             ``draw()``; the rest (``field_updates``, ``color_updates``, ``units``, ...) to the surface class.
 
@@ -161,7 +251,8 @@ def surface(
         matplotlib.axes.Axes: The Axes sportypy drew on.
 
     Raises:
-        InputError: (a ValueError) If sportypy has no surface for ``league``; and, when ``team`` is given, if
+        InputError: (a ValueError) If sportypy has no surface for ``league``, or ``team`` is given for a key without
+            team identities; and, when ``team`` is given, if
             ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``center_logo`` is a
             height outside (0, 1]. Without ``team``, ``season`` and ``center_logo`` are not used.
         OptionalDependencyError: If the surfaces extra (sportypy) is not installed, or ``team`` and ``center_logo`` are
@@ -187,16 +278,10 @@ def surface(
     """
     if league not in SURFACES:
         raise InputError(f"no sportypy surface for league {league!r}; supported: {sorted(SURFACES)}")
-    sport, cls_name = SURFACES[league]
-    try:
-        module = importlib.import_module(f"sportypy.surfaces.{sport}")
-    except ModuleNotFoundError as e:
-        raise OptionalDependencyError(
-            "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
-        ) from e
+    sport = SURFACES[league][0]
     draw_kwargs = {k: sportypy_kwargs.pop(k) for k in _DRAW_KWARGS if k in sportypy_kwargs}
     if team is not None and league in NO_TEAMS:
-        raise InputError(f"no team identities for {league!r} yet: draw the plain surface with team=None")
+        raise InputError(f"no team identities for {league!r}: draw the plain surface with team=None")
     if league == "soccer":  # the regulation pitch pitch_coords() converts to; the caller's pitch_updates win
         sportypy_kwargs["pitch_updates"] = {**SOCCER_PITCH, **sportypy_kwargs.get("pitch_updates", {})}
     if sport == "football" and not _has_font(_NUMBER_FONT):
@@ -211,7 +296,7 @@ def surface(
                 **color_updates(sport, primary, secondary),
                 **sportypy_kwargs.get("color_updates", {}),
             }
-    drawing = getattr(module, cls_name)(**sportypy_kwargs)
+    drawing = _drawing(league, **sportypy_kwargs)
     if ax is None:  # as sportypy's draw() does, so the limits shortcut has an Axes to go on
         import matplotlib.pyplot as plt
 
@@ -222,7 +307,14 @@ def surface(
     if center_logo and team is not None:
         from sdvplot.matplotlib import add_logos
 
+        x, y, size = _logo_box(drawing, sport, draw_kwargs.get("rotation") or 0)
+        height = 0.25 if center_logo is True else float(center_logo)
+        if size is not None and center_logo is True:  # a square size surface units across, at the drawn limits
+            drawn.apply_aspect()
+            low, high = drawn.get_ylim()
+            height = min(size / abs(high - low), 1.0)
         top = max((a.get_zorder() for a in drawn.get_children()), default=0)
-        add_logos(drawn, [0.0], [0.0], [team], league=league, season=season, zorder=top + 1,
-                  height=0.25 if center_logo is True else float(center_logo))  # fmt: skip
+        # the dark-background mark where white reads on the regulation surface (grass), as sdvplotR
+        variant = "dark" if on_color(SURFACE_BASE[sport]) == "#ffffff" else "default"
+        add_logos(drawn, [x], [y], [team], league=league, season=season, zorder=top + 1, height=height, variant=variant)
     return drawn

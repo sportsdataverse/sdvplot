@@ -42,7 +42,7 @@ holoviews = ["holoviews>=1.18", "bokeh>=3.8.2"]
 tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.19"]
-surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
+surfaces = ["sportypy>=1.2.0", "mplsoccer>=1.2"]
 plottable = ["plottable>=0.1.5"]
 itables = ["itables>=2.4"]  # itables.typing.ITableOptions (2.4.0)
 pygal = ["pygal>=3.0.1"]  # 3.0.0 imports pkg_resources, absent without setuptools
@@ -84,6 +84,10 @@ dev = [{ include-group = "test" }, { include-group = "compat" }, { include-group
 
 [tool.uv]
 default-groups = ["dev"]
+
+# sportypy 1.2.0 (sportyR 2.3.0 parity) is not on PyPI yet: drop this source once it is published
+[tool.uv.sources]
+sportypy = { git = "https://github.com/sportsdataverse/sportypy", rev = "2fbcf7b9724b7216b7aa8f2011b9da5c809e13e9" }
 
 [build-system]
 requires = ["hatchling>=1.27,<2"]  # bounded: a new major could change what the published wheel holds
