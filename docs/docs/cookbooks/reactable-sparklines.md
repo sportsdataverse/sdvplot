@@ -249,19 +249,20 @@ Reactable(
 
 Save percentage lives in a narrow band, so a gauge from 0 to 1 would look full for every team. Fixing the scale to
 .880-.920 spreads the 32 teams out, and a two-color `fill_color` ramps from red (the column's lowest) to green (its
-highest). NHL regular-season game ids carry `02` after the season's year. Shots on goal here are saves plus goals
-against, and goals against include empty-net goals, so these team figures run a little below goaltenders' own save
-percentages.
+highest). NHL regular-season game ids carry `02` after the season's year. The goalie box score counts the shots each
+goaltender faced, so a team's save percentage is its goalies' saves over the shots against them, summed over the
+season. An empty-net goal is not a shot any goalie faced, and an own goal is not a shot at all: neither is in the
+denominator, as in the NHL's own goaltending figures.
 
 ```python
-nhl_games = nhl.load_nhl_team_boxscore(seasons=[SEASON]).filter(
+nhl_goalies = nhl.load_nhl_goalie_box(seasons=[SEASON]).filter(
     pl.col("game_id").cast(pl.String).str.slice(4, 2) == "02"
 )
 nhl_sv = (
-    nhl_games.group_by("team_abbrev")
+    nhl_goalies.group_by("team_abbrev")
     .agg(
         gp=pl.col("game_id").n_unique(),
-        sv_pct=(pl.col("saves").sum() / (pl.col("saves") + pl.col("goals_against")).sum()).round(3),
+        sv_pct=(pl.col("saves").sum() / pl.col("shots_against").sum()).round(3),
     )
     .with_columns(logo=pl.col("team_abbrev"))
     .sort("sv_pct", descending=True)

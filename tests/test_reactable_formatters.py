@@ -174,6 +174,18 @@ def test_color_tiles_team_colors_even_breaks_and_span():
     assert _css(_cells(span, df, "diff")[2], "background") == ["#000000"]  # -3 is the frame's minimum across columns
 
 
+# The shipped index's NHL abbreviation "WIN" is the original Jets (1980-1996, today's Utah franchise) and then the
+# current Jets.
+@pytest.mark.real_index
+@pytest.mark.parametrize(("season", "color"), [(1990, "#000000"), (2020, "#002d62")])
+def test_season_picks_each_eras_team_color(season, color):
+    df = pd.DataFrame({"team": ["WIN"], "wins": [10]})
+    bars = _cells(reactable_sdv_data_bars(df, team_col="team", league="nhl", season=season, id="wins"), df, "wins")
+    assert _css(bars[0], "background")[1] == color
+    tiles = _cells(reactable_sdv_color_tiles(df, team_col="team", league="nhl", season=season, id="wins"), df, "wins")
+    assert _css(tiles[0], "background")[0] == color
+
+
 def test_color_tiles_with_a_color_column_and_text():
     df = _afc().assign(hue=["#ffffff", "#000000", "#777777"])
     cells = _cells(reactable_sdv_color_tiles(df, color_ref="hue", text_color="#aa0000", id="record"), df, "record")

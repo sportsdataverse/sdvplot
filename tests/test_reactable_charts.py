@@ -247,21 +247,21 @@ def test_infinities_and_numpy_nan_are_gaps_not_invalid_svg():
     assert _cell(gauge, float("inf"), column="g") == "" and _cell(gauge, np.float32("nan"), column="g") == ""
 
 
-def test_season_reaches_team_colors(monkeypatch):
-    import sdvplot._reactable_charts as charts
+# The shipped index's MLB Stats API abbreviation "WAS" names three franchises over time: the original Senators
+# (1901-1960, today's Twins), the expansion Senators (1961-1971, today's Rangers) and the Nationals.
+WAS_BY_SEASON = {1960: "#031f40", 1965: "#003278", 2020: "#ab0003"}
 
-    seen = []
 
-    def fake(league, teams, **kw):
-        seen.append(kw["season"])
-        return ["#123456"] * len(teams)
-
-    monkeypatch.setattr(charts, "team_colors", fake)
-    df = pl.DataFrame({"team": ["OAK"], "s": [[1, 2]], "g": [1.0]})
-    for make in (reactable_sdv_sparkline, reactable_sdv_sparkbar):
-        assert "#123456" in _cell(make(df, team_col="team", league="nfl", season=2019), [1, 2])
-    reactable_sdv_gauge(df, team_col="team", league="nfl", season=2019)
-    assert seen == [2019, 2019, 2019]
+@pytest.mark.real_index
+@pytest.mark.parametrize(("season", "color"), WAS_BY_SEASON.items())
+def test_season_picks_each_eras_team_color(season, color):
+    df = pl.DataFrame({"team": ["WAS"], "s": [[1, 2]], "g": [0.5]})
+    line = _cell(reactable_sdv_sparkline(df, team_col="team", league="mlb", season=season), [1, 2])
+    assert _attr(line, "path", "stroke") == color
+    bars = _cell(reactable_sdv_sparkbar(df, team_col="team", league="mlb", season=season), [1, 2])
+    assert set(re.findall(r'class="sdv-bar"[^>]*fill="([^"]+)"', bars)) == {color}
+    gauge = _cell(reactable_sdv_gauge(df, team_col="team", league="mlb", season=season), 0.5, column="g")
+    assert _attr(gauge, "path", "fill", 1) == color
 
 
 def test_season_is_validated_through_team_colors():
