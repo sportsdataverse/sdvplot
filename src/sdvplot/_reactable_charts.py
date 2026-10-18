@@ -81,6 +81,13 @@ def _positive(name: str, value: Any) -> float:
     return float(value)
 
 
+def _width(width: Any) -> float:
+    try:
+        return check_px(_WIDTH if width is None else width)
+    except InputError:  # check_px's message names height
+        raise InputError(f"width is the chart width in pixels, a number of at least 1, got {width!r}") from None
+
+
 def _series(value: Any) -> list[float | None] | None:
     """A cell's list of numbers (None for each missing entry), or None if the cell holds no list."""
     if hasattr(value, "tolist") and not isinstance(value, (str, bytes)):
@@ -415,7 +422,7 @@ def reactable_sdv_sparkline(
         Equivalent of reactablefmtr::react_sparkline (drawn without dataui: no hover tooltips per point, a solid
         rather than hatched band, straight rather than cardinal-curve segments).
     """
-    h, w = check_px(height), check_px(_WIDTH if width is None else width)
+    h, w = check_px(height), _width(width)
     _choice("statline", statline, _STATLINES)
     _choice("bandline", bandline, _BANDLINES)
     marks, label_names = _highlights("highlight_points", highlight_points), _names("labels", labels)
@@ -440,6 +447,8 @@ def reactable_sdv_sparkline(
         for i in range(n):
             if i in pts:
                 path.append(f"{'L' if pen_down else 'M'}{_n(pts[i][0])},{_n(pts[i][1])}")
+                if not pen_down and (i + 1) not in pts:
+                    path.append("h0")  # an isolated point: the round cap draws it as a dot
             pen_down = i in pts
         line = " ".join(path)
         body = chart.bandline(bandline, present, bandline_color, b_opacity)
@@ -557,7 +566,7 @@ def reactable_sdv_sparkbar(
         Equivalent of reactablefmtr::react_sparkbar (drawn without dataui: no hover tooltips per bar, bars rooted at
         zero so the smallest bar still shows).
     """
-    h, w = check_px(height), check_px(_WIDTH if width is None else width)
+    h, w = check_px(height), _width(width)
     _choice("statline", statline, _STATLINES)
     _choice("bandline", bandline, _BANDLINES)
     marks, label_names = _highlights("highlight_bars", highlight_bars), _names("labels", labels)

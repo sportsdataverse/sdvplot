@@ -52,8 +52,9 @@ def test_sparkline_is_an_accessible_image():
 
 def test_sparkline_missing_entries_break_the_line_and_empty_cells_are_blank():
     col = reactable_sdv_sparkline(None)
-    assert _attr(_cell(col, [1, None, 3]), "path", "d") == "M13,20 M87,3"
-    assert _attr(_cell(col, [1, float("nan"), 2, 3]), "path", "d").startswith("M13,20 M")
+    assert _attr(_cell(col, [1, None, 3]), "path", "d") == "M13,20 h0 M87,3 h0"
+    assert _attr(_cell(col, [1, float("nan"), 2, 3]), "path", "d").startswith("M13,20 h0 M")
+    assert _attr(_cell(col, [7]), "path", "d").endswith(" h0")  # a lone value draws a dot, not nothing
     for blank in ([], None, [None, None], float("nan"), "n/a", 5):
         assert _cell(col, blank) == ""
 
@@ -120,7 +121,7 @@ def test_sparkline_takes_the_row_team_color_through_a_reactable(kind):
         ({"labels": ["middle"]}, "labels"),
         ({"highlight_points": {"peak": "red"}}, "highlight_points"),
         ({"height": 0}, "height"),
-        ({"width": "100px"}, "height"),
+        ({"width": "100px"}, "width"),
         ({"area_opacity": 2}, "alpha"),
         ({"decimals": 1.5}, "decimals"),
         ({"max_value": "10"}, "max_value"),
@@ -237,9 +238,9 @@ def test_infinities_and_numpy_nan_are_gaps_not_invalid_svg():
     np = pytest.importorskip("numpy")
     line = _cell(reactable_sdv_sparkline(None), [1, float("inf"), 2])
     assert "inf" not in line and "nan" not in line
-    assert _attr(line, "path", "d") == "M13,20 M87,3"
+    assert _attr(line, "path", "d") == "M13,20 h0 M87,3 h0"
     assert "inf" not in _cell(reactable_sdv_sparkbar(None), [1, float("-inf"), 2])
-    assert _attr(_cell(reactable_sdv_sparkline(None), [1, np.float32("nan"), 2]), "path", "d") == "M13,20 M87,3"
+    assert _attr(_cell(reactable_sdv_sparkline(None), [1, np.float32("nan"), 2]), "path", "d") == "M13,20 h0 M87,3 h0"
     df = pd.DataFrame({"g": [0.5, float("inf"), 1.0]})
     gauge = reactable_sdv_gauge(df)
     assert 'aria-label="Gauge: 0.5 on a scale from 0 to 1"' in _cell(gauge, 0.5, column="g")  # inf is not the max
