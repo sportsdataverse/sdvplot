@@ -22,6 +22,7 @@ from sdvplot.great_tables import (  # noqa: E402
     gt_theme_sdv,
     gt_theme_sdv_team,
 )
+from tests.gt_html import raw_html  # noqa: E402
 
 LV_IMG = (
     '<img src="https://cdn/1111.png" style="height:30px;vertical-align:middle" alt="Las Vegas Raiders" '
@@ -114,10 +115,10 @@ def test_a_repeated_team_is_resolved_once(manifest, monkeypatch):
 
 def test_logos_in_the_stub_and_row_group_labels(manifest):
     df = pl.DataFrame({"team": ["LV", "LAR"], "conf": ["LV", "LAR"], "w": [1, 2]})
-    html = gt_sdv_logos(GT(df, rowname_col="team"), None, league="nfl", locations=loc.stub()).as_raw_html()
+    html = raw_html(gt_sdv_logos(GT(df, rowname_col="team"), None, league="nfl", locations=loc.stub()))
     assert re.search(r'<th class="gt_row gt_left gt_stub"><img [^>]*data-sdvplot-team="13">', html)
     grouped = GT(df, groupname_col="conf")
-    html = gt_sdv_logos(grouped, None, league="nfl", locations=loc.row_groups()).as_raw_html()
+    html = raw_html(gt_sdv_logos(grouped, None, league="nfl", locations=loc.row_groups()))
     assert re.search(r'<th class="gt_group_heading" colspan="\d+"><img [^>]*data-sdvplot-team="14">', html)
     # _drawn_cells counts data rows only: a group heading is not a row
     assert _cells(gt_sdv_logos(grouped, "team", league="nfl")) == [("13", 0, "team"), ("14", 1, "team")]

@@ -11,6 +11,7 @@ from great_tables import GT  # noqa: E402
 
 from sdvplot.great_tables import gt_set_font, gt_title_header, gt_watermark  # noqa: E402
 from tests.gt_frames import KINDS, frame  # noqa: E402
+from tests.gt_html import raw_html  # noqa: E402
 
 DATA = {"team": ["LV", "LAR", "KC"], "wins": [10, 8, 12]}
 
@@ -50,7 +51,7 @@ def test_set_font_reaches_every_part_of_the_table(kind):
         .tab_spanner("record", ["wins"])
         .tab_source_note("source")
     )
-    h = gt_set_font(gt, "Roboto Condensed", weight=600).as_raw_html()
+    h = raw_html(gt_set_font(gt, "Roboto Condensed", weight=600))
     assert "fonts.googleapis.com/css2?family=Roboto+Condensed" in h
     styled = re.findall(r'<(t[dh])[^>]*class="([^"]*)"[^>]*style="font-family: Roboto Condensed;font-weight: 600;"', h)
     styled += re.findall(r'<(t[dh]) style="font-family: Roboto Condensed;font-weight: 600;" class="([^"]*)"', h)

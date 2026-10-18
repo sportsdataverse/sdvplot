@@ -164,9 +164,12 @@ def test_every_c1_function_is_exported_and_the_great_tables_internals_it_reads_e
     }  # fmt: skip
     assert names <= set(sgt.__all__)
     # private great_tables 1.0 API read by _cells.py: an upgrade that moves any of it must fail here, loudly
+    from great_tables._data_color.palettes import GradientPalette
     from great_tables._gt_data import Body, Boxhead, ColInfo
     from great_tables._locations import resolve_cols_c, resolve_rows_i
     from great_tables._text import _process_text
+
+    assert GradientPalette(["#000000", "#FFFFFF"])([0.0, 1.0]) == ["#000000", "#ffffff"]  # the ramps' gradient
 
     gt = GT(frame(lib, REVENUE), groupname_col="segment").tab_style(style.text(font="Lato"), loc.title())
     assert resolve_cols_c(data=gt, expr=None) == ["q1", "q2"]

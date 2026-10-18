@@ -28,7 +28,7 @@ from great_tables import style as gst
 from sdvplot._contrast import contrast, hex6, mix, on_color, solid
 from sdvplot._errors import DownloadError, OfflineError, warn
 from sdvplot._manifest import load_manifest
-from sdvplot.great_tables._cells import _columns, _frame, _row_indices
+from sdvplot.great_tables._cells import _columns, _frame, _ramp_at, _row_indices
 from sdvplot.great_tables._export import _css_len, _fonts, _style, _style_css
 from sdvplot.great_tables._marks import (
     _background,
@@ -83,16 +83,6 @@ def _palette(palette: Any) -> list[str]:
     if not colors:
         raise ValueError("palette is empty")
     return colors
-
-
-def _ramp(palette: list[str], t: float) -> str:
-    """The color ``t`` (0-1) of the way along ``palette``: piecewise-linear sRGB between evenly spaced stops, the
-    ramp great_tables' ``data_color`` draws."""
-    if len(palette) == 1:
-        return palette[0]
-    pos = min(max(t, 0.0), 1.0) * (len(palette) - 1)
-    i = min(int(pos), len(palette) - 2)
-    return mix(palette[i], palette[i + 1], pos - i)
 
 
 def _text(value: Any) -> str | None:
@@ -466,9 +456,9 @@ def gt_legend_continuous(
 
     border = "" if border_color is None else f"border:{border_width:g}px solid {border_color};"
     if type == "continuous":
-        colors = [_ramp(pal, k / 59) for k in range(60)]
+        colors = [_ramp_at(pal, k / 59) for k in range(60)]
     else:
-        colors = [_ramp(pal, (k + 0.5) / n_bins) for k in range(n_bins)]
+        colors = [_ramp_at(pal, (k + 0.5) / n_bins) for k in range(n_bins)]
     if type == "blocks":
         segments = "".join(
             f'<span style="flex:1 0 auto; height:{height:g}px; background-color:{c}; border-radius:{radius:g}px; '
@@ -778,7 +768,7 @@ def gt_percentile_bar(
         elif proportion:
             v = lo + v * (hi - lo)
         frac = min(1.0, max(0.0, (v - lo) / (hi - lo)))
-        color = _ramp(pal, frac)
+        color = _ramp_at(pal, frac)
         at = f"calc({half:.2f}px + {frac:.4f} * (100% - {marker_size:.2f}px))"
         centered = "position:absolute; top:50%; transform:translateY(-50%);"
         track = (
@@ -933,11 +923,17 @@ def _tier_alt(sources: list[str]) -> list[str]:
 
 
 def _alt_tagger(alts: list[str], text: str) -> str:
-    """A ``text_transform`` function: ``alt=`` on each ``<img>`` ``fmt_image`` wrote, when their count matches."""
+    """A ``text_transform`` function: ``alt=`` on each ``<img>`` ``fmt_image`` wrote, when their count matches. It
+    replaces the empty ``alt=""`` great_tables >= 1.1 writes, so a tag never carries two."""
     parts = text.split("<img ")
     if len(parts) - 1 != len(alts):
         return text
-    return parts[0] + "".join(f'<img alt="{a}" {p}' for a, p in zip(alts, parts[1:], strict=True))
+    return parts[0] + "".join(
+        f'<img alt="{a}" {_GT_EMPTY_ALT.sub("", p, count=1)}' for a, p in zip(alts, parts[1:], strict=True)
+    )
+
+
+_GT_EMPTY_ALT = re.compile(r' alt=""(?=[^<>]*>)')  # inside the tag: the text after it never reaches a "<"
 
 
 def _alt_images(gt: GT, columns: list[str], alt: Callable[[list[str]], Sequence[Any]]) -> GT:

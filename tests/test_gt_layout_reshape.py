@@ -10,12 +10,13 @@ from great_tables import GT, loc, style  # noqa: E402
 
 from sdvplot.great_tables import gt_snake, gt_snake_align, gt_wrap_labels  # noqa: E402
 from tests.gt_frames import KINDS, frame  # noqa: E402
+from tests.gt_html import raw_html  # noqa: E402
 
 TOP5 = {"rank": [1, 2, 3, 4, 5], "team": ["LV", "KC", "BUF", "NYJ", "MIA"], "pts": [1.5, 2.0, 3.0, None, 5.0]}
 
 
 def body_rows(gt):
-    rows = re.findall(r"<tr>(.*?)</tr>", gt.as_raw_html().replace("\n", ""))
+    rows = re.findall(r"<tr>(.*?)</tr>", raw_html(gt).replace("\n", ""))
     return [re.findall(r"<td[^>]*>.*?</td>", r) for r in rows if "<td" in r]
 
 

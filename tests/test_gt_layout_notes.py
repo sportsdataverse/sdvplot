@@ -9,6 +9,7 @@ from great_tables import GT, html  # noqa: E402
 
 from sdvplot.great_tables import gt_marginalia, gt_scale_note, gt_social_tag  # noqa: E402
 from tests.gt_frames import KINDS, frame  # noqa: E402
+from tests.gt_html import raw_html  # noqa: E402
 
 DATA = {"team": ["LV", "KC"], "note": ["Lost the QB in week 3", "Won out"], "pay": [254_000_000, 268_500_000]}
 
@@ -20,7 +21,7 @@ def source_notes(gt):
 
 @pytest.mark.parametrize("kind", KINDS)
 def test_marginalia_mutes_italicizes_and_rules_the_notes(kind):
-    h = gt_marginalia(GT(frame(kind, DATA)), "note").as_raw_html()
+    h = raw_html(gt_marginalia(GT(frame(kind, DATA)), "note"))
     style = "color: #737373;font-size: 0.92em;font-style: italic; border-left: 1px solid #d1d1d1 !important;"
     assert f'<td style="{style}" class="gt_row gt_left">Lost the QB in week 3</td>' in h
     assert '<col style="width:220px;"/>' in h
@@ -29,7 +30,7 @@ def test_marginalia_mutes_italicizes_and_rules_the_notes(kind):
 
 def test_marginalia_reads_a_dark_background_and_keeps_options():
     gt = GT(pl.DataFrame(DATA)).tab_options(table_background_color="#1a1a17")
-    h = gt_marginalia(gt, "note", width="30%", label="Notes", italic=False, rule=False, align="right").as_raw_html()
+    h = raw_html(gt_marginalia(gt, "note", width="30%", label="Notes", italic=False, rule=False, align="right"))
     assert '<td style="color: #8c8c8b;font-size: 0.92em;font-style: normal;" class="gt_row gt_right">Won out</td>' in h
     assert '<col style="width:30%;"/>' in h and 'id="note">Notes</th>' in h
     with pytest.raises(ValueError, match="matched no columns"):
@@ -39,7 +40,7 @@ def test_marginalia_reads_a_dark_background_and_keeps_options():
 @pytest.mark.parametrize("kind", KINDS)
 def test_scale_note_divides_and_discloses(kind):
     gt = gt_scale_note(GT(frame(kind, DATA)), "pay", divisor=1e6, decimals=1, where="both")
-    h = gt.as_raw_html()
+    h = raw_html(gt)
     assert '<td class="gt_row gt_right">254.0</td>' in h and '<td class="gt_row gt_right">268.5</td>' in h
     assert 'id="pay">pay (millions)</th>' in h
     assert source_notes(gt) == ["Figures in millions."]

@@ -15,6 +15,7 @@ pytest.importorskip("great_tables")
 from great_tables import GT  # noqa: E402
 
 from sdvplot.great_tables import gt_border_grid, gt_group_stripes, gt_row_accent, gt_spotlight  # noqa: E402
+from tests.gt_html import raw_html  # noqa: E402
 
 SRC = Path(__file__).parents[1] / "src" / "sdvplot" / "great_tables"
 DECL = re.compile(r"((?:border(?:-(?:top|bottom|left|right))?|background-color)\s*:[^;\"]*)(;|\")")
@@ -133,7 +134,7 @@ OTHERS = {
 @pytest.mark.parametrize("helper", sorted(PAIRED))
 def test_the_text_color_a_helper_pairs_with_its_fill_is_important(helper, monkeypatch):
     _render_env(monkeypatch, "VSCODE_PID")  # where the stripes are !important: still no warning, nothing to cover
-    html = PAIRED[helper](GT(_games()).opt_row_striping()).as_raw_html(all_important=True)
+    html = raw_html(PAIRED[helper](GT(_games()).opt_row_striping()), all_important=True)
     inks = [d.strip() for cell in BODY_COLOR.findall(html) for d in cell.split(";") if d.strip().startswith("color")]
     assert inks and all(d.endswith("!important") for d in inks), inks
 
