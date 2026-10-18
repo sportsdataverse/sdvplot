@@ -63,6 +63,8 @@ body:
         - surface
         - court_coords
         - pitch_coords
+        - table_theme_spec
+        - sdv_table_themes
         - versions
         - clear_cache
         - an adapter submodule (sdvplot.matplotlib, sdvplot.plotly, ...)

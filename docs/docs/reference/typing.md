@@ -1,7 +1,7 @@
 ---
 title: sdvplot.typing
 sidebar_label: sdvplot.typing
-sidebar_position: 31
+sidebar_position: 33
 ---
 
 # sdvplot.typing

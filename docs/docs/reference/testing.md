@@ -1,7 +1,7 @@
 ---
 title: sdvplot.testing
 sidebar_label: sdvplot.testing
-sidebar_position: 30
+sidebar_position: 32
 ---
 
 # sdvplot.testing

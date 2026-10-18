@@ -26,6 +26,8 @@ PUBLIC = {
     "add_headshots",
     "axis_logos",
     "surface",
+    "table_theme_spec",
+    "sdv_table_themes",
     "court_coords",
     "pitch_coords",
     "SdvplotWarning",

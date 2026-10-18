@@ -57,6 +57,14 @@
   },
   {
     "type": "category",
+    "label": "Table themes",
+    "items": [
+      "reference/table_theme_spec",
+      "reference/sdv_table_themes"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Housekeeping",
     "items": [
       "reference/versions",

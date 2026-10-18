@@ -43,6 +43,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `table_theme_spec()` and `sdv_table_themes()`: resolve and list the 122 surveyed table themes (light and dark).
 - `teams(league, include_conferences=True)` lists sdvplotR's conference and league rows (its `include_conferences`):
   the 89 college conferences of cfb, mbb and wbb and the AFC, NFC and NFL, with `program` `"conference"` or `"league"`,
   the conference's short name as `team_id` and `abbr`, cbbplotR's colors (`color_source` `"cbbplotR"`) and the
