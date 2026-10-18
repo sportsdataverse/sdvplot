@@ -8,8 +8,8 @@ sidebar_label: Table themes
 sdvplot ships 122 table themes, one per surveyed source (journals, libraries, finance and news sites, sports reference
 sites, government and periodical tables), named after the source: `datagolf`, `basketball-reference`, `wikipedia`,
 `nejm`. They come from one registry file that sdvplotR and sdvtables read too, so a name means the same table in every
-language. Lookup order is the house themes, then the 27 reactablefmtr ports (bare names such as `espn`), then the
-registry (`espn-site` is the site's own look).
+language. `reactable_sdv_theme()` looks a name up in the 27 reactablefmtr ports first (bare names such as `espn`), then
+in the registry (`espn-site` is the site's own look); `table_theme_spec()` and the other adapters read the registry only.
 
 ```python
 from sdvplot.great_tables import gt_theme_source
