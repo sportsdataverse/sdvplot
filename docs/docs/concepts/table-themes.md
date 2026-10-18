@@ -12,13 +12,16 @@ language. `reactable_sdv_theme()` looks a name up in the 27 reactablefmtr ports 
 in the registry (`espn-site` is the site's own look); `table_theme_spec()` and the other adapters read the registry only.
 
 ```python
+import polars as pl
+from great_tables import GT
+
 from sdvplot.great_tables import gt_theme_source
 from sdvplot.itables import itables_sdv_theme
 from sdvplot.plottable import plottable_sdv_theme
 from sdvplot.reactable import reactable_sdv_theme
 
-gt = gt_theme_source(gt, "datagolf")        # a great_tables GT
-theme = reactable_sdv_theme("datagolf")     # a reactable.Theme
+gt = gt_theme_source(GT(pl.DataFrame({"team": ["BOS"], "wins": [64]})), "datagolf")  # a great_tables GT
+theme = reactable_sdv_theme("datagolf")  # a reactable.Theme
 ```
 
 `plottable_sdv_theme` and `itables_sdv_theme` take the same id. Pass `mode="dark"` to the themes with a dark palette
