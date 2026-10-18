@@ -101,8 +101,18 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `UnsupportedTargetError` as before. `sdvplot.typing.AxisMarkType` is the `Literal` of the three mark types. The
   matplotlib y-axis label pad now grows by the widest image's width, so wordmarks and headshots no longer overlap
   their tick labels' room. The adapter contract (`check_adapter_contract`, rule 7) checks the headshot axis too.
+- `surface()` draws every sportyR 2.3.0 surface (sportypy 1.2.0): softball (`ncaa_softball`, a team league, so the
+  field takes the team's `center_logo`), lacrosse (`nll`, `pll`, `world_lacrosse`, `ncaa_mlacrosse`, `ncaa_wlacrosse`,
+  `usa_mlacrosse`, `usa_wlacrosse`), tennis (`atp`, `wta`, `itf`, `ita`, `usta`, `ncaa_tennis`), volleyball (`fivb`,
+  `usa_volleyball`, `ncaa_volleyball`), curling (`wcf`, `curling_canada`) and more leagues of the other sports
+  (`cfl`, `nfhs_football`, `nfhs_basketball`, `little_league`, `pony`, `nfhs_baseball`, `iihf`, `nwhl`, `fifa`, `epl`,
+  `mls`, `nwsl`, `ncaa_soccer`): 59 keys, the same table as sdvplotR and sdvplot-js. A team on a key that is not an
+  SDV team league raises `InputError` ("no team identities for ..."), as in sdvplotR and sdvplot-js.
 
 ### Changed
+
+- `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
+  The surfaces extra now needs sportypy 1.2.0.
 
 - The README links the JavaScript / TypeScript port, sdvplot-js, now on npm: an npm badge and an Installation note
   for `@sportsdataverse/sdvplot`, `@sportsdataverse/sporty` and `@sportsdataverse/sdvtables`, with their docs at
