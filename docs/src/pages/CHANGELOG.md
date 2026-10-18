@@ -108,6 +108,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   (`cfl`, `nfhs_football`, `nfhs_basketball`, `little_league`, `pony`, `nfhs_baseball`, `iihf`, `nwhl`, `fifa`, `epl`,
   `mls`, `nwsl`, `ncaa_soccer`): 59 keys, the same table as sdvplotR and sdvplot-js. A team on a key that is not an
   SDV team league raises `InputError` ("no team identities for ..."), as in sdvplotR and sdvplot-js.
+- Docs: a lacrosse, tennis, volleyball and curling tutorial (every lacrosse field and box, the men's and women's goal
+  areas, a tennis court on three surfaces, the volleyball free zones, a curling sheet and house); the surfaces
+  cookbook's first recipe draws all ten sports; the college baseball and softball tutorial puts the Women's College
+  World Series champion on a softball field; the PWHL tutorial's shot map is on the PWHL's own rink.
 
 ### Changed
 

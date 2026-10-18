@@ -18,10 +18,16 @@
       "anchor": "3-the-clincher-inning-by-inning"
     },
     {
+      "title": "Women's College World Series champion on a softball field",
+      "alt": "The 2026 Women's College World Series champion's logo in center field of an NCAA softball field drawn by sdvplot.surface()",
+      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_13.png",
+      "anchor": "5-the-champions-softball-field"
+    },
+    {
       "title": "SEC schools in baseball and softball",
       "alt": "Scatter of SEC schools' 2026 baseball winning percentage against softball winning percentage, drawn as logos.",
-      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_18.png",
-      "anchor": "7-one-school-two-sports"
+      "image": "/img/gallery/tutorials/leagues/college-baseball-softball_20.png",
+      "anchor": "8-one-school-two-sports"
     }
   ]
 }

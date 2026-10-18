@@ -2,13 +2,13 @@
 title: "Surfaces and shot charts cookbook"
 sidebar_label: "Surfaces and shot charts"
 sidebar_position: 6
-description: "Nine recipes for playing surfaces: every sport's surface in team colors, center logos, NBA and WNBA shot charts with court_coords, a rotated court, a hockey goal map, a baseball field and a soccer shot map."
+description: "Eleven recipes for playing surfaces: every sport sportyR draws (football, basketball, baseball, softball, hockey, soccer, lacrosse, tennis, volleyball and curling), team colors and center logos, NBA and WNBA shot charts with court_coords, a rotated court, a hockey goal map, a baseball field, soccer shot maps and Euroleague shots."
 ---
 
 # Surfaces and shot charts
 
-Eleven recipes for playing surfaces and the charts drawn on them: `surface()` for every sport it supports, team
-colors and a center logo, NBA and WNBA shot charts from the stats-API shot files (converted with
+Eleven recipes for playing surfaces and the charts drawn on them: `surface()` for each of the ten sports it draws
+(every surface sportyR has), team colors and a center logo, NBA and WNBA shot charts from the stats-API shot files (converted with
 `court_coords`), a vertical half court, a hockey goal map, a baseball field and two soccer shot maps, one from
 ESPN and one from StatsBomb, both converted with `pitch_coords`, and a Euroleague shot chart on the FIBA court. Surfaces are drawn by sportypy. The data is
 one season each from the NFL (nflverse), the NBA, WNBA and college basketball (hoopR, wehoop and the stats-API
@@ -32,26 +32,36 @@ NFL_SEASON = 2025  # nflverse names a season by the year it starts
 SEASON = 2026  # the 2026 WNBA season and the 2025-26 NBA, NHL and college basketball season
 ```
 
-## 1. Every surface sdvplot can draw
+## 1. Every sport sdvplot can draw
 
 `surface(league, team)` picks sportypy's surface for the league and paints it in the team's colors where the
-sport has team-colored parts: end zones, the lane and apron, the center line and boards. Baseball fields and
-soccer pitches have none, so the team is left out there. (The WNBA and college courts are in recipe 3.)
+sport has team-colored parts: end zones, the lane and apron, the center line and boards. Baseball and softball
+fields and soccer pitches have none, so the team is left out there. Lacrosse, tennis, volleyball and curling have no
+SDV team leagues: their keys (`nll`, `pll`, `atp`, `fivb`, `wcf`, ...) draw the plain surface, and a team raises an
+`InputError`. The PWHL gets its own rink, which has no goalie trapezoid. (The WNBA and college courts are in recipe
+3; every league of the four newer sports is in the [lacrosse, tennis, volleyball and curling
+tutorial](../tutorials/leagues/lacrosse-tennis-volleyball-curling.md).)
 
 ```python
 examples = [
     ("nfl", "SEA", "NFL: Seattle"),
-    ("cfb", "84", "College football: Indiana"),
     ("nba", "OKC", "NBA: Oklahoma City"),
     ("nhl", "COL", "NHL: Colorado"),
+    ("pwhl", "3", "PWHL: Montréal"),
     ("mlb", None, "MLB"),
+    ("ncaa_softball", None, "College softball"),
     ("soccer", None, "Soccer"),
+    ("pll", None, "Field lacrosse: PLL"),
+    ("nll", None, "Box lacrosse: NLL"),
+    ("atp", None, "Tennis: ATP"),
+    ("fivb", None, "Volleyball: FIVB"),
+    ("wcf", None, "Curling: WCF"),
 ]
-fig, axes = plt.subplots(2, 3, figsize=(10, 5.5))
+fig, axes = plt.subplots(3, 4, figsize=(14, 8.5))
 for ax, (league, team, label) in zip(axes.flat, examples, strict=True):
     sdvplot.surface(league, team, ax=ax)
     ax.set_title(label, fontsize=9)
-fig.suptitle("sdvplot.surface(): one call per league", x=0.01, ha="left", fontweight="bold")
+fig.suptitle("sdvplot.surface(): one call per league, ten sports", x=0.01, ha="left", fontweight="bold")
 plt.show()
 ```
 
@@ -61,8 +71,8 @@ plt.show()
 
 </div>
 
-The college team is an ESPN id (84 is Indiana) and the pros are abbreviations; any value `resolve` understands
-works.
+The PWHL team is its HockeyTech id (3 is Montréal) and the others are abbreviations; any value `resolve`
+understands works.
 
 ## 2. The champion's field, with a logo at midfield
 
@@ -409,6 +419,20 @@ ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False
 ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
 plt.show()
 ```
+
+<div class="sdv-output">
+
+```text
+| player        | action               | coord_x | coord_y | court_x | court_y |
+|---------------|----------------------|---------|---------|---------|---------|
+| JONES, KAI    | Two Pointer          | -12     | -6      | -12.485 | -0.12   |
+| LARKIN, SHANE | Missed Three Pointer | 414     | 602     | -6.405  | 4.14    |
+| OSMANI, ERCAN | Two Pointer          | -307    | 0       | -12.425 | -3.07   |
+```
+
+![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_23_1.png)
+
+</div>
 
 ## Run it yourself
 

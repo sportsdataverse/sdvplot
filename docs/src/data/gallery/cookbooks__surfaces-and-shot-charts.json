@@ -6,6 +6,12 @@
   "page": "cookbooks/surfaces-and-shot-charts.md",
   "items": [
     {
+      "title": "Every sport's surface in one grid",
+      "alt": "Twelve playing surfaces drawn by sdvplot.surface(): NFL, NBA, NHL and PWHL in team colors, a baseball and a softball field, a soccer pitch, PLL and NLL lacrosse, an ATP tennis court, a FIVB volleyball court and a WCF curling sheet",
+      "image": "/img/gallery/cookbooks/surfaces-and-shot-charts_3.png",
+      "anchor": "1-every-sport-sdvplot-can-draw"
+    },
+    {
       "title": "Nikola Jokic shot chart on a Nuggets-colored court",
       "alt": "Made and missed field goals of Nikola Jokic on a half court in Denver Nuggets colors",
       "image": "/img/gallery/cookbooks/surfaces-and-shot-charts_9.png",

@@ -74,7 +74,9 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/college-baseball-softball_9.png" alt="Step chart of cumulative runs by inning in the 2026 Men&#x27;s College World Series clinching game, with team logos at the line ends." loading="lazy"/><br/>College World Series final, inning by inning<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#3-the-clincher-inning-by-inning)
 
-[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_18.png" alt="Scatter of SEC schools&#x27; 2026 baseball winning percentage against softball winning percentage, drawn as logos." loading="lazy"/><br/>SEC schools in baseball and softball<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#7-one-school-two-sports)
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_13.png" alt="The 2026 Women&#x27;s College World Series champion&#x27;s logo in center field of an NCAA softball field drawn by sdvplot.surface()" loading="lazy"/><br/>Women's College World Series champion on a softball field<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#5-the-champions-softball-field)
+
+[<img src="/img/gallery/tutorials/leagues/college-baseball-softball_20.png" alt="Scatter of SEC schools&#x27; 2026 baseball winning percentage against softball winning percentage, drawn as logos." loading="lazy"/><br/>SEC schools in baseball and softball<br/><small>College baseball & softball</small>](tutorials/leagues/college-baseball-softball.md#8-one-school-two-sports)
 
 [<img src="/img/gallery/tutorials/leagues/nhl_12.png" alt="Carolina&#x27;s 2025-26 unblocked shots and goals on a half rink in team colors" loading="lazy"/><br/>NHL shot map on a rink<br/><small>NHL</small>](tutorials/leagues/nhl.md#4-a-shot-map-on-the-rink)
 
@@ -108,6 +110,10 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/cricket_22.png" alt="Every team of the 2026 men&#x27;s T20 World Cup as a flag in a tier by how far it went" loading="lazy"/><br/>T20 World Cup tier list<br/><small>Cricket</small>](tutorials/leagues/cricket.md#8-the-t20-world-cup-as-a-tier-list)
 
+[<img src="/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_3.png" alt="Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL box, and the PLL, World Lacrosse, NCAA and USA Lacrosse fields" loading="lazy"/><br/>Every lacrosse field and box<br/><small>Lacrosse, tennis, volleyball & curling</small>](tutorials/leagues/lacrosse-tennis-volleyball-curling.md#1-every-lacrosse-field)
+
+[<img src="/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_9.png" alt="Three ATP tennis courts drawn by sdvplot.surface(), recolored as clay, grass and a blue hard court" loading="lazy"/><br/>A tennis court on clay, grass and a hard court<br/><small>Lacrosse, tennis, volleyball & curling</small>](tutorials/leagues/lacrosse-tennis-volleyball-curling.md#4-tennis-on-clay-grass-and-a-hard-court)
+
 </div>
 
 ## Cookbooks
@@ -137,6 +143,8 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 [<img src="/img/gallery/cookbooks/colors-and-themes_3.png" alt="Swatches of each NFL team&#x27;s primary and secondary colors beside its logo, in eight division columns" loading="lazy"/><br/>Every NFL team's primary and secondary color by division<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#1-see-a-leagues-palette)
 
 [<img src="/img/gallery/cookbooks/colors-and-themes_15.png" alt="Hexbin density of Shai Gilgeous-Alexander&#x27;s shots on a half court, shaded pale blue to Thunder blue to orange" loading="lazy"/><br/>A shot-density map shaded in the Thunder's colors with PyPalettes<br/><small>Colors and themes</small>](cookbooks/colors-and-themes.md#7-a-colormap-from-a-teams-colors-with-pypalettes)
+
+[<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_3.png" alt="Twelve playing surfaces drawn by sdvplot.surface(): NFL, NBA, NHL and PWHL in team colors, a baseball and a softball field, a soccer pitch, PLL and NLL lacrosse, an ATP tennis court, a FIVB volleyball court and a WCF curling sheet" loading="lazy"/><br/>Every sport's surface in one grid<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#1-every-sport-sdvplot-can-draw)
 
 [<img src="/img/gallery/cookbooks/surfaces-and-shot-charts_9.png" alt="Made and missed field goals of Nikola Jokic on a half court in Denver Nuggets colors" loading="lazy"/><br/>Nikola Jokic shot chart on a Nuggets-colored court<br/><small>Surfaces and shot charts</small>](cookbooks/surfaces-and-shot-charts.md#4-an-nba-shot-chart-from-the-stats-api-frame)
 

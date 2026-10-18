@@ -18,8 +18,9 @@ resolves team abbreviations, names and provider ids across 28 leagues and picks 
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
 altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
-sdvplotR's table themes, cell styling, legends and image export, and `surface()` draws a league's field, court or rink
-in a team's colors. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/).
+sdvplotR's table themes, cell styling, legends and image export, and `surface()` draws every sportyR playing surface
+(football, basketball, baseball, softball, hockey, soccer, lacrosse, tennis, volleyball and curling), in a team's colors
+where the league has teams. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/).
 
 ## **Installation**
 
@@ -33,8 +34,9 @@ Plotting libraries are optional extras, for example
 `pip install "sdvplot[mpl]"`. Each extra adds the libraries for one feature: `[svg]` lets `logo_image()`
 rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
 `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
-maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()`, and
-`[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
+maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()` (ten
+sports' fields, courts, rinks and sheets), and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`,
+`sdvplot.plottable`).
 
 | Extra | Adds |
 | --- | --- |

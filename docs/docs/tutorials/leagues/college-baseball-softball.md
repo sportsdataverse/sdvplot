@@ -2,13 +2,13 @@
 title: "College baseball & softball tutorial"
 sidebar_label: "College baseball & softball"
 sidebar_position: 31
-description: "College baseball and softball from ESPN: the College World Series in both sports, the SEC, one school across two sports, and every Division I softball team."
+description: "College baseball and softball from ESPN: the College World Series in both sports, the softball champion's field, the SEC, one school across two sports, and every Division I softball team."
 ---
 
 # College baseball and softball
 
-Nine worked examples on the 2026 college season: the Men's College World Series in Omaha, the Women's College World
-Series champion's run, the SEC in both sports, and every team in ESPN's Division I softball standings. All data comes
+Ten worked examples on the 2026 college season: the Men's College World Series in Omaha, the Women's College World
+Series champion's run and its field, the SEC in both sports, and every team in ESPN's Division I softball standings. All data comes
 from ESPN's college-baseball and college-softball endpoints through
 [sportsdataverse-py](https://py.sportsdataverse.org/); sdvplot's `ncaa_baseball` and `ncaa_softball` leagues key on
 ESPN's team ids, so the data's ids go straight in.
@@ -252,7 +252,31 @@ gt_color_results(gt, "result")
 
 </div>
 
-## 5. One conference: the SEC in college baseball
+## 5. The champion's softball field
+
+`surface("ncaa_softball")` draws the NCAA softball field. `ncaa_softball` is also a team league, so the champion
+resolves there too, but a softball field has no team-colored parts (as on a baseball field), and `center_logo` would
+put the logo on home plate, the field's origin. So draw the field, cropped with `ylim=`, and place the logo in
+center field with `add_logos`; the title takes the champion's record in Oklahoma City from the table above.
+
+```python
+wins = run.filter(pl.col("result") == "W").height
+fig, ax = plt.subplots(figsize=(8, 6.5))
+sdvplot.surface("ncaa_softball", champ, ax=ax, ylim=(-25, 160))  # home plate to shallow center field
+sdvplot.add_logos(ax, [0], [118], [champ], league="ncaa_softball", height=0.2, zorder=40)
+ax.set_title(f"{champ_name}: {SEASON} Women's College World Series champions ({wins}-{run.height - wins})",
+             loc="left", fontweight="bold")  # fmt: skip
+fig.text(0.99, 0.02, ESPN, ha="right", fontsize=8, color="grey")
+plt.show()
+```
+
+<div class="sdv-output">
+
+![png](college-baseball-softball_files/college-baseball-softball_13_0.png)
+
+</div>
+
+## 6. One conference: the SEC in college baseball
 
 ESPN's standings take a `group` for one conference (27 is the SEC in college baseball). plotnine's `geom_sdv_logos`
 plots runs scored against runs allowed per game, and `geom_mean_lines` adds the conference averages. The y axis is
@@ -285,11 +309,11 @@ sec = sdv.espn_college_baseball_standings(season=SEASON, group=27).with_columns(
 
 <div class="sdv-output">
 
-![png](college-baseball-softball_files/college-baseball-softball_13_0.png)
+![png](college-baseball-softball_files/college-baseball-softball_15_0.png)
 
 </div>
 
-## 6. The best records in Division I (interactive)
+## 7. The best records in Division I (interactive)
 
 The full Division I standings, top 15 by winning percentage, as an Altair bar chart. `palette` colors the bars by team,
 `axis_logos` replaces the team axis with logos, and the tooltip names the team.
@@ -321,11 +345,11 @@ sdvplot.axis_logos(bars, "y", league="ncaa_baseball", height=0.055)
 
 <div class="sdv-output">
 
-<iframe class="sdv-frame" src="/outputs/tutorials/leagues/college-baseball-softball/15_0.html" title="HTML output" height="480" loading="lazy"></iframe>
+<iframe class="sdv-frame" src="/outputs/tutorials/leagues/college-baseball-softball/17_0.html" title="HTML output" height="480" loading="lazy"></iframe>
 
 </div>
 
-## 7. One school, two sports
+## 8. One school, two sports
 
 The same school has a different ESPN id in each sport (Texas is 126 in college baseball and 538 in softball), so
 `ncaa_baseball` and `ncaa_softball` are separate leagues in sdvplot. To compare a school across sports, join the two
@@ -378,11 +402,11 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](college-baseball-softball_files/college-baseball-softball_18_0.png)
+![png](college-baseball-softball_files/college-baseball-softball_20_0.png)
 
 </div>
 
-## 8. Team colors with seaborn
+## 9. Team colors with seaborn
 
 `palette` returns a plain `{team: color}` dict, which seaborn takes as is. College teams carry one ESPN color: the
 secondary is `None`, so a second color has to come from elsewhere.
@@ -415,7 +439,7 @@ plt.show()
 
 <div class="sdv-output">
 
-![png](college-baseball-softball_files/college-baseball-softball_20_0.png)
+![png](college-baseball-softball_files/college-baseball-softball_22_0.png)
 
 </div>
 
@@ -431,7 +455,7 @@ sdvplot.team_colors("ncaa_softball", sb["team_id"].head(3).to_list(), which="sec
 
 </div>
 
-## 9. Every Division I softball team (interactive)
+## 10. Every Division I softball team (interactive)
 
 All teams in ESPN's Division I softball standings: runs scored against runs allowed per game, one logo each through
 the Plotly adapter. Hover a logo for the team and its record; the y axis runs high to low, so the best teams sit top
@@ -475,7 +499,7 @@ fig
 
 <div class="sdv-output">
 
-<iframe class="sdv-frame" src="/outputs/tutorials/leagues/college-baseball-softball/23_0.html" title="Interactive Plotly figure" height="480" loading="lazy"></iframe>
+<iframe class="sdv-frame" src="/outputs/tutorials/leagues/college-baseball-softball/25_0.html" title="Interactive Plotly figure" height="480" loading="lazy"></iframe>
 
 </div>
 
