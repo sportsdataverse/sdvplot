@@ -12,11 +12,23 @@ from typing import Any
 
 from great_tables import GT, loc, px
 
-from sdvplot._table_themes import table_theme_spec
+from sdvplot._table_themes import _font_stack, table_theme_spec
 from sdvplot.great_tables._marks import DENSITY, _check_gt, _density, _table_font, _table_id
-from sdvplot.great_tables._themes import _css, _font, _on_spanners, _tabular_nums, _text
+from sdvplot.great_tables._themes import _css, _Font, _on_spanners, _tabular_nums, _text
 
 __all__ = ["gt_theme_source"]
+
+
+class _Face(_Font):
+    """A Google face written into CSS with its generic fallback (``"Lora", serif``), so a face that fails to load
+    degrades to the right kind of font."""
+
+    def get_font_name(self) -> str:
+        return _font_stack(self.font)
+
+
+def _font(family: str) -> _Face:
+    return _Face(family)
 
 
 def _tr(size: float, k: float) -> float:

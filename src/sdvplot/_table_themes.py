@@ -55,17 +55,18 @@ _SERIF = re.compile(
 )
 
 
+def _generic_family(family: str | None) -> str:
+    """The CSS generic family a face falls back to, guessed from its name (same rule as shoot.py)."""
+    if family and _MONO.search(family):
+        return "monospace"
+    if family and _SERIF.search(family) and "sans" not in family.lower():
+        return "serif"
+    return "sans-serif"
+
+
 def _font_stack(family: str | None) -> str:
-    """A CSS font-family value: the quoted family then a generic guessed from its name (same rule as shoot.py)."""
-    if not family:
-        return "sans-serif"
-    if _MONO.search(family):
-        generic = "monospace"
-    elif _SERIF.search(family) and "sans" not in family.lower():
-        generic = "serif"
-    else:
-        generic = "sans-serif"
-    return f'"{family}", {generic}'
+    """A CSS font-family value: the quoted family then its generic fallback."""
+    return f'"{family}", {_generic_family(family)}' if family else "sans-serif"
 
 
 @dataclass(frozen=True)

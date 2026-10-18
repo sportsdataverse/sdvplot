@@ -12,6 +12,7 @@ from great_tables import GT  # noqa: E402
 import sdvplot.great_tables as sgt  # noqa: E402
 from sdvplot._errors import InputError  # noqa: E402
 from sdvplot._table_themes import sdv_table_themes, table_theme_spec  # noqa: E402
+from sdvplot.great_tables._marks import DENSITY  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DF = pl.DataFrame({"team": ["KC", "BUF", "BAL"], "wins": [12, 10, 9]})
@@ -57,17 +58,28 @@ def test_generated_file_is_lf():
 
 
 @pytest.mark.parametrize("theme", [t["id"] for t in sdv_table_themes()])
-def test_every_registry_theme_renders_its_font_and_ground(theme):
+def test_every_registry_theme_renders_its_fonts_ground_and_stripe(theme):
     sp = table_theme_spec(theme)
     out = html(theme).lower()
     assert sp.fonts["body"].lower() in out
+    assert sp.fonts["label"].lower() in out
     assert sp.palette["bg"].lower() in out
+    assert ("tr:nth-child(even) td.gt_row" in out) == bool(sp.structure["stripe"])
+
+
+def test_faces_fall_back_to_their_generic_family():
+    assert '"Source Serif 4", serif' in html("aer")  # a serif title face
+    mono = next(i for i in (t["id"] for t in sdv_table_themes()) if "mono" in table_theme_spec(i).fonts["body"].lower())
+    assert f'"{table_theme_spec(mono).fonts["body"]}", monospace' in html(mono)
 
 
 def test_dark_and_density_apply():
     dark = html("datagolf", mode="dark").lower()
     assert table_theme_spec("datagolf", "dark").palette["bg"].lower() in dark
-    assert html("economist", density="social") != html("economist")
+    body = table_theme_spec("economist").sizes["body"]
+    for density in ("compact", "social"):
+        k = DENSITY[density]["body"] / DENSITY["comfortable"]["body"]
+        assert f"font-size: {float(round(body * k, 1))}px" in html("economist", density=density)
 
 
 def test_errors():
