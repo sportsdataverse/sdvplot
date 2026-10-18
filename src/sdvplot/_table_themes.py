@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import difflib
 import json
 import re
@@ -127,19 +128,24 @@ def table_theme_spec(name: str, mode: Literal["light", "dark"] = "light") -> Tab
         raise InputError(f"unknown table theme {name!r}{hint} (see sdv_table_themes())")
     s = reg[name]
     if mode == "dark" and (s["darkPolicy"] == "none" or not s.get("dark")):
-        alt = sorted(i for i, t in reg.items() if t["category"] == s["category"] and t["darkPolicy"] != "none")[:3]
-        raise InputError(
-            f"theme {name!r} is light-only; dark-capable themes in category {s['category']!r}: "
-            f"{', '.join(alt) or '(none)'}"
+        dark = sorted(i for i, t in reg.items() if t["darkPolicy"] != "none")
+        same = [i for i in dark if reg[i]["category"] == s["category"]][:3]
+        advice = (
+            f"dark-capable themes in category {s['category']!r}: {', '.join(same)}"
+            if same
+            else f"no dark-capable themes in category {s['category']!r}; try: {', '.join(dark[:3])}"
         )
+        raise InputError(f"theme {name!r} is light-only; {advice}")
     pal = _palette(s, mode)
-    structure = {k: _border(v, pal) if isinstance(v, str) else v for k, v in s["structure"].items()}
+    # every `{key}` in the registry sits in a border string (rowRule, frame, ...), so each string is substituted;
+    # nested containers (heatColumns, ...) are copied so a caller cannot mutate the cached registry.
+    structure = {k: _border(v, pal) if isinstance(v, str) else copy.deepcopy(v) for k, v in s["structure"].items()}
     return TableThemeSpec(
         id=name,
         source=s["source"],
         category=s["category"],
-        fonts=dict(s["fonts"]),
-        sizes=dict(s["sizes"]),
+        fonts=copy.deepcopy(s["fonts"]),
+        sizes=copy.deepcopy(s["sizes"]),
         palette=pal,
         structure=structure,
         dark_policy=s["darkPolicy"],

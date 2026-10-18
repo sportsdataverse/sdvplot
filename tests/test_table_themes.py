@@ -16,8 +16,18 @@ def test_dark_palette_comes_from_the_registry():
 def test_light_only_theme_in_dark_names_three_alternatives():
     with pytest.raises(InputError, match=r"moneypuck.*light-only.*: \w[\w-]*, [\w-]+, [\w-]+$"):
         table_theme_spec("moneypuck", "dark")
-    with pytest.raises(InputError, match="nejm.*light-only"):  # journal has no dark-capable theme at all
-        table_theme_spec("nejm", "dark")
+    dark = sorted(i for i, t in REG.items() if t["darkPolicy"] != "none")[:3]
+    with pytest.raises(InputError, match="nejm.*light-only.*no dark-capable themes in category 'journal'; try: ") as e:
+        table_theme_spec("nejm", "dark")  # journal has no dark-capable theme: fall back to any category
+    assert str(e.value).endswith(", ".join(dark))
+
+
+def test_nested_structure_is_a_copy_of_the_cached_registry():
+    tid, key = next((t, k) for t, s in REG.items() for k, v in s["structure"].items() if isinstance(v, list) and v)
+    first = table_theme_spec(tid).structure[key]
+    want = json.loads(json.dumps(first))
+    first.append("junk")
+    assert table_theme_spec(tid).structure[key] == want
 
 
 def test_misspelling_suggests_the_close_match():
