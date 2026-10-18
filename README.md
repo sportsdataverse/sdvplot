@@ -195,6 +195,13 @@ See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 [![Twitter Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
 [![GitHub stars](https://img.shields.io/github/stars/sportsdataverse/sdvplot.svg?color=eee&logo=github&style=for-the-badge&label=Star%20sdvplot&maxAge=2592000)](https://github.com/sportsdataverse/sdvplot/stargazers/)
 
+<a href="https://github.com/sportsdataverse/sdvplot/stargazers">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history-dark.svg">
+    <img alt="Star history of sportsdataverse/sdvplot" src="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history.png" width="600">
+  </picture>
+</a>
+
 ## **Our Authors**
 
 - [Saiem Gilani](https://x.com/saiemgilani)
