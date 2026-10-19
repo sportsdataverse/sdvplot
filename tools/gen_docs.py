@@ -66,10 +66,16 @@ ERRORS = [
 MODULE_SECTIONS = {
     "Plots and tables": [
         "matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal",
-        "great_tables", "reactable", "plottable", "itables",
+        "great_tables", "reactable", "plottable", "itables", "perspective",
     ],
     "Housekeeping": ["testing", "typing"],
 }  # fmt: skip
+# Submodules whose library ships no wheels below Python 3.11 (perspective-python is cp311-abi3 only), so they cannot be
+# imported there. On 3.10 the generator and the docstring gate cover the rest; the reference is generated, and its drift
+# checked, on 3.13 (drift.yml).
+NEEDS_PY311 = {"perspective"}
+if sys.version_info < (3, 11):
+    MODULE_SECTIONS = {k: [s for s in v if s not in NEEDS_PY311] for k, v in MODULE_SECTIONS.items()}
 SIG_WIDTH = 60  # a signature longer than this puts one parameter per line
 # The home page: an install line, a sample that runs offline against the bundled index (its output is computed here,
 # never typed), and two-color swatches for six teams in three leagues, from palette().
@@ -342,8 +348,9 @@ def _write_json(path: Path, obj: object) -> None:
 
 def public_submodules() -> list[str]:
     """Every public submodule (no leading underscore), found rather than listed, so a new one cannot escape the
-    docstring gate (tests/test_api.py finds them the same way)."""
-    return sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
+    docstring gate (tests/test_api.py finds them the same way). Below Python 3.11, NEEDS_PY311 is left out."""
+    found = sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
+    return [m for m in found if sys.version_info >= (3, 11) or m not in NEEDS_PY311]
 
 
 def submodule_examples(submodules: list[str] | None = None) -> dict[str, str]:

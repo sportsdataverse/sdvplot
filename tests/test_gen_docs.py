@@ -2,6 +2,7 @@ import importlib.util
 import inspect
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -94,6 +95,9 @@ def test_regeneration_removes_the_page_of_a_removed_function(tmp_path):
 
 
 @pytest.mark.real_index
+@pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="sdvplot.perspective (gen_docs.NEEDS_PY311) imports on 3.11+ only"
+)
 def test_the_committed_reference_is_current():
     assert gd.main(["--check"]) == 0
 
