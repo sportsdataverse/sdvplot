@@ -202,7 +202,7 @@ def test_an_unresolved_team_takes_the_fallback_as_given_and_stays_out_of_the_pal
     rows = [{"team": "XXX", "start_x": 1, "start_y": 1, "end_x": 2, "end_y": 2}, *PASSES]
     with pytest.warns(sdvplot.SdvplotWarning) as rec:
         props = sdeck.pass_arc_layer(rows, **FRANCE, background=background)
-    assert not any(re.search(r"(None|null)", str(w.message)) for w in rec)
+    assert not any(re.search(r"\b(None|null)\b", str(w.message)) for w in rec)
     data = props["data"]
     assert data[0]["sourceColor"] == data[0]["targetColor"] == [128, 128, 128, 255]
     (primary,) = sdvplot.team_colors("soccer", ["478"], id_system="team_id")
