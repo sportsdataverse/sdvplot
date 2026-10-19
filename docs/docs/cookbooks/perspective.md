@@ -114,7 +114,8 @@ On the Datagrid, `perspective_sdv_config` fills the team column's cells with eac
 a readable text color on each fill. The grid hands its palette out in the order it first draws each team, so the
 palette is in the frame's order: the config sets no `sort`, and the frame is already sorted, one row per team.
 `perspective_logo_column` puts each team's logo URL after the team, and `logo_col` shows it as a link; here the
-`columns` list moves it to the end, where the long URLs do not push the numbers off the page.
+`columns` list moves it to the end, where the long URLs do not push the numbers off the page. Each number column also
+gets a format: a rate or EPA to 3 decimals, a percentage to 1, an integer plain (`formats=` overrides one).
 
 ```python
 board = perspective_logo_column(teams, "posteam", league="nfl", season=SEASON)
@@ -150,7 +151,7 @@ show(board.drop("posteam_logo"), config, theme="rbsdm")
 <div class="sdv-output">
 
 ```text
-{'font_family': 'Space Grotesk', 'font_size': 14} {'fg_color': 'linear-gradient(to right, #a1231b 0%, #17692f 100%)'}
+{'font_family': 'Space Grotesk', 'font_size': 14} {'number_format': {'minimumFractionDigits': 3, 'maximumFractionDigits': 3}, 'fg_color': 'linear-gradient(to right, #a1231b 0%, #17692f 100%)'}
 ```
 
 <iframe class="sdv-frame" src="/outputs/cookbooks/perspective/7_1.html" title="HTML output" height="480" loading="lazy"></iframe>

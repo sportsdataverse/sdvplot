@@ -93,6 +93,7 @@ perspective_sdv_config(
     mode: Literal['light', 'dark'] = 'light',
     logo_col: str | None = None,
     background: str | None = None,
+    formats: dict[str, dict[str, Any] | None] | None = None,
     season: Any = None,
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
     strict: bool = False,
@@ -111,14 +112,23 @@ colors in the order Perspective hands colors out (checked in Chromium on Perspec
 - ``plugin="Datagrid"``: the team column's cells are filled (``bg_mode`` "series"; Perspective picks a readable
   text color). The grid gives the palette to the values in the order it first draws them, so it is in the frame's
   order of first appearance: keep the grid's rows in the frame's order (no ``sort``), and keep it to about one row
-  per team. In a long grid, scrolling past a team the grid has not drawn yet shifts every later color. Only a
-  string team column is filled: Perspective rejects a fill on a number column.
+  per team. In a long grid, scrolling past a team the grid has not drawn yet shifts every later color. Null cells
+  take no color and no palette slot. Only a text team column (string, or a pandas category / polars Categorical or
+  Enum, which Perspective loads as strings) is filled: Perspective rejects a fill on a number column, so a numeric
+  team id column gets none, with one warning.
 - a chart plugin: the view is yours. Split a bar, line or area chart by the team (``split_by=[team_col]``) and
   each team's series takes its color from every numeric column's ``palette``, in sorted order, because Perspective
   sorts split values. Put the team column in an "X/Y Scatter"'s Color slot (its third column) and each team's
   points take theirs from the team column's ``palette``, in the frame's order, the order Perspective meets them (a
-  scatter's ``split_by`` draws one panel per team instead). Checked on "X Bar", "Y Bar", "Y Line" and
-  "X/Y Scatter"; a Treemap or Sunburst hands colors out in drawing order, which this does not follow.
+  scatter's ``split_by`` draws one panel per team instead). Perspective sorts split values by codepoint (upper
+  case first: "LSU" before "Louisiana"), as Python does. Null team values split into a "null" series that comes
+  first and takes the first palette entry, so the sorted palette then starts with the fallback grey. Checked on
+  "X Bar", "Y Bar", "Y Line" and "X/Y Scatter"; a Treemap or Sunburst hands colors out in drawing order, which
+  this does not follow.
+
+Every numeric column also gets a number format (``number_format``, Intl.NumberFormat options): 3 decimals for a
+float (rates, EPA), 1 for a float whose name says it is a percentage (``pct``, ``percent``), and an integer
+plain (no grouping: 2024, not 2,024). ``formats`` overrides them.
 
 ### Arguments
 
@@ -131,6 +141,7 @@ colors in the order Perspective hands colors out (checked in Chromium on Perspec
 | `theme` | `str \| None` | A registry table theme (``sdv_table_themes()``). On the Datagrid it sets the font family and size (``plugin_config``), each numeric column's sign colors (its ``neg`` and ``pos``) and, when the theme has a numeric face of its own, the numeric columns' font. Perspective quotes the value as one family name (no fallback stack), so the page must load the font itself (Google Fonts), or the browser draws its default font. Charts take no fonts from a config. |
 | `mode` | `Literal['light', 'dark']` | "light" or "dark": the Perspective theme ("Pro Light" or "Pro Dark") and the registry theme's mode. |
 | `logo_col` | `str \| None` | A logo URL column (``perspective_logo_column``) to show as links on the Datagrid. Perspective 5.5's Datagrid draws no images, so a link is the one format a URL column has. |
+| `formats` | `dict[str, dict[str, Any] \| None] \| None` | Per column, a ``number_format`` (Intl.NumberFormat options, e.g. ``{"maximumFractionDigits": 2}``) to use instead of the default, or None for none. |
 | `background` | `str \| None` | The color the teams must read against. Default: the Perspective theme's background (#ffffff for "Pro Light", #242526 for "Pro Dark"). |
 | `season` | `Any` | One season for every team (the table rule). |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values, as in ``resolve``. |
@@ -142,7 +153,7 @@ colors in the order Perspective hands colors out (checked in Chromium on Perspec
 
 ### Raises
 
-- `InputError`: For a column the frame does not have, an unknown ``mode``, ``theme`` or ``id_system``, a season outside the league's, or a dark ``mode`` on a light-only theme.
+- `InputError`: For a column the frame does not have (``team_col``, ``logo_col`` or a ``formats`` key), a team column that mixes value types, an unknown ``mode``, ``theme`` or ``id_system``, a season outside the league's, or a dark ``mode`` on a light-only theme.
 - `UnresolvedTeamError`: With ``strict=True``, for a team that does not resolve.
 
 ### Example

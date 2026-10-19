@@ -11,12 +11,13 @@ Dark") draw the grid; a registry theme adds its fonts and its sign colors.
 
 from __future__ import annotations
 
+import re
 import sys
 from typing import Any, Literal
 
 import narwhals as nw
 
-from sdvplot._errors import InputError, OptionalDependencyError, requires_extra
+from sdvplot._errors import InputError, OptionalDependencyError, requires_extra, warn
 
 if sys.version_info < (3, 11):  # the extra installs nothing there: say why, not only which extra
     raise OptionalDependencyError(
@@ -46,6 +47,17 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 # Perspective's two built-in themes and their --psp--background-color (measured in 5.5.1: #fff, #242526)
 _PRO = {"light": ("Pro Light", "#ffffff"), "dark": ("Pro Dark", "#242526")}
 _FALLBACK = "#808080"
+# A float column whose name says it is a percentage (fg_pct, pct_complete, win_percent) shows 1 decimal; any other
+# float (a rate, EPA) shows 3. Perspective 5.5.1's number_format is Intl.NumberFormat's options (checked in Chromium).
+_PERCENT = re.compile(r"(?i)(^|_)(pct|percent|perc)(_|$)")
+_PLAIN = {"useGrouping": False, "maximumFractionDigits": 0}  # an integer as typed: 1039 and 2024, not 1,039 or 2,024
+
+
+def _number_format(name: str, dtype: Any) -> dict[str, Any]:
+    if dtype.is_integer():
+        return dict(_PLAIN)
+    n = 1 if _PERCENT.search(name) else 3
+    return {"minimumFractionDigits": n, "maximumFractionDigits": n}
 
 
 def _frame(frame: Any, *cols: str | None) -> nw.DataFrame[Any]:
@@ -72,6 +84,17 @@ def _palette(values: list[Any], *, league: str, season: int | None, background: 
     return [_FALLBACK if i is None else by_id[i] for i in ids]
 
 
+def _team_orders(df: nw.DataFrame[Any], team_col: str) -> tuple[list[Any], list[Any]]:
+    """The distinct non-null team values in the order a grid or a scatter's Color slot meets them (first appearance),
+    and in a chart's split order (sorted, by codepoint as Perspective sorts). InputError for values of mixed types."""
+    first = df[team_col].drop_nulls().unique(maintain_order=True).to_list()
+    try:
+        return first, sorted(first)
+    except TypeError as e:
+        kinds = sorted({type(v).__name__ for v in first})
+        raise InputError(f"the team column {team_col!r} mixes {' and '.join(kinds)} values: use one id system") from e
+
+
 def _gradient(colors: list[str]) -> str:
     """Perspective's palette value: ``linear-gradient(to right, #rrggbb, ...)``, with no positions."""
     return f"linear-gradient(to right, {', '.join(colors)})"
@@ -87,6 +110,7 @@ def perspective_sdv_config(
     mode: Literal["light", "dark"] = "light",
     logo_col: str | None = None,
     background: str | None = None,
+    formats: dict[str, dict[str, Any] | None] | None = None,
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
@@ -101,14 +125,23 @@ def perspective_sdv_config(
     - ``plugin="Datagrid"``: the team column's cells are filled (``bg_mode`` "series"; Perspective picks a readable
       text color). The grid gives the palette to the values in the order it first draws them, so it is in the frame's
       order of first appearance: keep the grid's rows in the frame's order (no ``sort``), and keep it to about one row
-      per team. In a long grid, scrolling past a team the grid has not drawn yet shifts every later color. Only a
-      string team column is filled: Perspective rejects a fill on a number column.
+      per team. In a long grid, scrolling past a team the grid has not drawn yet shifts every later color. Null cells
+      take no color and no palette slot. Only a text team column (string, or a pandas category / polars Categorical or
+      Enum, which Perspective loads as strings) is filled: Perspective rejects a fill on a number column, so a numeric
+      team id column gets none, with one warning.
     - a chart plugin: the view is yours. Split a bar, line or area chart by the team (``split_by=[team_col]``) and
       each team's series takes its color from every numeric column's ``palette``, in sorted order, because Perspective
       sorts split values. Put the team column in an "X/Y Scatter"'s Color slot (its third column) and each team's
       points take theirs from the team column's ``palette``, in the frame's order, the order Perspective meets them (a
-      scatter's ``split_by`` draws one panel per team instead). Checked on "X Bar", "Y Bar", "Y Line" and
-      "X/Y Scatter"; a Treemap or Sunburst hands colors out in drawing order, which this does not follow.
+      scatter's ``split_by`` draws one panel per team instead). Perspective sorts split values by codepoint (upper
+      case first: "LSU" before "Louisiana"), as Python does. Null team values split into a "null" series that comes
+      first and takes the first palette entry, so the sorted palette then starts with the fallback grey. Checked on
+      "X Bar", "Y Bar", "Y Line" and "X/Y Scatter"; a Treemap or Sunburst hands colors out in drawing order, which
+      this does not follow.
+
+    Every numeric column also gets a number format (``number_format``, Intl.NumberFormat options): 3 decimals for a
+    float (rates, EPA), 1 for a float whose name says it is a percentage (``pct``, ``percent``), and an integer
+    plain (no grouping: 2024, not 2,024). ``formats`` overrides them.
 
     Args:
         frame: The data the viewer shows: a polars or pandas DataFrame (anything narwhals reads eagerly).
@@ -123,6 +156,8 @@ def perspective_sdv_config(
         mode: "light" or "dark": the Perspective theme ("Pro Light" or "Pro Dark") and the registry theme's mode.
         logo_col: A logo URL column (``perspective_logo_column``) to show as links on the Datagrid. Perspective 5.5's
             Datagrid draws no images, so a link is the one format a URL column has.
+        formats: Per column, a ``number_format`` (Intl.NumberFormat options, e.g. ``{"maximumFractionDigits": 2}``)
+            to use instead of the default, or None for none.
         background: The color the teams must read against. Default: the Perspective theme's background (#ffffff for
             "Pro Light", #242526 for "Pro Dark").
         season: One season for every team (the table rule).
@@ -136,8 +171,9 @@ def perspective_sdv_config(
         merge your own ``group_by``, ``split_by``, ``columns`` and the rest into it.
 
     Raises:
-        InputError: For a column the frame does not have, an unknown ``mode``, ``theme`` or ``id_system``, a season
-            outside the league's, or a dark ``mode`` on a light-only theme.
+        InputError: For a column the frame does not have (``team_col``, ``logo_col`` or a ``formats`` key), a team
+            column that mixes value types, an unknown ``mode``, ``theme`` or ``id_system``, a season outside the
+            league's, or a dark ``mode`` on a light-only theme.
         UnresolvedTeamError: With ``strict=True``, for a team that does not resolve.
 
     Example:
@@ -161,28 +197,39 @@ def perspective_sdv_config(
     """
     if mode not in _PRO:
         raise InputError(f"mode must be 'light' or 'dark', not {mode!r}")
-    df = _frame(frame, team_col, logo_col)
+    df = _frame(frame, team_col, logo_col, *(formats or {}))
     spec = table_theme_spec(theme, mode) if theme is not None else None
     pro, pro_bg = _PRO[mode]
     bg = hex6(background) if background is not None else pro_bg
     s = norm_season(season, league)
-    teams = df[team_col].drop_nulls()
-    numeric = [c for c, d in df.schema.items() if c != team_col and d.is_numeric()]
+    schema = df.schema
+    text = not schema[team_col].is_numeric()  # string, categorical, enum or object: Perspective loads them as strings
+    numeric = [c for c, d in schema.items() if c != team_col and d.is_numeric()]
     grid = plugin == "Datagrid"
-    first = teams.unique(maintain_order=True).to_list()  # the order a grid, or a scatter's Color slot, meets them
-    ascending = sorted(first)  # the order of a chart's split series; the palette is taken in it, so it is stable
+    first, ascending = _team_orders(df, team_col)
     pal = _palette(ascending, league=league, season=s, background=bg, id_system=id_system, strict=strict)
     color = dict(zip(ascending, pal, strict=True))
-    by_appearance, by_value = _gradient([color[v] for v in first]), _gradient(pal)
+    nulls = [_FALLBACK] if df[team_col].null_count() else []  # a null split series comes first: palette entry 0
+    by_appearance = _gradient([color[v] for v in first])
+    by_value = _gradient(nulls + pal)
     cfg: dict[str, Any] = {"plugin": plugin, "theme": pro}
-    columns: dict[str, dict[str, Any]] = {}
-    if not grid:
-        columns = {c: {"palette": by_value} for c in numeric}
-        if df.schema[team_col] == nw.String:  # a number column in the Color slot is a gradient, not categories
+    columns: dict[str, dict[str, Any]] = {c: {} for c in numeric}
+    for c in numeric:
+        fmt = (formats or {}).get(c, _number_format(c, schema[c]))
+        if fmt is not None:
+            columns[c]["number_format"] = fmt
+    # no teams (a zero-row frame) means no palette entries at all: an empty palette is not a valid CSS value
+    if first and not grid:
+        for c in numeric:
+            columns[c]["palette"] = by_value
+        if text:  # a number column in the Color slot is a gradient, not categories
             columns = {team_col: {"palette": by_appearance}, **columns}
-    else:
-        if df.schema[team_col] == nw.String:
-            columns[team_col] = {"bg_mode": "series", "bg_color": by_appearance}
+    elif first and text:
+        columns = {team_col: {"bg_mode": "series", "bg_color": by_appearance}, **columns}
+    elif first:
+        warn(f"no team colors on the Datagrid: the team column {team_col!r} is numeric, and team colors need a string "
+             "or categorical team column (Perspective fills only text cells)")  # fmt: skip
+    if grid:
         if spec is not None:
             body = spec.fonts.get("body")
             if body:
@@ -190,12 +237,12 @@ def perspective_sdv_config(
             num_font = spec.fonts.get("numeric")
             sign = f"linear-gradient(to right, {spec.palette['neg']} 0%, {spec.palette['pos']} 100%)"
             for c in numeric:
-                columns[c] = {"fg_color": sign}
+                columns[c]["fg_color"] = sign
                 if num_font and num_font != body:
                     columns[c]["font_family"] = num_font
         if logo_col is not None:
             columns[logo_col] = {"link": True}
-    cfg["columns_config"] = columns
+    cfg["columns_config"] = {c: v for c, v in columns.items() if v}
     return cfg
 
 

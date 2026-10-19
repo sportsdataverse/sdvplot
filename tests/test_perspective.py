@@ -108,7 +108,8 @@ def test_a_numeric_font_of_its_own_goes_on_the_numeric_columns():
 
 def test_without_a_theme_there_are_no_fonts_and_no_sign_colors():
     cfg = perspective_sdv_config(EPA, team_col="posteam", league="nfl")
-    assert "plugin_config" not in cfg and set(cfg["columns_config"]) == {"posteam"}
+    assert "plugin_config" not in cfg
+    assert all(set(v) <= {"bg_mode", "bg_color", "number_format"} for v in cfg["columns_config"].values())
 
 
 def test_polars_and_pandas_give_the_same_config():
@@ -146,10 +147,13 @@ def test_null_team_values_take_no_color():
     assert len(_colors(cfg["columns_config"]["posteam"]["bg_color"])) == 2
 
 
-def test_integer_team_ids_are_not_given_a_grid_fill():
+def test_integer_team_ids_are_not_given_a_grid_fill_and_say_so_once():
     # Perspective rejects a series fill on a number column; ESPN ids stay numbers (never cast to strings here)
     frame = pl.DataFrame({"team_id": [12, 2], "wins": [15, 13]})  # ESPN ids: Kansas City 12, Buffalo 2
-    assert perspective_sdv_config(frame, team_col="team_id", league="nfl")["columns_config"] == {}
+    with pytest.warns(SdvplotWarning, match="string or categorical team column") as rec:
+        grid = perspective_sdv_config(frame, team_col="team_id", league="nfl")
+    assert len([w for w in rec if issubclass(w.category, SdvplotWarning)]) == 1
+    assert "team_id" not in grid["columns_config"] and set(grid["columns_config"]["wins"]) == {"number_format"}
     bar = perspective_sdv_config(frame, team_col="team_id", league="nfl", plugin="Y Bar")
     colors = _colors(bar["columns_config"]["wins"]["palette"])
     assert colors == _colors(perspective_sdv_config(pl.DataFrame({"t": ["BUF", "KC"]}), team_col="t", league="nfl")
@@ -250,3 +254,81 @@ def test_the_perspective_floor_is_the_version_the_lock_tests():
         r'^name = "perspective-python"\nversion = "([\d.]+)"', (root / "uv.lock").read_text(encoding="utf-8"), re.M
     )
     assert floor == locked == "5.5.1"  # 2026-09-18, the newest perspective-python at least two weeks old on 2026-10-19
+
+
+@pytest.mark.parametrize(
+    "frame",
+    [
+        EPA.to_pandas().astype({"posteam": "category"}),
+        EPA.with_columns(pl.col("posteam").cast(pl.Categorical)),
+        EPA.with_columns(pl.col("posteam").cast(pl.Enum(sorted(EPA["posteam"])))),
+    ],
+    ids=["pandas-category", "polars-categorical", "polars-enum"],
+)
+def test_a_categorical_team_column_is_colored_as_a_string_one(frame):
+    # perspective-python loads a pandas category, polars Categorical or Enum column as a string column (checked:
+    # Table.schema() says "string", and the Datagrid fills it in Chromium), so it gets the same config as text
+    for plugin in ("Datagrid", "Y Bar"):
+        want = perspective_sdv_config(EPA, team_col="posteam", league="nfl", plugin=plugin)
+        assert perspective_sdv_config(frame, team_col="posteam", league="nfl", plugin=plugin) == want
+
+
+def test_a_null_split_series_takes_the_first_palette_slot():
+    # Perspective 5.5.1 (Chromium): a split_by column with nulls draws a "null" series first, and it takes palette
+    # entry 0, so the sorted palette starts with the fallback grey; the grid and the Color slot skip null cells
+    frame = (
+        EPA.select("posteam", "plays")
+        .head(4)
+        .with_columns(pl.when(pl.col("posteam") == "BAL").then(None).otherwise(pl.col("posteam")).alias("posteam"))
+    )
+    bars = perspective_sdv_config(frame, team_col="posteam", league="nfl", plugin="Y Bar")
+    plain = perspective_sdv_config(frame.drop_nulls(), team_col="posteam", league="nfl", plugin="Y Bar")
+    split = _colors(bars["columns_config"]["plays"]["palette"])
+    assert split == ["#808080", *_colors(plain["columns_config"]["plays"]["palette"])]
+    assert _colors(bars["columns_config"]["posteam"]["palette"]) == _colors(
+        plain["columns_config"]["posteam"]["palette"]
+    )
+
+
+def test_split_order_is_codepoint_order_as_perspective_sorts():
+    # Perspective 5.5.1 (Chromium) splits "LSU", "Louisiana", "TCU", "Texas", "UCF", "Utah" in that order: upper case
+    # first, as Python's sorted() does
+    frame = pl.DataFrame({"team": ["Utah", "Louisiana", "Texas", "LSU", "UCF", "TCU"], "wins": [5, 10, 13, 9, 4, 9]})
+    bars = perspective_sdv_config(frame, team_col="team", league="cfb", plugin="Y Bar")
+    color = dict(zip(frame["team"], _colors(bars["columns_config"]["team"]["palette"]), strict=True))
+    assert _colors(bars["columns_config"]["wins"]["palette"]) == [color[t] for t in
+                                                                   ["LSU", "Louisiana", "TCU", "Texas", "UCF", "Utah"]]  # fmt: skip
+
+
+def test_a_frame_with_no_teams_gets_no_palette():
+    for plugin in ("Datagrid", "Y Bar"):
+        cfg = perspective_sdv_config(EPA.head(0), team_col="posteam", league="nfl", plugin=plugin)
+        assert "linear-gradient(to right, )" not in str(cfg)
+        assert all("palette" not in v and "bg_color" not in v for v in cfg["columns_config"].values())
+
+
+def test_a_team_column_of_mixed_types_is_an_input_error():
+    frame = pd.DataFrame({"team": ["KC", 2, "BUF"], "wins": [15, 13, 13]})  # an object column: a code and an ESPN id
+    with pytest.raises(InputError, match="mixes"):
+        perspective_sdv_config(frame, team_col="team", league="nfl", plugin="Y Bar")
+
+
+def test_numbers_get_fixed_decimals_and_integers_stay_plain():
+    # Perspective 5.5.1's number_format (Intl.NumberFormat options), checked in Chromium: 0.218, 47.5, 1039
+    frame = EPA.head(3).with_columns(comp_pct=pl.Series([66.21, 64.04, 70.33]))
+    for plugin in ("Datagrid", "Y Bar"):
+        cc = perspective_sdv_config(frame, team_col="posteam", league="nfl", plugin=plugin)["columns_config"]
+        assert cc["epa_per_play"]["number_format"] == {"minimumFractionDigits": 3, "maximumFractionDigits": 3}
+        assert cc["success_rate"]["number_format"] == {"minimumFractionDigits": 3, "maximumFractionDigits": 3}
+        assert cc["comp_pct"]["number_format"] == {"minimumFractionDigits": 1, "maximumFractionDigits": 1}
+        assert cc["plays"]["number_format"] == {"useGrouping": False, "maximumFractionDigits": 0}
+
+
+def test_formats_override_or_drop_a_columns_number_format():
+    two = {"minimumFractionDigits": 2, "maximumFractionDigits": 2}
+    cc = perspective_sdv_config(EPA, team_col="posteam", league="nfl", formats={"epa_per_play": two, "plays": None})[
+        "columns_config"
+    ]
+    assert cc["epa_per_play"]["number_format"] == two and "plays" not in cc
+    with pytest.raises(InputError, match="no column 'epa'"):
+        perspective_sdv_config(EPA, team_col="posteam", league="nfl", formats={"epa": two})
