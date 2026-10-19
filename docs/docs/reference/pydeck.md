@@ -265,10 +265,11 @@ pydeck ``PolygonLayer`` props drawing sportypy's playing surface for ``sport`` a
 The surface is in its own coordinates: deck.gl's "cartesian" coordinate system, in the surface's units (feet for
 a rink, metres for a pitch) with the origin at its centre, the frame sportypy draws in and NHL api-web's shot
 coordinates are in. Each closed loop of a visible sportypy feature is one data row (a faceoff circle is two: its
-half rings), in sportypy's drawing order (its zorder), filled with its color (alpha included); a hidden one (a
-``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000 points; each loop is thinned to
-``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead of 1.2
-million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
+half rings; a loop that crosses itself, such as a goaltender trapezoid, is split at the crossing into loops that
+do not, and a loop with no area is left out), in sportypy's drawing order (its zorder), filled with its color
+(alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000
+points; each loop is thinned to ``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead
+of 1.2 million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
 sdvplot-js's ``surfaceLayer`` draws sporty's own
 geometry, so the two languages' vertices differ (the props, colors and extents agree).
 

@@ -1,5 +1,6 @@
 """sdvplot.pydeck: layer props for pydeck (tests/test_pydeck_shared.py holds them to sdvplot-js's ./deckgl)."""
 
+import functools
 import math
 import re
 from pathlib import Path
@@ -265,9 +266,10 @@ def test_a_faceoff_circles_two_half_rings_are_two_closed_loops():
 def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
     pytest.importorskip("sportypy")
     every = sum(len(f._translate_feature()) for f in _sportypy_rink()._features if f.visible)
-    kept = sum(len(d["polygon"]) for d in sdeck.surface_layer("hockey", "nhl", tolerance=0)["data"])
+    kept = sum(len(d["polygon"]) for d in _unthinned("hockey"))
     thin = sum(len(d["polygon"]) for d in sdeck.surface_layer("hockey", "nhl")["data"])
-    assert kept == every
+    # every point, plus the crossing point each self-crossing split adds to both of its rings (the 4 trapezoids: 8)
+    assert kept == every + 8
     assert thin < every / 50  # 1.2 million points to about 16,000
     with pytest.raises(sdvplot.InputError, match="tolerance"):
         sdeck.surface_layer("hockey", "nhl", tolerance=-1)
@@ -275,6 +277,11 @@ def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
 
 LEAGUE_OF = {"baseball": "mlb", "basketball": "nba", "curling": "wcf", "football": "nfl", "hockey": "nhl",
              "soccer": "fifa", "tennis": "atp"}  # fmt: skip
+
+
+@functools.cache
+def _unthinned(sport):
+    return sdeck.surface_layer(sport, LEAGUE_OF[sport], tolerance=0)["data"]
 
 
 def _area(polygon):
@@ -289,7 +296,7 @@ def test_thinning_keeps_every_loops_area_within_5_percent(sport, tolerance):
     # thin features (a 2-inch goal line, a curling centre line, a foul line, a faceoff ring) keep their corners and
     # width: before the per-loop cap and the long-segment ends, some lost half their area, or all of it
     pytest.importorskip("sportypy")
-    full = sdeck.surface_layer(sport, LEAGUE_OF[sport], tolerance=0)["data"]
+    full = _unthinned(sport)
     thin = sdeck.surface_layer(sport, LEAGUE_OF[sport], tolerance=tolerance)["data"]
     assert [d["name"] for d in thin] == [d["name"] for d in full]
     off = [
@@ -298,6 +305,36 @@ def test_thinning_keeps_every_loops_area_within_5_percent(sport, tolerance):
         if _area(a["polygon"]) > 1e-9 and abs(_area(b["polygon"]) - _area(a["polygon"])) > 0.05 * _area(a["polygon"])
     ]
     assert off == []
+
+
+def _crosses(r):
+    n = len(r)
+
+    def turn(a, b, c):
+        return (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])
+
+    def sign(v):
+        return (v > 0) - (v < 0)
+
+    for i in range(n):
+        for j in range(i + 2, n):
+            if i == 0 and j == n - 1:
+                continue
+            a, b, c, d = r[i], r[(i + 1) % n], r[j], r[(j + 1) % n]
+            if sign(turn(a, b, c)) * sign(turn(a, b, d)) < 0 and sign(turn(c, d, a)) * sign(turn(c, d, b)) < 0:
+                return True
+    return False
+
+
+def test_a_ring_that_crosses_itself_is_split_and_one_with_no_area_left_out_as_sdvplot_js_does():
+    pytest.importorskip("sportypy")
+    # sportypy's NHL goaltender trapezoids cross themselves at a corner: three simple rings each once split
+    trapezoids = [f for f in _sportypy_rink()._features if type(f).__name__ == "GoaltendersRestrictedArea"]
+    assert any(_crosses(f._translate_feature()[["x", "y"]].to_numpy().tolist()) for f in trapezoids)
+    rows = sdeck.surface_layer("hockey", "nhl")["data"]
+    assert [d["name"] for d in rows].count("goaltenders_restricted_area") == 6
+    assert [d["name"] for d in rows if _crosses(d["polygon"])] == []
+    assert [d["name"] for d in rows if _area(d["polygon"]) < 1e-6] == []
 
 
 def test_sportypys_own_arguments_pass_through_and_a_hidden_feature_is_left_out():

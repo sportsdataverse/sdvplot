@@ -409,6 +409,92 @@ def _loops(xy: list[tuple[float, float]]) -> list[list[tuple[float, float]]]:
     return out
 
 
+def _signed_area(r: Sequence[Sequence[float]]) -> float:
+    a = np.asarray(r, dtype=float)
+    b = np.roll(a, -1, axis=0)
+    return float(np.sum(a[:, 0] * b[:, 1] - b[:, 0] * a[:, 1])) / 2
+
+
+def _empty(r: Sequence[Sequence[float]]) -> bool:
+    """No area to fill: a path out along a line and back along it (the NLL goal fan), which a fill leaves invisible,
+    or the sliver left where a ring touched itself; sdvplot-js's rule (from its three.js surface)."""
+    if len(r) < 3:
+        return True
+    a = np.asarray(r, dtype=float)
+    w, h = a.max(axis=0) - a.min(axis=0)
+    return abs(_signed_area(r)) <= 1e-9 * (w**2 + h**2)
+
+
+def _turn(p: Any, q: Any, t: Any) -> Any:
+    return (q[..., 0] - p[..., 0]) * (t[..., 1] - p[..., 1]) - (t[..., 0] - p[..., 0]) * (q[..., 1] - p[..., 1])
+
+
+def _first_crossing(a: Any, b: Any) -> tuple[int, int] | None:
+    """The first pair of edges (i, then j > i + 1; edge k runs a[k] -> b[k], the last closing the ring) that cross,
+    as sdvplot-js finds it scanning every pair. Edges are sorted into a quadtree first, so an unthinned loop of 40,000
+    points is not 800 million pair tests."""
+    n = len(a)
+    lo, hi = np.minimum(a, b), np.maximum(a, b)
+    best: tuple[int, int] | None = None
+
+    def test(i: Any, j: Any) -> None:
+        nonlocal best
+        i, j = np.minimum(i, j), np.maximum(i, j)
+        keep = (j - i >= 2) & ~((i == 0) & (j == n - 1))
+        i, j = i[keep], j[keep]
+        if i.size == 0:
+            return
+        ai, bi, c, d = a[i], b[i], a[j], b[j]
+        hit = (np.sign(_turn(ai, bi, c)) * np.sign(_turn(ai, bi, d)) < 0) & (
+            np.sign(_turn(c, d, ai)) * np.sign(_turn(c, d, bi)) < 0
+        )
+        for pair in zip(i[hit].tolist(), j[hit].tolist(), strict=True):
+            if best is None or pair < best:
+                best = pair
+
+    def split(idx: Any, box: Any, depth: int) -> None:
+        if len(idx) <= 64 or depth >= 24:
+            # a leaf: every pair, in blocks of 512 edges so a dense cell never builds one huge array
+            blocks = [idx[k : k + 512] for k in range(0, len(idx), 512)]
+            for x, bx in enumerate(blocks):
+                u, v = np.triu_indices(len(bx), 1)
+                test(bx[u], bx[v])
+                for by in blocks[x + 1 :]:
+                    u, v = np.meshgrid(bx, by, indexing="ij")
+                    test(u.ravel(), v.ravel())
+            return
+        (x0, y0), (x1, y1) = box
+        xm, ym = (x0 + x1) / 2, (y0 + y1) / 2
+        for qx0, qy0, qx1, qy1 in ((x0, y0, xm, ym), (xm, y0, x1, ym), (x0, ym, xm, y1), (xm, ym, x1, y1)):
+            inside = idx[(lo[idx, 0] <= qx1) & (hi[idx, 0] >= qx0) & (lo[idx, 1] <= qy1) & (hi[idx, 1] >= qy0)]
+            if 0 < len(inside) < len(idx):
+                split(inside, ((qx0, qy0), (qx1, qy1)), depth + 1)
+            elif len(inside) == len(idx):  # every edge spans the cell: nothing to gain by splitting
+                split(inside, ((qx0, qy0), (qx1, qy1)), 24)
+
+    split(np.arange(n), (lo.min(axis=0), hi.max(axis=0)), 0)
+    return best
+
+
+def _simple(r: list[list[float]]) -> list[list[list[float]]]:
+    """A ring that crosses itself split at each crossing into rings that do not, each to be filled: what an SVG
+    (nonzero) fill shows of a figure-of-eight, and what deck.gl's earcut cannot triangulate. sportypy, like sporty, has
+    a few (the NHL goaltender's trapezoids). sdvplot-js's rule (from its three.js surface): the first crossing in the
+    order i, then j > i + 1, is split first, and each half is split again."""
+    if len(r) < 4:
+        return [r]
+    a = np.asarray(r, dtype=float)
+    b = np.roll(a, -1, axis=0)  # edge k runs a[k] -> b[k]
+    first = _first_crossing(a, b)
+    if first is None:
+        return [r]
+    i, k = first
+    tc, td = _turn(a[k], b[k], a[i]), _turn(a[k], b[k], b[i])
+    t = float(tc / (tc - td))  # where the crossing is along a[i] -> b[i]
+    x = [float(a[i][0] + t * (b[i][0] - a[i][0])), float(a[i][1] + t * (b[i][1] - a[i][1]))]
+    return [*_simple([*r[: i + 1], x, *r[k + 1 :]]), *_simple([x, *r[i + 1 : k + 1]])]
+
+
 def _simplify(xy: list[tuple[float, float]], tol: float) -> list[list[float]]:
     """``xy`` thinned, rounded to 0.0001 of the unit. A point is kept when it is at least ``t`` from the last point
     kept, or when the next point is at least ``t`` from it: both ends of a long segment stay, so a thin line keeps its
@@ -440,10 +526,11 @@ def surface_layer(
     The surface is in its own coordinates: deck.gl's "cartesian" coordinate system, in the surface's units (feet for
     a rink, metres for a pitch) with the origin at its centre, the frame sportypy draws in and NHL api-web's shot
     coordinates are in. Each closed loop of a visible sportypy feature is one data row (a faceoff circle is two: its
-    half rings), in sportypy's drawing order (its zorder), filled with its color (alpha included); a hidden one (a
-    ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000 points; each loop is thinned to
-    ``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead of 1.2
-    million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
+    half rings; a loop that crosses itself, such as a goaltender trapezoid, is split at the crossing into loops that
+    do not, and a loop with no area is left out), in sportypy's drawing order (its zorder), filled with its color
+    (alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000
+    points; each loop is thinned to ``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead
+    of 1.2 million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
     sdvplot-js's ``surfaceLayer`` draws sporty's own
     geometry, so the two languages' vertices differ (the props, colors and extents agree).
 
@@ -517,11 +604,13 @@ def surface_layer(
     data = [
         {
             "name": re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", type(f).__name__).lower(),
-            "polygon": _simplify(loop, tolerance),
+            "polygon": ring,
             "fillColor": _rgba(str(f.plot_kwargs["facecolor"])),
         }
         for _, _, f, xy in features
         for loop in _loops(xy)
+        for ring in _simple(_simplify(loop, tolerance))
+        if not _empty(ring)
     ]
     return {
         "type": "PolygonLayer",
