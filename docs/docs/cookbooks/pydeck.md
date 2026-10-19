@@ -10,8 +10,8 @@ description: "Six pydeck recipes: shots as logos on an NHL rink, shots as arcs t
 [pydeck](https://deckgl.readthedocs.io/) draws [deck.gl](https://deck.gl/) layers from Python: WebGL maps and
 charts that pan, zoom and tilt in the browser. `sdvplot.pydeck` builds three kinds of layer: team logos at points
 (`logo_icon_layer`), arcs in team colors (`pass_arc_layer`), and a sportypy rink, pitch, court or field in its own
-coordinates (`surface_layer`). Each returns `pydeck.Layer`'s keyword arguments as a plain dict, so it needs nothing
-installed to build; `deck()` puts them in a `pydeck.Deck` with its view fitted (`pip install "sdvplot[pydeck]"`).
+coordinates (`surface_layer`). Each returns `pydeck.Layer`'s keyword arguments as a plain dict, and `deck()` puts
+them in a `pydeck.Deck` with its view fitted. The module needs pydeck: `pip install "sdvplot[pydeck]"`.
 sdvplot-js builds the same layers for deck.gl in JavaScript, and the two are tested against one shared fixture.
 
 Every point here comes from a data source, never typed in: game 7 of the 2024 Stanley Cup Final from NHL api-web

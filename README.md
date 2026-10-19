@@ -52,7 +52,7 @@ builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pyd
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
 | `[pygal]` | pygal |
-| `[pydeck]` | pydeck, to draw `sdvplot.pydeck`'s layers (`deck()`); the layer props need nothing |
+| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` |
 | `[all]` | everything above |
 
 ### JavaScript / TypeScript

@@ -11,7 +11,6 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-import sdvplot.pydeck as sdeck
 from sdvplot import _cache, _manifest
 from sdvplot._team_palette import team_palette
 from tests.conftest import FakeResponse, FakeSession
@@ -22,7 +21,16 @@ SHA256 = (
     "acb197164795e8663ccd8e139ca2e847a8f80f5549c0b30aefe18b71ca89ec08"  # pinned in sdvplot-js's deckgl-shared.test.ts
 )
 FIXTURE = json.loads(BYTES)
-BUILDERS = {"IconLayer": sdeck.logo_icon_layer, "ArcLayer": sdeck.pass_arc_layer}
+
+
+@pytest.fixture
+def sdeck():
+    """sdvplot.pydeck, which needs pydeck at import (the [pydeck] extra). The byte identity and palette tests need
+    neither, so they run without it."""
+    pytest.importorskip("pydeck")
+    import sdvplot.pydeck
+
+    return sdvplot.pydeck
 
 
 def _snake(key: str) -> str:
@@ -58,12 +66,13 @@ def test_the_fixture_is_the_file_sdvplot_js_commits_byte_for_byte():
 
 @pytest.mark.real_index
 @pytest.mark.parametrize("case", FIXTURE["layers"], ids=lambda c: c["name"])
-def test_each_layer_is_rebuilt_exactly_from_the_fixtures_rows_and_options(shared_manifest, case):
+def test_each_layer_is_rebuilt_exactly_from_the_fixtures_rows_and_options(sdeck, shared_manifest, case):
     rows = FIXTURE["inputs"][case["input"]]["rows"]
     options = {_snake(k): v for k, v in case["options"].items()}
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        props = BUILDERS[case["layer"]](rows, **options)
+        build = sdeck.logo_icon_layer if case["layer"] == "IconLayer" else sdeck.pass_arc_layer
+        props = build(rows, **options)
     assert props.pop("type") == case["layer"]
     assert props.pop("data") == case["data"]
     # pydeck sends each keyword to deck.gl camelCased; an accessor (an unquoted string) names the row field it reads
@@ -71,7 +80,7 @@ def test_each_layer_is_rebuilt_exactly_from_the_fixtures_rows_and_options(shared
 
 
 @pytest.mark.parametrize("case", FIXTURE["surfaces"], ids=lambda c: c["name"])
-def test_each_surface_has_the_fixtures_props_fill_colors_and_extent(case):
+def test_each_surface_has_the_fixtures_props_fill_colors_and_extent(sdeck, case):
     pytest.importorskip("sportypy")
     kwargs = {"pitch_updates": case["pitch"]} if case.get("pitch") else {}
     props = sdeck.surface_layer(case["sport"], case["league"], **kwargs)

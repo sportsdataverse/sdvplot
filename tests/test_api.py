@@ -131,9 +131,10 @@ def test_a_raised_sdvplot_error_is_caught_by_the_base():
 
 # every public submodule, found rather than listed: a new one cannot skip the checks below
 SUBMODULES = sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
-# the optional library each adapter module needs: the registered adapters, plus the two column helpers. Any other
+# the optional library each adapter module needs: the registered adapters, plus the column helpers and sdvplot.pydeck
+# (layer props, not a dispatch target). Any other
 # submodule (sdvplot.testing, or a new one) is imported unguarded, so it cannot hide behind a skip
-LIBRARY = {"reactable": "reactable", "plottable": "plottable", "itables": "itables"}
+LIBRARY = {"reactable": "reactable", "plottable": "plottable", "itables": "itables", "pydeck": "pydeck"}
 for _a in _dispatch.ADAPTERS.values():
     _name = _a.module.split(".")[1]
     if _name not in LIBRARY or _a.package == _name:  # seaborn also routes to sdvplot.matplotlib
@@ -382,10 +383,6 @@ EXTRAS = {
     "great_tables": ("great_tables", "tables"),
     "pydeck": ("pydeck", "pydeck"),
 }
-# Submodules that import their library only inside the one function that builds the library's object, so the rest
-# runs without it (sdvplot.pydeck's layer props are plain dicts; only deck() builds a pydeck.Deck): the module
-# imports without the library and that function names the extra. Each entry calls that function.
-LAZY = {"pydeck": lambda mod: mod.deck({"type": "ScatterplotLayer", "data": []})}
 
 
 def test_every_adapter_submodule_names_its_extra():
@@ -400,8 +397,7 @@ def test_importing_an_adapter_without_its_library_names_the_extra(monkeypatch, n
     for mod in [m for m in sys.modules if m == f"sdvplot.{name}" or m.startswith(f"sdvplot.{name}.")]:
         monkeypatch.delitem(sys.modules, mod)  # restored afterwards, as are the libraries
     with pytest.raises(sdvplot.OptionalDependencyError, match=rf'pip install "sdvplot\[{extra}\]"') as exc:
-        mod = importlib.import_module(f"sdvplot.{name}")
-        LAZY[name](mod)  # a KeyError, not the expected error, if a module imported without its library unlisted
+        importlib.import_module(f"sdvplot.{name}")
     assert isinstance(exc.value, ModuleNotFoundError) and exc.value.name.split(".")[0] == library
 
 

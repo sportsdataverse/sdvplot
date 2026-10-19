@@ -2,10 +2,11 @@
 
 ``logo_icon_layer``, ``pass_arc_layer`` and ``surface_layer`` return plain dicts, ``pydeck.Layer``'s keyword arguments
 (``pdk.Layer(**props)``): the layer type, the data rows, the accessors that name their fields, and constant strings
-quoted (``"'pixels'"``), as pydeck reads an unquoted string as an expression. They import neither
-pydeck nor deck.gl, so they run without the ``pydeck`` extra; only ``deck``, which builds a ``pydeck.Deck``, imports
-pydeck. sdvplot-js's ``@sportsdataverse/sdvplot/deckgl`` builds the same props for deck.gl (camelCase keys, accessor
-functions): the two are held to one shared fixture, tests/fixtures/deckgl_shared.json.
+quoted (``"'pixels'"``), as pydeck reads an unquoted string as an expression. ``deck`` puts them in a
+``pydeck.Deck`` with its view fitted. Like every adapter module, this one needs its library: importing it without
+the ``pydeck`` extra raises OptionalDependencyError naming the extra. sdvplot-js's ``@sportsdataverse/sdvplot/deckgl``
+builds the same props for deck.gl (camelCase keys, accessor functions): the two are held to one shared fixture,
+tests/fixtures/deckgl_shared.json.
 """
 
 from __future__ import annotations
@@ -20,6 +21,10 @@ from typing import TYPE_CHECKING, Any
 from sdvplot._colors import team_colors
 from sdvplot._contrast import hex6
 from sdvplot._errors import InputError, OptionalDependencyError, requires_extra, warn
+
+with requires_extra("pydeck"):
+    import pydeck
+
 from sdvplot._normalize import norm_value
 from sdvplot._placement import _missing, check_alpha, place
 from sdvplot._resolve import resolve
@@ -27,8 +32,6 @@ from sdvplot._team_palette import _round, team_palette
 from sdvplot._web import aspect
 
 if TYPE_CHECKING:
-    import pydeck
-
     from sdvplot._types import IdSystem, Which
 
 __all__ = ["deck", "logo_icon_layer", "pass_arc_layer", "surface_layer"]
@@ -533,7 +536,6 @@ def deck(*layers: Mapping[str, Any], height: int = 480, width: int = 720, **deck
         pydeck.Deck: The deck; show it in a notebook, or ``to_html()`` it.
 
     Raises:
-        OptionalDependencyError: If the pydeck extra is not installed.
         InputError: (a ValueError) If no layer is given, or ``height`` or ``width`` is under 1 px.
 
     Example:
@@ -548,9 +550,6 @@ def deck(*layers: Mapping[str, Any], height: int = 480, width: int = 720, **deck
     See Also:
         pydeck Deck: https://deckgl.readthedocs.io/en/latest/deck.html
     """
-    with requires_extra("pydeck"):
-        import pydeck
-
     if not layers:
         raise InputError("deck() needs at least one layer")
     _px("height", height)

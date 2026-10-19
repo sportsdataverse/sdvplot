@@ -21,11 +21,11 @@ The pydeck adapter: team logos, team-colored arcs and sportypy playing surfaces 
 
 ```python
 deck(
-    *layers: 'Mapping[str, Any]',
-    height: 'int' = 480,
-    width: 'int' = 720,
-    **deck_kwargs: 'Any',
-) -> 'pydeck.Deck'
+    *layers: collections.abc.Mapping[str, Any],
+    height: int = 480,
+    width: int = 720,
+    **deck_kwargs: Any,
+) -> pydeck.bindings.deck.Deck
 ```
 
 </div>
@@ -40,10 +40,10 @@ positions (longitude and latitude). The layers are drawn in the order given.
 
 | Name | Type | Description |
 |---|---|---|
-| `*layers` | `'Mapping[str, Any]'` | Props from ``surface_layer``, ``logo_icon_layer``, ``pass_arc_layer`` or any other ``pydeck.Layer`` keyword arguments. |
-| `height` | `'int'` | The deck's height in px. |
-| `width` | `'int'` | The width in px the view is fitted to (the deck itself fills its container's width). |
-| `**deck_kwargs` | `'Any'` | Passed to ``pydeck.Deck`` (``tooltip``, ``map_style``, ...). |
+| `*layers` | `collections.abc.Mapping[str, Any]` | Props from ``surface_layer``, ``logo_icon_layer``, ``pass_arc_layer`` or any other ``pydeck.Layer`` keyword arguments. |
+| `height` | `int` | The deck's height in px. |
+| `width` | `int` | The width in px the view is fitted to (the deck itself fills its container's width). |
+| `**deck_kwargs` | `Any` | Passed to ``pydeck.Deck`` (``tooltip``, ``map_style``, ...). |
 
 ### Returns
 
@@ -51,7 +51,6 @@ positions (longitude and latitude). The layers are drawn in the order given.
 
 ### Raises
 
-- `OptionalDependencyError`: If the pydeck extra is not installed.
 - `InputError`: (a ValueError) If no layer is given, or ``height`` or ``width`` is under 1 px.
 
 ### Example

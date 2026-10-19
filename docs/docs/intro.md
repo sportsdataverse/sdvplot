@@ -39,7 +39,7 @@ pip install "sdvplot[mpl]"
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
 | `[pygal]` | pygal |
-| `[pydeck]` | pydeck, to draw `sdvplot.pydeck`'s layers (`deck()`); the layer props need nothing |
+| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` |
 | `[all]` | every extra above |
 
 `[svg]` lets `logo_image()`, and the adapters that draw decoded images, rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`,

@@ -2,17 +2,18 @@
 
 import math
 import re
-import sys
 from pathlib import Path
 
 import polars as pl
 import pytest
 
-import sdvplot
-import sdvplot.pydeck as sdeck
-from sdvplot._contrast import contrast
-from sdvplot._team_palette import MIN_CONTRAST, MIN_DELTA_E, delta_e, team_palette
-from tests.test_pydeck_shared import shared_manifest  # noqa: F401  (a fixture)
+pydeck = pytest.importorskip("pydeck")  # sdvplot.pydeck needs it at import, as every adapter needs its library
+
+import sdvplot  # noqa: E402
+import sdvplot.pydeck as sdeck  # noqa: E402
+from sdvplot._contrast import contrast  # noqa: E402
+from sdvplot._team_palette import MIN_CONTRAST, MIN_DELTA_E, delta_e, team_palette  # noqa: E402
+from tests.test_pydeck_shared import shared_manifest  # noqa: E402, F401  (a fixture)
 
 ROOT = Path(__file__).parents[1]
 # Real rows: the first shots of game 7 of the 2024 Stanley Cup Final (NHL api-web play-by-play, feet from centre ice)
@@ -266,7 +267,6 @@ def test_an_unknown_sport_or_league_is_an_input_error():
 
 
 def test_deck_fits_an_orthographic_view_to_a_surface_and_draws_the_marks_in_its_frame(shared_manifest):  # noqa: F811
-    pydeck = pytest.importorskip("pydeck")
     pytest.importorskip("sportypy")
     rink = sdeck.surface_layer("hockey", "nhl")
     logos = sdeck.logo_icon_layer(SHOTS, **LOGOS)
@@ -283,7 +283,6 @@ def test_deck_fits_an_orthographic_view_to_a_surface_and_draws_the_marks_in_its_
 
 
 def test_deck_without_a_surface_is_a_map_fitted_to_the_positions(shared_manifest):  # noqa: F811
-    pydeck = pytest.importorskip("pydeck")
     # Rogers Place and Amerant Bank Arena, by longitude and latitude
     rows = [{"team": "EDM", "x": -113.4977, "y": 53.5469}, {"team": "FLA", "x": -80.3256, "y": 26.1584}]
     d = sdeck.deck(sdeck.logo_icon_layer(rows, **LOGOS))
@@ -293,14 +292,6 @@ def test_deck_without_a_surface_is_a_map_fitted_to_the_positions(shared_manifest
     assert isinstance(d.layers[0], pydeck.Layer)
     with pytest.raises(sdvplot.InputError, match="at least one layer"):
         sdeck.deck()
-
-
-def test_without_pydeck_the_props_still_build_and_deck_names_the_extra(monkeypatch):
-    monkeypatch.setitem(sys.modules, "pydeck", None)  # None in sys.modules: importing it raises ModuleNotFoundError
-    props = sdeck.pass_arc_layer(PASSES, **FRANCE)
-    assert props["data"]
-    with pytest.raises(sdvplot.OptionalDependencyError, match=r'pip install "sdvplot\[pydeck\]"'):
-        sdeck.deck(props)
 
 
 def test_the_pydeck_floor_is_the_version_the_lock_tests():
