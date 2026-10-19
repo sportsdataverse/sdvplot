@@ -215,20 +215,18 @@ def _end_colors(
     ids: list[str | None], *, league: str, season: Any, which: Which, background: str | None, fallback: str
 ) -> list[str]:
     """One color per distinct team at one end of the arcs (None for a team that did not resolve): the teams' ``which``
-    colors, or the shared palette of them on ``background``."""
+    colors, or the shared palette of them on ``background``. A team that did not resolve takes the fallback and stays
+    out of the palette, so it never moves a real team's color (and no warning names it); as sdvplot-js does."""
     known = [i for i in ids if i is not None]
-
-    def pick(w: Which) -> list[str | None]:
-        got = iter(team_colors(league, known, which=w, season=season, id_system="team_id") if known else [])
-        return [None if i is None else next(got) for i in ids]
-
-    main = pick(which)
-    other = pick("secondary" if which == "primary" else "primary")
+    kw = {"season": season, "id_system": "team_id"}
+    main = team_colors(league, known, which=which, **kw) if known else []
+    other = team_colors(league, known, which="secondary" if which == "primary" else "primary", **kw) if known else []
     # a team with no `which` color (often no secondary) takes its other color, then the fallback
     colors = [hex6(m or o or fallback, drop_alpha=True) for m, o in zip(main, other, strict=True)]
-    if background is None:
-        return colors
-    return team_palette(colors, other, hex6(background), [str(i) for i in ids])
+    if background is not None:
+        colors = team_palette(colors, other, hex6(background), known)
+    got = iter(colors)
+    return [fallback if i is None else next(got) for i in ids]
 
 
 def pass_arc_layer(
@@ -255,10 +253,14 @@ def pass_arc_layer(
     """pydeck ``ArcLayer`` props: one arc per row from (x, y) to (xend, yend), in the team's colors.
 
     The team's primary color is at the source and its secondary at the target (``which="secondary"`` swaps them), so
-    each arc shows its direction. Each team keeps one color per end, the teams taken in the order they first appear.
-    With ``background``, every color keeps 3:1 contrast against it (dark mode) and stays distinct (CIE76 ΔE of 20 or
-    more) from the other teams' colors at that end. A team that does not resolve takes ``fallback``; a row with a
-    missing coordinate is left out with one warning.
+    where the two colors differ the ends tell the direction. Each team keeps one color per end, the teams taken in the
+    order they first appear. With ``background``, every color keeps 3:1 contrast against it (dark mode) and stays
+    distinct (CIE76 ΔE of 20 or more) from the other teams' colors at that end. Caveat: a color that does not read
+    gives way to the team's other color, so when only one of a team's two colors reads on the background, both ends
+    take it and the arcs no longer show their direction (France's navy and mint on a dark pitch are both mint); pick a
+    background on which both read (France's both read on a mid-tone green such as ``#4a7f3a``), or check that
+    ``sourceColor`` and ``targetColor`` differ. A team that does not resolve takes ``fallback`` as given, outside the
+    palette; a row with a missing coordinate is left out with one warning.
 
     Args:
         rows: The rows: a polars or pandas DataFrame, or a sequence of mappings.
@@ -275,7 +277,7 @@ def pass_arc_layer(
         which: The color at the source end, "primary" or "secondary"; the target end takes the other.
         background: The background the arcs are drawn on; given, each color keeps 3:1 contrast against it and stays
             distinct from the other teams'.
-        fallback: The color of a team that does not resolve, or has no color.
+        fallback: The color of a team that does not resolve, or has no color (an unresolved team's is used as given).
         width: The arc's width in px, 1 or more.
         alpha: The layer's opacity in [0, 1].
         height: deck.gl's ``getHeight``, how high each arc rises for its length, 0 or more (0 draws a straight line).

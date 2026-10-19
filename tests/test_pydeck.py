@@ -185,6 +185,31 @@ def test_an_unknown_team_takes_the_fallback_and_a_missing_end_is_left_out():
     assert (data[0]["sourceColor"], data[0]["team"]) == ([128, 128, 128, 255], "XXX")
 
 
+def test_where_only_one_of_a_teams_colors_reads_both_ends_take_it_and_where_both_read_they_differ():
+    def ends(background):
+        d = sdeck.pass_arc_layer(PASSES, **FRANCE, background=background)["data"][0]
+        return hexed(d["sourceColor"]), hexed(d["targetColor"])
+
+    source, target = ends("#195f0c")  # sportypy's default grass: France's navy is under 3:1 (the documented caveat)
+    assert source == target
+    source, target = ends("#4a7f3a")  # a mid-tone grass: navy and mint both read, so the arcs show their direction
+    assert source != target
+    assert all(contrast(c, "#4a7f3a") >= MIN_CONTRAST for c in (source, target))
+
+
+def test_an_unresolved_team_takes_the_fallback_as_given_and_stays_out_of_the_palette():
+    background = "#7a7a7a"  # a grey on which the fallback grey does not read: the palette would have moved it
+    rows = [{"team": "XXX", "start_x": 1, "start_y": 1, "end_x": 2, "end_y": 2}, *PASSES]
+    with pytest.warns(sdvplot.SdvplotWarning) as rec:
+        props = sdeck.pass_arc_layer(rows, **FRANCE, background=background)
+    assert not any(re.search(r"(None|null)", str(w.message)) for w in rec)
+    data = props["data"]
+    assert data[0]["sourceColor"] == data[0]["targetColor"] == [128, 128, 128, 255]
+    (primary,) = sdvplot.team_colors("soccer", ["478"], id_system="team_id")
+    (secondary,) = sdvplot.team_colors("soccer", ["478"], which="secondary", id_system="team_id")
+    assert hexed(data[1]["sourceColor"]) == team_palette([primary], [secondary], background)[0]
+
+
 def test_an_unresolved_team_is_named_by_its_value_as_text_as_sdvplot_js_names_it():
     rows = [
         {"team": None, "start_x": 1, "start_y": 1, "end_x": 2, "end_y": 2},

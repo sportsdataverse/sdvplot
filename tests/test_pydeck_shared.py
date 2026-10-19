@@ -18,7 +18,7 @@ from tests.conftest import FakeResponse, FakeSession
 PATH = Path(__file__).parent / "fixtures" / "deckgl_shared.json"
 BYTES = PATH.read_bytes()
 SHA256 = (
-    "acb197164795e8663ccd8e139ca2e847a8f80f5549c0b30aefe18b71ca89ec08"  # pinned in sdvplot-js's deckgl-shared.test.ts
+    "f211c844eed0e239e2ae8d7bab93c70a118eb0ae77667237d5d39c8832856d14"  # pinned in sdvplot-js's deckgl-shared.test.ts
 )
 FIXTURE = json.loads(BYTES)
 
@@ -96,6 +96,9 @@ def test_each_surface_has_the_fixtures_props_fill_colors_and_extent(sdeck, case)
     assert extent(0) == case["extent_x"]
     if case["extent_y"] is not None:
         assert extent(1) == case["extent_y"]
+    # rows per looped feature: a faceoff circle's two half rings are two rows (the loop split)
+    for name, n in case["loops"].items():
+        assert sum(d["name"] == name for d in data) == n, name
 
 
 @pytest.mark.parametrize("case", FIXTURE["palettes"], ids=lambda c: f"{c['league']}-{c['background']}")

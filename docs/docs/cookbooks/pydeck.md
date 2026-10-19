@@ -125,7 +125,8 @@ sdeck.deck(rink, logos, height=420, tooltip={"text": "{team}"})
 ## 2. Each shot as an arc to the goal it was aimed at
 
 `pass_arc_layer` draws one arc per row from (`x`, `y`) to (`xend`, `yend`), in the team's colors: its primary color
-where the arc starts and its secondary where it ends, so each arc shows its direction. deck.gl's arcs stand upright
+where the arc starts and its secondary where it ends, so each arc shows its direction (no `background` here,
+so the colors are the teams' own). deck.gl's arcs stand upright
 by default, which a top-down view sees as straight lines; `tilt=90` lays them flat on the ice, and `height=0.3`
 keeps each curve low (deck.gl's default height, 1, swings a long arc well past the boards).
 
@@ -177,6 +178,12 @@ the grass (WCAG's minimum for graphics), a team color that would not read gives 
 lightened until it does, and the two teams' colors stay distinct (a CIE76 ΔE of 20 or more). This is the same team
 palette sdvplot-js uses for dark mode. Croatia's passes are flipped to attack right to left.
 
+One caveat: a color that does not read gives way to the team's other color, so when only one of a team's two colors
+reads on the background, both ends take it. France's navy does not read on this dark grass, so its passes are mint at
+both ends (the printed colors show it) and their direction is lost, while Croatia's two colors both read (lightened)
+and its arcs keep theirs. On a grass where both of a team's colors read, the ends differ: check `sourceColor` against
+`targetColor`.
+
 ```python
 grass = "#{:02x}{:02x}{:02x}".format(*pitch["data"][0]["fillColor"][:3])  # the pitch's own fill
 first_half = passes.filter(pl.col("half") == 1)
@@ -184,14 +191,14 @@ arcs = sdeck.pass_arc_layer(
     first_half, x="pitch_x", y="pitch_y", xend="to_x", yend="to_y", team="team", league="soccer",
     id_system="team_id", tilt=90, height=0.3, background=grass,
 )  # fmt: skip
-print(grass, {d["team"]: d["sourceColor"] for d in arcs["data"]})
+print(grass, {d["team"]: (d["sourceColor"], d["targetColor"]) for d in arcs["data"]})
 sdeck.deck(pitch, arcs, height=440)
 ```
 
 <div class="sdv-output">
 
 ```text
-#195f0c {'477': [255, 127, 127, 255], '478': [200, 230, 216, 255]}
+#195f0c {'477': ([255, 127, 127, 255], [146, 161, 255, 255]), '478': ([200, 230, 216, 255], [200, 230, 216, 255])}
 ```
 
 <iframe class="sdv-frame" src="/outputs/cookbooks/pydeck/11_1.html" title="HTML output" height="480" loading="lazy"></iframe>

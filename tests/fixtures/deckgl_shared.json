@@ -7020,6 +7020,11 @@
         -100.4167,
         100.4167
       ],
+      "loops": {
+        "odzone_faceoff_circle": 8,
+        "nodzone_faceoff_spot_ring": 16,
+        "odzone_faceoff_lines": 16
+      },
       "extent_y": null
     },
     {
@@ -7059,7 +7064,8 @@
       "extent_y": [
         -36.7,
         36.7
-      ]
+      ],
+      "loops": {}
     }
   ],
   "palettes": [

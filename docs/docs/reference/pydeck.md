@@ -178,10 +178,14 @@ pass_arc_layer(
 pydeck ``ArcLayer`` props: one arc per row from (x, y) to (xend, yend), in the team's colors.
 
 The team's primary color is at the source and its secondary at the target (``which="secondary"`` swaps them), so
-each arc shows its direction. Each team keeps one color per end, the teams taken in the order they first appear.
-With ``background``, every color keeps 3:1 contrast against it (dark mode) and stays distinct (CIE76 ΔE of 20 or
-more) from the other teams' colors at that end. A team that does not resolve takes ``fallback``; a row with a
-missing coordinate is left out with one warning.
+where the two colors differ the ends tell the direction. Each team keeps one color per end, the teams taken in the
+order they first appear. With ``background``, every color keeps 3:1 contrast against it (dark mode) and stays
+distinct (CIE76 ΔE of 20 or more) from the other teams' colors at that end. Caveat: a color that does not read
+gives way to the team's other color, so when only one of a team's two colors reads on the background, both ends
+take it and the arcs no longer show their direction (France's navy and mint on a dark pitch are both mint); pick a
+background on which both read (France's both read on a mid-tone green such as ``#4a7f3a``), or check that
+``sourceColor`` and ``targetColor`` differ. A team that does not resolve takes ``fallback`` as given, outside the
+palette; a row with a missing coordinate is left out with one warning.
 
 ### Arguments
 
@@ -199,7 +203,7 @@ missing coordinate is left out with one warning.
 | `strict` | `'bool'` | Raise UnresolvedTeamError for a team that does not resolve, instead of warning (and drawing it in ``fallback``). |
 | `which` | `'Which'` | The color at the source end, "primary" or "secondary"; the target end takes the other. |
 | `background` | `'str \| None'` | The background the arcs are drawn on; given, each color keeps 3:1 contrast against it and stays distinct from the other teams'. |
-| `fallback` | `'str'` | The color of a team that does not resolve, or has no color. |
+| `fallback` | `'str'` | The color of a team that does not resolve, or has no color (an unresolved team's is used as given). |
 | `width` | `'float'` | The arc's width in px, 1 or more. |
 | `alpha` | `'float'` | The layer's opacity in [0, 1]. |
 | `height` | `'float \| None'` | deck.gl's ``getHeight``, how high each arc rises for its length, 0 or more (0 draws a straight line). None (the default) keeps deck.gl's 1; lower, such as 0.3, keeps arcs laid flat (``tilt=90``) close to their chord, inside the surface. |
