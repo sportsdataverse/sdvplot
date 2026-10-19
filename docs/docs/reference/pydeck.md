@@ -234,7 +234,8 @@ props = sdvplot.pydeck.pass_arc_layer(
     passes, x="start_x", y="start_y", xend="end_x", yend="end_y", team="team", league="soccer",
     id_system="team_id", tilt=90,
 )
-assert props["data"][0]["sourceColor"] == [0, 0, 128, 255]  # France's navy
+assert props["data"][0]["sourceColor"] == [0, 0, 128, 255]  # France's navy at the passer
+assert props["data"][0]["targetColor"] != props["data"][0]["sourceColor"]  # its mint at the receiver
 ```
 
 ### See also
@@ -265,8 +266,8 @@ The surface is in its own coordinates: deck.gl's "cartesian" coordinate system, 
 a rink, metres for a pitch) with the origin at its centre, the frame sportypy draws in and NHL api-web's shot
 coordinates are in. Each closed loop of a visible sportypy feature is one data row (a faceoff circle is two: its
 half rings), in sportypy's drawing order (its zorder), filled with its color (alpha included); a hidden one (a
-``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000 points; each loop drops the points
-nearer than ``tolerance`` to the last one kept, which leaves an NHL rink about 16,000 points instead of 1.2
+``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000 points; each loop is thinned to
+``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead of 1.2
 million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
 sdvplot-js's ``surfaceLayer`` draws sporty's own
 geometry, so the two languages' vertices differ (the props, colors and extents agree).
@@ -278,7 +279,7 @@ geometry, so the two languages' vertices differ (the props, colors and extents a
 | `sport` | `str` | The sportypy sport: "hockey", "soccer", "basketball", "football", "baseball", "tennis" or "curling". |
 | `league` | `str` | sportypy's league code for the sport, e.g. "nhl", "fifa", "nba". |
 | `id` | `str` | The layer id. |
-| `tolerance` | `float \| None` | The simplification distance, in the surface's units; None for a 2,000th of the surface's diagonal (about 0.11 ft, 1.3 inches, on an NHL rink: under its thinnest line), 0 to keep every point. |
+| `tolerance` | `float \| None` | The simplification distance, in the surface's units; None for a 2,000th of the surface's diagonal (about 0.11 ft on an NHL rink), 0 to keep every point. Each loop caps it at its own mean width and keeps both ends of every segment at least that long, so thin lines and rings keep their corners and shape (every loop within 5% of its area unthinned, measured on all seven sports). |
 | `**sportypy_kwargs` | `Any` | Passed to the sportypy surface class: ``rink_updates`` / ``pitch_updates`` / ``court_updates`` / ``field_updates``, ``color_updates``, ``units``. |
 
 ### Returns

@@ -273,6 +273,33 @@ def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
         sdeck.surface_layer("hockey", "nhl", tolerance=-1)
 
 
+LEAGUE_OF = {"baseball": "mlb", "basketball": "nba", "curling": "wcf", "football": "nfl", "hockey": "nhl",
+             "soccer": "fifa", "tennis": "atp"}  # fmt: skip
+
+
+def _area(polygon):
+    n = len(polygon)
+    return abs(sum(polygon[i][0] * polygon[i - 1][1] - polygon[i - 1][0] * polygon[i][1] for i in range(n))) / 2
+
+
+@pytest.mark.parametrize(
+    ("sport", "tolerance"), [*((s, None) for s in LEAGUE_OF), ("hockey", 0.25)], ids=lambda v: str(v)
+)
+def test_thinning_keeps_every_loops_area_within_5_percent(sport, tolerance):
+    # thin features (a 2-inch goal line, a curling centre line, a foul line, a faceoff ring) keep their corners and
+    # width: before the per-loop cap and the long-segment ends, some lost half their area, or all of it
+    pytest.importorskip("sportypy")
+    full = sdeck.surface_layer(sport, LEAGUE_OF[sport], tolerance=0)["data"]
+    thin = sdeck.surface_layer(sport, LEAGUE_OF[sport], tolerance=tolerance)["data"]
+    assert [d["name"] for d in thin] == [d["name"] for d in full]
+    off = [
+        (a["name"], round(abs(_area(b["polygon"]) - _area(a["polygon"])) / _area(a["polygon"]), 3))
+        for a, b in zip(full, thin, strict=True)
+        if _area(a["polygon"]) > 1e-9 and abs(_area(b["polygon"]) - _area(a["polygon"])) > 0.05 * _area(a["polygon"])
+    ]
+    assert off == []
+
+
 def test_sportypys_own_arguments_pass_through_and_a_hidden_feature_is_left_out():
     pytest.importorskip("sportypy")
     props = sdeck.surface_layer("hockey", "nhl", color_updates={"boards": "#ff4c00", "referee_crease": "#00000000"})

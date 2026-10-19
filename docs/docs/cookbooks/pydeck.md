@@ -108,7 +108,8 @@ shots.height, passes.height, parks.height
 down (an OrthographicView, y up) fitted to the rink, and draws the logos in the rink's coordinates. `size` is the
 logo's height on screen in pixels. In the first period Edmonton shot at the right-hand goal and Florida at the left.
 pydeck writes every layer's data into the page, so `tolerance` (in feet here) thins sportypy's arcs further than
-the default: 0.25 ft keeps the rink's lines and halves the page.
+the default: at 0.25 ft the rink is about 10,000 points instead of 16,000. Each line keeps its shape, because each loop
+caps the tolerance at its own width and keeps its corners.
 
 ```python
 rink = sdeck.surface_layer("hockey", "nhl", tolerance=0.25)
