@@ -1,0 +1,8699 @@
+{
+  "about": "Shared fixture of sdvplot-js ./deckgl and sdvplot (Python) sdvplot.pydeck: both build these layer props from these rows. Never hand-edit; regenerate with sdvplot-js tools/oracle/deckgl.ts and copy the bytes into both repos.",
+  "generated_by": "sdvplot-js tools/oracle/deckgl.ts, sdvplot index 1c025b69f8cf",
+  "warnings": [],
+  "inputs": {
+    "nhl_shots": {
+      "source": "NHL api-web /v1/gamecenter/2023030417/play-by-play (game 7 of the 2024 Stanley Cup Final, Edmonton at Florida), the 27 period-1 shots as sdvplot-js examples/src/data.ts NHL_SHOTS (checked against fixtures/examples/nhl_pbp_2023030417_p1_shots.json); net_x/net_y: the goal at the shot's end, (±89, 0) ft",
+      "rows": [
+        {
+          "event_id": 251,
+          "type": "shot-on-goal",
+          "time": "00:21",
+          "team": "EDM",
+          "x": 82,
+          "y": -3,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 55,
+          "type": "missed-shot",
+          "time": "00:31",
+          "team": "FLA",
+          "x": -81,
+          "y": 30,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 81,
+          "type": "shot-on-goal",
+          "time": "02:20",
+          "team": "EDM",
+          "x": 64,
+          "y": 4,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 90,
+          "type": "shot-on-goal",
+          "time": "02:31",
+          "team": "FLA",
+          "x": -69,
+          "y": 31,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 302,
+          "type": "goal",
+          "time": "04:27",
+          "team": "FLA",
+          "x": -83,
+          "y": -6,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 186,
+          "type": "goal",
+          "time": "06:44",
+          "team": "EDM",
+          "x": 77,
+          "y": -2,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 191,
+          "type": "shot-on-goal",
+          "time": "07:00",
+          "team": "FLA",
+          "x": -75,
+          "y": 19,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 303,
+          "type": "missed-shot",
+          "time": "07:09",
+          "team": "FLA",
+          "x": -45,
+          "y": -25,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 202,
+          "type": "missed-shot",
+          "time": "07:19",
+          "team": "FLA",
+          "x": -34,
+          "y": -26,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 402,
+          "type": "missed-shot",
+          "time": "07:56",
+          "team": "FLA",
+          "x": -78,
+          "y": 4,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 405,
+          "type": "shot-on-goal",
+          "time": "08:09",
+          "team": "FLA",
+          "x": -32,
+          "y": -22,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 414,
+          "type": "missed-shot",
+          "time": "09:14",
+          "team": "FLA",
+          "x": -31,
+          "y": -19,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 423,
+          "type": "missed-shot",
+          "time": "10:09",
+          "team": "EDM",
+          "x": 28,
+          "y": 31,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 426,
+          "type": "shot-on-goal",
+          "time": "10:24",
+          "team": "EDM",
+          "x": 34,
+          "y": 6,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 428,
+          "type": "missed-shot",
+          "time": "10:49",
+          "team": "EDM",
+          "x": 32,
+          "y": -9,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 450,
+          "type": "missed-shot",
+          "time": "13:06",
+          "team": "EDM",
+          "x": 45,
+          "y": -11,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 306,
+          "type": "missed-shot",
+          "time": "13:18",
+          "team": "EDM",
+          "x": 38,
+          "y": 16,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 460,
+          "type": "shot-on-goal",
+          "time": "14:36",
+          "team": "EDM",
+          "x": 85,
+          "y": 25,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 465,
+          "type": "shot-on-goal",
+          "time": "14:56",
+          "team": "EDM",
+          "x": 94,
+          "y": -9,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 471,
+          "type": "missed-shot",
+          "time": "15:01",
+          "team": "EDM",
+          "x": 48,
+          "y": -39,
+          "net_x": 89,
+          "net_y": 0
+        },
+        {
+          "event_id": 472,
+          "type": "missed-shot",
+          "time": "15:21",
+          "team": "FLA",
+          "x": -56,
+          "y": 15,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 473,
+          "type": "missed-shot",
+          "time": "15:35",
+          "team": "FLA",
+          "x": -29,
+          "y": 32,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 482,
+          "type": "shot-on-goal",
+          "time": "16:25",
+          "team": "FLA",
+          "x": -46,
+          "y": -22,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 486,
+          "type": "shot-on-goal",
+          "time": "16:36",
+          "team": "FLA",
+          "x": -35,
+          "y": -37,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 496,
+          "type": "shot-on-goal",
+          "time": "17:45",
+          "team": "FLA",
+          "x": -61,
+          "y": 14,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 655,
+          "type": "missed-shot",
+          "time": "18:41",
+          "team": "FLA",
+          "x": -84,
+          "y": 8,
+          "net_x": -89,
+          "net_y": 0
+        },
+        {
+          "event_id": 671,
+          "type": "missed-shot",
+          "time": "19:50",
+          "team": "FLA",
+          "x": -71,
+          "y": 32,
+          "net_x": -89,
+          "net_y": 0
+        }
+      ]
+    },
+    "france_passes": {
+      "source": "StatsBomb open data, event file 8658 (the 2018 World Cup final), France's 75 completed first-half passes in SPADL coordinates (105 x 68 m) as sdvplot-js examples/src/data.ts WC2018_FINAL_FRANCE_PASSES (checked against fixtures/examples/spadl_8658_france_h1_passes.csv); team: France, ESPN soccer team 478",
+      "rows": [
+        {
+          "action_id": 42,
+          "time_seconds": 61.947,
+          "player_id": 5487,
+          "start_x": 54.68750000000001,
+          "start_y": 6.375,
+          "end_x": 56.4375,
+          "end_y": 1.2750000000000057,
+          "team": "478"
+        },
+        {
+          "action_id": 46,
+          "time_seconds": 74.667,
+          "player_id": 5485,
+          "start_x": 22.3125,
+          "start_y": 9.775000000000006,
+          "end_x": 6.5625,
+          "end_y": 31.875,
+          "team": "478"
+        },
+        {
+          "action_id": 48,
+          "time_seconds": 77.227,
+          "player_id": 3099,
+          "start_x": 6.5625,
+          "start_y": 31.875,
+          "end_x": 16.1875,
+          "end_y": 43.775,
+          "team": "478"
+        },
+        {
+          "action_id": 51,
+          "time_seconds": 96.867,
+          "player_id": 5492,
+          "start_x": 35.4375,
+          "start_y": 42.925,
+          "end_x": 48.5625,
+          "end_y": 44.625,
+          "team": "478"
+        },
+        {
+          "action_id": 53,
+          "time_seconds": 99.027,
+          "player_id": 4375,
+          "start_x": 47.6875,
+          "start_y": 45.475,
+          "end_x": 33.6875,
+          "end_y": 48.875,
+          "team": "478"
+        },
+        {
+          "action_id": 55,
+          "time_seconds": 101.787,
+          "player_id": 5492,
+          "start_x": 36.3125,
+          "start_y": 47.175,
+          "end_x": 59.9375,
+          "end_y": 46.325,
+          "team": "478"
+        },
+        {
+          "action_id": 56,
+          "time_seconds": 102.88,
+          "player_id": 3604,
+          "start_x": 59.9375,
+          "start_y": 46.325,
+          "end_x": 56.4375,
+          "end_y": 46.325,
+          "team": "478"
+        },
+        {
+          "action_id": 57,
+          "time_seconds": 103.44,
+          "player_id": 4375,
+          "start_x": 56.4375,
+          "start_y": 46.325,
+          "end_x": 52.9375,
+          "end_y": 42.075,
+          "team": "478"
+        },
+        {
+          "action_id": 58,
+          "time_seconds": 105.44,
+          "player_id": 3604,
+          "start_x": 52.9375,
+          "start_y": 42.075,
+          "end_x": 38.9375,
+          "end_y": 27.625,
+          "team": "478"
+        },
+        {
+          "action_id": 60,
+          "time_seconds": 107.107,
+          "player_id": 5485,
+          "start_x": 38.9375,
+          "start_y": 27.625,
+          "end_x": 47.6875,
+          "end_y": 12.325000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 107,
+          "time_seconds": 259.227,
+          "player_id": 4375,
+          "start_x": 9.1875,
+          "start_y": 64.175,
+          "end_x": 6.5625,
+          "end_y": 55.675,
+          "team": "478"
+        },
+        {
+          "action_id": 109,
+          "time_seconds": 260.427,
+          "player_id": 3961,
+          "start_x": 7.4375,
+          "start_y": 55.675,
+          "end_x": 9.1875,
+          "end_y": 65.875,
+          "team": "478"
+        },
+        {
+          "action_id": 111,
+          "time_seconds": 261.787,
+          "player_id": 5484,
+          "start_x": 9.1875,
+          "start_y": 65.875,
+          "end_x": 6.5625,
+          "end_y": 57.375,
+          "team": "478"
+        },
+        {
+          "action_id": 126,
+          "time_seconds": 293.147,
+          "player_id": 3961,
+          "start_x": 22.3125,
+          "start_y": 65.025,
+          "end_x": 11.8125,
+          "end_y": 56.525,
+          "team": "478"
+        },
+        {
+          "action_id": 131,
+          "time_seconds": 318.107,
+          "player_id": 5485,
+          "start_x": 22.3125,
+          "start_y": 14.025000000000006,
+          "end_x": 30.187499999999996,
+          "end_y": 21.674999999999997,
+          "team": "478"
+        },
+        {
+          "action_id": 133,
+          "time_seconds": 320.067,
+          "player_id": 20004,
+          "start_x": 29.3125,
+          "start_y": 21.674999999999997,
+          "end_x": 22.3125,
+          "end_y": 43.775,
+          "team": "478"
+        },
+        {
+          "action_id": 137,
+          "time_seconds": 345.707,
+          "player_id": 3961,
+          "start_x": 47.6875,
+          "start_y": 58.225,
+          "end_x": 40.6875,
+          "end_y": 59.925,
+          "team": "478"
+        },
+        {
+          "action_id": 139,
+          "time_seconds": 346.747,
+          "player_id": 5492,
+          "start_x": 40.6875,
+          "start_y": 59.925,
+          "end_x": 47.6875,
+          "end_y": 59.925,
+          "team": "478"
+        },
+        {
+          "action_id": 141,
+          "time_seconds": 348.987,
+          "player_id": 3961,
+          "start_x": 46.8125,
+          "start_y": 55.675,
+          "end_x": 38.9375,
+          "end_y": 33.575,
+          "team": "478"
+        },
+        {
+          "action_id": 143,
+          "time_seconds": 353.867,
+          "player_id": 20004,
+          "start_x": 46.8125,
+          "start_y": 29.325000000000003,
+          "end_x": 52.0625,
+          "end_y": 5.525000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 145,
+          "time_seconds": 357.027,
+          "player_id": 5476,
+          "start_x": 49.4375,
+          "start_y": 8.075000000000003,
+          "end_x": 39.8125,
+          "end_y": 14.025000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 147,
+          "time_seconds": 359.187,
+          "player_id": 5485,
+          "start_x": 38.9375,
+          "start_y": 17.424999999999997,
+          "end_x": 35.4375,
+          "end_y": 42.075,
+          "team": "478"
+        },
+        {
+          "action_id": 149,
+          "time_seconds": 362.547,
+          "player_id": 5492,
+          "start_x": 38.9375,
+          "start_y": 42.925,
+          "end_x": 47.6875,
+          "end_y": 64.175,
+          "team": "478"
+        },
+        {
+          "action_id": 198,
+          "time_seconds": 572.867,
+          "player_id": 3099,
+          "start_x": 8.3125,
+          "start_y": 41.225,
+          "end_x": 28.437499999999996,
+          "end_y": 49.725,
+          "team": "478"
+        },
+        {
+          "action_id": 242,
+          "time_seconds": 680.267,
+          "player_id": 3604,
+          "start_x": 66.0625,
+          "start_y": 26.775000000000006,
+          "end_x": 59.0625,
+          "end_y": 23.375,
+          "team": "478"
+        },
+        {
+          "action_id": 244,
+          "time_seconds": 681.427,
+          "player_id": 20004,
+          "start_x": 59.0625,
+          "start_y": 23.375,
+          "end_x": 69.5625,
+          "end_y": 51.425,
+          "team": "478"
+        },
+        {
+          "action_id": 252,
+          "time_seconds": 707.027,
+          "player_id": 20004,
+          "start_x": 67.8125,
+          "start_y": 64.175,
+          "end_x": 53.81249999999999,
+          "end_y": 63.325,
+          "team": "478"
+        },
+        {
+          "action_id": 254,
+          "time_seconds": 708.987,
+          "player_id": 5492,
+          "start_x": 54.68750000000001,
+          "start_y": 61.625,
+          "end_x": 49.4375,
+          "end_y": 39.525,
+          "team": "478"
+        },
+        {
+          "action_id": 256,
+          "time_seconds": 712.547,
+          "player_id": 5485,
+          "start_x": 50.3125,
+          "start_y": 28.474999999999994,
+          "end_x": 58.1875,
+          "end_y": 2.125,
+          "team": "478"
+        },
+        {
+          "action_id": 258,
+          "time_seconds": 716.667,
+          "player_id": 5476,
+          "start_x": 58.1875,
+          "start_y": 8.924999999999997,
+          "end_x": 46.8125,
+          "end_y": 14.025000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 260,
+          "time_seconds": 719.947,
+          "player_id": 5485,
+          "start_x": 44.1875,
+          "start_y": 17.424999999999997,
+          "end_x": 50.3125,
+          "end_y": 12.325000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 262,
+          "time_seconds": 722.787,
+          "player_id": 5476,
+          "start_x": 42.4375,
+          "start_y": 11.474999999999994,
+          "end_x": 11.8125,
+          "end_y": 24.224999999999994,
+          "team": "478"
+        },
+        {
+          "action_id": 270,
+          "time_seconds": 737.187,
+          "player_id": 4375,
+          "start_x": 46.8125,
+          "start_y": 44.625,
+          "end_x": 48.5625,
+          "end_y": 65.875,
+          "team": "478"
+        },
+        {
+          "action_id": 271,
+          "time_seconds": 739.547,
+          "player_id": 5484,
+          "start_x": 48.5625,
+          "start_y": 65.875,
+          "end_x": 57.31249999999999,
+          "end_y": 63.325,
+          "team": "478"
+        },
+        {
+          "action_id": 272,
+          "time_seconds": 740.467,
+          "player_id": 5487,
+          "start_x": 57.31249999999999,
+          "start_y": 63.325,
+          "end_x": 45.0625,
+          "end_y": 60.775,
+          "team": "478"
+        },
+        {
+          "action_id": 274,
+          "time_seconds": 742.787,
+          "player_id": 4375,
+          "start_x": 45.0625,
+          "start_y": 60.775,
+          "end_x": 38.0625,
+          "end_y": 46.325,
+          "team": "478"
+        },
+        {
+          "action_id": 276,
+          "time_seconds": 744.907,
+          "player_id": 5492,
+          "start_x": 38.0625,
+          "start_y": 46.325,
+          "end_x": 39.8125,
+          "end_y": 26.775000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 278,
+          "time_seconds": 748.587,
+          "player_id": 5485,
+          "start_x": 45.0625,
+          "start_y": 23.375,
+          "end_x": 56.4375,
+          "end_y": 1.2750000000000057,
+          "team": "478"
+        },
+        {
+          "action_id": 284,
+          "time_seconds": 761.347,
+          "player_id": 5485,
+          "start_x": 36.3125,
+          "start_y": 8.075000000000003,
+          "end_x": 35.4375,
+          "end_y": 39.525,
+          "team": "478"
+        },
+        {
+          "action_id": 324,
+          "time_seconds": 947.107,
+          "player_id": 5484,
+          "start_x": 31.0625,
+          "start_y": 65.875,
+          "end_x": 30.187499999999996,
+          "end_y": 58.225,
+          "team": "478"
+        },
+        {
+          "action_id": 326,
+          "time_seconds": 947.627,
+          "player_id": 3961,
+          "start_x": 30.187499999999996,
+          "start_y": 58.225,
+          "end_x": 37.1875,
+          "end_y": 64.175,
+          "team": "478"
+        },
+        {
+          "action_id": 328,
+          "time_seconds": 949.107,
+          "player_id": 4375,
+          "start_x": 38.0625,
+          "start_y": 62.475,
+          "end_x": 43.3125,
+          "end_y": 42.075,
+          "team": "478"
+        },
+        {
+          "action_id": 330,
+          "time_seconds": 951.347,
+          "player_id": 20004,
+          "start_x": 41.5625,
+          "start_y": 39.525,
+          "end_x": 48.5625,
+          "end_y": 4.674999999999997,
+          "team": "478"
+        },
+        {
+          "action_id": 334,
+          "time_seconds": 956.787,
+          "player_id": 3009,
+          "start_x": 38.9375,
+          "start_y": 14.875,
+          "end_x": 24.9375,
+          "end_y": 22.525000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 336,
+          "time_seconds": 959.107,
+          "player_id": 5485,
+          "start_x": 23.1875,
+          "start_y": 23.375,
+          "end_x": 33.6875,
+          "end_y": 42.075,
+          "team": "478"
+        },
+        {
+          "action_id": 338,
+          "time_seconds": 962.107,
+          "player_id": 3961,
+          "start_x": 38.9375,
+          "start_y": 42.925,
+          "end_x": 45.9375,
+          "end_y": 43.775,
+          "team": "478"
+        },
+        {
+          "action_id": 339,
+          "time_seconds": 963.16,
+          "player_id": 4375,
+          "start_x": 45.9375,
+          "start_y": 43.775,
+          "end_x": 39.8125,
+          "end_y": 48.875,
+          "team": "478"
+        },
+        {
+          "action_id": 353,
+          "time_seconds": 980.267,
+          "player_id": 3604,
+          "start_x": 79.1875,
+          "start_y": 2.125,
+          "end_x": 49.4375,
+          "end_y": 14.025000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 355,
+          "time_seconds": 984.467,
+          "player_id": 5485,
+          "start_x": 49.4375,
+          "start_y": 21.674999999999997,
+          "end_x": 57.31249999999999,
+          "end_y": 62.475,
+          "team": "478"
+        },
+        {
+          "action_id": 359,
+          "time_seconds": 993.787,
+          "player_id": 5487,
+          "start_x": 82.6875,
+          "start_y": 25.075000000000003,
+          "end_x": 93.1875,
+          "end_y": 12.325000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 372,
+          "time_seconds": 1012.507,
+          "player_id": 5485,
+          "start_x": 70.4375,
+          "start_y": 9.775000000000006,
+          "end_x": 80.0625,
+          "end_y": 20.825000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 394,
+          "time_seconds": 1182.867,
+          "player_id": 5484,
+          "start_x": 17.0625,
+          "start_y": 53.125,
+          "end_x": 28.437499999999996,
+          "end_y": 53.975,
+          "team": "478"
+        },
+        {
+          "action_id": 396,
+          "time_seconds": 1185.267,
+          "player_id": 3961,
+          "start_x": 29.3125,
+          "start_y": 58.225,
+          "end_x": 29.3125,
+          "end_y": 66.725,
+          "team": "478"
+        },
+        {
+          "action_id": 398,
+          "time_seconds": 1185.947,
+          "player_id": 4375,
+          "start_x": 29.3125,
+          "start_y": 66.725,
+          "end_x": 38.9375,
+          "end_y": 59.925,
+          "team": "478"
+        },
+        {
+          "action_id": 411,
+          "time_seconds": 1309.547,
+          "player_id": 5492,
+          "start_x": 41.5625,
+          "start_y": 65.875,
+          "end_x": 21.4375,
+          "end_y": 42.925,
+          "team": "478"
+        },
+        {
+          "action_id": 427,
+          "time_seconds": 1341.107,
+          "player_id": 4375,
+          "start_x": 49.4375,
+          "start_y": 47.175,
+          "end_x": 55.5625,
+          "end_y": 38.675,
+          "team": "478"
+        },
+        {
+          "action_id": 428,
+          "time_seconds": 1343.067,
+          "player_id": 20004,
+          "start_x": 55.5625,
+          "start_y": 38.675,
+          "end_x": 78.3125,
+          "end_y": 25.924999999999997,
+          "team": "478"
+        },
+        {
+          "action_id": 449,
+          "time_seconds": 1457.227,
+          "player_id": 5487,
+          "start_x": 70.4375,
+          "start_y": 45.475,
+          "end_x": 73.9375,
+          "end_y": 65.875,
+          "team": "478"
+        },
+        {
+          "action_id": 454,
+          "time_seconds": 1491.307,
+          "player_id": 4375,
+          "start_x": 59.0625,
+          "start_y": 63.325,
+          "end_x": 70.4375,
+          "end_y": 46.325,
+          "team": "478"
+        },
+        {
+          "action_id": 463,
+          "time_seconds": 1512.387,
+          "player_id": 5492,
+          "start_x": 37.1875,
+          "start_y": 53.975,
+          "end_x": 57.31249999999999,
+          "end_y": 48.025,
+          "team": "478"
+        },
+        {
+          "action_id": 466,
+          "time_seconds": 1534.347,
+          "player_id": 5485,
+          "start_x": 27.5625,
+          "start_y": 25.075000000000003,
+          "end_x": 27.5625,
+          "end_y": 54.825,
+          "team": "478"
+        },
+        {
+          "action_id": 482,
+          "time_seconds": 1590.307,
+          "player_id": 5487,
+          "start_x": 54.68750000000001,
+          "start_y": 46.325,
+          "end_x": 41.5625,
+          "end_y": 7.224999999999994,
+          "team": "478"
+        },
+        {
+          "action_id": 484,
+          "time_seconds": 1596.147,
+          "player_id": 5476,
+          "start_x": 46.8125,
+          "start_y": 4.674999999999997,
+          "end_x": 58.1875,
+          "end_y": 1.2750000000000057,
+          "team": "478"
+        },
+        {
+          "action_id": 485,
+          "time_seconds": 1597.227,
+          "player_id": 3009,
+          "start_x": 58.1875,
+          "start_y": 1.2750000000000057,
+          "end_x": 60.81250000000001,
+          "end_y": 8.075000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 512,
+          "time_seconds": 1784.267,
+          "player_id": 5485,
+          "start_x": 59.9375,
+          "start_y": 31.025000000000006,
+          "end_x": 13.562500000000002,
+          "end_y": 33.575,
+          "team": "478"
+        },
+        {
+          "action_id": 514,
+          "time_seconds": 1789.427,
+          "player_id": 3099,
+          "start_x": 15.312500000000002,
+          "start_y": 31.875,
+          "end_x": 60.81250000000001,
+          "end_y": 5.525000000000006,
+          "team": "478"
+        },
+        {
+          "action_id": 526,
+          "time_seconds": 1840.427,
+          "player_id": 20004,
+          "start_x": 31.937499999999996,
+          "start_y": 61.625,
+          "end_x": 39.8125,
+          "end_y": 51.425,
+          "team": "478"
+        },
+        {
+          "action_id": 599,
+          "time_seconds": 2382.107,
+          "player_id": 3099,
+          "start_x": 12.6875,
+          "start_y": 25.075000000000003,
+          "end_x": 65.1875,
+          "end_y": 17.424999999999997,
+          "team": "478"
+        },
+        {
+          "action_id": 600,
+          "time_seconds": 2385.067,
+          "player_id": 3604,
+          "start_x": 64.3125,
+          "start_y": 17.424999999999997,
+          "end_x": 63.43749999999999,
+          "end_y": 2.9749999999999943,
+          "team": "478"
+        },
+        {
+          "action_id": 692,
+          "time_seconds": 2765.027,
+          "player_id": 5485,
+          "start_x": 36.3125,
+          "start_y": 36.125,
+          "end_x": 48.5625,
+          "end_y": 43.775,
+          "team": "478"
+        },
+        {
+          "action_id": 696,
+          "time_seconds": 2767.787,
+          "player_id": 5487,
+          "start_x": 45.0625,
+          "start_y": 43.775,
+          "end_x": 41.5625,
+          "end_y": 41.225,
+          "team": "478"
+        },
+        {
+          "action_id": 698,
+          "time_seconds": 2768.987,
+          "player_id": 4375,
+          "start_x": 41.5625,
+          "start_y": 41.225,
+          "end_x": 32.8125,
+          "end_y": 39.525,
+          "team": "478"
+        },
+        {
+          "action_id": 700,
+          "time_seconds": 2770.547,
+          "player_id": 5492,
+          "start_x": 32.8125,
+          "start_y": 39.525,
+          "end_x": 56.4375,
+          "end_y": 25.075000000000003,
+          "team": "478"
+        },
+        {
+          "action_id": 708,
+          "time_seconds": 2795.987,
+          "player_id": 3099,
+          "start_x": 15.312500000000002,
+          "start_y": 39.525,
+          "end_x": 84.4375,
+          "end_y": 28.474999999999994,
+          "team": "478"
+        },
+        {
+          "action_id": 723,
+          "time_seconds": 2826.92,
+          "player_id": 3604,
+          "start_x": 60.81250000000001,
+          "start_y": 49.725,
+          "end_x": 60.81250000000001,
+          "end_y": 44.625,
+          "team": "478"
+        }
+      ]
+    },
+    "marks": [
+      {
+        "level": "team",
+        "league": "nhl",
+        "entity_id": "26",
+        "entity_name": "Florida Panthers",
+        "program": "pro",
+        "mark_type": "logo",
+        "variant": "default",
+        "valid_from": null,
+        "valid_to": null,
+        "source": "espn",
+        "sha256": "68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f",
+        "ext": "png",
+        "width": 500,
+        "height": 500,
+        "archive_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+        "first_seen": "2026-09-26"
+      },
+      {
+        "level": "team",
+        "league": "nhl",
+        "entity_id": "6",
+        "entity_name": "Edmonton Oilers",
+        "program": "pro",
+        "mark_type": "logo",
+        "variant": "default",
+        "valid_from": null,
+        "valid_to": null,
+        "source": "espn",
+        "sha256": "f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666",
+        "ext": "png",
+        "width": 500,
+        "height": 500,
+        "archive_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+        "first_seen": "2026-09-26"
+      }
+    ]
+  },
+  "layers": [
+    {
+      "name": "nhl_shot_logos",
+      "builder": [
+        "logoIconLayer",
+        "logo_icon_layer"
+      ],
+      "layer": "IconLayer",
+      "input": "nhl_shots",
+      "options": {
+        "x": "x",
+        "y": "y",
+        "team": "team",
+        "league": "nhl"
+      },
+      "props": {
+        "id": "sdvplot-logos",
+        "getPosition": "position",
+        "getIcon": "icon",
+        "getSize": 32,
+        "sizeUnits": "pixels",
+        "opacity": 1
+      },
+      "data": [
+        {
+          "position": [
+            82,
+            -3
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 0
+        },
+        {
+          "position": [
+            -81,
+            30
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 1
+        },
+        {
+          "position": [
+            64,
+            4
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 2
+        },
+        {
+          "position": [
+            -69,
+            31
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 3
+        },
+        {
+          "position": [
+            -83,
+            -6
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 4
+        },
+        {
+          "position": [
+            77,
+            -2
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 5
+        },
+        {
+          "position": [
+            -75,
+            19
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 6
+        },
+        {
+          "position": [
+            -45,
+            -25
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 7
+        },
+        {
+          "position": [
+            -34,
+            -26
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 8
+        },
+        {
+          "position": [
+            -78,
+            4
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 9
+        },
+        {
+          "position": [
+            -32,
+            -22
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 10
+        },
+        {
+          "position": [
+            -31,
+            -19
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 11
+        },
+        {
+          "position": [
+            28,
+            31
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 12
+        },
+        {
+          "position": [
+            34,
+            6
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 13
+        },
+        {
+          "position": [
+            32,
+            -9
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 14
+        },
+        {
+          "position": [
+            45,
+            -11
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 15
+        },
+        {
+          "position": [
+            38,
+            16
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 16
+        },
+        {
+          "position": [
+            85,
+            25
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 17
+        },
+        {
+          "position": [
+            94,
+            -9
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 18
+        },
+        {
+          "position": [
+            48,
+            -39
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 19
+        },
+        {
+          "position": [
+            -56,
+            15
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 20
+        },
+        {
+          "position": [
+            -29,
+            32
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 21
+        },
+        {
+          "position": [
+            -46,
+            -22
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 22
+        },
+        {
+          "position": [
+            -35,
+            -37
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 23
+        },
+        {
+          "position": [
+            -61,
+            14
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 24
+        },
+        {
+          "position": [
+            -84,
+            8
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 25
+        },
+        {
+          "position": [
+            -71,
+            32
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 26
+        }
+      ]
+    },
+    {
+      "name": "nhl_shot_logos_sized",
+      "builder": [
+        "logoIconLayer",
+        "logo_icon_layer"
+      ],
+      "layer": "IconLayer",
+      "input": "nhl_shots",
+      "options": {
+        "x": "x",
+        "y": "y",
+        "team": "team",
+        "league": "nhl",
+        "size": 24,
+        "alpha": 0.8,
+        "id": "shots"
+      },
+      "props": {
+        "id": "shots",
+        "getPosition": "position",
+        "getIcon": "icon",
+        "getSize": 24,
+        "sizeUnits": "pixels",
+        "opacity": 0.8
+      },
+      "data": [
+        {
+          "position": [
+            82,
+            -3
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 0
+        },
+        {
+          "position": [
+            -81,
+            30
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 1
+        },
+        {
+          "position": [
+            64,
+            4
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 2
+        },
+        {
+          "position": [
+            -69,
+            31
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 3
+        },
+        {
+          "position": [
+            -83,
+            -6
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 4
+        },
+        {
+          "position": [
+            77,
+            -2
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 5
+        },
+        {
+          "position": [
+            -75,
+            19
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 6
+        },
+        {
+          "position": [
+            -45,
+            -25
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 7
+        },
+        {
+          "position": [
+            -34,
+            -26
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 8
+        },
+        {
+          "position": [
+            -78,
+            4
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 9
+        },
+        {
+          "position": [
+            -32,
+            -22
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 10
+        },
+        {
+          "position": [
+            -31,
+            -19
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 11
+        },
+        {
+          "position": [
+            28,
+            31
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 12
+        },
+        {
+          "position": [
+            34,
+            6
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 13
+        },
+        {
+          "position": [
+            32,
+            -9
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 14
+        },
+        {
+          "position": [
+            45,
+            -11
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 15
+        },
+        {
+          "position": [
+            38,
+            16
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 16
+        },
+        {
+          "position": [
+            85,
+            25
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 17
+        },
+        {
+          "position": [
+            94,
+            -9
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 18
+        },
+        {
+          "position": [
+            48,
+            -39
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f8e95d487f02c85aeb65a200f226b795e7a8de95604df49664962ad473d57666.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "6",
+          "index": 19
+        },
+        {
+          "position": [
+            -56,
+            15
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 20
+        },
+        {
+          "position": [
+            -29,
+            32
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 21
+        },
+        {
+          "position": [
+            -46,
+            -22
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 22
+        },
+        {
+          "position": [
+            -35,
+            -37
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 23
+        },
+        {
+          "position": [
+            -61,
+            14
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 24
+        },
+        {
+          "position": [
+            -84,
+            8
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 25
+        },
+        {
+          "position": [
+            -71,
+            32
+          ],
+          "icon": {
+            "url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/68/68f45d7aa38031ec83bd985058f943d54274ad890ebf112f4971388ad87d1d4f.png",
+            "width": 128,
+            "height": 128,
+            "anchorY": 64,
+            "mask": false
+          },
+          "team": "26",
+          "index": 26
+        }
+      ]
+    },
+    {
+      "name": "france_pass_arcs_flat",
+      "builder": [
+        "passArcLayer",
+        "pass_arc_layer"
+      ],
+      "layer": "ArcLayer",
+      "input": "france_passes",
+      "options": {
+        "x": "start_x",
+        "y": "start_y",
+        "xend": "end_x",
+        "yend": "end_y",
+        "team": "team",
+        "league": "soccer",
+        "idSystem": "team_id",
+        "tilt": 90,
+        "height": 0.3
+      },
+      "props": {
+        "id": "sdvplot-arcs",
+        "getSourcePosition": "source",
+        "getTargetPosition": "target",
+        "getSourceColor": "sourceColor",
+        "getTargetColor": "targetColor",
+        "getWidth": 2,
+        "widthUnits": "pixels",
+        "opacity": 1,
+        "getHeight": 0.3,
+        "getTilt": 90
+      },
+      "data": [
+        {
+          "source": [
+            54.68750000000001,
+            6.375
+          ],
+          "target": [
+            56.4375,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 0
+        },
+        {
+          "source": [
+            22.3125,
+            9.775000000000006
+          ],
+          "target": [
+            6.5625,
+            31.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 1
+        },
+        {
+          "source": [
+            6.5625,
+            31.875
+          ],
+          "target": [
+            16.1875,
+            43.775
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 2
+        },
+        {
+          "source": [
+            35.4375,
+            42.925
+          ],
+          "target": [
+            48.5625,
+            44.625
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 3
+        },
+        {
+          "source": [
+            47.6875,
+            45.475
+          ],
+          "target": [
+            33.6875,
+            48.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 4
+        },
+        {
+          "source": [
+            36.3125,
+            47.175
+          ],
+          "target": [
+            59.9375,
+            46.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 5
+        },
+        {
+          "source": [
+            59.9375,
+            46.325
+          ],
+          "target": [
+            56.4375,
+            46.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 6
+        },
+        {
+          "source": [
+            56.4375,
+            46.325
+          ],
+          "target": [
+            52.9375,
+            42.075
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 7
+        },
+        {
+          "source": [
+            52.9375,
+            42.075
+          ],
+          "target": [
+            38.9375,
+            27.625
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 8
+        },
+        {
+          "source": [
+            38.9375,
+            27.625
+          ],
+          "target": [
+            47.6875,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 9
+        },
+        {
+          "source": [
+            9.1875,
+            64.175
+          ],
+          "target": [
+            6.5625,
+            55.675
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 10
+        },
+        {
+          "source": [
+            7.4375,
+            55.675
+          ],
+          "target": [
+            9.1875,
+            65.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 11
+        },
+        {
+          "source": [
+            9.1875,
+            65.875
+          ],
+          "target": [
+            6.5625,
+            57.375
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 12
+        },
+        {
+          "source": [
+            22.3125,
+            65.025
+          ],
+          "target": [
+            11.8125,
+            56.525
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 13
+        },
+        {
+          "source": [
+            22.3125,
+            14.025000000000006
+          ],
+          "target": [
+            30.187499999999996,
+            21.674999999999997
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 14
+        },
+        {
+          "source": [
+            29.3125,
+            21.674999999999997
+          ],
+          "target": [
+            22.3125,
+            43.775
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 15
+        },
+        {
+          "source": [
+            47.6875,
+            58.225
+          ],
+          "target": [
+            40.6875,
+            59.925
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 16
+        },
+        {
+          "source": [
+            40.6875,
+            59.925
+          ],
+          "target": [
+            47.6875,
+            59.925
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 17
+        },
+        {
+          "source": [
+            46.8125,
+            55.675
+          ],
+          "target": [
+            38.9375,
+            33.575
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 18
+        },
+        {
+          "source": [
+            46.8125,
+            29.325000000000003
+          ],
+          "target": [
+            52.0625,
+            5.525000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 19
+        },
+        {
+          "source": [
+            49.4375,
+            8.075000000000003
+          ],
+          "target": [
+            39.8125,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 20
+        },
+        {
+          "source": [
+            38.9375,
+            17.424999999999997
+          ],
+          "target": [
+            35.4375,
+            42.075
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 21
+        },
+        {
+          "source": [
+            38.9375,
+            42.925
+          ],
+          "target": [
+            47.6875,
+            64.175
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 22
+        },
+        {
+          "source": [
+            8.3125,
+            41.225
+          ],
+          "target": [
+            28.437499999999996,
+            49.725
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 23
+        },
+        {
+          "source": [
+            66.0625,
+            26.775000000000006
+          ],
+          "target": [
+            59.0625,
+            23.375
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 24
+        },
+        {
+          "source": [
+            59.0625,
+            23.375
+          ],
+          "target": [
+            69.5625,
+            51.425
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 25
+        },
+        {
+          "source": [
+            67.8125,
+            64.175
+          ],
+          "target": [
+            53.81249999999999,
+            63.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 26
+        },
+        {
+          "source": [
+            54.68750000000001,
+            61.625
+          ],
+          "target": [
+            49.4375,
+            39.525
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 27
+        },
+        {
+          "source": [
+            50.3125,
+            28.474999999999994
+          ],
+          "target": [
+            58.1875,
+            2.125
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 28
+        },
+        {
+          "source": [
+            58.1875,
+            8.924999999999997
+          ],
+          "target": [
+            46.8125,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 29
+        },
+        {
+          "source": [
+            44.1875,
+            17.424999999999997
+          ],
+          "target": [
+            50.3125,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 30
+        },
+        {
+          "source": [
+            42.4375,
+            11.474999999999994
+          ],
+          "target": [
+            11.8125,
+            24.224999999999994
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 31
+        },
+        {
+          "source": [
+            46.8125,
+            44.625
+          ],
+          "target": [
+            48.5625,
+            65.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 32
+        },
+        {
+          "source": [
+            48.5625,
+            65.875
+          ],
+          "target": [
+            57.31249999999999,
+            63.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 33
+        },
+        {
+          "source": [
+            57.31249999999999,
+            63.325
+          ],
+          "target": [
+            45.0625,
+            60.775
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 34
+        },
+        {
+          "source": [
+            45.0625,
+            60.775
+          ],
+          "target": [
+            38.0625,
+            46.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 35
+        },
+        {
+          "source": [
+            38.0625,
+            46.325
+          ],
+          "target": [
+            39.8125,
+            26.775000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 36
+        },
+        {
+          "source": [
+            45.0625,
+            23.375
+          ],
+          "target": [
+            56.4375,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 37
+        },
+        {
+          "source": [
+            36.3125,
+            8.075000000000003
+          ],
+          "target": [
+            35.4375,
+            39.525
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 38
+        },
+        {
+          "source": [
+            31.0625,
+            65.875
+          ],
+          "target": [
+            30.187499999999996,
+            58.225
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 39
+        },
+        {
+          "source": [
+            30.187499999999996,
+            58.225
+          ],
+          "target": [
+            37.1875,
+            64.175
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 40
+        },
+        {
+          "source": [
+            38.0625,
+            62.475
+          ],
+          "target": [
+            43.3125,
+            42.075
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 41
+        },
+        {
+          "source": [
+            41.5625,
+            39.525
+          ],
+          "target": [
+            48.5625,
+            4.674999999999997
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 42
+        },
+        {
+          "source": [
+            38.9375,
+            14.875
+          ],
+          "target": [
+            24.9375,
+            22.525000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 43
+        },
+        {
+          "source": [
+            23.1875,
+            23.375
+          ],
+          "target": [
+            33.6875,
+            42.075
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 44
+        },
+        {
+          "source": [
+            38.9375,
+            42.925
+          ],
+          "target": [
+            45.9375,
+            43.775
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 45
+        },
+        {
+          "source": [
+            45.9375,
+            43.775
+          ],
+          "target": [
+            39.8125,
+            48.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 46
+        },
+        {
+          "source": [
+            79.1875,
+            2.125
+          ],
+          "target": [
+            49.4375,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 47
+        },
+        {
+          "source": [
+            49.4375,
+            21.674999999999997
+          ],
+          "target": [
+            57.31249999999999,
+            62.475
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 48
+        },
+        {
+          "source": [
+            82.6875,
+            25.075000000000003
+          ],
+          "target": [
+            93.1875,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 49
+        },
+        {
+          "source": [
+            70.4375,
+            9.775000000000006
+          ],
+          "target": [
+            80.0625,
+            20.825000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 50
+        },
+        {
+          "source": [
+            17.0625,
+            53.125
+          ],
+          "target": [
+            28.437499999999996,
+            53.975
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 51
+        },
+        {
+          "source": [
+            29.3125,
+            58.225
+          ],
+          "target": [
+            29.3125,
+            66.725
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 52
+        },
+        {
+          "source": [
+            29.3125,
+            66.725
+          ],
+          "target": [
+            38.9375,
+            59.925
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 53
+        },
+        {
+          "source": [
+            41.5625,
+            65.875
+          ],
+          "target": [
+            21.4375,
+            42.925
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 54
+        },
+        {
+          "source": [
+            49.4375,
+            47.175
+          ],
+          "target": [
+            55.5625,
+            38.675
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 55
+        },
+        {
+          "source": [
+            55.5625,
+            38.675
+          ],
+          "target": [
+            78.3125,
+            25.924999999999997
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 56
+        },
+        {
+          "source": [
+            70.4375,
+            45.475
+          ],
+          "target": [
+            73.9375,
+            65.875
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 57
+        },
+        {
+          "source": [
+            59.0625,
+            63.325
+          ],
+          "target": [
+            70.4375,
+            46.325
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 58
+        },
+        {
+          "source": [
+            37.1875,
+            53.975
+          ],
+          "target": [
+            57.31249999999999,
+            48.025
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 59
+        },
+        {
+          "source": [
+            27.5625,
+            25.075000000000003
+          ],
+          "target": [
+            27.5625,
+            54.825
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 60
+        },
+        {
+          "source": [
+            54.68750000000001,
+            46.325
+          ],
+          "target": [
+            41.5625,
+            7.224999999999994
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 61
+        },
+        {
+          "source": [
+            46.8125,
+            4.674999999999997
+          ],
+          "target": [
+            58.1875,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 62
+        },
+        {
+          "source": [
+            58.1875,
+            1.2750000000000057
+          ],
+          "target": [
+            60.81250000000001,
+            8.075000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 63
+        },
+        {
+          "source": [
+            59.9375,
+            31.025000000000006
+          ],
+          "target": [
+            13.562500000000002,
+            33.575
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 64
+        },
+        {
+          "source": [
+            15.312500000000002,
+            31.875
+          ],
+          "target": [
+            60.81250000000001,
+            5.525000000000006
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 65
+        },
+        {
+          "source": [
+            31.937499999999996,
+            61.625
+          ],
+          "target": [
+            39.8125,
+            51.425
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 66
+        },
+        {
+          "source": [
+            12.6875,
+            25.075000000000003
+          ],
+          "target": [
+            65.1875,
+            17.424999999999997
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 67
+        },
+        {
+          "source": [
+            64.3125,
+            17.424999999999997
+          ],
+          "target": [
+            63.43749999999999,
+            2.9749999999999943
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 68
+        },
+        {
+          "source": [
+            36.3125,
+            36.125
+          ],
+          "target": [
+            48.5625,
+            43.775
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 69
+        },
+        {
+          "source": [
+            45.0625,
+            43.775
+          ],
+          "target": [
+            41.5625,
+            41.225
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 70
+        },
+        {
+          "source": [
+            41.5625,
+            41.225
+          ],
+          "target": [
+            32.8125,
+            39.525
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 71
+        },
+        {
+          "source": [
+            32.8125,
+            39.525
+          ],
+          "target": [
+            56.4375,
+            25.075000000000003
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 72
+        },
+        {
+          "source": [
+            15.312500000000002,
+            39.525
+          ],
+          "target": [
+            84.4375,
+            28.474999999999994
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 73
+        },
+        {
+          "source": [
+            60.81250000000001,
+            49.725
+          ],
+          "target": [
+            60.81250000000001,
+            44.625
+          ],
+          "sourceColor": [
+            0,
+            0,
+            128,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 74
+        }
+      ]
+    },
+    {
+      "name": "france_pass_arcs_dark",
+      "builder": [
+        "passArcLayer",
+        "pass_arc_layer"
+      ],
+      "layer": "ArcLayer",
+      "input": "france_passes",
+      "options": {
+        "x": "start_x",
+        "y": "start_y",
+        "xend": "end_x",
+        "yend": "end_y",
+        "team": "team",
+        "league": "soccer",
+        "idSystem": "team_id",
+        "background": "#181a1b",
+        "width": 3
+      },
+      "props": {
+        "id": "sdvplot-arcs",
+        "getSourcePosition": "source",
+        "getTargetPosition": "target",
+        "getSourceColor": "sourceColor",
+        "getTargetColor": "targetColor",
+        "getWidth": 3,
+        "widthUnits": "pixels",
+        "opacity": 1
+      },
+      "data": [
+        {
+          "source": [
+            54.68750000000001,
+            6.375
+          ],
+          "target": [
+            56.4375,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 0
+        },
+        {
+          "source": [
+            22.3125,
+            9.775000000000006
+          ],
+          "target": [
+            6.5625,
+            31.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 1
+        },
+        {
+          "source": [
+            6.5625,
+            31.875
+          ],
+          "target": [
+            16.1875,
+            43.775
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 2
+        },
+        {
+          "source": [
+            35.4375,
+            42.925
+          ],
+          "target": [
+            48.5625,
+            44.625
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 3
+        },
+        {
+          "source": [
+            47.6875,
+            45.475
+          ],
+          "target": [
+            33.6875,
+            48.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 4
+        },
+        {
+          "source": [
+            36.3125,
+            47.175
+          ],
+          "target": [
+            59.9375,
+            46.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 5
+        },
+        {
+          "source": [
+            59.9375,
+            46.325
+          ],
+          "target": [
+            56.4375,
+            46.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 6
+        },
+        {
+          "source": [
+            56.4375,
+            46.325
+          ],
+          "target": [
+            52.9375,
+            42.075
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 7
+        },
+        {
+          "source": [
+            52.9375,
+            42.075
+          ],
+          "target": [
+            38.9375,
+            27.625
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 8
+        },
+        {
+          "source": [
+            38.9375,
+            27.625
+          ],
+          "target": [
+            47.6875,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 9
+        },
+        {
+          "source": [
+            9.1875,
+            64.175
+          ],
+          "target": [
+            6.5625,
+            55.675
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 10
+        },
+        {
+          "source": [
+            7.4375,
+            55.675
+          ],
+          "target": [
+            9.1875,
+            65.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 11
+        },
+        {
+          "source": [
+            9.1875,
+            65.875
+          ],
+          "target": [
+            6.5625,
+            57.375
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 12
+        },
+        {
+          "source": [
+            22.3125,
+            65.025
+          ],
+          "target": [
+            11.8125,
+            56.525
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 13
+        },
+        {
+          "source": [
+            22.3125,
+            14.025000000000006
+          ],
+          "target": [
+            30.187499999999996,
+            21.674999999999997
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 14
+        },
+        {
+          "source": [
+            29.3125,
+            21.674999999999997
+          ],
+          "target": [
+            22.3125,
+            43.775
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 15
+        },
+        {
+          "source": [
+            47.6875,
+            58.225
+          ],
+          "target": [
+            40.6875,
+            59.925
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 16
+        },
+        {
+          "source": [
+            40.6875,
+            59.925
+          ],
+          "target": [
+            47.6875,
+            59.925
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 17
+        },
+        {
+          "source": [
+            46.8125,
+            55.675
+          ],
+          "target": [
+            38.9375,
+            33.575
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 18
+        },
+        {
+          "source": [
+            46.8125,
+            29.325000000000003
+          ],
+          "target": [
+            52.0625,
+            5.525000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 19
+        },
+        {
+          "source": [
+            49.4375,
+            8.075000000000003
+          ],
+          "target": [
+            39.8125,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 20
+        },
+        {
+          "source": [
+            38.9375,
+            17.424999999999997
+          ],
+          "target": [
+            35.4375,
+            42.075
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 21
+        },
+        {
+          "source": [
+            38.9375,
+            42.925
+          ],
+          "target": [
+            47.6875,
+            64.175
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 22
+        },
+        {
+          "source": [
+            8.3125,
+            41.225
+          ],
+          "target": [
+            28.437499999999996,
+            49.725
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 23
+        },
+        {
+          "source": [
+            66.0625,
+            26.775000000000006
+          ],
+          "target": [
+            59.0625,
+            23.375
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 24
+        },
+        {
+          "source": [
+            59.0625,
+            23.375
+          ],
+          "target": [
+            69.5625,
+            51.425
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 25
+        },
+        {
+          "source": [
+            67.8125,
+            64.175
+          ],
+          "target": [
+            53.81249999999999,
+            63.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 26
+        },
+        {
+          "source": [
+            54.68750000000001,
+            61.625
+          ],
+          "target": [
+            49.4375,
+            39.525
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 27
+        },
+        {
+          "source": [
+            50.3125,
+            28.474999999999994
+          ],
+          "target": [
+            58.1875,
+            2.125
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 28
+        },
+        {
+          "source": [
+            58.1875,
+            8.924999999999997
+          ],
+          "target": [
+            46.8125,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 29
+        },
+        {
+          "source": [
+            44.1875,
+            17.424999999999997
+          ],
+          "target": [
+            50.3125,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 30
+        },
+        {
+          "source": [
+            42.4375,
+            11.474999999999994
+          ],
+          "target": [
+            11.8125,
+            24.224999999999994
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 31
+        },
+        {
+          "source": [
+            46.8125,
+            44.625
+          ],
+          "target": [
+            48.5625,
+            65.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 32
+        },
+        {
+          "source": [
+            48.5625,
+            65.875
+          ],
+          "target": [
+            57.31249999999999,
+            63.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 33
+        },
+        {
+          "source": [
+            57.31249999999999,
+            63.325
+          ],
+          "target": [
+            45.0625,
+            60.775
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 34
+        },
+        {
+          "source": [
+            45.0625,
+            60.775
+          ],
+          "target": [
+            38.0625,
+            46.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 35
+        },
+        {
+          "source": [
+            38.0625,
+            46.325
+          ],
+          "target": [
+            39.8125,
+            26.775000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 36
+        },
+        {
+          "source": [
+            45.0625,
+            23.375
+          ],
+          "target": [
+            56.4375,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 37
+        },
+        {
+          "source": [
+            36.3125,
+            8.075000000000003
+          ],
+          "target": [
+            35.4375,
+            39.525
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 38
+        },
+        {
+          "source": [
+            31.0625,
+            65.875
+          ],
+          "target": [
+            30.187499999999996,
+            58.225
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 39
+        },
+        {
+          "source": [
+            30.187499999999996,
+            58.225
+          ],
+          "target": [
+            37.1875,
+            64.175
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 40
+        },
+        {
+          "source": [
+            38.0625,
+            62.475
+          ],
+          "target": [
+            43.3125,
+            42.075
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 41
+        },
+        {
+          "source": [
+            41.5625,
+            39.525
+          ],
+          "target": [
+            48.5625,
+            4.674999999999997
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 42
+        },
+        {
+          "source": [
+            38.9375,
+            14.875
+          ],
+          "target": [
+            24.9375,
+            22.525000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 43
+        },
+        {
+          "source": [
+            23.1875,
+            23.375
+          ],
+          "target": [
+            33.6875,
+            42.075
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 44
+        },
+        {
+          "source": [
+            38.9375,
+            42.925
+          ],
+          "target": [
+            45.9375,
+            43.775
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 45
+        },
+        {
+          "source": [
+            45.9375,
+            43.775
+          ],
+          "target": [
+            39.8125,
+            48.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 46
+        },
+        {
+          "source": [
+            79.1875,
+            2.125
+          ],
+          "target": [
+            49.4375,
+            14.025000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 47
+        },
+        {
+          "source": [
+            49.4375,
+            21.674999999999997
+          ],
+          "target": [
+            57.31249999999999,
+            62.475
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 48
+        },
+        {
+          "source": [
+            82.6875,
+            25.075000000000003
+          ],
+          "target": [
+            93.1875,
+            12.325000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 49
+        },
+        {
+          "source": [
+            70.4375,
+            9.775000000000006
+          ],
+          "target": [
+            80.0625,
+            20.825000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 50
+        },
+        {
+          "source": [
+            17.0625,
+            53.125
+          ],
+          "target": [
+            28.437499999999996,
+            53.975
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 51
+        },
+        {
+          "source": [
+            29.3125,
+            58.225
+          ],
+          "target": [
+            29.3125,
+            66.725
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 52
+        },
+        {
+          "source": [
+            29.3125,
+            66.725
+          ],
+          "target": [
+            38.9375,
+            59.925
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 53
+        },
+        {
+          "source": [
+            41.5625,
+            65.875
+          ],
+          "target": [
+            21.4375,
+            42.925
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 54
+        },
+        {
+          "source": [
+            49.4375,
+            47.175
+          ],
+          "target": [
+            55.5625,
+            38.675
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 55
+        },
+        {
+          "source": [
+            55.5625,
+            38.675
+          ],
+          "target": [
+            78.3125,
+            25.924999999999997
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 56
+        },
+        {
+          "source": [
+            70.4375,
+            45.475
+          ],
+          "target": [
+            73.9375,
+            65.875
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 57
+        },
+        {
+          "source": [
+            59.0625,
+            63.325
+          ],
+          "target": [
+            70.4375,
+            46.325
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 58
+        },
+        {
+          "source": [
+            37.1875,
+            53.975
+          ],
+          "target": [
+            57.31249999999999,
+            48.025
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 59
+        },
+        {
+          "source": [
+            27.5625,
+            25.075000000000003
+          ],
+          "target": [
+            27.5625,
+            54.825
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 60
+        },
+        {
+          "source": [
+            54.68750000000001,
+            46.325
+          ],
+          "target": [
+            41.5625,
+            7.224999999999994
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 61
+        },
+        {
+          "source": [
+            46.8125,
+            4.674999999999997
+          ],
+          "target": [
+            58.1875,
+            1.2750000000000057
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 62
+        },
+        {
+          "source": [
+            58.1875,
+            1.2750000000000057
+          ],
+          "target": [
+            60.81250000000001,
+            8.075000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 63
+        },
+        {
+          "source": [
+            59.9375,
+            31.025000000000006
+          ],
+          "target": [
+            13.562500000000002,
+            33.575
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 64
+        },
+        {
+          "source": [
+            15.312500000000002,
+            31.875
+          ],
+          "target": [
+            60.81250000000001,
+            5.525000000000006
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 65
+        },
+        {
+          "source": [
+            31.937499999999996,
+            61.625
+          ],
+          "target": [
+            39.8125,
+            51.425
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 66
+        },
+        {
+          "source": [
+            12.6875,
+            25.075000000000003
+          ],
+          "target": [
+            65.1875,
+            17.424999999999997
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 67
+        },
+        {
+          "source": [
+            64.3125,
+            17.424999999999997
+          ],
+          "target": [
+            63.43749999999999,
+            2.9749999999999943
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 68
+        },
+        {
+          "source": [
+            36.3125,
+            36.125
+          ],
+          "target": [
+            48.5625,
+            43.775
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 69
+        },
+        {
+          "source": [
+            45.0625,
+            43.775
+          ],
+          "target": [
+            41.5625,
+            41.225
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 70
+        },
+        {
+          "source": [
+            41.5625,
+            41.225
+          ],
+          "target": [
+            32.8125,
+            39.525
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 71
+        },
+        {
+          "source": [
+            32.8125,
+            39.525
+          ],
+          "target": [
+            56.4375,
+            25.075000000000003
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 72
+        },
+        {
+          "source": [
+            15.312500000000002,
+            39.525
+          ],
+          "target": [
+            84.4375,
+            28.474999999999994
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 73
+        },
+        {
+          "source": [
+            60.81250000000001,
+            49.725
+          ],
+          "target": [
+            60.81250000000001,
+            44.625
+          ],
+          "sourceColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "targetColor": [
+            200,
+            230,
+            216,
+            255
+          ],
+          "team": "478",
+          "index": 74
+        }
+      ]
+    },
+    {
+      "name": "nhl_shots_to_goal_dark",
+      "builder": [
+        "passArcLayer",
+        "pass_arc_layer"
+      ],
+      "layer": "ArcLayer",
+      "input": "nhl_shots",
+      "options": {
+        "x": "x",
+        "y": "y",
+        "xend": "net_x",
+        "yend": "net_y",
+        "team": "team",
+        "league": "nhl",
+        "background": "#000000"
+      },
+      "props": {
+        "id": "sdvplot-arcs",
+        "getSourcePosition": "source",
+        "getTargetPosition": "target",
+        "getSourceColor": "sourceColor",
+        "getTargetColor": "targetColor",
+        "getWidth": 2,
+        "widthUnits": "pixels",
+        "opacity": 1
+      },
+      "data": [
+        {
+          "source": [
+            82,
+            -3
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 0
+        },
+        {
+          "source": [
+            -81,
+            30
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 1
+        },
+        {
+          "source": [
+            64,
+            4
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 2
+        },
+        {
+          "source": [
+            -69,
+            31
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 3
+        },
+        {
+          "source": [
+            -83,
+            -6
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 4
+        },
+        {
+          "source": [
+            77,
+            -2
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 5
+        },
+        {
+          "source": [
+            -75,
+            19
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 6
+        },
+        {
+          "source": [
+            -45,
+            -25
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 7
+        },
+        {
+          "source": [
+            -34,
+            -26
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 8
+        },
+        {
+          "source": [
+            -78,
+            4
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 9
+        },
+        {
+          "source": [
+            -32,
+            -22
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 10
+        },
+        {
+          "source": [
+            -31,
+            -19
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 11
+        },
+        {
+          "source": [
+            28,
+            31
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 12
+        },
+        {
+          "source": [
+            34,
+            6
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 13
+        },
+        {
+          "source": [
+            32,
+            -9
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 14
+        },
+        {
+          "source": [
+            45,
+            -11
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 15
+        },
+        {
+          "source": [
+            38,
+            16
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 16
+        },
+        {
+          "source": [
+            85,
+            25
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 17
+        },
+        {
+          "source": [
+            94,
+            -9
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 18
+        },
+        {
+          "source": [
+            48,
+            -39
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "team": "6",
+          "index": 19
+        },
+        {
+          "source": [
+            -56,
+            15
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 20
+        },
+        {
+          "source": [
+            -29,
+            32
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 21
+        },
+        {
+          "source": [
+            -46,
+            -22
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 22
+        },
+        {
+          "source": [
+            -35,
+            -37
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 23
+        },
+        {
+          "source": [
+            -61,
+            14
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 24
+        },
+        {
+          "source": [
+            -84,
+            8
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 25
+        },
+        {
+          "source": [
+            -71,
+            32
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 26
+        }
+      ]
+    },
+    {
+      "name": "nhl_shots_to_goal_secondary",
+      "builder": [
+        "passArcLayer",
+        "pass_arc_layer"
+      ],
+      "layer": "ArcLayer",
+      "input": "nhl_shots",
+      "options": {
+        "x": "x",
+        "y": "y",
+        "xend": "net_x",
+        "yend": "net_y",
+        "team": "team",
+        "league": "nhl",
+        "which": "secondary"
+      },
+      "props": {
+        "id": "sdvplot-arcs",
+        "getSourcePosition": "source",
+        "getTargetPosition": "target",
+        "getSourceColor": "sourceColor",
+        "getTargetColor": "targetColor",
+        "getWidth": 2,
+        "widthUnits": "pixels",
+        "opacity": 1
+      },
+      "data": [
+        {
+          "source": [
+            82,
+            -3
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 0
+        },
+        {
+          "source": [
+            -81,
+            30
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 1
+        },
+        {
+          "source": [
+            64,
+            4
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 2
+        },
+        {
+          "source": [
+            -69,
+            31
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 3
+        },
+        {
+          "source": [
+            -83,
+            -6
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 4
+        },
+        {
+          "source": [
+            77,
+            -2
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 5
+        },
+        {
+          "source": [
+            -75,
+            19
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 6
+        },
+        {
+          "source": [
+            -45,
+            -25
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 7
+        },
+        {
+          "source": [
+            -34,
+            -26
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 8
+        },
+        {
+          "source": [
+            -78,
+            4
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 9
+        },
+        {
+          "source": [
+            -32,
+            -22
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 10
+        },
+        {
+          "source": [
+            -31,
+            -19
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 11
+        },
+        {
+          "source": [
+            28,
+            31
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 12
+        },
+        {
+          "source": [
+            34,
+            6
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 13
+        },
+        {
+          "source": [
+            32,
+            -9
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 14
+        },
+        {
+          "source": [
+            45,
+            -11
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 15
+        },
+        {
+          "source": [
+            38,
+            16
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 16
+        },
+        {
+          "source": [
+            85,
+            25
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 17
+        },
+        {
+          "source": [
+            94,
+            -9
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 18
+        },
+        {
+          "source": [
+            48,
+            -39
+          ],
+          "target": [
+            89,
+            0
+          ],
+          "sourceColor": [
+            255,
+            76,
+            0,
+            255
+          ],
+          "targetColor": [
+            0,
+            32,
+            91,
+            255
+          ],
+          "team": "6",
+          "index": 19
+        },
+        {
+          "source": [
+            -56,
+            15
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 20
+        },
+        {
+          "source": [
+            -29,
+            32
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 21
+        },
+        {
+          "source": [
+            -46,
+            -22
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 22
+        },
+        {
+          "source": [
+            -35,
+            -37
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 23
+        },
+        {
+          "source": [
+            -61,
+            14
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 24
+        },
+        {
+          "source": [
+            -84,
+            8
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 25
+        },
+        {
+          "source": [
+            -71,
+            32
+          ],
+          "target": [
+            -89,
+            0
+          ],
+          "sourceColor": [
+            0,
+            45,
+            98,
+            255
+          ],
+          "targetColor": [
+            229,
+            25,
+            55,
+            255
+          ],
+          "team": "26",
+          "index": 26
+        }
+      ]
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "nhl_rink",
+      "sport": "hockey",
+      "league": "nhl",
+      "props": {
+        "id": "sdvplot-surface",
+        "getPolygon": "polygon",
+        "getFillColor": "fillColor",
+        "coordinateSystem": "cartesian",
+        "filled": true,
+        "stroked": false
+      },
+      "fills": [
+        [
+          0,
+          0,
+          0,
+          255
+        ],
+        [
+          0,
+          51,
+          160,
+          255
+        ],
+        [
+          165,
+          172,
+          175,
+          255
+        ],
+        [
+          165,
+          172,
+          175,
+          77
+        ],
+        [
+          200,
+          16,
+          46,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          65,
+          182,
+          230,
+          255
+        ]
+      ],
+      "extent_x": [
+        -100.4167,
+        100.4167
+      ],
+      "extent_y": null
+    },
+    {
+      "name": "fifa_pitch_105x68",
+      "sport": "soccer",
+      "league": "fifa",
+      "pitch": {
+        "pitch_length": 105,
+        "pitch_width": 68
+      },
+      "props": {
+        "id": "sdvplot-surface",
+        "getPolygon": "polygon",
+        "getFillColor": "fillColor",
+        "coordinateSystem": "cartesian",
+        "filled": true,
+        "stroked": false
+      },
+      "fills": [
+        [
+          25,
+          95,
+          12,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ]
+      ],
+      "extent_x": [
+        -55.2,
+        55.2
+      ],
+      "extent_y": [
+        -36.7,
+        36.7
+      ]
+    }
+  ],
+  "palettes": [
+    {
+      "league": "nba",
+      "background": "#181a1b",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#c8102e",
+        "#ce0e2d",
+        "#0c2340",
+        "#12173f",
+        "#552583",
+        "#98002e",
+        "#00471b",
+        "#266092",
+        "#000000",
+        "#1d428a",
+        "#0150b5",
+        "#008348",
+        "#1d428a",
+        "#29127a",
+        "#e03a3e",
+        "#5a2d81",
+        "#000000",
+        "#007ac1",
+        "#4e008e",
+        "#e31837",
+        "#d91244",
+        "#5d76a9",
+        "#0a2240",
+        "#008ca8",
+        "#ce1141",
+        "#860038",
+        "#0064b1",
+        "#0e2240",
+        "#1d428a",
+        "#fdb927"
+      ],
+      "alts": [
+        "#fdb927",
+        "#000000",
+        "#ffd520",
+        "#c8102e",
+        "#fdb927",
+        "#000000",
+        "#eee1c6",
+        "#79bc43",
+        "#ffffff",
+        "#f58426",
+        "#9ca0a3",
+        "#ffffff",
+        "#e01234",
+        "#e56020",
+        "#000000",
+        "#6a7a82",
+        "#c4ced4",
+        "#ef3b24",
+        "#79a3dc",
+        "#002b5c",
+        "#000000",
+        "#12173f",
+        "#b4975a",
+        "#1d1060",
+        "#000000",
+        "#bc945c",
+        "#bbc4ca",
+        "#fec524",
+        "#c8102e",
+        "#1d428a"
+      ],
+      "expected": [
+        "#fdb927",
+        "#ce0e2d",
+        "#0071a1",
+        "#656882",
+        "#7d50b6",
+        "#b24062",
+        "#eee1c6",
+        "#79bc43",
+        "#5c837f",
+        "#f58426",
+        "#4e68b7",
+        "#008348",
+        "#1c62d2",
+        "#005ced",
+        "#ff6161",
+        "#9f4f9d",
+        "#c4ced4",
+        "#008fdf",
+        "#a63dc0",
+        "#ff0056",
+        "#d1005b",
+        "#8087bd",
+        "#b4975a",
+        "#0d92ac",
+        "#b3442b",
+        "#9f514e",
+        "#9999f3",
+        "#007e6d",
+        "#ad74a5",
+        "#ffd165"
+      ]
+    },
+    {
+      "league": "nba",
+      "background": "#000000",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#c8102e",
+        "#ce0e2d",
+        "#0c2340",
+        "#12173f",
+        "#552583",
+        "#98002e",
+        "#00471b",
+        "#266092",
+        "#000000",
+        "#1d428a",
+        "#0150b5",
+        "#008348",
+        "#1d428a",
+        "#29127a",
+        "#e03a3e",
+        "#5a2d81",
+        "#000000",
+        "#007ac1",
+        "#4e008e",
+        "#e31837",
+        "#d91244",
+        "#5d76a9",
+        "#0a2240",
+        "#008ca8",
+        "#ce1141",
+        "#860038",
+        "#0064b1",
+        "#0e2240",
+        "#1d428a",
+        "#fdb927"
+      ],
+      "alts": [
+        "#fdb927",
+        "#000000",
+        "#ffd520",
+        "#c8102e",
+        "#fdb927",
+        "#000000",
+        "#eee1c6",
+        "#79bc43",
+        "#ffffff",
+        "#f58426",
+        "#9ca0a3",
+        "#ffffff",
+        "#e01234",
+        "#e56020",
+        "#000000",
+        "#6a7a82",
+        "#c4ced4",
+        "#ef3b24",
+        "#79a3dc",
+        "#002b5c",
+        "#000000",
+        "#12173f",
+        "#b4975a",
+        "#1d1060",
+        "#000000",
+        "#bc945c",
+        "#bbc4ca",
+        "#fec524",
+        "#c8102e",
+        "#1d428a"
+      ],
+      "expected": [
+        "#c8102e",
+        "#666666",
+        "#ffd520",
+        "#57529b",
+        "#7246ab",
+        "#a7264d",
+        "#eee1c6",
+        "#266092",
+        "#967f95",
+        "#f58426",
+        "#4781d1",
+        "#008348",
+        "#005cc1",
+        "#0051d8",
+        "#ff6161",
+        "#9f4f9d",
+        "#c4ced4",
+        "#ef3b24",
+        "#9025aa",
+        "#ff0053",
+        "#de0064",
+        "#8780b8",
+        "#b4975a",
+        "#008ca8",
+        "#ee6180",
+        "#924462",
+        "#00a0e0",
+        "#00666a",
+        "#8780ea",
+        "#ffb31e"
+      ]
+    },
+    {
+      "league": "nba",
+      "background": "#ffffff",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#c8102e",
+        "#ce0e2d",
+        "#0c2340",
+        "#12173f",
+        "#552583",
+        "#98002e",
+        "#00471b",
+        "#266092",
+        "#000000",
+        "#1d428a",
+        "#0150b5",
+        "#008348",
+        "#1d428a",
+        "#29127a",
+        "#e03a3e",
+        "#5a2d81",
+        "#000000",
+        "#007ac1",
+        "#4e008e",
+        "#e31837",
+        "#d91244",
+        "#5d76a9",
+        "#0a2240",
+        "#008ca8",
+        "#ce1141",
+        "#860038",
+        "#0064b1",
+        "#0e2240",
+        "#1d428a",
+        "#fdb927"
+      ],
+      "alts": [
+        "#fdb927",
+        "#000000",
+        "#ffd520",
+        "#c8102e",
+        "#fdb927",
+        "#000000",
+        "#eee1c6",
+        "#79bc43",
+        "#ffffff",
+        "#f58426",
+        "#9ca0a3",
+        "#ffffff",
+        "#e01234",
+        "#e56020",
+        "#000000",
+        "#6a7a82",
+        "#c4ced4",
+        "#ef3b24",
+        "#79a3dc",
+        "#002b5c",
+        "#000000",
+        "#12173f",
+        "#b4975a",
+        "#1d1060",
+        "#000000",
+        "#bc945c",
+        "#bbc4ca",
+        "#fec524",
+        "#c8102e",
+        "#1d428a"
+      ],
+      "expected": [
+        "#c8102e",
+        "#000000",
+        "#0c2340",
+        "#000d41",
+        "#552583",
+        "#98002e",
+        "#00471b",
+        "#266092",
+        "#8c8c8c",
+        "#1d428a",
+        "#0051bb",
+        "#008348",
+        "#594576",
+        "#e56020",
+        "#db5953",
+        "#893b88",
+        "#261d00",
+        "#0085d3",
+        "#4e008e",
+        "#ff003c",
+        "#f3005b",
+        "#7d89bc",
+        "#ab8f56",
+        "#008ca8",
+        "#d84167",
+        "#7c003c",
+        "#6c6abd",
+        "#b28a19",
+        "#00085c",
+        "#d97e00"
+      ]
+    },
+    {
+      "league": "nfl",
+      "background": "#181a1b",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "33",
+        "34",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#a71930",
+        "#4495d2",
+        "#002c5f",
+        "#e31837",
+        "#000000",
+        "#003594",
+        "#008e97",
+        "#4f2683",
+        "#002244",
+        "#d3bc8d",
+        "#0b2265",
+        "#00338d",
+        "#003f2d",
+        "#004c54",
+        "#97233f",
+        "#000000",
+        "#007bc7",
+        "#aa0000",
+        "#002244",
+        "#a71930",
+        "#5a1414",
+        "#0085ca",
+        "#0b162a",
+        "#006778",
+        "#241773",
+        "#03202f",
+        "#fb4f14",
+        "#ff3c00",
+        "#002244",
+        "#002244",
+        "#0076b6",
+        "#203731"
+      ],
+      "alts": [
+        "#000000",
+        "#d50a0a",
+        "#a5acaf",
+        "#ffb612",
+        "#a5acaf",
+        "#ffd100",
+        "#f58220",
+        "#ffc62f",
+        "#c60c30",
+        "#000000",
+        "#a71930",
+        "#c60c30",
+        "#000000",
+        "#a5acaf",
+        "#000000",
+        "#ffb612",
+        "#ffc20e",
+        "#b3995d",
+        "#69be28",
+        "#322f2b",
+        "#ffb612",
+        "#000000",
+        "#e64100",
+        "#000000",
+        "#9e7c0c",
+        "#a71930",
+        "#000000",
+        "#311d00",
+        "#b0b7bc",
+        "#fb4f14",
+        "#b0b7bc",
+        "#ffb612"
+      ],
+      "expected": [
+        "#b43c4f",
+        "#4495d2",
+        "#a5acaf",
+        "#e31837",
+        "#666a6c",
+        "#ffd100",
+        "#008e97",
+        "#854baf",
+        "#63699b",
+        "#d3bc8d",
+        "#4063ba",
+        "#3c5cd4",
+        "#28725a",
+        "#006e8d",
+        "#965259",
+        "#00763b",
+        "#0090f1",
+        "#c23500",
+        "#69be28",
+        "#cc004f",
+        "#a34c26",
+        "#95b1ff",
+        "#ab3e92",
+        "#00afd5",
+        "#9e7c0c",
+        "#626b46",
+        "#ff5509",
+        "#ff0012",
+        "#8d5c8c",
+        "#898bf7",
+        "#9a83cb",
+        "#00a48b"
+      ]
+    },
+    {
+      "league": "nfl",
+      "background": "#000000",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "33",
+        "34",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#a71930",
+        "#4495d2",
+        "#002c5f",
+        "#e31837",
+        "#000000",
+        "#003594",
+        "#008e97",
+        "#4f2683",
+        "#002244",
+        "#d3bc8d",
+        "#0b2265",
+        "#00338d",
+        "#003f2d",
+        "#004c54",
+        "#97233f",
+        "#000000",
+        "#007bc7",
+        "#aa0000",
+        "#002244",
+        "#a71930",
+        "#5a1414",
+        "#0085ca",
+        "#0b162a",
+        "#006778",
+        "#241773",
+        "#03202f",
+        "#fb4f14",
+        "#ff3c00",
+        "#002244",
+        "#002244",
+        "#0076b6",
+        "#203731"
+      ],
+      "alts": [
+        "#000000",
+        "#d50a0a",
+        "#a5acaf",
+        "#ffb612",
+        "#a5acaf",
+        "#ffd100",
+        "#f58220",
+        "#ffc62f",
+        "#c60c30",
+        "#000000",
+        "#a71930",
+        "#c60c30",
+        "#000000",
+        "#a5acaf",
+        "#000000",
+        "#ffb612",
+        "#ffc20e",
+        "#b3995d",
+        "#69be28",
+        "#322f2b",
+        "#ffb612",
+        "#000000",
+        "#e64100",
+        "#000000",
+        "#9e7c0c",
+        "#a71930",
+        "#000000",
+        "#311d00",
+        "#b0b7bc",
+        "#fb4f14",
+        "#b0b7bc",
+        "#ffb612"
+      ],
+      "expected": [
+        "#ab243a",
+        "#4495d2",
+        "#a5acaf",
+        "#e31837",
+        "#5b5954",
+        "#ffd100",
+        "#008e97",
+        "#7a41a4",
+        "#006190",
+        "#d3bc8d",
+        "#4f539f",
+        "#0054c7",
+        "#336557",
+        "#537c91",
+        "#9f395f",
+        "#006937",
+        "#0079d2",
+        "#b62900",
+        "#69be28",
+        "#a24732",
+        "#8e4a00",
+        "#8ba0f1",
+        "#9f3387",
+        "#00b0da",
+        "#9e7c0c",
+        "#615b83",
+        "#fb4f14",
+        "#eb6f00",
+        "#804670",
+        "#9a79e2",
+        "#a292c0",
+        "#009276"
+      ]
+    },
+    {
+      "league": "nfl",
+      "background": "#ffffff",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "33",
+        "34",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#a71930",
+        "#4495d2",
+        "#002c5f",
+        "#e31837",
+        "#000000",
+        "#003594",
+        "#008e97",
+        "#4f2683",
+        "#002244",
+        "#d3bc8d",
+        "#0b2265",
+        "#00338d",
+        "#003f2d",
+        "#004c54",
+        "#97233f",
+        "#000000",
+        "#007bc7",
+        "#aa0000",
+        "#002244",
+        "#a71930",
+        "#5a1414",
+        "#0085ca",
+        "#0b162a",
+        "#006778",
+        "#241773",
+        "#03202f",
+        "#fb4f14",
+        "#ff3c00",
+        "#002244",
+        "#002244",
+        "#0076b6",
+        "#203731"
+      ],
+      "alts": [
+        "#000000",
+        "#d50a0a",
+        "#a5acaf",
+        "#ffb612",
+        "#a5acaf",
+        "#ffd100",
+        "#f58220",
+        "#ffc62f",
+        "#c60c30",
+        "#000000",
+        "#a71930",
+        "#c60c30",
+        "#000000",
+        "#a5acaf",
+        "#000000",
+        "#ffb612",
+        "#ffc20e",
+        "#b3995d",
+        "#69be28",
+        "#322f2b",
+        "#ffb612",
+        "#000000",
+        "#e64100",
+        "#000000",
+        "#9e7c0c",
+        "#a71930",
+        "#000000",
+        "#311d00",
+        "#b0b7bc",
+        "#fb4f14",
+        "#b0b7bc",
+        "#ffb612"
+      ],
+      "expected": [
+        "#a71930",
+        "#4495d2",
+        "#002c5f",
+        "#e31837",
+        "#000000",
+        "#003594",
+        "#008e97",
+        "#b28b21",
+        "#001830",
+        "#82703f",
+        "#130c4c",
+        "#524186",
+        "#003f2d",
+        "#8c9295",
+        "#95304a",
+        "#250016",
+        "#0068b5",
+        "#aa0000",
+        "#59a222",
+        "#710000",
+        "#561313",
+        "#006590",
+        "#e64100",
+        "#005b63",
+        "#00076e",
+        "#373737",
+        "#ff0021",
+        "#311d00",
+        "#42294b",
+        "#615c85",
+        "#7e7ec6",
+        "#566557"
+      ]
+    },
+    {
+      "league": "mlb",
+      "background": "#181a1b",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#df4601",
+        "#132448",
+        "#003831",
+        "#005c5c",
+        "#003278",
+        "#134a8e",
+        "#0c2340",
+        "#0e3386",
+        "#c6011f",
+        "#002d62",
+        "#005a9c",
+        "#0d2b56",
+        "#ab0003",
+        "#002d72",
+        "#e81828",
+        "#000000",
+        "#be0a14",
+        "#2f241d",
+        "#000000",
+        "#33006f",
+        "#00a3e0",
+        "#aa182c",
+        "#ba0021",
+        "#092c5c",
+        "#000000",
+        "#002b5c",
+        "#0a2240",
+        "#004687",
+        "#13294b",
+        "#031f40"
+      ],
+      "alts": [
+        "#000000",
+        "#c4ced4",
+        "#efb21e",
+        "#0c2c56",
+        "#c0111f",
+        "#6cace5",
+        "#ba0c2f",
+        "#cc3433",
+        "#ffffff",
+        "#eb6e1f",
+        "#ffffff",
+        "#bd3039",
+        "#11225b",
+        "#ff5910",
+        "#003278",
+        "#fdb827",
+        "#001541",
+        "#ffc425",
+        "#fd5a1e",
+        "#000000",
+        "#000000",
+        "#000000",
+        "#c4ced4",
+        "#8fbce6",
+        "#c4ced4",
+        "#e31937",
+        "#ff4713",
+        "#7ab2dd",
+        "#ffc72c",
+        "#e20e32"
+      ],
+      "expected": [
+        "#df4601",
+        "#c4ced4",
+        "#efb21e",
+        "#267474",
+        "#4c70a0",
+        "#6cace5",
+        "#c4304e",
+        "#0065c3",
+        "#bf6150",
+        "#725da9",
+        "#778ddc",
+        "#865583",
+        "#cc0d2a",
+        "#515ad9",
+        "#f40020",
+        "#007857",
+        "#b2431a",
+        "#806720",
+        "#0087aa",
+        "#666666",
+        "#00beea",
+        "#ff5d5f",
+        "#e97087",
+        "#9a91bf",
+        "#5a7458",
+        "#b160ad",
+        "#00a4ac",
+        "#a685eb",
+        "#a9406e",
+        "#9644b3"
+      ]
+    },
+    {
+      "league": "mlb",
+      "background": "#000000",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#df4601",
+        "#132448",
+        "#003831",
+        "#005c5c",
+        "#003278",
+        "#134a8e",
+        "#0c2340",
+        "#0e3386",
+        "#c6011f",
+        "#002d62",
+        "#005a9c",
+        "#0d2b56",
+        "#ab0003",
+        "#002d72",
+        "#e81828",
+        "#000000",
+        "#be0a14",
+        "#2f241d",
+        "#000000",
+        "#33006f",
+        "#00a3e0",
+        "#aa182c",
+        "#ba0021",
+        "#092c5c",
+        "#000000",
+        "#002b5c",
+        "#0a2240",
+        "#004687",
+        "#13294b",
+        "#031f40"
+      ],
+      "alts": [
+        "#000000",
+        "#c4ced4",
+        "#efb21e",
+        "#0c2c56",
+        "#c0111f",
+        "#6cace5",
+        "#ba0c2f",
+        "#cc3433",
+        "#ffffff",
+        "#eb6e1f",
+        "#ffffff",
+        "#bd3039",
+        "#11225b",
+        "#ff5910",
+        "#003278",
+        "#fdb827",
+        "#001541",
+        "#ffc425",
+        "#fd5a1e",
+        "#000000",
+        "#000000",
+        "#000000",
+        "#c4ced4",
+        "#8fbce6",
+        "#c4ced4",
+        "#e31937",
+        "#ff4713",
+        "#7ab2dd",
+        "#ffc72c",
+        "#e20e32"
+      ],
+      "expected": [
+        "#df4601",
+        "#c4ced4",
+        "#efb21e",
+        "#0d6464",
+        "#c0111f",
+        "#6cace5",
+        "#005f8a",
+        "#3d54ad",
+        "#ff2936",
+        "#794e96",
+        "#447dc9",
+        "#834971",
+        "#a53600",
+        "#0056d1",
+        "#ff545d",
+        "#006d4e",
+        "#c00040",
+        "#735811",
+        "#008ba5",
+        "#666666",
+        "#00beea",
+        "#9c3a40",
+        "#e2694b",
+        "#5d557f",
+        "#595c3c",
+        "#7149b6",
+        "#007eed",
+        "#8b87b9",
+        "#a58bde",
+        "#9c367e"
+      ]
+    },
+    {
+      "league": "mlb",
+      "background": "#ffffff",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#df4601",
+        "#132448",
+        "#003831",
+        "#005c5c",
+        "#003278",
+        "#134a8e",
+        "#0c2340",
+        "#0e3386",
+        "#c6011f",
+        "#002d62",
+        "#005a9c",
+        "#0d2b56",
+        "#ab0003",
+        "#002d72",
+        "#e81828",
+        "#000000",
+        "#be0a14",
+        "#2f241d",
+        "#000000",
+        "#33006f",
+        "#00a3e0",
+        "#aa182c",
+        "#ba0021",
+        "#092c5c",
+        "#000000",
+        "#002b5c",
+        "#0a2240",
+        "#004687",
+        "#13294b",
+        "#031f40"
+      ],
+      "alts": [
+        "#000000",
+        "#c4ced4",
+        "#efb21e",
+        "#0c2c56",
+        "#c0111f",
+        "#6cace5",
+        "#ba0c2f",
+        "#cc3433",
+        "#ffffff",
+        "#eb6e1f",
+        "#ffffff",
+        "#bd3039",
+        "#11225b",
+        "#ff5910",
+        "#003278",
+        "#fdb827",
+        "#001541",
+        "#ffc425",
+        "#fd5a1e",
+        "#000000",
+        "#000000",
+        "#000000",
+        "#c4ced4",
+        "#8fbce6",
+        "#c4ced4",
+        "#e31937",
+        "#ff4713",
+        "#7ab2dd",
+        "#ffc72c",
+        "#e20e32"
+      ],
+      "expected": [
+        "#df4601",
+        "#132448",
+        "#003831",
+        "#146666",
+        "#003278",
+        "#5c92c3",
+        "#ba0c2f",
+        "#00379d",
+        "#8c8c8c",
+        "#004e82",
+        "#0060b5",
+        "#534072",
+        "#ae0000",
+        "#2c0e52",
+        "#ee002b",
+        "#000000",
+        "#c44c2d",
+        "#b2891a",
+        "#250016",
+        "#33006f",
+        "#546a80",
+        "#7f000d",
+        "#ff535b",
+        "#373a45",
+        "#261d00",
+        "#4b1742",
+        "#6b4155",
+        "#796cb4",
+        "#54584a",
+        "#451917"
+      ]
+    },
+    {
+      "league": "nhl",
+      "background": "#181a1b",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "124292",
+        "129764",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "37",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#231f20",
+        "#c41230",
+        "#e30b2b",
+        "#00529b",
+        "#000d33",
+        "#000000",
+        "#0056ae",
+        "#dd1a32",
+        "#fe5823",
+        "#000000",
+        "#860038",
+        "#00788a",
+        "#0070b9",
+        "#00468b",
+        "#003e7e",
+        "#003e7e",
+        "#003e7e",
+        "#d71830",
+        "#fc4c02",
+        "#e51937",
+        "#fdba31",
+        "#002d62",
+        "#002d62",
+        "#dd1a32",
+        "#124734",
+        "#344043",
+        "#e31937",
+        "#e30526",
+        "#00205b",
+        "#e30426",
+        "#121212",
+        "#20864c"
+      ],
+      "alts": [
+        "#fdb71a",
+        "#013a81",
+        "#000000",
+        "#f47d31",
+        "#a3dce4",
+        "#7ab2e1",
+        "#e51937",
+        "#b79257",
+        "#000000",
+        "#fdb71a",
+        "#005ea3",
+        "#070707",
+        "#fdb71a",
+        "#fdb71a",
+        "#ffffff",
+        "#ffffff",
+        "#008752",
+        "#0b1f41",
+        "#000000",
+        "#002d62",
+        "#002d62",
+        "#c41230",
+        "#e31937",
+        "#000000",
+        "#ae122a",
+        "#b4975a",
+        "#000000",
+        "#ffffff",
+        "#ff4c00",
+        "#000000",
+        "#a2aaad",
+        "#000000"
+      ],
+      "expected": [
+        "#fdb71a",
+        "#c71e3a",
+        "#666666",
+        "#f47d31",
+        "#a3dce4",
+        "#7ab2e1",
+        "#0064c3",
+        "#b79257",
+        "#fe5823",
+        "#00727e",
+        "#aa4c74",
+        "#00a3bc",
+        "#0071b2",
+        "#7854a5",
+        "#ffffff",
+        "#7b76aa",
+        "#008752",
+        "#e30028",
+        "#f90000",
+        "#ff0056",
+        "#f6bc56",
+        "#875d79",
+        "#9087e3",
+        "#d24f35",
+        "#3a7257",
+        "#6b6946",
+        "#ff646e",
+        "#d6005f",
+        "#0060df",
+        "#a84e00",
+        "#a2aaad",
+        "#508234"
+      ]
+    },
+    {
+      "league": "nhl",
+      "background": "#000000",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "124292",
+        "129764",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "37",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#231f20",
+        "#c41230",
+        "#e30b2b",
+        "#00529b",
+        "#000d33",
+        "#000000",
+        "#0056ae",
+        "#dd1a32",
+        "#fe5823",
+        "#000000",
+        "#860038",
+        "#00788a",
+        "#0070b9",
+        "#00468b",
+        "#003e7e",
+        "#003e7e",
+        "#003e7e",
+        "#d71830",
+        "#fc4c02",
+        "#e51937",
+        "#fdba31",
+        "#002d62",
+        "#002d62",
+        "#dd1a32",
+        "#124734",
+        "#344043",
+        "#e31937",
+        "#e30526",
+        "#00205b",
+        "#e30426",
+        "#121212",
+        "#20864c"
+      ],
+      "alts": [
+        "#fdb71a",
+        "#013a81",
+        "#000000",
+        "#f47d31",
+        "#a3dce4",
+        "#7ab2e1",
+        "#e51937",
+        "#b79257",
+        "#000000",
+        "#fdb71a",
+        "#005ea3",
+        "#070707",
+        "#fdb71a",
+        "#fdb71a",
+        "#ffffff",
+        "#ffffff",
+        "#008752",
+        "#0b1f41",
+        "#000000",
+        "#002d62",
+        "#002d62",
+        "#c41230",
+        "#e31937",
+        "#000000",
+        "#ae122a",
+        "#b4975a",
+        "#000000",
+        "#ffffff",
+        "#ff4c00",
+        "#000000",
+        "#a2aaad",
+        "#000000"
+      ],
+      "expected": [
+        "#fdb71a",
+        "#c41230",
+        "#666666",
+        "#f47d31",
+        "#a3dce4",
+        "#7ab2e1",
+        "#005ab4",
+        "#b79257",
+        "#fe5823",
+        "#00646c",
+        "#ae1f56",
+        "#2792ab",
+        "#0d77bc",
+        "#6e4b9a",
+        "#ffffff",
+        "#7b76aa",
+        "#008752",
+        "#ff2340",
+        "#f90000",
+        "#f00058",
+        "#f6bc56",
+        "#7875da",
+        "#0057d1",
+        "#c00002",
+        "#436247",
+        "#436080",
+        "#ff6266",
+        "#b44200",
+        "#922f96",
+        "#e16e4d",
+        "#a2aaad",
+        "#508234"
+      ]
+    },
+    {
+      "league": "nhl",
+      "background": "#ffffff",
+      "labels": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "124292",
+        "129764",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "2",
+        "20",
+        "21",
+        "22",
+        "23",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "3",
+        "30",
+        "37",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "colors": [
+        "#231f20",
+        "#c41230",
+        "#e30b2b",
+        "#00529b",
+        "#000d33",
+        "#000000",
+        "#0056ae",
+        "#dd1a32",
+        "#fe5823",
+        "#000000",
+        "#860038",
+        "#00788a",
+        "#0070b9",
+        "#00468b",
+        "#003e7e",
+        "#003e7e",
+        "#003e7e",
+        "#d71830",
+        "#fc4c02",
+        "#e51937",
+        "#fdba31",
+        "#002d62",
+        "#002d62",
+        "#dd1a32",
+        "#124734",
+        "#344043",
+        "#e31937",
+        "#e30526",
+        "#00205b",
+        "#e30426",
+        "#121212",
+        "#20864c"
+      ],
+      "alts": [
+        "#fdb71a",
+        "#013a81",
+        "#000000",
+        "#f47d31",
+        "#a3dce4",
+        "#7ab2e1",
+        "#e51937",
+        "#b79257",
+        "#000000",
+        "#fdb71a",
+        "#005ea3",
+        "#070707",
+        "#fdb71a",
+        "#fdb71a",
+        "#ffffff",
+        "#ffffff",
+        "#008752",
+        "#0b1f41",
+        "#000000",
+        "#002d62",
+        "#002d62",
+        "#c41230",
+        "#e31937",
+        "#000000",
+        "#ae122a",
+        "#b4975a",
+        "#000000",
+        "#ffffff",
+        "#ff4c00",
+        "#000000",
+        "#a2aaad",
+        "#000000"
+      ],
+      "expected": [
+        "#231f20",
+        "#c41230",
+        "#e1001d",
+        "#00529b",
+        "#000d33",
+        "#6897bf",
+        "#005ac4",
+        "#ae8b53",
+        "#fe5823",
+        "#be8914",
+        "#860038",
+        "#00788a",
+        "#0082ce",
+        "#00266c",
+        "#8c8c8c",
+        "#003863",
+        "#008752",
+        "#ff004c",
+        "#c85300",
+        "#fa5f5e",
+        "#8f9400",
+        "#5a4982",
+        "#482e4a",
+        "#a41d00",
+        "#124734",
+        "#464e52",
+        "#dc005a",
+        "#c85a3b",
+        "#2c0041",
+        "#880017",
+        "#001b00",
+        "#508234"
+      ]
+    }
+  ]
+}

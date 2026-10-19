@@ -54,6 +54,7 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [sdvplot.holoviews](holoviews.md) | The HoloViews adapter: a Bokeh plot hook that draws the marks through the Bokeh adapter when the element renders. |
 | [sdvplot.folium](folium.md) | The Folium adapter: logos, wordmarks and headshots as map markers with image icons. |
 | [sdvplot.pygal](pygal.md) | The pygal adapter: logos, wordmarks and headshots on pygal XY charts, plus team colors as a pygal Style. |
+| [sdvplot.pydeck](pydeck.md) | The pydeck adapter: team logos, team-colored arcs and sportypy playing surfaces as pydeck layer props. |
 | [sdvplot.great_tables](great_tables.md) | great_tables helpers (``pip install sdvplot[tables]``), ported from sdvplotR's ``gt_*`` functions. |
 | [sdvplot.reactable](reactable.md) | reactable-py columns (``pip install sdvplot[reactable]``), ported from sdvplotR's ``reactable_sdv_*`` functions, plus reactablefmtr's cell formatters (data bars, color tiles and scales, pills, icons, merged columns, highlights, bubbles). |
 | [sdvplot.plottable](plottable.md) | plottable columns of team logos, wordmarks and player headshots. |

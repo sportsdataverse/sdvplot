@@ -43,6 +43,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `sdvplot.pydeck` (new `[pydeck]` extra): deck.gl layer props for pydeck, the same as sdvplot-js's `./deckgl` builds
+  (held to one shared fixture). `logo_icon_layer` draws team logos at points (an `IconLayer` of auto-packed logo
+  icons), `pass_arc_layer` draws arcs in team colors (primary at the source, secondary at the target; with
+  `background`, 3:1 contrast and ΔE 20 apart through sdvplot-js's team palette, ported), and `surface_layer` draws a
+  sportypy rink, pitch, court or field as a `PolygonLayer` in the surface's own coordinates. The props are plain dicts
+  (`pydeck.Layer(**props)`); `deck()` builds a `pydeck.Deck` fitted to a surface or a map.
 - `sdvplot.itables.itables_sdv_theme(name, mode=, table_id=)` returns `classes`, `style` and a scoped `css` string
   (with a Google Fonts import) that styles an `itables.show` table like any of the 122 surveyed themes.
 - `sdvplot.plottable.plottable_sdv_theme(name, mode=)` returns the `plottable.Table` keywords (text, dividers, stripes) for

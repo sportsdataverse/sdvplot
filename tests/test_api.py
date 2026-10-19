@@ -380,7 +380,12 @@ EXTRAS = {
     "pygal": ("pygal", "pygal"),
     "reactable": ("reactable", "reactable"),
     "great_tables": ("great_tables", "tables"),
+    "pydeck": ("pydeck", "pydeck"),
 }
+# Submodules that import their library only inside the one function that builds the library's object, so the rest
+# runs without it (sdvplot.pydeck's layer props are plain dicts; only deck() builds a pydeck.Deck): the module
+# imports without the library and that function names the extra. Each entry calls that function.
+LAZY = {"pydeck": lambda mod: mod.deck({"type": "ScatterplotLayer", "data": []})}
 
 
 def test_every_adapter_submodule_names_its_extra():
@@ -395,7 +400,8 @@ def test_importing_an_adapter_without_its_library_names_the_extra(monkeypatch, n
     for mod in [m for m in sys.modules if m == f"sdvplot.{name}" or m.startswith(f"sdvplot.{name}.")]:
         monkeypatch.delitem(sys.modules, mod)  # restored afterwards, as are the libraries
     with pytest.raises(sdvplot.OptionalDependencyError, match=rf'pip install "sdvplot\[{extra}\]"') as exc:
-        importlib.import_module(f"sdvplot.{name}")
+        mod = importlib.import_module(f"sdvplot.{name}")
+        LAZY[name](mod)  # a KeyError, not the expected error, if a module imported without its library unlisted
     assert isinstance(exc.value, ModuleNotFoundError) and exc.value.name.split(".")[0] == library
 
 
