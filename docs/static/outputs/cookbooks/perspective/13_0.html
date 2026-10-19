@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/css/themes.css">
+<style>body{margin:0} perspective-viewer{display:block;height:440px}</style>
+</head><body><perspective-viewer></perspective-viewer>
+<script type="module">
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/cdn/perspective-viewer.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-datagrid@5.5.1/dist/cdn/perspective-viewer-datagrid.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-charts@5.5.1/dist/cdn/perspective-viewer-charts.js";
+import perspective from "https://cdn.jsdelivr.net/npm/@perspective-dev/client@5.5.1/dist/cdn/perspective.js";
+const worker = await perspective.worker();
+await worker.table({"posteam": ["BAL", "BUF", "DET", "WAS", "TB", "PHI", "CIN", "GB", "KC", "SF", "ARI", "LAC", "ATL", "DEN", "MIN", "LA", "NYJ", "JAX", "SEA", "PIT", "MIA", "CAR", "HOU", "IND", "NO", "CHI", "NE", "NYG", "DAL", "TEN", "LV", "CLE"], "epa_per_play": [0.218, 0.188, 0.17, 0.139, 0.13, 0.114, 0.09, 0.079, 0.07, 0.069, 0.067, 0.039, 0.034, 0.02, 0.016, 0.014, -0.013, -0.02, -0.03, -0.034, -0.039, -0.053, -0.055, -0.057, -0.057, -0.082, -0.083, -0.107, -0.109, -0.116, -0.143, -0.183], "def_epa_per_play": [-0.051, -0.009, -0.062, 0.011, 0.015, -0.098, 0.037, -0.067, 0.011, 0.041, 0.056, -0.061, 0.061, -0.118, -0.086, 0.044, 0.024, 0.129, -0.012, -0.018, -0.027, 0.16, -0.065, 0.004, 0.044, 0.006, 0.07, 0.063, 0.083, 0.03, 0.021, 0.017]}, {name: "sdv"});
+const viewer = document.querySelector("perspective-viewer");
+await viewer.load(worker);
+await viewer.restore({table: "sdv", settings: false, ...{"plugin": "X/Y Scatter", "theme": "Pro Dark", "columns_config": {"posteam": {"palette": "linear-gradient(to right, #9e7c0c, #4c70af, #759dc8, #d3744b, #cc3053, #6f9f96, #ff7500, #ffb612, #e31837, #ca4533, #b15a6f, #759dfc, #737373, #00799d, #9055ba, #006ddd, #2d7e5f, #00aec6, #69be28, #6b7512, #00aa9c, #009ae5, #007c80, #886ba0, #d3bc8d, #e64100, #ac4c8f, #7a54db, #b0b7bc, #57c7ff, #9d6c46, #ff001f)"}, "plays": {"palette": "linear-gradient(to right, #b15a6f, #737373, #9e7c0c, #4c70af, #009ae5, #e64100, #ff7500, #ff001f, #b0b7bc, #00799d, #759dc8, #ffb612, #007c80, #886ba0, #00aec6, #e31837, #006ddd, #759dfc, #9d6c46, #00aa9c, #9055ba, #ac4c8f, #d3bc8d, #7a54db, #2d7e5f, #6f9f96, #6b7512, #69be28, #ca4533, #cc3053, #57c7ff, #d3744b)"}, "epa_per_play": {"palette": "linear-gradient(to right, #b15a6f, #737373, #9e7c0c, #4c70af, #009ae5, #e64100, #ff7500, #ff001f, #b0b7bc, #00799d, #759dc8, #ffb612, #007c80, #886ba0, #00aec6, #e31837, #006ddd, #759dfc, #9d6c46, #00aa9c, #9055ba, #ac4c8f, #d3bc8d, #7a54db, #2d7e5f, #6f9f96, #6b7512, #69be28, #ca4533, #cc3053, #57c7ff, #d3744b)"}, "success_rate": {"palette": "linear-gradient(to right, #b15a6f, #737373, #9e7c0c, #4c70af, #009ae5, #e64100, #ff7500, #ff001f, #b0b7bc, #00799d, #759dc8, #ffb612, #007c80, #886ba0, #00aec6, #e31837, #006ddd, #759dfc, #9d6c46, #00aa9c, #9055ba, #ac4c8f, #d3bc8d, #7a54db, #2d7e5f, #6f9f96, #6b7512, #69be28, #ca4533, #cc3053, #57c7ff, #d3744b)"}, "def_epa_per_play": {"palette": "linear-gradient(to right, #b15a6f, #737373, #9e7c0c, #4c70af, #009ae5, #e64100, #ff7500, #ff001f, #b0b7bc, #00799d, #759dc8, #ffb612, #007c80, #886ba0, #00aec6, #e31837, #006ddd, #759dfc, #9d6c46, #00aa9c, #9055ba, #ac4c8f, #d3bc8d, #7a54db, #2d7e5f, #6f9f96, #6b7512, #69be28, #ca4533, #cc3053, #57c7ff, #d3744b)"}}, "columns": ["epa_per_play", "def_epa_per_play", "posteam"]}});
+</script><script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script></body></html>

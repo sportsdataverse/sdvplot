@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/css/themes.css">
+<style>body{margin:0} perspective-viewer{display:block;height:620px}</style>
+</head><body><perspective-viewer></perspective-viewer>
+<script type="module">
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/cdn/perspective-viewer.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-datagrid@5.5.1/dist/cdn/perspective-viewer-datagrid.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-charts@5.5.1/dist/cdn/perspective-viewer-charts.js";
+import perspective from "https://cdn.jsdelivr.net/npm/@perspective-dev/client@5.5.1/dist/cdn/perspective.js";
+const worker = await perspective.worker();
+await worker.table({"posteam": ["BAL", "BUF", "DET", "WAS", "TB", "PHI", "CIN", "GB", "KC", "SF", "ARI", "LAC", "ATL", "DEN", "MIN", "LA", "NYJ", "JAX", "SEA", "PIT", "MIA", "CAR", "HOU", "IND", "NO", "CHI", "NE", "NYG", "DAL", "TEN", "LV", "CLE"], "plays": [1039, 1005, 1099, 1091, 1084, 1093, 1069, 1022, 1069, 1014, 1031, 998, 1073, 1038, 1029, 1028, 1014, 991, 1018, 1066, 1076, 987, 1045, 1034, 1026, 1059, 1021, 1051, 1095, 1030, 1054, 1121], "epa_per_play": [0.218, 0.188, 0.17, 0.139, 0.13, 0.114, 0.09, 0.079, 0.07, 0.069, 0.067, 0.039, 0.034, 0.02, 0.016, 0.014, -0.013, -0.02, -0.03, -0.034, -0.039, -0.053, -0.055, -0.057, -0.057, -0.082, -0.083, -0.107, -0.109, -0.116, -0.143, -0.183], "success_rate": [0.5, 0.475, 0.501, 0.485, 0.494, 0.453, 0.472, 0.449, 0.476, 0.461, 0.473, 0.42, 0.481, 0.427, 0.456, 0.468, 0.426, 0.415, 0.439, 0.404, 0.443, 0.413, 0.388, 0.402, 0.406, 0.398, 0.424, 0.405, 0.406, 0.399, 0.405, 0.37], "def_epa_per_play": [-0.051, -0.009, -0.062, 0.011, 0.015, -0.098, 0.037, -0.067, 0.011, 0.041, 0.056, -0.061, 0.061, -0.118, -0.086, 0.044, 0.024, 0.129, -0.012, -0.018, -0.027, 0.16, -0.065, 0.004, 0.044, 0.006, 0.07, 0.063, 0.083, 0.03, 0.021, 0.017]}, {name: "sdv"});
+const viewer = document.querySelector("perspective-viewer");
+await viewer.load(worker);
+await viewer.restore({table: "sdv", settings: false, ...{"plugin": "X Bar", "theme": "Pro Light", "columns_config": {"posteam": {"palette": "linear-gradient(to right, #241773, #c60c30, #8d9296, #5a1414, #b85149, #53575f, #ff4a41, #203731, #bf880e, #a71600, #97233f, #006fce, #000000, #004c6e, #6d2482, #0043aa, #00472c, #0d6f7f, #59a222, #1e2d00, #dc751d, #0085ca, #32202f, #003876, #82703f, #e64100, #000940, #492e5b, #002244, #6d92b8, #2d0000, #311d00)"}, "plays": {"palette": "linear-gradient(to right, #97233f, #000000, #241773, #c60c30, #0085ca, #e64100, #ff4a41, #311d00, #002244, #004c6e, #8d9296, #203731, #32202f, #003876, #0d6f7f, #bf880e, #0043aa, #006fce, #2d0000, #dc751d, #6d2482, #000940, #82703f, #492e5b, #00472c, #53575f, #1e2d00, #59a222, #a71600, #b85149, #6d92b8, #5a1414)"}, "epa_per_play": {"palette": "linear-gradient(to right, #97233f, #000000, #241773, #c60c30, #0085ca, #e64100, #ff4a41, #311d00, #002244, #004c6e, #8d9296, #203731, #32202f, #003876, #0d6f7f, #bf880e, #0043aa, #006fce, #2d0000, #dc751d, #6d2482, #000940, #82703f, #492e5b, #00472c, #53575f, #1e2d00, #59a222, #a71600, #b85149, #6d92b8, #5a1414)"}, "success_rate": {"palette": "linear-gradient(to right, #97233f, #000000, #241773, #c60c30, #0085ca, #e64100, #ff4a41, #311d00, #002244, #004c6e, #8d9296, #203731, #32202f, #003876, #0d6f7f, #bf880e, #0043aa, #006fce, #2d0000, #dc751d, #6d2482, #000940, #82703f, #492e5b, #00472c, #53575f, #1e2d00, #59a222, #a71600, #b85149, #6d92b8, #5a1414)"}, "def_epa_per_play": {"palette": "linear-gradient(to right, #97233f, #000000, #241773, #c60c30, #0085ca, #e64100, #ff4a41, #311d00, #002244, #004c6e, #8d9296, #203731, #32202f, #003876, #0d6f7f, #bf880e, #0043aa, #006fce, #2d0000, #dc751d, #6d2482, #000940, #82703f, #492e5b, #00472c, #53575f, #1e2d00, #59a222, #a71600, #b85149, #6d92b8, #5a1414)"}}, "group_by": ["posteam"], "split_by": ["posteam"], "columns": ["success_rate"], "sort": [["success_rate", "desc"]]}});
+</script><script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script></body></html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/css/themes.css">
+<style>body{margin:0} perspective-viewer{display:block;height:440px}</style>
+</head><body><perspective-viewer></perspective-viewer>
+<script type="module">
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/cdn/perspective-viewer.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-datagrid@5.5.1/dist/cdn/perspective-viewer-datagrid.js";
+import "https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-charts@5.5.1/dist/cdn/perspective-viewer-charts.js";
+import perspective from "https://cdn.jsdelivr.net/npm/@perspective-dev/client@5.5.1/dist/cdn/perspective.js";
+const worker = await perspective.worker();
+await worker.table({"week": [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18], "posteam": ["CIN", "PIT", "CLE", "BAL", "PIT", "CLE", "BAL", "CIN", "CLE", "CIN", "PIT", "BAL", "CIN", "CLE", "PIT", "BAL", "PIT", "CIN", "CLE", "BAL", "CIN", "CLE", "PIT", "BAL", "PIT", "CLE", "CIN", "BAL", "PIT", "BAL", "CLE", "CIN", "BAL", "CIN", "CLE", "CIN", "BAL", "PIT", "BAL", "CIN", "CLE", "PIT", "BAL", "PIT", "CLE", "PIT", "BAL", "CLE", "CIN", "PIT", "CIN", "CLE", "BAL", "CIN", "PIT", "CLE", "CIN", "CLE", "BAL", "PIT", "BAL", "PIT", "CIN", "CLE", "PIT", "CIN", "BAL", "CLE"], "cumulative_epa": [-8.6, -6.6, -19.0, 6.0, -13.6, -17.6, 5.3, -5.8, -41.4, 16.7, -5.3, 27.0, 27.1, -48.1, -9.2, 42.8, -6.7, 44.6, -66.1, 64.9, 46.3, -67.2, -0.7, 75.6, 9.6, -79.1, 36.6, 101.1, 14.7, 106.9, -70.3, 36.5, 128.9, 42.6, -90.9, 50.2, 147.6, 13.1, 141.9, 58.2, -88.7, -5.0, 161.0, -7.4, -88.4, 10.2, 160.9, -93.6, 58.2, 3.9, 68.1, -104.8, 186.6, 80.4, -7.5, -135.6, 86.6, -153.3, 197.1, -18.1, 216.1, -26.1, 98.4, -181.0, -36.3, 96.4, 226.5, -205.5]}, {name: "sdv"});
+const viewer = document.querySelector("perspective-viewer");
+await viewer.load(worker);
+await viewer.restore({table: "sdv", settings: false, ...{"plugin": "Y Line", "theme": "Pro Light", "columns_config": {"posteam": {"palette": "linear-gradient(to right, #fb4f14, #000000, #311d00, #241773)"}, "week": {"palette": "linear-gradient(to right, #241773, #fb4f14, #311d00, #000000)"}, "cumulative_epa": {"palette": "linear-gradient(to right, #241773, #fb4f14, #311d00, #000000)"}}, "group_by": ["week"], "split_by": ["posteam"], "columns": ["cumulative_epa"]}});
+</script><script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script></body></html>
