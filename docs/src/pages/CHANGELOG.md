@@ -49,6 +49,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `background`, 3:1 contrast and ΔE 20 apart through sdvplot-js's team palette, ported), and `surface_layer` draws a
   sportypy rink, pitch, court or field as a `PolygonLayer` in the surface's own coordinates. The props are plain dicts
   (`pydeck.Layer(**props)`); `deck()` builds a `pydeck.Deck` fitted to a surface or a map.
+- `sdvplot.perspective` (new `[perspective]` extra, Python 3.11+): `perspective_sdv_config(frame, team_col=, league=,
+  plugin=, theme=, mode=)` returns a Perspective viewer config (`PerspectiveWidget(data, **config)` or the JavaScript
+  `restore()`) that colors each team with the shared team palette: the Datagrid fills the team column's cells, and a
+  chart splits by team and colors each team's series. A registry table theme sets the grid's fonts and sign colors.
+  Number columns get formats (3 decimals, 1 for a percentage, integers plain; `formats=` overrides).
+  `perspective_logo_column(frame, team_col, league=)` adds each team's logo URL, shown as a link.
 - `sdvplot.itables.itables_sdv_theme(name, mode=, table_id=)` returns `classes`, `style` and a scoped `css` string
   (with a Google Fonts import) that styles an `itables.show` table like any of the 122 surveyed themes.
 - `sdvplot.plottable.plottable_sdv_theme(name, mode=)` returns the `plottable.Table` keywords (text, dividers, stripes) for

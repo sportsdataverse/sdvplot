@@ -131,10 +131,11 @@ def test_a_raised_sdvplot_error_is_caught_by_the_base():
 
 # every public submodule, found rather than listed: a new one cannot skip the checks below
 SUBMODULES = sorted(m.name for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_"))
-# the optional library each adapter module needs: the registered adapters, plus the column helpers and sdvplot.pydeck
-# (layer props, not a dispatch target). Any other
-# submodule (sdvplot.testing, or a new one) is imported unguarded, so it cannot hide behind a skip
-LIBRARY = {"reactable": "reactable", "plottable": "plottable", "itables": "itables", "pydeck": "pydeck"}
+# the optional library each adapter module needs: the registered adapters, plus the column and config helpers and
+# sdvplot.pydeck (layer props, not a dispatch target). Any other submodule (sdvplot.testing, or a new one) is
+# imported unguarded, so it cannot hide behind a skip
+LIBRARY = {"reactable": "reactable", "plottable": "plottable", "itables": "itables", "pydeck": "pydeck",
+           "perspective": "perspective"}  # fmt: skip
 for _a in _dispatch.ADAPTERS.values():
     _name = _a.module.split(".")[1]
     if _name not in LIBRARY or _a.package == _name:  # seaborn also routes to sdvplot.matplotlib
@@ -373,6 +374,7 @@ EXTRAS = {
     "plotnine": ("plotnine", "plotnine"),
     "plottable": ("plottable", "plottable"),
     "itables": ("itables", "itables"),
+    "perspective": ("perspective", "perspective"),
     "plotly": ("plotly", "plotly"),
     "altair": ("altair", "altair"),
     "bokeh": ("bokeh", "bokeh"),

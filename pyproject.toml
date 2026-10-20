@@ -47,7 +47,9 @@ plottable = ["plottable>=0.1.5"]
 itables = ["itables>=2.4"]  # itables.typing.ITableOptions (2.4.0)
 pygal = ["pygal>=3.0.1"]  # 3.0.0 imports pkg_resources, absent without setuptools
 pydeck = ["pydeck>=0.9.3"]  # 0.9.3 (2026-07-02): the newest release, tested; it draws with deck.gl ~9.3
-all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,reactable,folium,surfaces,plottable,itables,pygal,pydeck]"]
+# wheels are cp311-abi3 only: on 3.10 pip would build Perspective's Rust/C++ sdist, so the extra is 3.11+
+perspective = ["perspective-python[jupyter]>=5.5.1; python_version >= '3.11'"]
+all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,reactable,folium,surfaces,plottable,itables,pygal,pydeck,perspective]"]
 
 [project.urls]
 Homepage = "https://sdvplot.sportsdataverse.org/"
