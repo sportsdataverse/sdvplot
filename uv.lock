@@ -4267,6 +4267,21 @@ wheels = [
 ]
 
 [[package]]
+name = "pydeck"
+version = "0.9.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f4/c9/f71032fca47ecc09d30904d9a610234b07139f89eabc2f054b141edcc30f/pydeck-0.9.3.tar.gz", hash = "sha256:695775cbfe51f5fdffbd9735ba469987fdc5efc96bc40a0ee4808170509c78b2", size = 5900912, upload-time = "2026-07-02T23:27:08.704Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/34/3998411437aff304a9ed4fa37a6fe1ef3132bcd2b5eac59851b80c86123c/pydeck-0.9.3-py2.py3-none-any.whl", hash = "sha256:d8a47c11c81fb12d51b1feb42427ff4f0e13cb599e48931021b2cba98b6849a6", size = 11428091, upload-time = "2026-07-02T23:27:06.399Z" },
+]
+
+[[package]]
 name = "pyfonts"
 version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -5935,6 +5950,7 @@ all = [
     { name = "plotly" },
     { name = "plotnine" },
     { name = "plottable" },
+    { name = "pydeck" },
     { name = "pygal" },
     { name = "reactable" },
     { name = "resvg-py" },
@@ -5969,6 +5985,9 @@ plotnine = [
 ]
 plottable = [
     { name = "plottable" },
+]
+pydeck = [
+    { name = "pydeck" },
 ]
 pygal = [
     { name = "pygal" },
@@ -6103,15 +6122,16 @@ requires-dist = [
     { name = "plotnine", marker = "extra == 'plotnine'", specifier = ">=0.15" },
     { name = "plottable", marker = "extra == 'plottable'", specifier = ">=0.1.5" },
     { name = "polars", specifier = ">=1.24" },
+    { name = "pydeck", marker = "extra == 'pydeck'", specifier = ">=0.9.3" },
     { name = "pygal", marker = "extra == 'pygal'", specifier = ">=3.0.1" },
     { name = "reactable", marker = "extra == 'reactable'", specifier = ">=0.1.6" },
     { name = "requests", specifier = ">=2.33" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2.5" },
-    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal"], marker = "extra == 'all'" },
+    { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck"], marker = "extra == 'all'" },
     { name = "sportypy", marker = "extra == 'surfaces'", specifier = ">=1.0" },
     { name = "urllib3", specifier = ">=2.6" },
 ]
-provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "all"]
+provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck", "all"]
 
 [package.metadata.requires-dev]
 compat = [

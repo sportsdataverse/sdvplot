@@ -1,7 +1,7 @@
 ---
 title: table_theme_spec
 sidebar_label: table_theme_spec
-sidebar_position: 29
+sidebar_position: 30
 ---
 
 # table_theme_spec
