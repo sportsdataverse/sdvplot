@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div id="wnba-standings" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+#wnba-standings table {
+          font-family: 'Spline Sans Mono', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans';
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#wnba-standings thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#wnba-standings p { margin: 0; padding: 0; }
+ #wnba-standings .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 12px; font-weight: 500; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: none; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #wnba-standings .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #wnba-standings .gt_title { color: #333333; font-size: 26px; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #wnba-standings .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #wnba-standings .gt_heading { background-color: #FFFFFF; text-align: left; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #wnba-standings .gt_bottom_border { border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wnba-standings .gt_col_headings { border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: black; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #wnba-standings .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: 500; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; }
+ #wnba-standings .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: 500; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #wnba-standings .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #wnba-standings .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #wnba-standings .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: black; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #wnba-standings .gt_spanner_row { border-bottom-style: hidden; }
+ #wnba-standings .gt_group_heading { padding-top: 1.5px; padding-bottom: 1.5px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: none; border-top-width: 2px; border-top-color: black; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: black; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #wnba-standings .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: none; border-top-width: 2px; border-top-color: black; border-bottom-style: solid; border-bottom-width: 1px; border-bottom-color: black; vertical-align: middle; }
+ #wnba-standings .gt_from_md> :first-child { margin-top: 0; }
+ #wnba-standings .gt_from_md> :last-child { margin-bottom: 0; }
+ #wnba-standings .gt_row { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #wnba-standings .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; }
+ #wnba-standings .gt_indent_1 { text-indent: 5px; }
+ #wnba-standings .gt_indent_2 { text-indent: calc(5px * 2); }
+ #wnba-standings .gt_indent_3 { text-indent: calc(5px * 3); }
+ #wnba-standings .gt_indent_4 { text-indent: calc(5px * 4); }
+ #wnba-standings .gt_indent_5 { text-indent: calc(5px * 5); }
+ #wnba-standings .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #wnba-standings .gt_row_group_first td { border-top-width: 2px; }
+ #wnba-standings .gt_row_group_first th { border-top-width: 2px; }
+ #wnba-standings .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #wnba-standings .gt_table_body { border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wnba-standings .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #wnba-standings .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #wnba-standings .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wnba-standings .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #wnba-standings .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #wnba-standings .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #wnba-standings .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wnba-standings .gt_sourcenote { font-size: 10px; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #wnba-standings .gt_left { text-align: left; }
+ #wnba-standings .gt_center { text-align: center; }
+ #wnba-standings .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #wnba-standings .gt_font_normal { font-weight: normal; }
+ #wnba-standings .gt_font_bold { font-weight: bold; }
+ #wnba-standings .gt_font_italic { font-style: italic; }
+ #wnba-standings .gt_super { font-size: 65%; }
+ #wnba-standings .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wnba-standings .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #wnba-standings .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wnba-standings .gt_sourcenote { font-size: 10px; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #wnba-standings .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #wnba-standings .gt_asterisk { font-size: 100%; vertical-align: 0; }
+
+#wnba-standings tbody tr:last-child { border-bottom: 2px solid #FFFFFF; }
+#wnba-standings .gt_subtitle { padding-top: 0px !important; padding-bottom: 4px !important; }
+#wnba-standings .gt_sourcenote { border-bottom-color: #FFFDF5 !important; }
+#wnba-standings .gt_heading { padding-bottom: 0px; padding-top: 6px; }
+
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+
+  <tr class="gt_heading">
+    <td colspan="9" class="gt_heading gt_title gt_font_normal" style="font-family: Work Sans;font-size: 22px;font-weight: 650;">WNBA standings and ratings, 2026</td>
+  </tr>
+  <tr class="gt_heading">
+    <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="font-family: Work Sans;font-size: 14px;font-weight: 500;">Final regular season</td>
+  </tr>
+<tr class="gt_col_headings gt_spanner_row">
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-seed"></th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-abbr"></th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-name">Team</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-record">W-L</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-pct">Pct</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="2" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-last10">Last 10</th>
+  <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="3" scope="colgroup" id="wnba-standings-Per-100-possessions">
+    <span class="gt_column_spanner">Per 100 possessions</span>
+  </th>
+</tr>
+<tr class="gt_col_headings">
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-ortg">Off</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-drtg">Def</th>
+  <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-family: Work Sans;font-size: 12px;font-weight: 650;text-transform: uppercase;" scope="col" id="wnba-standings-net">Net</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="9" style="color: white;font-size: 12px;font-weight: 650; background-color: black !important;">Eastern Conference</th>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">1</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e1/e102207a9739a4c4f036a7448ec130a10329adc71730d954ec23c9f7f68a83f0.png" style="height:28px;vertical-align:middle" alt="Atlanta Dream" data-sdvplot-team="20"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Dream</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">30-14</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.682</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">9-1</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">108.5</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">100.4</td>
+    <td style="color: #000000; background-color: #8abca0; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+8.2</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">2</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/54/54229f470dabb4795f3e09f979805041d0bc60e859ba94f8bc3d3c2939e8a1bd.png" style="height:28px;vertical-align:middle" alt="Indiana Fever" data-sdvplot-team="5"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Fever</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">28-16</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.636</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">6-4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">112.2</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">105.7</td>
+    <td style="color: #000000; background-color: #a0c9b2; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+6.5</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/22/22ab495b2a94a36382998d38c65ca0bde263ef8f7dd2a8cb89feef892f066b4c.png" style="height:28px;vertical-align:middle" alt="Washington Mystics" data-sdvplot-team="16"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Mystics</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">28-16</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.636</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">8-2</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">102.3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">100.8</td>
+    <td style="color: #000000; background-color: #e2ece6; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+1.6</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/88aaa89584094c04a6b37ce67693565feae3fb04728da508830daba1b61d343c.png" style="height:28px;vertical-align:middle" alt="New York Liberty" data-sdvplot-team="9"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Liberty</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">26-18</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.591</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">6-4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">108.1</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">104.3</td>
+    <td style="color: #000000; background-color: #c4dcce; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+3.8</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">5</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ca/ca0e10ea4d2071669cdbee6d409bbd699047b5ffe18eff3d0388a00fbfd33945.png" style="height:28px;vertical-align:middle" alt="Chicago Sky" data-sdvplot-team="19"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Sky</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">16-28</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.364</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">4-6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">101.4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">106.0</td>
+    <td style="color: #000000; background-color: #e9c1bb; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−4.5</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/22/2268104ab5df4d3276b4469b89559f488d61464091755f2df8ce84d42ccca5e8.png" style="height:28px;vertical-align:middle" alt="Toronto Tempo" data-sdvplot-team="131935"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Tempo</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">11-33</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.250</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">1-9</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">103.0</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">113.5</td>
+    <td style="color: #000000; background-color: #d67b6c; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−10.5</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">7</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aabb0e6063c6beede9cfe20e17596e4181ba087f864adf762ae3e3c8ca60e572.png" style="height:28px;vertical-align:middle" alt="Connecticut Sun" data-sdvplot-team="18"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Sun</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">11-33</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.250</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">2-8</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">95.3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">106.4</td>
+    <td style="color: #000000; background-color: #d47463; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−11.1</td>
+  </tr>
+  <tr class="gt_group_heading_row">
+    <th class="gt_group_heading" colspan="9" style="color: white;font-size: 12px;font-weight: 650; background-color: black !important;">Western Conference</th>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">1</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/74/7400d6af343a3f6c725c70d1967050a0c63686f51abb40cd4161f7b84f629c76.png" style="height:28px;vertical-align:middle" alt="Minnesota Lynx" data-sdvplot-team="8"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Lynx</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">33-11</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.750</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">6-4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">109.9</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">101.2</td>
+    <td style="color: #000000; background-color: #83b89a; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+8.7</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">2</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/18/183ed0768b02cba0e09a3a63f9f708f0b0e42c1195d5ca450bb2495e046f9da8.png" style="height:28px;vertical-align:middle" alt="Golden State Valkyries" data-sdvplot-team="129689"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Valkyries</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">32-12</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.727</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">7-3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">104.8</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">95.8</td>
+    <td style="color: #000000; background-color: #7fb697; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+9.0</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d3/d3057fc57ddcd581b22821cab1d5fcc21a6e7b9e9bc7a0dcc57c3ef4e8284523.png" style="height:28px;vertical-align:middle" alt="Las Vegas Aces" data-sdvplot-team="17"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Aces</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">31-13</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.705</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">8-2</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">110.6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">103.8</td>
+    <td style="color: #000000; background-color: #9bc6ae; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+6.8</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">4</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a5/a5137a5545b847a96f798bb8ec059f4a908acf898d4cda371fb17b00e2333b65.png" style="height:28px;vertical-align:middle" alt="Dallas Wings" data-sdvplot-team="3"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Wings</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">27-17</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.614</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">7-3</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">108.6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">103.6</td>
+    <td style="color: #000000; background-color: #b4d3c1; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">+5.0</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">5</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/85/850ecf7746cad220e4f47479426ca28427f9b4e60c7a01cbed548ad3e1dba51f.png" style="height:28px;vertical-align:middle" alt="Portland Fire" data-sdvplot-team="132052"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Fire</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">17-27</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.386</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">3-7</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">103.5</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">109.3</td>
+    <td style="color: #000000; background-color: #e5b3ab; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−5.8</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ca/cabf18c9af751e07c8df012fde18e326da8047d789bc10298be48bfe6f0f3ab7.png" style="height:28px;vertical-align:middle" alt="Phoenix Mercury" data-sdvplot-team="11"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Mercury</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">16-28</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.364</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">4-6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">102.5</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">106.5</td>
+    <td style="color: #000000; background-color: #ebc9c3; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−3.9</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">7</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d67f7b64178dad348e387eda0fbce1e8049a3c9d18cf2e109398d2a560606db.png" style="height:28px;vertical-align:middle" alt="Los Angeles Sparks" data-sdvplot-team="6"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Sparks</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">16-28</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.364</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">4-6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">103.0</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">108.0</td>
+    <td style="color: #000000; background-color: #e7bbb4; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−5.1</td>
+  </tr>
+  <tr>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">8</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center"><img src="https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/63/634fdedf3b5159700d7af3bc22275a6098c1675ee8150de8534a9a8ac86ad7e3.png" style="height:28px;vertical-align:middle" alt="Seattle Storm" data-sdvplot-team="14"></td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">Storm</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">8-36</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">0.182</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">2-8</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">97.6</td>
+    <td style="border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">105.6</td>
+    <td style="color: #000000; background-color: #de988d; border-left: 0.5px solid black !important; border-top: 1.5px dotted black !important;" class="gt_row gt_center">−8.0</td>
+  </tr>
+</tbody>
+<tfoot><tr class="gt_sourcenotes"><td class="gt_sourcenote" colspan="9"><span class="gt_from_md">Data: wehoop (ESPN) via sportsdataverse-py. Possessions estimated from the box score; ties ordered by net rating.</span></td></tr></tfoot>
+</table>
+
+</div>
+
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

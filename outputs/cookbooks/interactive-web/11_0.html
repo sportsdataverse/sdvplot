@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+<style>
+  #sdv_11_0_0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #sdv_11_0_0.vega-embed details,
+  #sdv_11_0_0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="sdv_11_0_0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "sdv_11_0_0") {
+      outputDiv = document.getElementById("sdv_11_0_0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.4.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.4.1"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-sdv_11_0_1"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "team_abbreviation", "legend": null, "scale": {"domain": ["GS", "POR", "PHX", "MEM", "OKC", "SA", "MIN", "UTAH", "DEN", "LAC", "LAL", "NO", "DAL", "HOU", "SAC"], "range": ["#fdb927", "#e03a3e", "#29127a", "#5d76a9", "#007ac1", "#000000", "#266092", "#4e008e", "#0e2240", "#12173f", "#552583", "#0a2240", "#0064b1", "#ce0e2d", "#5a2d81"]}, "type": "nominal"}, "tooltip": [{"field": "fg3a", "format": ".1f", "type": "quantitative"}, {"field": "fg3_pct", "format": ".1%", "title": "3P%", "type": "quantitative"}], "x": {"axis": {"labelExpr": "indexof([\"GS\", \"POR\", \"PHX\", \"MEM\", \"OKC\", \"SA\", \"MIN\", \"UTAH\", \"DEN\", \"LAC\", \"LAL\", \"NO\", \"DAL\", \"HOU\", \"SAC\"], datum.label) >= 0 ? '' : datum.label", "labelPadding": 36.8}, "field": "team_abbreviation", "sort": null, "title": null, "type": "nominal"}, "y": {"field": "fg3a", "title": "Three-point attempts per game", "type": "quantitative"}}, "title": "Western Conference three-point volume, 2025-26"}, {"data": {"values": [{"team_abbreviation": "GS", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b6/b623681ece167224ad4f51aef1ffa5a6f9e072af1cf1d6a6c158fd796e8d33ab.png", "sdvplot_team": "9"}, {"team_abbreviation": "POR", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/63/635515bc924cef7432e9b362da558c41032daf6f4c41be2e1dc80a34360b6f18.png", "sdvplot_team": "22"}, {"team_abbreviation": "PHX", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/5f/5f8932efdb7595069610b11ec2f417d78a9213691c2ba21e2bd491c172397ead.png", "sdvplot_team": "21"}, {"team_abbreviation": "MEM", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/eb/eb3f14246f67bccd4d8dd44be2f431992115beac8837c4b1be51d098b0a388bd.png", "sdvplot_team": "29"}, {"team_abbreviation": "OKC", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/6b/6b4801ae99c7dac7240d3b6ab3fbd4249a371473fc06517384e891834164a76e.png", "sdvplot_team": "25"}, {"team_abbreviation": "SA", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/cc/cc3d33fa8faf34874258b10a8e0377d70b80c7900b4d90698f35edba9952fa1c.png", "sdvplot_team": "24"}, {"team_abbreviation": "MIN", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ff/ff53859dd29fb795e2f9c0a7fbaf808548731526d3fbcbb2fdfb842224c36979.png", "sdvplot_team": "16"}, {"team_abbreviation": "UTAH", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/eb/eb20ed36a17b49f65fa30627a2ab2aae5c6e3ee31ab9f03983c15c05270016e1.png", "sdvplot_team": "26"}, {"team_abbreviation": "DEN", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/33/33f295fabf1bc3ddb60dfcbefb35ab9a3a91c865752e4539778495aab27f535d.png", "sdvplot_team": "7"}, {"team_abbreviation": "LAC", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d43253c0630f0d3d3a4c3c50ce92c9dbe8d5bf21e3bfd5326920c9487b26dbec.png", "sdvplot_team": "12"}, {"team_abbreviation": "LAL", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/82/82fda3df51058c5aad8a52123868f43959017be0c39c886e9aefbb77e6c69c89.png", "sdvplot_team": "13"}, {"team_abbreviation": "NO", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2c/2c2bf09a59358e024c442d80f16707cd8b705863df9b6aa0ee478346561dc18a.png", "sdvplot_team": "3"}, {"team_abbreviation": "DAL", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d0/d0d526f5400b7266883476071df0d24cdea0655a1641f0e5a2ea212e6c1b2b09.png", "sdvplot_team": "6"}, {"team_abbreviation": "HOU", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/72/720e35c0d3b39af8d57ae66f00ae1058bd0f32b41fba1137f779af5bc439e011.png", "sdvplot_team": "10"}, {"team_abbreviation": "SAC", "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/38/38728eaaf98d73d00363ee570601d64a4caa7fe2590fb0df5afb1b9129d6e20b.png", "sdvplot_team": "23"}]}, "mark": {"type": "image", "aspect": true, "baseline": "top", "height": 28.799999999999997, "width": 28.799999999999997}, "encoding": {"url": {"field": "sdvplot_url", "type": "nominal"}, "x": {"field": "team_abbreviation", "sort": null, "type": "nominal"}, "y": {"value": 326.0}}, "name": "sdvplot_axis_x"}], "height": 320, "width": 640, "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-sdv_11_0_1": [{"team_id": "9", "team_abbreviation": "GS", "games": 82, "fg3a": 44.09756097560975, "fg3_pct": 0.35564159292035397}, {"team_id": "22", "team_abbreviation": "POR", "games": 82, "fg3a": 42.21951219512195, "fg3_pct": 0.34257654534950893}, {"team_id": "21", "team_abbreviation": "PHX", "games": 82, "fg3a": 40.829268292682926, "fg3_pct": 0.36140979689366787}, {"team_id": "29", "team_abbreviation": "MEM", "games": 82, "fg3a": 39.52439024390244, "fg3_pct": 0.3526689293427954}, {"team_id": "25", "team_abbreviation": "OKC", "games": 82, "fg3a": 37.9390243902439, "fg3_pct": 0.36483445837351336}, {"team_id": "24", "team_abbreviation": "SA", "games": 83, "fg3a": 37.91566265060241, "fg3_pct": 0.3590721321893867}, {"team_id": "16", "team_abbreviation": "MIN", "games": 82, "fg3a": 37.18292682926829, "fg3_pct": 0.369957363069859}, {"team_id": "26", "team_abbreviation": "UTAH", "games": 82, "fg3a": 36.65853658536585, "fg3_pct": 0.34464404524284764}, {"team_id": "7", "team_abbreviation": "DEN", "games": 82, "fg3a": 35.78048780487805, "fg3_pct": 0.39570552147239263}, {"team_id": "12", "team_abbreviation": "LAC", "games": 82, "fg3a": 33.80487804878049, "fg3_pct": 0.3676046176046176}, {"team_id": "13", "team_abbreviation": "LAL", "games": 82, "fg3a": 32.9390243902439, "fg3_pct": 0.35912624953720845}, {"team_id": "3", "team_abbreviation": "NO", "games": 82, "fg3a": 32.13414634146341, "fg3_pct": 0.34686907020872865}, {"team_id": "6", "team_abbreviation": "DAL", "games": 82, "fg3a": 31.890243902439025, "fg3_pct": 0.3437858508604206}, {"team_id": "10", "team_abbreviation": "HOU", "games": 82, "fg3a": 31.463414634146343, "fg3_pct": 0.3643410852713178}, {"team_id": "23", "team_abbreviation": "SAC", "games": 82, "fg3a": 30.195121951219512, "fg3_pct": 0.3404684975767367}]}}, {"renderer": "svg", "actions": false, "mode": "vega-lite"});
+</script>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
