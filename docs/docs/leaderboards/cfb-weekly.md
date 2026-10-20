@@ -109,10 +109,10 @@ fbs.sort("school").head()
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 4 | 1 | 4-1    |
-| 2006    | Akron     | Mid-American  | 1 | 5 | 1-5    |
-| 333     | Alabama   | SEC           | 5 | 1 | 5-1    |
-| 2026    | App State | Sun Belt      | 3 | 2 | 3-2    |
+| 2005    | Air Force | Mountain West | 5 | 1 | 5-1    |
+| 2006    | Akron     | Mid-American  | 1 | 6 | 1-6    |
+| 333     | Alabama   | SEC           | 5 | 2 | 5-2    |
+| 2026    | App State | Sun Belt      | 4 | 2 | 4-2    |
 | 12      | Arizona   | Big 12        | 5 | 1 | 5-1    |
 
 </div>
@@ -173,11 +173,11 @@ top25.head()
 
 | rank | team_id | school     | conference       | record | off      | dfn       | net      |
 |------|---------|------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame | FBS Independents | 6-0    | 0.316304 | -0.217101 | 0.533405 |
-| 2    | 333     | Alabama    | SEC              | 5-1    | 0.25625  | -0.138999 | 0.395249 |
-| 3    | 275     | Wisconsin  | Big Ten          | 4-1    | 0.156399 | -0.23409  | 0.390489 |
-| 4    | 61      | Georgia    | SEC              | 6-0    | 0.282527 | -0.105661 | 0.388188 |
-| 5    | 84      | Indiana    | Big Ten          | 6-0    | 0.277365 | -0.102185 | 0.379549 |
+| 1    | 87      | Notre Dame | FBS Independents | 6-1    | 0.275566 | -0.170449 | 0.446015 |
+| 2    | 99      | LSU        | SEC              | 5-2    | 0.181346 | -0.210565 | 0.391911 |
+| 3    | 84      | Indiana    | Big Ten          | 6-1    | 0.26615  | -0.097647 | 0.363797 |
+| 4    | 252     | BYU        | Big 12           | 6-0    | 0.238176 | -0.100615 | 0.338791 |
+| 5    | 194     | Ohio State | Big Ten          | 6-1    | 0.174395 | -0.126101 | 0.300496 |
 
 </div>
 
