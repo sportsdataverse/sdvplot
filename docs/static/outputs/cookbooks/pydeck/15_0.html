@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+        <iframe
+            width="100%"
+            height=500
+            frameborder="0"
+            srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;title&gt;pydeck&lt;/title&gt;
+        &lt;script src=&quot;https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js&quot;&gt;&lt;/script&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css&quot; /&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css&quot; /&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/maplibre-gl@5.14.0/dist/maplibre-gl.css&quot; /&gt;
+    &lt;script src=&#x27;https://cdn.jsdelivr.net/npm/@deck.gl/jupyter-widget@~9.3.*/dist/index.js&#x27;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=https://cdn.jsdelivr.net/npm/@deck.gl/widgets@~9.3.*/dist/stylesheet.css /&gt;
+    &lt;style&gt;
+    body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#deck-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+#deck-container canvas {
+  z-index: 1;
+  background: none;
+}
+
+#deck-container .error_text {
+  color: red;
+  background: none;
+  position: absolute;
+  z-index: 100;
+}
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;deck-container&quot;&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+  &lt;script&gt;
+    const container = document.getElementById(&#x27;deck-container&#x27;);
+    const jsonInput = {
+  &quot;initialViewState&quot;: {
+    &quot;latitude&quot;: 38.20506541233333,
+    &quot;longitude&quot;: -92.46218963466667,
+    &quot;zoom&quot;: 2
+  },
+  &quot;layers&quot;: [
+    {
+      &quot;@@type&quot;: &quot;IconLayer&quot;,
+      &quot;data&quot;: [
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f4/f430543a6db8d652e4fb1a81c4ac99ee32022ae587834234a029830a9653b8d2.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 0,
+          &quot;position&quot;: [
+            -121.51246,
+            38.57994
+          ],
+          &quot;team&quot;: &quot;11&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c36c62410bbed29624672b006173af58bcdfbb066ae9d6f7c4cb99205e861d2.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 1,
+          &quot;position&quot;: [
+            -84.467641,
+            33.890672
+          ],
+          &quot;team&quot;: &quot;15&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b0/b060f0fcc21d64b978be260f0c24880c50094f0ec8e640d14896dc5045bf0b21.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 2,
+          &quot;position&quot;: [
+            -112.066687,
+            33.445302
+          ],
+          &quot;team&quot;: &quot;29&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e9/e96827050e6079674fa20221f5b8b8acbd4f80843f861dbb4d0261b309741472.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 3,
+          &quot;position&quot;: [
+            -76.621689,
+            39.283787
+          ],
+          &quot;team&quot;: &quot;1&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/47/471966c3b3f4ab7b567b9cd29e7eefc138963182e98b31c01c922335ad265597.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 4,
+          &quot;position&quot;: [
+            -71.097441,
+            42.346456
+          ],
+          &quot;team&quot;: &quot;2&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39a2b071f52778bbaa9f7d58432db3dcf638bb9a25eb17a901d3551d5d859086.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 5,
+          &quot;position&quot;: [
+            -87.655503,
+            41.948171
+          ],
+          &quot;team&quot;: &quot;16&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57f685ca691ba291d8ed31378e489a44b71648b310bfb7ceb8017bd21373f23c.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 6,
+          &quot;position&quot;: [
+            -84.506611,
+            39.097389
+          ],
+          &quot;team&quot;: &quot;17&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/8883a4e8b7c6bb75f308f1fb27a39eb7cf81ce431ba781edbc4afe082164410f.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 7,
+          &quot;position&quot;: [
+            -81.685255,
+            41.495861
+          ],
+          &quot;team&quot;: &quot;5&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd21e7588f021af3b44cc0aeab2b281ddc515b7d6b6a68e4c823086ed585ea75.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 8,
+          &quot;position&quot;: [
+            -104.994136,
+            39.756042
+          ],
+          &quot;team&quot;: &quot;27&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f9/f92f9c32cea65d9e697a254d09a8ae16326889796f380649b2fee64396cc4640.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 9,
+          &quot;position&quot;: [
+            -87.634167,
+            41.83
+          ],
+          &quot;team&quot;: &quot;4&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/00/0037b82f8f714da9f40b6a2ac036c5086f06ccb139473891135c3321a7a08750.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 10,
+          &quot;position&quot;: [
+            -83.048695,
+            42.3391151
+          ],
+          &quot;team&quot;: &quot;6&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b7e6858d9d11fe9fade351624bfbab74ec12451749feef37bd1f083d59eb4f7b.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 11,
+          &quot;position&quot;: [
+            -95.355509,
+            29.756967
+          ],
+          &quot;team&quot;: &quot;18&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95188fdcf6d74b4e5437549ad33e20548ce8f3e696621765680354da25a0207b.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 12,
+          &quot;position&quot;: [
+            -94.480483,
+            39.051567
+          ],
+          &quot;team&quot;: &quot;7&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/71/712a4a6f37cac63156de1d17a170532fd6bbbf3a9690b276fec2a6aac751809f.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 13,
+          &quot;position&quot;: [
+            -117.8823996,
+            33.80019044
+          ],
+          &quot;team&quot;: &quot;3&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aab854c59098d4f465c1c6f31b580f2a38d2ed4f5c0c03df2da76f62f5378dc4.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 14,
+          &quot;position&quot;: [
+            -118.24053,
+            34.07368
+          ],
+          &quot;team&quot;: &quot;19&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ef/ef37342904a50d2807c45432909de83c62c6795e9e54ebe42ac85fdd5e24c91f.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 15,
+          &quot;position&quot;: [
+            -80.21951795,
+            25.77796236
+          ],
+          &quot;team&quot;: &quot;28&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d4f8fe1b5be4b266a7cb1520a46a863973467361a1d3fd528502e223cbe35490.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 16,
+          &quot;position&quot;: [
+            -87.97099,
+            43.02838
+          ],
+          &quot;team&quot;: &quot;8&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3fbce769013cd44f2370505f8982d732c58c511eac9ede4e4d9bbe1b24ad4d39.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 17,
+          &quot;position&quot;: [
+            -93.277891,
+            44.981829
+          ],
+          &quot;team&quot;: &quot;9&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/94/94c334280d388936cb193fca6c3b620d2ed6abb7b932f352fa575630ce6243bd.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 18,
+          &quot;position&quot;: [
+            -73.84559155,
+            40.75753012
+          ],
+          &quot;team&quot;: &quot;21&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d98856c36bc8d3b0fb0bab5fabd79d2ae057619164365845cbc817b04ae74a26.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 19,
+          &quot;position&quot;: [
+            -73.9264977,
+            40.82919482
+          ],
+          &quot;team&quot;: &quot;10&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95997c9aaac40ec5d718b667c374561b782e5cb88665d69daf3178a16401d683.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 20,
+          &quot;position&quot;: [
+            -75.16716957,
+            39.90539086
+          ],
+          &quot;team&quot;: &quot;22&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0a/0af791c91bc01b4c654a65c90c983c3f907bf2605c67cfaaed731985efff34a1.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 21,
+          &quot;position&quot;: [
+            -80.005753,
+            40.446904
+          ],
+          &quot;team&quot;: &quot;23&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bb012967768a5f476ff427f433e89960149217777c6371d80eafb8725c2f175.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 22,
+          &quot;position&quot;: [
+            -117.157278,
+            32.707861
+          ],
+          &quot;team&quot;: &quot;25&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/9273d78e456969b14ef9031f39fc0511d8e875a919d887daa6b0898b1ff52226.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 23,
+          &quot;position&quot;: [
+            -122.33251,
+            47.591333
+          ],
+          &quot;team&quot;: &quot;12&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/da/dad3e0a51931bb8281ebb0215624849e0fd6cbec81aafc6a12d2260f583c04e5.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 24,
+          &quot;position&quot;: [
+            -122.389448,
+            37.778383
+          ],
+          &quot;team&quot;: &quot;26&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b738c8aaac9b726336cfa3e42745a4ddcc4c8d9537a9dc0b6abba02c5952e417.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 25,
+          &quot;position&quot;: [
+            -90.19286667,
+            38.62256667
+          ],
+          &quot;team&quot;: &quot;24&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f16f721cfdbb929fac08c9e1d8f9e1ab410be8b409eed5dac9b5f5c9a7af5ae.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 26,
+          &quot;position&quot;: [
+            -82.6525,
+            27.767778
+          ],
+          &quot;team&quot;: &quot;30&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b19ee28a151164ed231d98cafbcebe471faaa876a202e9c558b925be3ac3dac9.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 27,
+          &quot;position&quot;: [
+            -97.081818,
+            32.747299
+          ],
+          &quot;team&quot;: &quot;13&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af6d5454549834ea4b8cd6687618a76f936209ecf39eabdb17deaf76d21dd989.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 28,
+          &quot;position&quot;: [
+            -79.38915,
+            43.64155
+          ],
+          &quot;team&quot;: &quot;14&quot;
+        },
+        {
+          &quot;icon&quot;: {
+            &quot;anchorY&quot;: 64,
+            &quot;height&quot;: 128,
+            &quot;mask&quot;: false,
+            &quot;url&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d65931fe979aec3fe59a60b2d9df900e3f84da0eca81eb1646d0ea3a93fc810.png&quot;,
+            &quot;width&quot;: 128
+          },
+          &quot;index&quot;: 29,
+          &quot;position&quot;: [
+            -77.007501,
+            38.872861
+          ],
+          &quot;team&quot;: &quot;20&quot;
+        }
+      ],
+      &quot;getIcon&quot;: &quot;@@=icon&quot;,
+      &quot;getPosition&quot;: &quot;@@=position&quot;,
+      &quot;getSize&quot;: 34.0,
+      &quot;id&quot;: &quot;sdvplot-logos&quot;,
+      &quot;opacity&quot;: 1.0,
+      &quot;sizeUnits&quot;: &quot;pixels&quot;
+    }
+  ],
+  &quot;mapProvider&quot;: &quot;carto&quot;,
+  &quot;mapStyle&quot;: &quot;https://basemaps.cartocdn.com/gl/positron-gl-style/style.json&quot;,
+  &quot;views&quot;: [
+    {
+      &quot;@@type&quot;: &quot;MapView&quot;,
+      &quot;controller&quot;: true
+    }
+  ]
+};
+    const tooltip = {&#x27;text&#x27;: &#x27;{team}&#x27;};
+    const customLibraries = null;
+    const configuration = null;
+
+    const deckInstance = createDeck({
+                  container,
+      jsonInput,
+      tooltip,
+      customLibraries,
+      configuration,
+          });
+
+  &lt;/script&gt;
+&lt;/html&gt;"
+        ></iframe>
+
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

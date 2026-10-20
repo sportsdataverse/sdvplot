@@ -39,6 +39,7 @@ pip install "sdvplot[mpl]"
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
 | `[pygal]` | pygal |
+| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` |
 | `[perspective]` | perspective-python (with its Jupyter widget), for `sdvplot.perspective`; Python 3.11+ (its wheels are cp311-abi3 only) |
 | `[all]` | every extra above |
 
@@ -46,7 +47,8 @@ pip install "sdvplot[mpl]"
 `[holoviews]`, `[tables]`, `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that
 library's plots, tables and maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]`
 is for `surface()`, and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
-`sdvplot.perspective` builds Perspective viewer configs in team colors and a logo column.
+`sdvplot.pydeck` builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and
+`sdvplot.perspective` Perspective viewer configs in team colors and a logo column.
 
 ## Quick example
 

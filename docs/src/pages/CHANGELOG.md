@@ -43,6 +43,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `sdvplot.pydeck` (new `[pydeck]` extra): deck.gl layer props for pydeck, the same as sdvplot-js's `./deckgl` builds
+  (held to one shared fixture). `logo_icon_layer` draws team logos at points (an `IconLayer` of auto-packed logo
+  icons), `pass_arc_layer` draws arcs in team colors (primary at the source, secondary at the target; with
+  `background`, 3:1 contrast and ΔE 20 apart through sdvplot-js's team palette, ported), and `surface_layer` draws a
+  sportypy rink, pitch, court or field as a `PolygonLayer` in the surface's own coordinates. The props are plain dicts
+  (`pydeck.Layer(**props)`); `deck()` builds a `pydeck.Deck` fitted to a surface or a map.
 - `sdvplot.perspective` (new `[perspective]` extra, Python 3.11+): `perspective_sdv_config(frame, team_col=, league=,
   plugin=, theme=, mode=)` returns a Perspective viewer config (`PerspectiveWidget(data, **config)` or the JavaScript
   `restore()`) that colors each team with the shared team palette: the Datagrid fills the team column's cells, and a

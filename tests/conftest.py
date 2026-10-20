@@ -421,6 +421,7 @@ _NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
     "tests/test_repo_files.py::test_docs_changelog_mirrors_the_root_changelog": "docs",
     "tests/test_repo_files.py::test_contributor_files_exist": "CLAUDE.md",
     "tests/test_repo_files.py::test_the_issue_templates_offer_what_sdvplot_supports": ".github",
+    "tests/test_pydeck.py::test_the_pydeck_floor_is_the_version_the_lock_tests": "uv.lock",
 }
 collect_ignore = [name for name, need in _NEEDS_AT_IMPORT.items() if not (_ROOT / need).exists()]
 

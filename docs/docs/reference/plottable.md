@@ -1,7 +1,7 @@
 ---
 title: sdvplot.plottable
 sidebar_label: sdvplot.plottable
-sidebar_position: 27
+sidebar_position: 28
 ---
 
 # sdvplot.plottable

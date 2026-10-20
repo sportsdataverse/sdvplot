@@ -65,7 +65,7 @@ ERRORS = [
 # (public_submodules), so a new one is checked at once, and fails the build until it is placed here.
 MODULE_SECTIONS = {
     "Plots and tables": [
-        "matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal",
+        "matplotlib", "plotnine", "plotly", "altair", "bokeh", "holoviews", "folium", "pygal", "pydeck",
         "great_tables", "reactable", "plottable", "itables", "perspective",
     ],
     "Housekeeping": ["testing", "typing"],
