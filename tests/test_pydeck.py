@@ -263,6 +263,18 @@ def test_a_faceoff_circles_two_half_rings_are_two_closed_loops():
     assert max(left) <= min(right) + 1e-9  # each half on its own side of the circle's centre
 
 
+def test_the_neutral_zone_faceoff_spot_rings_are_kept_as_two_closed_half_rings_each():
+    # sporty's geometry leaves a seam in these rings (cos(pi/2) = 6.1e-17, so a half ring does not come back exactly to
+    # its first point; sportypy#21): were sportypy's to do the same, the loop split would not fire and the spot would
+    # be one self-crossing path, split into slivers or dropped. sportypy closes each half ring exactly
+    pytest.importorskip("sportypy")
+    rows = [d for d in sdeck.surface_layer("hockey", "nhl")["data"] if d["name"] == "nodzone_faceoff_spot_ring"]
+    assert len(rows) == 16  # eight spots, two half rings each
+    assert all(r["polygon"][-1] == r["polygon"][0] and _area(r["polygon"]) > 0 for r in rows)
+    # each spot a 2 ft ring 2 inches wide
+    assert sum(_area(r["polygon"]) for r in rows) == pytest.approx(8 * math.pi * (1 - (5 / 6) ** 2), rel=0.01)
+
+
 def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
     pytest.importorskip("sportypy")
     every = sum(len(f._translate_feature()) for f in _sportypy_rink()._features if f.visible)
