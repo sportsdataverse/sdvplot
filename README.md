@@ -34,7 +34,9 @@ Plotting libraries are optional extras, for example
 rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
 `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
 maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()`, and
-`[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
+`[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`). `sdvplot.pydeck`
+builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and `sdvplot.perspective`
+Perspective viewer configs in team colors and a logo column (Python 3.11+).
 
 | Extra | Adds |
 | --- | --- |
@@ -51,6 +53,8 @@ maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. 
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
 | `[pygal]` | pygal |
+| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` |
+| `[perspective]` | perspective-python (with its Jupyter widget), for `sdvplot.perspective`; Python 3.11+ |
 | `[all]` | everything above |
 
 ### JavaScript / TypeScript
