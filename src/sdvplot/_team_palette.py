@@ -1,5 +1,5 @@
 """Team colors for a chart background: each readable against it (3:1, WCAG 1.4.11) and distinct from the teams before
-it (CIE76 ΔE). A line-for-line port of sdvplot-js's ``team-palette.ts``; tests/test_pydeck_shared.py holds it to that
+it (CIE76 ΔE). A line-for-line port of sdvplot-js's ``team-palette.ts``; tests/test_team_palette.py holds it to that
 module's output on every NBA, NFL, MLB and NHL team on three backgrounds (tests/fixtures/deckgl_shared.json)."""
 
 from __future__ import annotations

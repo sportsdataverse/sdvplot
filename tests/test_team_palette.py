@@ -1,9 +1,6 @@
 """The ported team palette (sdvplot._team_palette) against sdvplot-js's team-palette.ts, on the 12 palette cases of the
 shared deck.gl fixture (tests/fixtures/deckgl_shared.json, the same bytes sdvplot-js commits as fixtures/deckgl/shared.json):
-every NBA, NFL, MLB and NHL team in standard order on #181a1b, #000000 and #ffffff. Needs no optional library.
-
-The port and the fixture are byte-identical copies of the ones on the pydeck branch (sdvplot #132), so the two add the
-same files and merge cleanly; tests/test_pydeck_shared.py checks the same 12 cases there."""
+every NBA, NFL, MLB and NHL team in standard order on #181a1b, #000000 and #ffffff. Needs no optional library."""
 
 import hashlib
 import json

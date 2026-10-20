@@ -12,7 +12,6 @@ import polars as pl
 import pytest
 
 from sdvplot import _cache, _manifest
-from sdvplot._team_palette import team_palette
 from tests.conftest import FakeResponse, FakeSession
 
 PATH = Path(__file__).parent / "fixtures" / "deckgl_shared.json"
@@ -25,8 +24,8 @@ FIXTURE = json.loads(BYTES)
 
 @pytest.fixture
 def sdeck():
-    """sdvplot.pydeck, which needs pydeck at import (the [pydeck] extra). The byte identity and palette tests need
-    neither, so they run without it."""
+    """sdvplot.pydeck, which needs pydeck at import (the [pydeck] extra). The byte identity test needs neither, so it
+    runs without it; tests/test_team_palette.py holds the ported palette to the fixture's 12 palettes."""
     pytest.importorskip("pydeck")
     import sdvplot.pydeck
 
@@ -99,11 +98,3 @@ def test_each_surface_has_the_fixtures_props_fill_colors_and_extent(sdeck, case)
     # rows per looped feature: a faceoff circle's two half rings are two rows (the loop split)
     for name, n in case["loops"].items():
         assert sum(d["name"] == name for d in data) == n, name
-
-
-@pytest.mark.parametrize("case", FIXTURE["palettes"], ids=lambda c: f"{c['league']}-{c['background']}")
-def test_the_ported_team_palette_gives_sdvplot_js_colors_on_every_team(case):
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        got = team_palette(case["colors"], case["alts"], case["background"], case["labels"])
-    assert got == case["expected"]
