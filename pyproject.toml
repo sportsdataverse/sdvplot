@@ -46,7 +46,10 @@ surfaces = ["sportypy>=1.2.0", "mplsoccer>=1.2"]
 plottable = ["plottable>=0.1.5"]
 itables = ["itables>=2.4"]  # itables.typing.ITableOptions (2.4.0)
 pygal = ["pygal>=3.0.1"]  # 3.0.0 imports pkg_resources, absent without setuptools
-all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,reactable,folium,surfaces,plottable,itables,pygal]"]
+pydeck = ["pydeck>=0.9.3"]  # 0.9.3 (2026-07-02): the newest release, tested; it draws with deck.gl ~9.3
+# wheels are cp311-abi3 only: on 3.10 pip would build Perspective's Rust/C++ sdist, so the extra is 3.11+
+perspective = ["perspective-python[jupyter]>=5.5.1; python_version >= '3.11'"]
+all = ["sdvplot[svg,mpl,plotnine,plotly,altair,bokeh,holoviews,tables,reactable,folium,surfaces,plottable,itables,pygal,pydeck,perspective]"]
 
 [project.urls]
 Homepage = "https://sdvplot.sportsdataverse.org/"
@@ -75,7 +78,7 @@ compat = [
   "pyfonts>=1.4",
   "wordcloud>=1.9.6",
 ]
-lint = ["ruff==0.17.0", "mypy>=1.10", "types-requests", "pyyaml>=6"]
+lint = ["ruff==0.17.1", "mypy>=1.10", "types-requests", "pyyaml>=6"]
 docs = ["docstring_parser>=0.16", "nbclient>=0.10", "nbconvert>=7", "nbformat>=5", "ipykernel>=6", "jinja2>=3", "seaborn>=0.13"]
 # Real data for the example notebooks, cookbooks, recipes, leaderboards and the automation example (sdv-py's
 # loaders read SportsDataverse release files and ESPN): executed by tools/render_notebooks.py, never imported by sdvplot.

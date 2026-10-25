@@ -50,10 +50,12 @@
       "reference/holoviews",
       "reference/folium",
       "reference/pygal",
+      "reference/pydeck",
       "reference/great_tables",
       "reference/reactable",
       "reference/plottable",
-      "reference/itables"
+      "reference/itables",
+      "reference/perspective"
     ]
   },
   {

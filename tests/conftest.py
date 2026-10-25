@@ -417,9 +417,11 @@ _NEEDS_AT_RUN = {  # test id prefix -> a path it reads when it runs
     "tests/test_sdvplotr_parity.py": "data-raw",
     "tests/test_submodule_examples.py::test_the_docs_page_snippets_run_offline_and_match_their_comments": "docs",
     "tests/test_repo_files.py::test_sdv_py_dotfiles_exist_and_parse": "CLAUDE.md",
+    "tests/test_perspective.py::test_the_perspective_floor_is_the_version_the_lock_tests": "uv.lock",
     "tests/test_repo_files.py::test_docs_changelog_mirrors_the_root_changelog": "docs",
     "tests/test_repo_files.py::test_contributor_files_exist": "CLAUDE.md",
     "tests/test_repo_files.py::test_the_issue_templates_offer_what_sdvplot_supports": ".github",
+    "tests/test_pydeck.py::test_the_pydeck_floor_is_the_version_the_lock_tests": "uv.lock",
 }
 collect_ignore = [name for name, need in _NEEDS_AT_IMPORT.items() if not (_ROOT / need).exists()]
 

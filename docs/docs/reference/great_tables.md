@@ -1,7 +1,7 @@
 ---
 title: sdvplot.great_tables
 sidebar_label: sdvplot.great_tables
-sidebar_position: 25
+sidebar_position: 26
 ---
 
 # sdvplot.great_tables
