@@ -13,6 +13,7 @@ import pytest
 import requests
 
 from sdvplot import _cache, _index, _manifest
+from sdvplot._errors import SdvplotWarning
 
 TEAMS = [
     # league, team_id, abbr, name, short_name, location, program, conference_id, conference, primary, secondary, color_source
@@ -345,6 +346,15 @@ def manifest(cache, monkeypatch):
     monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, FIXTURE.read_bytes(), {"ETag": '"m1"'})))
     _manifest._read.cache_clear()
     return _manifest.load_manifest()
+
+
+def sdvplot_warnings(record):
+    """The ``SdvplotWarning``s in a ``pytest.warns`` record.
+
+    ``pytest.warns`` records every warning, and plotnine on pandas 3.1 raises ``Pandas4Warning``s of its own, so a
+    count of sdvplot's warnings filters the record first.
+    """
+    return [w for w in record if issubclass(w.category, SdvplotWarning)]
 
 
 def seed_image(path, size=(50, 50), color=(200, 30, 40, 255)):
