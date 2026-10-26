@@ -25,7 +25,7 @@ What a bug report needs: the package version, the bundled-index version, and the
 ```python
 import sdvplot
 
-sdvplot.versions()["sdvplot"]   # '0.1.1'
+sdvplot.versions()["sdvplot"]   # '0.2.0'
 ```
 
 ## See also
