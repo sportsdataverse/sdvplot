@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "${{ matrix.python }}" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "${{ matrix.python }}" }
       - name: Install project + extras + test group
         run: uv sync --all-extras --no-default-groups --group test --frozen
@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, python-version: "3.10" }
       - name: Install project + extras + test group at their floors
         run: uv sync --resolution lowest-direct --all-extras --no-default-groups --group test
@@ -98,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, python-version: "3.13" }
       - name: Install project + extras + test group, then polars 2
         run: |
@@ -118,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
       - name: Build the sdist and unpack it outside the checkout
         run: |
@@ -152,7 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, python-version: "${{ matrix.python }}" }
       - name: Build the wheel
         run: uv build --wheel --out-dir "$RUNNER_TEMP/dist"
@@ -180,7 +180,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.2
         with: { version: "latest", enable-cache: true, cache-dependency-glob: "uv.lock", python-version: "3.13" }
       - name: Install project + extras + dep groups
         run: uv sync --all-extras --all-groups --frozen
