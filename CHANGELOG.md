@@ -3,9 +3,10 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+    - [Changed](#changed)
   - [[0.1.1] - 2026-10-26](#011---2026-10-26)
     - [Added](#added)
-    - [Changed](#changed)
+    - [Changed](#changed-1)
     - [Fixed](#fixed)
   - [[0.1.0] - 2026-10-05](#010---2026-10-05)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
@@ -23,7 +24,7 @@
       - [Parity extras (court coordinates, images by path, reference lines)](#parity-extras-court-coordinates-images-by-path-reference-lines)
       - [Parity extras (title images, team tiers)](#parity-extras-title-images-team-tiers)
       - [Release hardening](#release-hardening)
-    - [Changed](#changed-1)
+    - [Changed](#changed-2)
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
       - [Release hardening](#release-hardening-1)
@@ -41,6 +42,11 @@
 All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- The surfaces-and-shot-charts cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home
+  since sportsdataverse-py#1020 (the old `sportsdataverse.euroleague` path is removed in sportsdataverse 0.4.0).
 
 ## [0.1.1] - 2026-10-26
 

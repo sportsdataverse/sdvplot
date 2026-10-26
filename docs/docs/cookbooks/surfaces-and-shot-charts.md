@@ -390,7 +390,7 @@ basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves t
 in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game:
 
 ```python
-import sportsdataverse.basketball.euroleague as euroleague
+import sportsdataverse.euroleague as euroleague
 
 euro = sdvplot.court_coords(
     euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
