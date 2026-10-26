@@ -3,6 +3,7 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
+  - [[0.1.1] - 2026-10-26](#011---2026-10-26)
     - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
@@ -40,6 +41,8 @@
 All notable changes to sdvplot are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.1.1] - 2026-10-26
 
 ### Added
 
@@ -692,5 +695,6 @@ fails loudly, with the message shown:
   had a 60 s timeout of its own, so a server sending a header byte every 59 s held the call open almost indefinitely.
   Through a proxy, the watchdog covers the body only.
 
-[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/sportsdataverse/sdvplot/releases/tag/v0.1.0

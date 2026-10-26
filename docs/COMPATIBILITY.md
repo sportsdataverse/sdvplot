@@ -116,7 +116,7 @@ cloud = WordCloud(color_func=lambda word, **kw: color[word]).generate_from_frequ
 ## Watch list: Reflex XY
 
 [reflex-xy](https://pypi.org/project/reflex-xy/) draws WebGL charts in Reflex apps. Checked: **0.0.2** (released
-2026-07-28), whose README documents no image marks or custom glyphs. Until it does, sdvplot supports it with colors
+2026-07-28; re-checked 2026-10-26 for 0.1.1), whose README documents no image marks or custom glyphs. Until it does, sdvplot supports it with colors
 only: pass `sdvplot.palette(...)` or `sdvplot.team_colors(...)` hex strings wherever it takes a color.
 
 **Criterion for an adapter:** a released reflex-xy version documents an image mark (a glyph that takes an image URL or
