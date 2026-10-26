@@ -6125,7 +6125,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "altair", marker = "extra == 'altair'", specifier = ">=5.1" },
+    { name = "altair", marker = "extra == 'altair'", specifier = ">=5.5" },
     { name = "bokeh", marker = "extra == 'bokeh'", specifier = ">=3.8.2" },
     { name = "bokeh", marker = "extra == 'holoviews'", specifier = ">=3.8.2" },
     { name = "folium", marker = "extra == 'folium'", specifier = ">=0.19" },

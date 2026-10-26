@@ -387,10 +387,12 @@ plt.show()
 sportsdataverse-py's `euroleague_game_points()` reports each shot in centimeters from the hoop, both teams on one
 basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves them onto the FIBA court
 `surface("fiba")` draws, in meters, and turns the free throws into nulls. Which sideline is positive is unverified
-in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game:
+in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game (this needs
+sportsdataverse 0.2.0b1 or newer, `pip install --pre sportsdataverse`, where EuroLeague lives under
+`sportsdataverse.basketball`):
 
 ```python
-import sportsdataverse.euroleague as euroleague
+import sportsdataverse.basketball.euroleague as euroleague
 
 euro = sdvplot.court_coords(
     euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
