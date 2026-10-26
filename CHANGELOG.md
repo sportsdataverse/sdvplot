@@ -46,10 +46,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 ### Changed
 
 - The surfaces cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home since
-  sportsdataverse-py 0.2.0b1 (the old `sportsdataverse.euroleague` path warns, and 0.1.4 has neither). The
-  `examples` extra and the social-automation example now need `sportsdataverse>=0.2.0b1`.
-- The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`),
-  which the `sportsdataverse>=0.2.0b1` examples now pull in.
+  sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`).
+- The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`).
 
 ## [0.1.1] - 2026-10-26
 
