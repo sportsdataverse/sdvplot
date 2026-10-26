@@ -286,15 +286,15 @@ def test_one_warning_per_skip_reason_in_both_adapters(mark_images):
     data = _frame(tier_no=[1, 1, 2], team=["LV", "XXX", "LAC"])  # an unknown team; a team with no logo archived
     with pytest.warns(SdvplotWarning) as rec:
         smpl.team_tiers(data, "nfl")
-    assert sorted("archived" in str(w.message) for w in rec) == [False, True]
+    assert sorted("archived" in str(w.message) for w in rec if issubclass(w.category, SdvplotWarning)) == [False, True]
 
     sp9 = _sp9()
     with pytest.warns(SdvplotWarning) as built:
         p = sp9.team_tiers(data, "nfl")
-    assert len(built) == 1  # the unknown team, when built
+    assert len([w for w in built if issubclass(w.category, SdvplotWarning)]) == 1  # the unknown team, when built
     with pytest.warns(SdvplotWarning, match="archived") as drawn:
         p.draw()
-    assert len(drawn) == 1  # the missing logo, once per render
+    assert len([w for w in drawn if issubclass(w.category, SdvplotWarning)]) == 1  # the missing logo, once per render
 
 
 # ---- theme --------------------------------------------------------------------------------------------------------

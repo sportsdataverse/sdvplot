@@ -207,6 +207,10 @@ Polars 1.x API only; ruff line length 120.
 
 ## Release
 
+0. Before the cut: `uv run pre-commit install` (a new clone or worktree has no hooks); lock with the uv
+   `release.yml` pins (`uvx --from uv==<pin> uv lock`), so the lock diff is one line; bump the version everywhere it is
+   written (`pyproject.toml`, `CITATION.cff`, the `_versions.py` docstring, then `tools/gen_docs.py`, never the
+   generated page); snapshot the docs last. CONTRIBUTING's Release section is the checklist.
 1. PR #50 (first release only) switches the install lines to `pip install sdvplot` and cuts the CHANGELOG: it merges
    just before tagging, because the README is the PyPI page and cannot change for a version once uploaded.
 2. Publishing a GitHub Release `vX.Y.Z` runs `release.yml`: the tag must equal the project version; the tests run

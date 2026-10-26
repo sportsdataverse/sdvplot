@@ -1,4 +1,4 @@
-# Offline tests on 3.10-3.13 (Linux, with branch coverage), Windows + macOS, a lowest-direct-versions job, the sdist's own
+# Offline tests on 3.10-3.13 (Linux, with branch coverage), Windows + macOS, lowest-direct and polars 2 jobs, the sdist's own
 # tests, and the built wheel with no extras (3.10 + 3.14); live tests (real network) on manual runs
 # (and weekly in live-tests-cron).
 name: tests
@@ -85,6 +85,27 @@ jobs:
         with: { version: "latest", enable-cache: true, python-version: "3.10" }
       - name: Install project + extras + test group at their floors
         run: uv sync --resolution lowest-direct --all-extras --no-default-groups --group test
+      - name: Run tests (offline, no image comparison)
+        run: uv run --no-sync pytest -q --maxfail=10
+
+  # polars 2.x, which `polars>=1.24` lets users install: uv resolves one lock across every dependency group, and the
+  # examples group's sportsdataverse (all of its PyPI releases pin polars<2) holds the lock on polars 1.x, so the other
+  # jobs never see polars 2. Sync the test environment from the lock, then upgrade polars alone.
+  polars2:
+    name: pytest (polars 2, py3.13)
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with: { version: "latest", enable-cache: true, python-version: "3.13" }
+      - name: Install project + extras + test group, then polars 2
+        run: |
+          uv sync --frozen --all-extras --no-default-groups --group test
+          uv pip install --upgrade "polars>=2,<3"
+      - name: Polars 2 is what resolved
+        run: uv run --no-sync python -c "import polars; assert polars.__version__.startswith('2.'), polars.__version__"
       - name: Run tests (offline, no image comparison)
         run: uv run --no-sync pytest -q --maxfail=10
 

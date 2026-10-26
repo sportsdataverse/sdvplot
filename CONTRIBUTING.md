@@ -218,16 +218,27 @@ npx yarn@1.22.22 build    # what CI runs: it must finish with no new broken link
 
 1. Re-check the watch list in `docs/COMPATIBILITY.md`: if a newer reflex-xy release documents an image mark or a
    custom glyph, open an issue for a Reflex XY adapter; either way, update the version and date checked there.
-2. Bump `version` in `pyproject.toml`, run `uv lock`, and commit `uv.lock` with it (the `drift` workflow fails on a
-   stale lock).
+2. Install the hooks first (`uv run pre-commit install`; a fresh clone or worktree has none, and then nothing checks
+   your commits). Bump `version` in `pyproject.toml`, run `uv lock` with the uv that `release.yml` pins
+   (`uvx --from uv==<pin> uv lock`: an older uv rewrites environment markers all over the lock), and commit `uv.lock`
+   with it (the `drift` workflow fails on a stale lock); the lock diff should be the one `version` line.
+   Update every other place the version is written: `CITATION.cff` (`version` and a quoted `date-released`;
+   `tests/test_repo_files.py` checks the version), the `versions()` docstring example in `src/sdvplot/_versions.py`,
+   and the hand-written example in `docs/docs/concepts/cache.md`. `docs/docs/reference/**` is generated: change the
+   docstring, then run `uv run python tools/gen_docs.py`, never edit the page.
 3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
    an emptied `## [Unreleased]`, which always stays at the top (a test asserts it).
-4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z`.
-5. First release only: merge the install-line PR (#50: README, intro and quickstart switch to `pip install sdvplot`)
+4. Run `cd docs && npx yarn@1.22.22 version:docs X.Y.Z` after the docs are final: the snapshot copies
+   `docs/docs` as it stands, and later edits do not reach it. `docs/versioned_docs` is in ruff's `extend-exclude`, so
+   the snapshot of the generated pages is never reformatted.
+5. Before pushing, run `uv run pre-commit run --all-files`, the drift checks (`uv run python tools/build_index.py
+   --check`, `uv run python tools/gen_docs.py --check`) and `SDVPLOT_RELEASE_VERSION=vX.Y.Z uv run pytest -q
+   tests/test_repo_files.py`, the gate `release.yml` runs on the tag.
+6. First release only: merge the install-line PR (#50: README, intro and quickstart switch to `pip install sdvplot`)
    just before tagging. The README is the PyPI page and cannot be changed for a version once it is uploaded. For 0.1.0,
    step 3 means folding the `[Unreleased]` entries into the existing `## [0.1.0]` section and replacing its
    `Unreleased` with the date; #50 carries that cut too.
-6. Publish a GitHub Release `vX.Y.Z`. `release.yml` checks that the tag equals the project version, runs the tests
+7. Publish a GitHub Release `vX.Y.Z`. `release.yml` checks that the tag equals the project version, runs the tests
    with `SDVPLOT_RELEASE_VERSION` set from the tag (so `tests/test_repo_files.py::test_the_tagged_release_is_ready`
    refuses a README that still installs from GitHub, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, or
    entries left under `[Unreleased]`) and the index drift check, builds the sdist and wheel from a fresh checkout, and
