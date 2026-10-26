@@ -370,7 +370,8 @@ def test_geom_from_path_warns_once_per_draw_and_reads_each_image_once_across_fac
     p = ggplot(df, aes("x", "y", path="img")) + sp9.geom_from_path() + facet_wrap("f")
     with pytest.warns(SdvplotWarning, match=r"skipped 2 point\(s\) whose image could not be read") as rec:
         assert [m[0] for m in sp9._drawn_marks(p)] == [a, a]
-    assert len(rec) == 1 and len(session.calls) == 1
+    # only sdvplot's own: pandas 3.1's Pandas4Warning from inside plotnine lands in the same record
+    assert len([w for w in rec if issubclass(w.category, SdvplotWarning)]) == 1 and len(session.calls) == 1
 
 
 def test_geom_from_path_leaves_a_missing_x_to_plotnine(tmp_path):
