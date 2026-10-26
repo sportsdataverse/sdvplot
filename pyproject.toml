@@ -132,6 +132,7 @@ extend-exclude = [
   "docs/docs/leaderboards",
   "docs/docs/gallery.md",
   "docs/src/pages/CHANGELOG.md",
+  "docs/versioned_docs",  # frozen release snapshots of the pages above (docusaurus docs:version)
 ]
 
 [tool.ruff.format]
