@@ -57,6 +57,14 @@ def test_sdv_py_dotfiles_exist_and_parse():
     assert "SDVPLOT_CACHE_DIR" in (ROOT / ".env.example").read_text()
 
 
+def test_citation_version_matches_the_project_version():
+    """CITATION.cff is bumped by hand at a release; a stale one cites the previous version."""
+    project = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.M)[1]
+    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+    assert str(citation["version"]) == project
+    assert isinstance(citation["date-released"], str)  # quoted: a bare YAML date loads as a date, not CFF's string
+
+
 def test_docs_changelog_mirrors_the_root_changelog():  # Review Focus 5
     root = (ROOT / "CHANGELOG.md").read_bytes()
     assert root.startswith(b"<!-- START doctoc") or root.startswith(b"# Changelog")
