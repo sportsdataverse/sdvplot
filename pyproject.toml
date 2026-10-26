@@ -1,6 +1,6 @@
 [project]
 name = "sdvplot"
-version = "0.1.0"
+version = "0.1.1"
 description = "Team logos, wordmarks, headshots and colors for Python plots and tables (SportsDataverse)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -136,6 +136,7 @@ extend-exclude = [
   "docs/docs/leaderboards",
   "docs/docs/gallery.md",
   "docs/src/pages/CHANGELOG.md",
+  "docs/versioned_docs",  # frozen release snapshots of the pages above (docusaurus docs:version)
 ]
 
 [tool.ruff.format]

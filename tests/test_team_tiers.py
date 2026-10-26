@@ -287,7 +287,7 @@ def test_one_warning_per_skip_reason_in_both_adapters(mark_images):
     data = _frame(tier_no=[1, 1, 2], team=["LV", "XXX", "LAC"])  # an unknown team; a team with no logo archived
     with pytest.warns(SdvplotWarning) as rec:
         smpl.team_tiers(data, "nfl")
-    assert sorted("archived" in str(w.message) for w in rec) == [False, True]
+    assert sorted("archived" in str(w.message) for w in sdvplot_warnings(rec)) == [False, True]
 
     sp9 = _sp9()
     with pytest.warns(SdvplotWarning) as built:
