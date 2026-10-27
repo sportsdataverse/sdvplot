@@ -53,14 +53,6 @@ except NoDataError as err:
     season, box = current - 1, team_games(current - 1)
 ```
 
-<div class="sdv-output">
-
-```text
-no 2026-27 regular-season games yet; showing 2025-26 instead
-```
-
-</div>
-
 The status line is written when the page runs: the season to date, a finished regular season with the playoffs under
 way, or the offseason.
 
@@ -84,7 +76,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Offseason:** the final 2025-26 regular season; the 2026-27 season has no games yet.
+**Season to date:** the 2026-27 season through October 25.
 
 </div>
 
@@ -128,13 +120,13 @@ ratings.head()
 
 <div class="sdv-output">
 
-| team | w  | l  | l10 | ortg       | drtg       | pct      | net       | abbr | name    | conference         |
-|------|----|----|-----|------------|------------|----------|-----------|------|---------|--------------------|
-| 25   | 64 | 18 | 7   | 115.988049 | 105.126054 | 0.780488 | 10.861996 | OKC  | Thunder | Western Conference |
-| 24   | 62 | 20 | 8   | 116.606658 | 108.525126 | 0.756098 | 8.081532  | SA   | Spurs   | Western Conference |
-| 8    | 60 | 22 | 8   | 114.414822 | 106.488601 | 0.731707 | 7.926221  | DET  | Pistons | Eastern Conference |
-| 2    | 56 | 26 | 8   | 117.222701 | 109.368854 | 0.682927 | 7.853846  | BOS  | Celtics | Eastern Conference |
-| 7    | 54 | 28 | 10  | 119.578358 | 114.537192 | 0.658537 | 5.041166  | DEN  | Nuggets | Western Conference |
+| team | w | l | l10 | ortg       | drtg       | pct | net       | abbr | name          | conference         |
+|------|---|---|-----|------------|------------|-----|-----------|------|---------------|--------------------|
+| 22   | 2 | 0 | 2   | 121.609883 | 97.963517  | 1.0 | 23.646366 | POR  | Trail Blazers | Western Conference |
+| 16   | 3 | 0 | 3   | 116.16     | 93.76      | 1.0 | 22.4      | MIN  | Timberwolves  | Western Conference |
+| 13   | 3 | 0 | 3   | 122.809262 | 110.336446 | 1.0 | 12.472816 | LAL  | Lakers        | Western Conference |
+| 8    | 3 | 0 | 3   | 114.782721 | 102.49612  | 1.0 | 12.286601 | DET  | Pistons       | Eastern Conference |
+| 29   | 3 | 0 | 3   | 116.506755 | 105.410874 | 1.0 | 11.095881 | MEM  | Grizzlies     | Western Conference |
 
 </div>
 

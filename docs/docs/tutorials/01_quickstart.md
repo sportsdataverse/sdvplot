@@ -138,7 +138,7 @@ sdvplot.versions()
 <div class="sdv-output">
 
 ```text
-{'sdvplot': '0.1.0',
+{'sdvplot': '0.1.1',
  'index': '0aeef853ec2b',
  'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
 ```
