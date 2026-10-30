@@ -118,8 +118,8 @@ Generated files are never hand-edited. Change the source, regenerate, and commit
 | `docs/docs/reference/**` (API reference), `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `uv run python tools/gen_docs.py --check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (`--only leagues/nfl` for one notebook; `--gallery-only` rebuilds `gallery.md` after a merge) | `tests/test_notebooks.py` (refreshed weekly by `live-tests-cron`) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` (refreshed weekly by `live-tests-cron`) |
-| `docs/static/img/sdvplot-logo.png` (the hex logo), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network) | the script asserts the logo's size |
-| `docs/src/pages/CHANGELOG.md` | the `sync-docs-changelog` pre-commit hook copies `CHANGELOG.md` | `uv run pre-commit run --all-files` |
+| `docs/static/img/sdvplot-logo.png` (the hex logo), `sdvplot-logo-readme.png` (its README copy), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network) | the script asserts the logo's size |
+| `docs/src/pages/CHANGELOG.md` | the `sync-docs-changelog` pre-commit hook (`tools/sync_changelog.py`) copies `CHANGELOG.md` under front matter | `uv run pre-commit run --all-files` |
 | `data-raw/sdvplotr_*.csv` (sdvplotR export) | `R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index afterwards |
 
 After a `CHANGELOG.md` edit, doctoc can rewrite its TOC after the hook has copied it: run the hooks again until they
@@ -176,7 +176,9 @@ pages come from `tools/render_notebooks.py`.
 Every user-visible change gets an entry under `## [Unreleased]` in `CHANGELOG.md`, in
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) form: an `### Added`, `### Changed`, `### Deprecated`,
 `### Removed`, `### Fixed` or `### Security` group, with a `####` topic heading when the entry needs one. Only a
-release moves or dates the sections.
+release moves or dates the sections: a version bumped ahead of its release keeps its entries under `[Unreleased]`
+until the publish day. The docs site's News page is `CHANGELOG.md` under front matter, written by
+`tools/sync_changelog.py` (the `sync-docs-changelog` pre-commit hook).
 
 ## Deprecation policy
 
@@ -222,8 +224,9 @@ npx yarn@1.22.22 build    # what CI runs: it must finish with no new broken link
    your commits). Bump `version` in `pyproject.toml`, run `uv lock` with the uv that `release.yml` pins
    (`uvx --from uv==<pin> uv lock`: an older uv rewrites environment markers all over the lock), and commit `uv.lock`
    with it (the `drift` workflow fails on a stale lock); the lock diff should be the one `version` line.
-   Update every other place the version is written: `CITATION.cff` (`version` and a quoted `date-released`;
-   `tests/test_repo_files.py` checks the version), the `versions()` docstring example in `src/sdvplot/_versions.py`,
+   Update every other place the version is written: `CITATION.cff` (`version` and a quoted `date-released`, the
+   publish day, as in the CHANGELOG heading: it cites the newest release, so it changes only at the cut, and the
+   release run refuses one that does not cite the tag), the `versions()` docstring example in `src/sdvplot/_versions.py`,
    and the hand-written example in `docs/docs/concepts/cache.md`. `docs/docs/reference/**` is generated: change the
    docstring, then run `uv run python tools/gen_docs.py`, never edit the page.
 3. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - <date>` heading (and add its link reference) directly below
@@ -240,9 +243,11 @@ npx yarn@1.22.22 build    # what CI runs: it must finish with no new broken link
    `Unreleased` with the date; #50 carries that cut too.
 7. Publish a GitHub Release `vX.Y.Z`. `release.yml` checks that the tag equals the project version, runs the tests
    with `SDVPLOT_RELEASE_VERSION` set from the tag (so `tests/test_repo_files.py::test_the_tagged_release_is_ready`
-   refuses a README that still installs from GitHub, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, or
-   entries left under `[Unreleased]`) and the index drift check, builds the sdist and wheel from a fresh checkout, and
-   installs the wheel bare to run its core. Then `publish-pypi` uploads with Trusted Publishing (OIDC, no stored
+   refuses a README that still installs from GitHub, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading,
+   entries left under `[Unreleased]`, or a `CITATION.cff` that does not cite the tag with that date) and the index
+   drift check, builds the sdist and wheel from a fresh checkout, installs the wheel bare to run its core, and
+   dry-runs `[all]` against the wheel from PyPI alone, so an extra whose floor only a git source meets (as
+   `[tool.uv.sources]` does for sportypy 1.2) stops the release. Then `publish-pypi` uploads with Trusted Publishing (OIDC, no stored
    token) from the `pypi` environment, the only job holding `id-token: write`. A manual run of the workflow builds and
    keeps the artifacts but never publishes. The one-time setup is a pending Trusted Publisher on pypi.org for project
    `sdvplot` (owner `sportsdataverse`, repo `sdvplot`, workflow `release.yml`, environment `pypi`).

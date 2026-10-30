@@ -3,7 +3,6 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
-  - [[0.2.0] - 2026-10-26](#020---2026-10-26)
     - [Added](#added)
     - [Changed](#changed)
     - [Fixed](#fixed)
@@ -46,8 +45,6 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-10-26
-
 ### Added
 
 - `surface()` draws every sportyR 2.3.0 surface (sportypy 1.2.0): softball (`ncaa_softball`, a team league, so the
@@ -77,12 +74,19 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
   The surfaces extra now needs sportypy 1.2.0.
 - The surfaces cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home since
-  sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`).
+  sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`), and with an
+  older release (the examples still pin 0.1.4) the cell prints that note and draws nothing instead of failing the page.
 - The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`).
 - `sdvplot.pydeck.surface_layer()` draws all ten sportypy sports, as sdvplot-js's `surfaceLayer`: lacrosse, softball
   and volleyball join the seven it drew.
 - `surface()` names the fix when the installed sportypy is older than 1.2 (a key it has no module or class for), and
   a library sportypy itself imports raises its own `ModuleNotFoundError` instead of the surfaces-extra message.
+  `surface()` and `sdvplot.pydeck.surface_layer()` suggest `pip install -U "sportypy>=1.2"` (and the GitHub install
+  while PyPI has only sportypy 1.0), not re-installing `sdvplot[surfaces]`, which let pip backtrack to an older sdvplot.
+- Docs: the `surface()` reference lists all 59 surface keys (sport, sportypy class, team league or not), generated
+  from the code; the README and the getting-started page list the `[itables]` extra, and the README links every
+  league tutorial and cookbook; the root docs (main) carry an "unreleased" banner while their version is not yet
+  released, and the newest release's snapshot no longer says it is unmaintained.
 
 ### Fixed
 
@@ -746,7 +750,6 @@ fails loudly, with the message shown:
   had a 60 s timeout of its own, so a server sending a header byte every 59 s held the call open almost indefinitely.
   Through a proxy, the watchdog covers the body only.
 
-[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.1...v0.2.0
+[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.1...HEAD
 [0.1.1]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/sportsdataverse/sdvplot/releases/tag/v0.1.0

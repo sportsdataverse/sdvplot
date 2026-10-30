@@ -76,9 +76,9 @@ repos:
     hooks:
       - id: sync-docs-changelog
         name: sync-docs-changelog
-        entry: uv run --frozen python -c "import shutil, subprocess; shutil.copy('CHANGELOG.md', 'docs/src/pages/CHANGELOG.md'); subprocess.run(['git', 'add', 'docs/src/pages/CHANGELOG.md'])"
+        entry: uv run --frozen python tools/sync_changelog.py
         language: system
-        files: ^CHANGELOG\.md$
+        files: ^(CHANGELOG\.md|tools/sync_changelog\.py)$
         pass_filenames: false
       - id: build-index-check
         name: bundled team index is current (tools/build_index.py --check)
