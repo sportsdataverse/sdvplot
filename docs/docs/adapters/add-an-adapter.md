@@ -1,6 +1,7 @@
 ---
 title: Add an adapter
 sidebar_label: Add an adapter
+description: "The step-by-step checklist for adding an sdvplot adapter for a new plotting or table library, with the shared contract tests it must pass."
 ---
 
 # Add an adapter

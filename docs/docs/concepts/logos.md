@@ -1,6 +1,7 @@
 ---
 title: Logos
 sidebar_label: Logos
+description: "The SportsDataverse logo archive (sdv-assets) and how sdvplot chooses a team's logo or wordmark by variant, season and source."
 ---
 
 # Logos

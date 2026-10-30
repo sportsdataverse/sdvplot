@@ -1,6 +1,7 @@
 ---
 title: Colors
 sidebar_label: Colors
+description: "Where each team's primary and secondary colors come from (nflverse, ESPN, the archived logo or a placeholder), and how palette() and team_colors() hand them out."
 ---
 
 # Colors

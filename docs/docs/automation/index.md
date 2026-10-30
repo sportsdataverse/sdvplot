@@ -2,6 +2,7 @@
 title: Social game-day graphics
 sidebar_label: Social graphics
 sidebar_position: 1
+description: "A scheduled workflow that makes leaderboards and game-day graphics with sdvplot from live ESPN data, writes alt text and captions, and posts them to Bluesky."
 ---
 
 # Social game-day graphics, automated

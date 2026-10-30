@@ -1,4 +1,4 @@
-# **sdvplot** <a href='https://sdvplot.sportsdataverse.org/'><img src='https://raw.githubusercontent.com/sportsdataverse/sdvplot/main/docs/static/img/sdvplot-logo.png' align="right" width="25%" min-width="120px" alt="sdvplot hex logo" /></a>
+# **sdvplot** <a href='https://sdvplot.sportsdataverse.org/'><img src='https://raw.githubusercontent.com/sportsdataverse/sdvplot/main/docs/static/img/sdvplot-logo-readme.png' align="right" width="25%" min-width="120px" alt="sdvplot hex logo" /></a>
 
 [![PyPI](https://img.shields.io/pypi/v/sdvplot?label=sdvplot&logo=python&style=for-the-badge)](https://pypi.org/project/sdvplot/)
 [![Python](https://img.shields.io/pypi/pyversions/sdvplot?logo=python&logoColor=white&style=for-the-badge)](https://pypi.org/project/sdvplot/)
@@ -35,9 +35,10 @@ Plotting libraries are optional extras, for example
 rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
 `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
 maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()` (ten
-sports' fields, courts, rinks and sheets), and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`,
-`sdvplot.plottable`). `sdvplot.pydeck` builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for
-pydeck, and `sdvplot.perspective` Perspective viewer configs in team colors and a logo column (Python 3.11+).
+sports' fields, courts, rinks and sheets), `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`,
+`sdvplot.plottable`), and `[itables]` the surveyed table themes for itables (`sdvplot.itables`). `sdvplot.pydeck` builds
+deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and `sdvplot.perspective` Perspective
+viewer configs in team colors and a logo column (Python 3.11+).
 
 | Extra | Adds |
 | --- | --- |
@@ -53,10 +54,11 @@ pydeck, and `sdvplot.perspective` Perspective viewer configs in team colors and 
 | `[svg]` | resvg-py, for SVG marks |
 | `[surfaces]` | sportypy and mplsoccer |
 | `[plottable]` | plottable |
+| `[itables]` | itables, for `sdvplot.itables.itables_sdv_theme()` |
 | `[pygal]` | pygal |
-| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` |
+| `[pydeck]` | pydeck, for `sdvplot.pydeck`'s layers and `deck()` (`surface_layer` also needs `[surfaces]`) |
 | `[perspective]` | perspective-python (with its Jupyter widget), for `sdvplot.perspective`; Python 3.11+ |
-| `[all]` | everything above |
+| `[all]` | every extra above (`[perspective]` only on Python 3.11+) |
 
 ### JavaScript / TypeScript
 
@@ -128,29 +130,47 @@ The [**`sdvplot`** documentation website](https://sdvplot.sportsdataverse.org) h
 **League tutorials:**
 [NFL](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/nfl) ·
 [CFB](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/cfb) ·
+[Spring football](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/spring-football) ·
 [NBA](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/nba) ·
 [WNBA](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/wnba) ·
 [MBB](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/mbb) ·
 [WBB](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/wbb) ·
 [MLB](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/mlb) ·
+[College baseball & softball](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/college-baseball-softball) ·
 [NHL](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/nhl) ·
 [PWHL](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/pwhl) ·
+[AHL, ECHL & junior hockey](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/hockeytech) ·
+[College hockey](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/college-hockey) ·
 [Soccer](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/soccer) ·
-[Cricket](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/cricket)
+[Cricket](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/cricket) ·
+[Lacrosse, tennis, volleyball & curling](https://sdvplot.sportsdataverse.org/docs/tutorials/leagues/lacrosse-tennis-volleyball-curling)
 
 **Cookbooks:**
 [Matplotlib logos](https://sdvplot.sportsdataverse.org/docs/cookbooks/matplotlib-logos) ·
 [Colors and themes](https://sdvplot.sportsdataverse.org/docs/cookbooks/colors-and-themes) ·
-[Tables](https://sdvplot.sportsdataverse.org/docs/cookbooks/tables) ·
-[Interactive web](https://sdvplot.sportsdataverse.org/docs/cookbooks/interactive-web) ·
 [plotnine](https://sdvplot.sportsdataverse.org/docs/cookbooks/plotnine) ·
+[Interactive web](https://sdvplot.sportsdataverse.org/docs/cookbooks/interactive-web) ·
+[Bokeh](https://sdvplot.sportsdataverse.org/docs/cookbooks/bokeh) ·
+[HoloViews](https://sdvplot.sportsdataverse.org/docs/cookbooks/holoviews) ·
+[pygal](https://sdvplot.sportsdataverse.org/docs/cookbooks/pygal) ·
+[folium maps](https://sdvplot.sportsdataverse.org/docs/cookbooks/folium-maps) ·
+[pydeck](https://sdvplot.sportsdataverse.org/docs/cookbooks/pydeck) ·
+[Perspective](https://sdvplot.sportsdataverse.org/docs/cookbooks/perspective) ·
+[Tables](https://sdvplot.sportsdataverse.org/docs/cookbooks/tables) ·
+[plottable](https://sdvplot.sportsdataverse.org/docs/cookbooks/plottable) ·
+[reactable](https://sdvplot.sportsdataverse.org/docs/cookbooks/reactable) ·
+[reactable formatters](https://sdvplot.sportsdataverse.org/docs/cookbooks/reactable-formatters) ·
+[reactable sparklines and gauges](https://sdvplot.sportsdataverse.org/docs/cookbooks/reactable-sparklines) ·
+[reactable themes and titles](https://sdvplot.sportsdataverse.org/docs/cookbooks/reactable-themes) ·
 [Surfaces and shot charts](https://sdvplot.sportsdataverse.org/docs/cookbooks/surfaces-and-shot-charts)
 
 **Recipes, leaderboards and automation:**
 [Head-to-head card](https://sdvplot.sportsdataverse.org/docs/recipes/head-to-head-card) ·
 [CFB conference table](https://sdvplot.sportsdataverse.org/docs/recipes/cfb-conference-table) ·
 [NFL weekly leaderboard](https://sdvplot.sportsdataverse.org/docs/leaderboards/nfl-weekly) ·
-[Social game-day graphics](https://sdvplot.sportsdataverse.org/docs/automation)
+[Social game-day graphics](https://sdvplot.sportsdataverse.org/docs/automation) ·
+[every recipe](https://sdvplot.sportsdataverse.org/docs/category/recipes) ·
+[every leaderboard](https://sdvplot.sportsdataverse.org/docs/category/leaderboards)
 
 The [changelog](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.md) lists every release, and
 [contributing](https://github.com/sportsdataverse/sdvplot/blob/main/CONTRIBUTING.md) covers development.

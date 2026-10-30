@@ -1,6 +1,7 @@
 ---
 title: Team identity
 sidebar_label: Team identity
+description: "How sdvplot resolves a team abbreviation, name or provider id to one canonical (league, team_id) key, and why it never guesses."
 ---
 
 # Team identity

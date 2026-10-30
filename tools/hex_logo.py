@@ -2,7 +2,8 @@
 
 Usage: uv run python tools/hex_logo.py
 
-Writes docs/static/img/sdvplot-logo.png (1036 x 1200) and docs/static/img/favicon.ico (16, 32, 48 px). The design is
+Writes docs/static/img/sdvplot-logo.png (1036 x 1200), its README copy sdvplot-logo-readme.png (432 x 500) and
+docs/static/img/favicon.ico (16, 32, 48 px). The design is
 sdvplotR's "Axis" hex (sdvplotR data-raw/hex_logo.R) ported to Python: the SportsDataverse starfield masked to the org's
 hex, the wordmark in Russo One with the SDV blue-to-cyan gradient, and a bar chart in eight teams' own colors (one team
 per league, different teams and bar heights from sdvplotR's) with their logos under the axis, all inside a 30 px
@@ -35,6 +36,8 @@ import sdvplot  # noqa: E402
 BRAND = ROOT / "tools" / "brand"
 OUT = ROOT / "docs" / "static" / "img"
 W, H, DPI = 1036, 1200, 300
+# the README's copy: PyPI and GitHub show it at about a quarter of the page width, twice that is crisp at 1/5 the bytes
+README_W = 432
 SS = 4  # drawn SS times larger, then downsampled: Agg does not antialias clip paths (the hex, the wordmark)
 XHALF = W / H  # plot units: y spans -1..1 (600 px per unit), x spans -XHALF..XHALF
 SAFE_R = 1 - (30 / 600) * 2 / np.sqrt(3)  # print-safe inner hex, 30 px in from every edge
@@ -136,12 +139,19 @@ def favicon(logo: Image.Image) -> Image.Image:
     return square
 
 
+def readme_copy(logo: Image.Image) -> Image.Image:
+    """The hex at ``README_W`` px wide, for the README (the PyPI page)."""
+    return logo.resize((README_W, round(H * README_W / W)), Image.Resampling.LANCZOS)
+
+
 def main() -> None:
     logo = draw()
     assert logo.size == (W, H), logo.size
     logo.save(OUT / "sdvplot-logo.png", optimize=True)
+    readme_copy(logo).save(OUT / "sdvplot-logo-readme.png", optimize=True)
     favicon(logo).save(OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
-    print(f"wrote {OUT / 'sdvplot-logo.png'} ({W} x {H}) with {' '.join(t for _, t in TEAMS)}, and favicon.ico")
+    teams = " ".join(t for _, t in TEAMS)
+    print(f"wrote {OUT / 'sdvplot-logo.png'} ({W} x {H}) with {teams}, the README copy and favicon.ico")
 
 
 if __name__ == "__main__":

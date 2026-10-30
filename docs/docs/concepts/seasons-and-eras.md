@@ -1,6 +1,7 @@
 ---
 title: Seasons and eras
 sidebar_label: Seasons and eras
+description: "The season conventions sdvplot follows, and how a season picks the right era's logo, colors and code for relocated and renamed teams."
 ---
 
 # Seasons and eras

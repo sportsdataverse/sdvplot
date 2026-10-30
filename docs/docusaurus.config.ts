@@ -20,6 +20,14 @@ const builtVersions: string[] = [
   'current',
   ...allReleasedVersions.slice(0, VERSIONS_TO_KEEP),
 ];
+// The version main is at (pyproject.toml). Until its snapshot is cut at release (`yarn version:docs X.Y.Z` adds it to
+// versions.json), the root docs describe an unreleased version: they carry the "unreleased" banner
+// (src/theme/DocVersionBanner names the released version instead of pointing at itself), and the newest snapshot,
+// the version `pip install sdvplot` gives, carries none.
+const projectVersion = /^version = "([^"]+)"/m.exec(
+  fs.readFileSync(path.join(__dirname, '..', 'pyproject.toml'), 'utf-8'),
+)![1];
+const mainIsUnreleased = !allReleasedVersions.includes(projectVersion);
 
 const PLAUSIBLE_ID = 'pa-exaiJ05ZrAXBkCgOonpbc'; // Plausible site sdvplot.sportsdataverse.org ('' disables analytics)
 const analytics = PLAUSIBLE_ID
@@ -82,6 +90,7 @@ const config: Config = {
   // generator, never by hand.
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
+  customFields: {projectVersion},  // read by src/theme/DocVersionBanner
   organizationName: 'SportsDataverse',
   projectName: 'Sportsdataverse',
   // Docusaurus 3 requires i18n declared explicitly.
@@ -141,12 +150,17 @@ const config: Config = {
             current: {
               label: 'main',
               path: '',
-              banner: 'none',
+              banner: mainIsUnreleased ? 'unreleased' : 'none',
             },
+            // the newest release is maintained: no "no longer actively maintained" banner on it
+            ...(allReleasedVersions.length ? {[allReleasedVersions[0]]: {banner: 'none' as const}} : {}),
           },
         },
         // No blog: release notes live on the CHANGELOG page (navbar "News").
         blog: false,
+        // The release snapshots repeat the root docs page for page: list only the root ones, so search engines
+        // index one copy of each page.
+        sitemap: {ignorePatterns: allReleasedVersions.map((v) => `/docs/${v}/**`)},
         theme: {
           // The shared family theme first, then what only this site needs: the site's own
           // rules and the notebook pages' frames and gallery.

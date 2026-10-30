@@ -1,6 +1,7 @@
 ---
 title: The cache
 sidebar_label: The cache
+description: "What sdvplot downloads (the logo manifest, logos, headshots, nflverse's player table), where it caches them, how long they stay fresh, and how to work offline."
 ---
 
 # The cache
