@@ -7,6 +7,7 @@ import matplotlib  # noqa: E402
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
 
 import sdvplot  # noqa: E402
 import sdvplot.matplotlib as smpl  # noqa: E402
@@ -369,18 +370,28 @@ def test_a_diamonds_logo_goes_in_shallow_center_field_as_in_sdvplotr(league):
     assert (x0, y0, s0) == (pytest.approx(0, abs=1e-9), pytest.approx(y, abs=1e-9), pytest.approx(size, abs=1e-9))
 
 
-def test_a_diamonds_logo_follows_field_updates_units_translation_and_rotation():
+def test_a_diamonds_logo_follows_field_updates_units_and_rotation_but_not_translation():
     drawing = _surface._drawing("mlb", field_updates={"center_field_distance": 410}, units="m", x_trans=10, y_trans=5)
     x, y, size = _surface._logo_box(drawing, "baseball", 90)
     offset = (90 * 2**0.5 + 410) / 2 * 0.3048
-    # sportyR translates, then rotates a quarter turn about the origin: (x, y) -> (-y, x)
-    assert (x, y) == (pytest.approx(-(offset + 5), abs=1e-9), pytest.approx(10, abs=1e-9))
+    # a quarter turn about the origin, (x, y) -> (-y, x); x_trans / y_trans shift only what sportypy overlays
+    assert (x, y) == (pytest.approx(-offset, abs=1e-9), pytest.approx(0, abs=1e-9))
     assert size == pytest.approx(0.15 * 410 * 0.3048, abs=1e-9)
 
 
 def test_other_surfaces_keep_their_logo_at_the_center():
     x, y, size = _surface._logo_box(_surface._drawing("nfl", x_trans=3), "football", 0)
-    assert (x, y, size) == (3, 0, None)
+    assert (x, y, size) == (0, 0, None)
+
+
+def test_a_translated_surface_is_drawn_where_an_untranslated_one_is():
+    # why the logo ignores x_trans / y_trans: sportypy draws the same polygons, it only shifts the data it overlays
+    def extent(**kw):
+        ax = sdvplot.surface("nfl", **kw)
+        corners = np.vstack([p.get_window_extent().get_points() for p in ax.patches])
+        return ax.transData.inverted().transform(corners).round(6).tolist()
+
+    assert extent(x_trans=30.0, y_trans=10.0) == extent()
 
 
 def test_the_mlb_center_logo_is_drawn_in_shallow_center_field(mark_images):
@@ -412,3 +423,9 @@ def test_the_center_logo_variant_follows_the_surface_color_as_in_sdvplotr(league
     monkeypatch.setattr(_surface, "team_colors", lambda *a, **k: ["#123456"])
     sdvplot.surface(league, "X", center_logo=True, color_updates={"plot_background": "#ffffff"})
     assert seen["variant"] == variant
+
+
+@pytest.mark.real_index
+def test_a_zero_center_logo_height_is_an_input_error():
+    with pytest.raises(InputError, match="height"):
+        sdvplot.surface("nfl", "KC", center_logo=0)

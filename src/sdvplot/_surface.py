@@ -208,15 +208,15 @@ def _logo_box(drawing: Any, sport: str, rotation: float) -> tuple[float, float, 
     A diamond's origin is home plate, so its logo goes in shallow center field: x = 0, midway between second base
     (``baseline_distance * sqrt(2)``) and the center-field fence, ``FIELD_LOGO_FRACTION * center_field_distance``
     across, from the field's parameters (field_updates applied and units converted, as sportypy draws them). Other
-    surfaces center it and leave the size to ``center_logo``. As sportypy (and sportyR), translate, then rotate about
-    the origin.
+    surfaces center it and leave the size to ``center_logo``. As sportypy draws the surface, rotate it about the
+    origin; sportypy's ``x_trans`` / ``y_trans`` move only the data it overlays, never the surface, so not the logo.
     """
     offset, size = 0.0, None
     if sport in DIAMONDS:
         params = drawing.field_params
         offset = (params["baseline_distance"] * math.sqrt(2) + params["center_field_distance"]) / 2
         size = FIELD_LOGO_FRACTION * params["center_field_distance"]
-    x, y = drawing.x_trans, offset + drawing.y_trans
+    x, y = 0.0, offset
     cos, sin = math.cos(math.radians(rotation)), math.sin(math.radians(rotation))
     return x * cos - y * sin, x * sin + y * cos, size
 
@@ -309,7 +309,7 @@ def surface(
         fig.patch.set_facecolor(drawing.feature_colors["plot_background"])
     with _polygon_limits(ax):
         drawn = drawing.draw(ax=ax, **draw_kwargs)
-    if center_logo and team is not None:
+    if center_logo is not False and team is not None:  # 0 reaches add_logos, which rejects it
         from sdvplot.matplotlib import add_logos
 
         x, y, size = _logo_box(drawing, sport, draw_kwargs.get("rotation") or 0)

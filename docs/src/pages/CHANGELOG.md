@@ -69,7 +69,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   midway between second base (`baseline_distance * sqrt(2)`) and the center-field fence, 0.15 x
   `center_field_distance` across (60 ft at 263.6 ft from home plate on an MLB field), from the league's field
   parameters and `field_updates`, in the dark-background variant for the grass. Every surface's center logo now
-  also follows `x_trans` / `y_trans` and `rotation`, as the surface does (it stayed at the origin).
+  also follows `rotation`, as the surface does (it stayed at the origin).
 - `surface(..., center_logo=True)` draws the team's dark-background logo variant on grass, football fields and soccer
   pitches as well as diamonds, as sdvplotR does: the variant is `"dark"` wherever white reads better than black on
   the sport's regulation surface color (basketball's wood and hockey's ice keep the default). A team without a dark
@@ -90,6 +90,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   screen size a volleyball court lost its attack and end lines, a tennis court its baselines and alleys, a lacrosse field
   its sidelines, and an NBA half court its free-throw lane end and hash marks. sportypy 1.2.0 draws the surface's
   shapes unsnapped, so every line shows (antialiased); the NBA half-court image baseline is regenerated with them.
+- `surface(..., team, center_logo=0)` drew no logo and raised nothing; a zero height is now an `InputError`, as any
+  height outside (0, 1] is.
 
 ## [0.1.1] - 2026-10-26
 
