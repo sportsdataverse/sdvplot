@@ -37,7 +37,7 @@ pip install "sdvplot[mpl]"
 | `[tables]` | great_tables, htmltools and nokap (which renders tables to PNG through a headless Chrome) |
 | `[reactable]` | reactable |
 | `[folium]` | folium |
-| `[surfaces]` | sportypy (1.2 or newer) and mplsoccer |
+| `[surfaces]` | sportypy (1.2.5 or newer) and mplsoccer |
 | `[plottable]` | plottable |
 | `[itables]` | itables, for `sdvplot.itables.itables_sdv_theme()` |
 | `[pygal]` | pygal |
@@ -53,8 +53,8 @@ is for `surface()` (the fields, courts, rinks and sheets of ten sports, from foo
 `sdvplot.pydeck` builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and
 `sdvplot.perspective` Perspective viewer configs in team colors and a logo column.
 
-`surface()` and `surface_layer()` need sportypy 1.2 or newer. While PyPI has only sportypy 1.0, install it from GitHub:
-`pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.4"`.
+`surface()` and `surface_layer()` need sportypy 1.2.5 or newer. While PyPI has only sportypy 1.0, install it from GitHub:
+`pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.5"`.
 
 ## Quick example
 

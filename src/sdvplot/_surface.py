@@ -100,8 +100,8 @@ _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font 
 # Upgrade sportypy alone: re-installing "sdvplot[surfaces]" from an index without sportypy 1.2 makes pip backtrack to
 # an older sdvplot whose extra accepts the sportypy it has.
 SPORTYPY_HINT = (
-    'needs sportypy 1.2 or newer: pip install -U "sportypy>=1.2" (while PyPI has only sportypy 1.0, install it from '
-    'GitHub: pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.4")'
+    'needs sportypy 1.2.5 or newer: pip install -U "sportypy>=1.2.5" (while PyPI has only sportypy 1.0, install it '
+    'from GitHub: pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.5")'
 )
 
 

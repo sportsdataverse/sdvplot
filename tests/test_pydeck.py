@@ -383,8 +383,12 @@ def test_deck_fits_an_orthographic_view_to_a_surface_and_draws_the_marks_in_its_
     (view,) = d.views
     assert view.type == "OrthographicView" and view.flip_y is False
     state = d.initial_view_state
-    assert state.target == pytest.approx([0, 0.45835, 0], abs=1e-4)  # the centre: y from -47.9 (penalty boxes) to 48.8
-    assert state.zoom == pytest.approx(math.log2(600 / 200.8334))  # the 200.8 ft rink fills the 600 px width
+    # NHL: rink_width 85, board_thickness 0.4167. The bench outline tops out at 42.5 + 0.4167 + 5.5 (bench_depth) +
+    # 0.4167 = 48.8334; since sportypy 1.2.5 the penalty box outline mirrors it at -(42.5 + 0.4167 + 5.0 + 0.4167) =
+    # -48.3334, so the centre is y = (48.8334 - 48.3334) / 2 = 0.25 (sportypy 1.2.4 stopped the boxes at -47.9167)
+    assert state.target == pytest.approx([0, 0.25, 0], abs=1e-4)
+    # 200 + 2 * 0.4167 = 200.8334 ft across 600 px is tighter than 97.1668 ft down 300 px: the rink fills the width
+    assert state.zoom == pytest.approx(math.log2(600 / 200.8334))
     assert [layer.type for layer in d.layers] == ["PolygonLayer", "IconLayer"]
     # pydeck strips the quotes: deck.gl gets the constant "cartesian", not an expression ("@@=...")
     assert all('"coordinateSystem": "cartesian"' in layer.to_json() for layer in d.layers)
