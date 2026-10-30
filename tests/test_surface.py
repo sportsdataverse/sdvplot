@@ -188,13 +188,26 @@ def test_an_unknown_league_lists_the_supported_ones():
         sdvplot.surface("cricket")
 
 
-def test_a_missing_sportypy_names_the_extra(monkeypatch):
+def test_a_missing_or_old_sportypy_names_the_extra(monkeypatch):
     def gone(name, *a, **k):
         raise ModuleNotFoundError(name, name="sportypy")
 
     monkeypatch.setattr(_surface.importlib, "import_module", gone)
-    with pytest.raises(OptionalDependencyError, match=r"pip install sdvplot\[surfaces\]"):
+    with pytest.raises(OptionalDependencyError, match=r'sportypy 1\.2 or newer: pip install -U "sdvplot\[surfaces\]"'):
         sdvplot.surface("nfl")
+    monkeypatch.setattr(_surface.importlib, "import_module", lambda name: object())  # sportypy 1.0: no PWHLRink
+    with pytest.raises(OptionalDependencyError, match=r"sportypy 1\.2 or newer"):
+        sdvplot.surface("pwhl")
+
+
+def test_a_library_sportypy_imports_raises_its_own_error(monkeypatch):
+    def gone(name, *a, **k):
+        raise ModuleNotFoundError("No module named 'scipy'", name="scipy")
+
+    monkeypatch.setattr(_surface.importlib, "import_module", gone)
+    with pytest.raises(ModuleNotFoundError, match="scipy") as info:
+        sdvplot.surface("nfl")
+    assert not isinstance(info.value, OptionalDependencyError)
 
 
 def test_the_center_logo_draws_above_every_surface_feature(mark_images):

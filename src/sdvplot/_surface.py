@@ -189,12 +189,17 @@ def _drawing(league: str, **sportypy_kwargs: Any) -> Any:
     """The sportypy surface object for an SDV surface key, before it is drawn."""
     sport, cls_name = SURFACES[league]
     try:
-        module = importlib.import_module(f"sportypy.surfaces.{sport}")
-    except ModuleNotFoundError as e:
+        surface_class = getattr(importlib.import_module(f"sportypy.surfaces.{sport}"), cls_name)
+    except (ModuleNotFoundError, AttributeError) as e:
+        # a transitive import sportypy needs is that library's error, not sportypy's
+        if isinstance(e, ModuleNotFoundError) and (e.name or "").split(".")[0] != "sportypy":
+            raise
+        # sportypy before 1.2 has no lacrosse, tennis, volleyball or curling module, and no PWHLRink
         raise OptionalDependencyError(
-            "sdvplot.surface() needs the surfaces extra: pip install sdvplot[surfaces]"
+            'sdvplot.surface() needs the surfaces extra with sportypy 1.2 or newer: pip install -U "sdvplot[surfaces]"',
+            name="sportypy",
         ) from e
-    return getattr(module, cls_name)(**sportypy_kwargs)
+    return surface_class(**sportypy_kwargs)
 
 
 def _logo_box(drawing: Any, sport: str, rotation: float) -> tuple[float, float, float | None]:
@@ -255,8 +260,8 @@ def surface(
             team identities; and, when ``team`` is given, if
             ``season`` is not a year or is outside the seasons sdvplot knows for the league, or ``center_logo`` is a
             height outside (0, 1]. Without ``team``, ``season`` and ``center_logo`` are not used.
-        OptionalDependencyError: If the surfaces extra (sportypy) is not installed, or ``team`` and ``center_logo`` are
-            set and the team's logo is an SVG without the ``svg`` extra.
+        OptionalDependencyError: If the surfaces extra (sportypy 1.2 or newer) is not installed, or ``team`` and
+            ``center_logo`` are set and the team's logo is an SVG without the ``svg`` extra.
         OfflineError: If ``team`` and ``center_logo`` are set and the logo manifest or the team's logo is neither
             cached nor downloadable (a DownloadError, also an OSError, when the CDN answers with an error status; an
             IntegrityError when it sends a file that does not match the manifest's sha256, or one PIL cannot decode).
