@@ -19,16 +19,16 @@ import matplotlib.pyplot as plt
 import sdvplot
 ```
 
-## 1. Every lacrosse field
+## 1. Every lacrosse field and box
 
-Seven lacrosse surfaces: the NLL plays box lacrosse in a rink with boards; the PLL, World Lacrosse, NCAA and USA
+Seven lacrosse surfaces: the NLL and World Lacrosse play box lacrosse in a rink with boards; the PLL, NCAA and USA
 Lacrosse fields are outdoor field lacrosse, with the men's and women's rule books marking the goal areas differently.
 
 ```python
 lacrosse = [
     ("nll", "NLL (box)"),
     ("pll", "PLL"),
-    ("world_lacrosse", "World Lacrosse"),
+    ("world_lacrosse", "World Lacrosse (box)"),
     ("ncaa_mlacrosse", "NCAA men"),
     ("ncaa_wlacrosse", "NCAA women"),
     ("usa_mlacrosse", "USA Lacrosse boys"),

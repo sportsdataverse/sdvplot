@@ -1,6 +1,7 @@
 ---
 title: The adapter contract
 sidebar_label: The adapter contract
+description: "What add_logos(), add_wordmarks(), add_headshots() and axis_logos() mean on every plotting and table library sdvplot supports: the contract each adapter meets."
 ---
 
 # The adapter contract

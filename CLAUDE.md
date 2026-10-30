@@ -63,7 +63,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `typing.py` | `sdvplot.typing`, the public re-export of those aliases for user annotations (the `numpy.typing` precedent) |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
-`home_figures.py`, `hex_logo.py`), the R exports (`export_sdvplotr.R`, `export_parity_extras.R`) and the commit-msg
+`home_figures.py`, `hex_logo.py`, `sync_changelog.py`), the R exports (`export_sdvplotr.R`, `export_parity_extras.R`) and the commit-msg
 hook (`hooks/check_commit_msg.py`). `docs/` is the Docusaurus site; outside its pages, `docs/COMPATIBILITY.md` is the
 gallery compatibility matrix (kept true by `tests/test_compat_matrix.py`) and `docs/PARITY.md` /
 `docs/PARITY_TABLES.md` map sdvplotR's exports. `data-raw/` is the committed input to the index. `examples/` holds the
@@ -97,8 +97,8 @@ and never let a lock bump ride into an unrelated commit.
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` |
-| `docs/static/img/sdvplot-logo.png` (the hex, 1036 x 1200), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network: the eight logos; starfield and Russo One in `tools/brand/`) | the script asserts the size |
-| `docs/src/pages/CHANGELOG.md` | copy of `CHANGELOG.md` (the `sync-docs-changelog` pre-commit hook) | `tests/test_repo_files.py` |
+| `docs/static/img/sdvplot-logo.png` (the hex, 1036 x 1200), its README copy `sdvplot-logo-readme.png`, `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network: the eight logos; starfield and Russo One in `tools/brand/`) | the script asserts the size |
+| `docs/src/pages/CHANGELOG.md` | `CHANGELOG.md` under front matter: `tools/sync_changelog.py` (the `sync-docs-changelog` pre-commit hook) | `tests/test_repo_files.py` |
 | `data-raw/sdvplotr_*.csv` | `R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index |
 
 Regenerate after changing any source, including a public function's docstring or `__all__`; stale generated files
@@ -209,14 +209,16 @@ Polars 1.x API only; ruff line length 120.
 
 0. Before the cut: `uv run pre-commit install` (a new clone or worktree has no hooks); lock with the uv
    `release.yml` pins (`uvx --from uv==<pin> uv lock`), so the lock diff is one line; bump the version everywhere it is
-   written (`pyproject.toml`, `CITATION.cff`, the `_versions.py` docstring, then `tools/gen_docs.py`, never the
-   generated page); snapshot the docs last. CONTRIBUTING's Release section is the checklist.
+   written (`pyproject.toml`, the `_versions.py` docstring, then `tools/gen_docs.py`, never the
+   generated page); `CITATION.cff` cites the newest release, so its version and date change only at the cut (the CHANGELOG
+   heading's date); snapshot the docs last. CONTRIBUTING's Release section is the checklist.
 1. PR #50 (first release only) switches the install lines to `pip install sdvplot` and cuts the CHANGELOG: it merges
    just before tagging, because the README is the PyPI page and cannot change for a version once uploaded.
 2. Publishing a GitHub Release `vX.Y.Z` runs `release.yml`: the tag must equal the project version; the tests run
    with `SDVPLOT_RELEASE_VERSION` set, so `test_the_tagged_release_is_ready` refuses a README that does not install
-   from PyPI, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, or entries left under `[Unreleased]`;
-   then the index drift check, a fresh-checkout build, and a smoke test of the bare wheel.
+   from PyPI, a CHANGELOG without a dated `## [X.Y.Z] - YYYY-MM-DD` heading, entries left under `[Unreleased]`, or a
+   `CITATION.cff` that does not cite the tag with that date; then the index drift check, a fresh-checkout build, a
+   smoke test of the bare wheel, and a dry-run resolve of the wheel's `[all]` from PyPI alone (no uv sources).
 3. `publish-pypi` uploads with Trusted Publishing (OIDC, no stored token) from the `pypi` environment; it is the only
    job with `id-token: write`. `test_the_release_workflow_keeps_its_hardening` pins these guards (SHA-pinned actions,
    no uv cache, a pinned uv, no persisted credentials).

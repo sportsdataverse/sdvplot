@@ -2,7 +2,7 @@
 title: "pydeck cookbook"
 sidebar_label: "pydeck"
 sidebar_position: 16
-description: "Six pydeck recipes: shots as logos on an NHL rink, shots as arcs to the goal, a team's passes flat on the pitch, both finalists readable on the grass, upright arcs in 3D, and logos on a map."
+description: "Seven pydeck recipes: shots as logos on an NHL rink, shots as arcs to the goal, a team's passes flat on the pitch, both finalists readable on the grass, upright arcs in 3D, logos on a map, and a box lacrosse rink."
 ---
 
 # pydeck
@@ -108,8 +108,8 @@ shots.height, passes.height, parks.height
 down (an OrthographicView, y up) fitted to the rink, and draws the logos in the rink's coordinates. `size` is the
 logo's height on screen in pixels. In the first period Edmonton shot at the right-hand goal and Florida at the left.
 pydeck writes every layer's data into the page, so `tolerance` (in feet here) thins sportypy's arcs further than
-the default: at 0.25 ft the rink is about 10,000 points instead of 16,000. Each line keeps its shape, because each loop
-caps the tolerance at its own width and keeps its corners.
+the default: at 0.25 ft the rink is about 9,200 points instead of 14,400 (123,000 unthinned). Each line keeps its
+shape, because each loop caps the tolerance at its own width and keeps its corners.
 
 ```python
 rink = sdeck.surface_layer("hockey", "nhl", tolerance=0.25)
@@ -248,6 +248,23 @@ sdeck.deck(logos, height=440, map_style="light", tooltip={"text": "{team}"})
 <div class="sdv-output">
 
 <iframe class="sdv-frame" src="/outputs/cookbooks/pydeck/15_0.html" title="HTML output" height="480" loading="lazy"></iframe>
+
+</div>
+
+## 7. A box lacrosse rink
+
+`surface_layer` draws all ten of sportypy's sports, lacrosse, softball and volleyball included. The NLL plays box
+lacrosse on a rink with boards, in feet with the origin at its centre, as the hockey rink above. With no other
+layer, `deck()` fits the view to the surface.
+
+```python
+box = sdeck.surface_layer("lacrosse", "nll")
+sdeck.deck(box, height=360)
+```
+
+<div class="sdv-output">
+
+<iframe class="sdv-frame" src="/outputs/cookbooks/pydeck/17_0.html" title="HTML output" height="480" loading="lazy"></iframe>
 
 </div>
 

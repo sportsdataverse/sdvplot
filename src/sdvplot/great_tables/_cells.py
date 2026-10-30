@@ -1,4 +1,4 @@
-"""sdvplotR's cell styling and formatting helpers for great_tables (wave C1).
+"""sdvplotR's cell styling and formatting helpers for great_tables.
 
 Each function ports the sdvplotR function of the same name. Rows are great_tables row selections: 0-based
 positions, a polars expression (polars data) or a callable that takes the data and returns a boolean Series

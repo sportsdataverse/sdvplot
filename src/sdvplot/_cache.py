@@ -101,7 +101,7 @@ def _watched_adapter() -> Any:
         "https": watched(HTTPSConnectionPool, HTTPSConnection),
     }
 
-    # ponytail: a proxy's pools (proxy_manager_for) are not watched; through a proxy the deadline covers the body only
+    # A proxy's pools (proxy_manager_for) are not watched; through a proxy the deadline covers the body only
     class Adapter(HTTPAdapter):
         def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
             super().init_poolmanager(*args, **kwargs)

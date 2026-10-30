@@ -79,7 +79,7 @@ def delta_e(a: str, b: str) -> float:
 
 
 # The synthetic search grid around a team color, in LCh: lightness, hue and chroma steps, in team-palette.ts's order.
-# ponytail: a fixed grid of about 5,000 points per base color, scanned only for a team whose brand colors both clash.
+# A fixed grid of about 5,000 points per base color, scanned only for a team whose brand colors both clash.
 _L_STEPS = [(1 if k % 2 == 0 else -1) * 4 * math.ceil(k / 2) for k in range(25)]  # 0, -4, 4, ... ±48
 _H_STEPS = [(1 if k % 2 == 0 else -1) * 10 * math.ceil(k / 2) for k in range(36)]  # 0, -10, 10, ... 180
 _C_STEPS = [0, -15, 15, -30, 30, 45]

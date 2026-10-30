@@ -26,7 +26,7 @@ from sdvplot._contrast import hex6, mix
 __all__ = ["reactable_sdv_frame", "reactable_sdv_icon_legend", "reactable_sdv_legend"]
 
 _ALIGN = ("left", "center", "right")
-# ponytail: a handful of shapes, enough for a legend; the Tier 1 icon set can replace this when it lands
+# A handful of shapes, enough for a legend; add one here when a legend needs another shape
 _SHAPES = {
     "circle": lambda c: Tag("circle", cx="8", cy="8", r="7", fill=c),
     "square": lambda c: Tag("rect", x="1", y="1", width="14", height="14", fill=c),

@@ -57,18 +57,27 @@ def test_sdv_py_dotfiles_exist_and_parse():
     assert "SDVPLOT_CACHE_DIR" in (ROOT / ".env.example").read_text()
 
 
-def test_citation_version_matches_the_project_version():
-    """CITATION.cff is bumped by hand at a release; a stale one cites the previous version."""
-    project = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.M)[1]
-    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
-    assert str(citation["version"]) == project
+def _citation() -> dict:
+    return yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+
+
+def test_citation_cites_the_newest_release():
+    """CITATION.cff cites the newest dated CHANGELOG release, version and date, so it trails a version bumped ahead of
+    its release; the release run (release_blockers) then requires it to cite the tag."""
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    newest = re.search(r"^## \[(\d[^]]*)\] - (\d{4}-\d{2}-\d{2})$", changelog, re.M)
+    citation = _citation()
     assert isinstance(citation["date-released"], str)  # quoted: a bare YAML date loads as a date, not CFF's string
+    assert (str(citation["version"]), citation["date-released"]) == (newest[1], newest[2])
 
 
 def test_docs_changelog_mirrors_the_root_changelog():  # Review Focus 5
     root = (ROOT / "CHANGELOG.md").read_bytes()
     assert root.startswith(b"<!-- START doctoc") or root.startswith(b"# Changelog")
-    assert (ROOT / "docs" / "src" / "pages" / "CHANGELOG.md").read_bytes() == root
+    # the News page is the root file under front matter that names it (tools/sync_changelog.py)
+    front, _, body = (ROOT / "docs" / "src" / "pages" / "CHANGELOG.md").read_bytes().partition(b"\n---\n\n")
+    assert front.startswith(b"---\ntitle: Changelog\ndescription: ")
+    assert body == root
 
 
 def test_contributor_files_exist():
@@ -83,19 +92,23 @@ def test_unreleased_is_the_first_changelog_section():
 
 
 # release readiness: release.yml sets SDVPLOT_RELEASE_VERSION to the tag, and the release's test run then refuses a
-# README without a PyPI install line (it becomes the PyPI page, immutable for that version) or an undated CHANGELOG
+# README without a PyPI install line (it becomes the PyPI page, immutable for that version), an undated CHANGELOG or a
+# CITATION.cff that does not cite the tag
 
 # `pip install sdvplot` or `pip install "sdvplot[mpl]"`, not `pip install "sdvplot[mpl] @ git+https://..."`
 _PYPI_INSTALL = re.compile(r'pip install "?sdvplot(?:\[[\w,]*\])?"?(?![\w\[]|\s*@)')
 
 
-def release_blockers(version: str, readme: str, changelog: str) -> list[str]:
-    """What stops ``version`` from being released with this README and CHANGELOG (empty when it is ready)."""
+def release_blockers(version: str, readme: str, changelog: str, citation: dict) -> list[str]:
+    """What stops ``version`` from being released with this README, CHANGELOG and CITATION.cff (empty when ready)."""
     problems = []
     if "not on PyPI yet" in readme or not _PYPI_INSTALL.search(readme):
         problems.append("README.md does not install from PyPI: merge the install-line PR before tagging")
-    if not re.search(rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$", changelog, re.M):
+    dated = re.search(rf"^## \[{re.escape(version)}\] - (\d{{4}}-\d{{2}}-\d{{2}})$", changelog, re.M)
+    if not dated:
         problems.append(f"CHANGELOG.md has no dated '## [{version}] - YYYY-MM-DD' heading")
+    if str(citation.get("version")) != version or (dated and citation.get("date-released") != dated[1]):
+        problems.append(f"CITATION.cff does not cite {version} with its CHANGELOG heading's date")
     unreleased = re.search(r"^## \[Unreleased\]\n(.*?)(?=^## )", changelog, re.M | re.S)
     if unreleased and unreleased.group(1).strip():
         problems.append(f"CHANGELOG.md's [Unreleased] section still has entries: move them under [{version}]")
@@ -104,6 +117,7 @@ def release_blockers(version: str, readme: str, changelog: str) -> list[str]:
 
 _READY_README = "pip install sdvplot\n"
 _READY_CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n## [0.1.0] - 2026-10-06\n\n### Added\n- x\n"
+_READY_CITATION = {"version": "0.1.0", "date-released": "2026-10-06"}
 
 
 @pytest.mark.parametrize(
@@ -116,7 +130,7 @@ _READY_CHANGELOG = "# Changelog\n\n## [Unreleased]\n\n## [0.1.0] - 2026-10-06\n\
     ],
 )
 def test_release_blockers_pass_a_ready_release(readme):
-    assert release_blockers("0.1.0", readme, _READY_CHANGELOG) == []
+    assert release_blockers("0.1.0", readme, _READY_CHANGELOG, _READY_CITATION) == []
 
 
 @pytest.mark.parametrize(
@@ -135,7 +149,15 @@ def test_release_blockers_pass_a_ready_release(readme):
     ],
 )
 def test_release_blockers_catch_each_problem(readme, changelog, problem):
-    assert any(problem in p for p in release_blockers("0.1.0", readme, changelog))
+    assert any(problem in p for p in release_blockers("0.1.0", readme, changelog, _READY_CITATION))
+
+
+@pytest.mark.parametrize(
+    "citation",
+    [{"version": "0.0.9", "date-released": "2026-10-01"}, {"version": "0.1.0", "date-released": "2026-10-05"}],
+)
+def test_release_blockers_catch_a_citation_that_does_not_cite_the_release(citation):
+    assert any("CITATION.cff" in p for p in release_blockers("0.1.0", _READY_README, _READY_CHANGELOG, citation))
 
 
 def test_the_tagged_release_is_ready():
@@ -143,7 +165,7 @@ def test_the_tagged_release_is_ready():
     if not version:
         pytest.skip("not a release run (release.yml sets SDVPLOT_RELEASE_VERSION)")
     readme, changelog = ((ROOT / f).read_text(encoding="utf-8") for f in ("README.md", "CHANGELOG.md"))
-    assert release_blockers(version, readme, changelog) == []
+    assert release_blockers(version, readme, changelog, _citation()) == []
 
 
 def test_the_release_workflow_keeps_its_hardening():

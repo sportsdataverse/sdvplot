@@ -396,30 +396,44 @@ plt.show()
 sportsdataverse-py's `euroleague_game_points()` reports each shot in centimeters from the hoop, both teams on one
 basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves them onto the FIBA court
 `surface("fiba")` draws, in meters, and turns the free throws into nulls. Which sideline is positive is unverified
-in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game (this needs
-sportsdataverse 0.2.0b1 or newer, `pip install --pre sportsdataverse`, where EuroLeague lives under
-`sportsdataverse.basketball`):
+in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game. This needs
+sportsdataverse 0.2.0b1 or newer (`pip install -U --pre "sportsdataverse>=0.2.0b1"`, then restart the kernel),
+where EuroLeague lives under `sportsdataverse.basketball`; with an older release the cell prints a note and draws
+nothing:
 
 ```python
-import sportsdataverse.basketball.euroleague as euroleague
+try:
+    import sportsdataverse.basketball.euroleague as euroleague
+except ModuleNotFoundError:  # sportsdataverse before 0.2.0b1 has no sportsdataverse.basketball
+    euroleague = None
+    print('Skipped: needs sportsdataverse 0.2.0b1 or newer: pip install -U --pre "sportsdataverse>=0.2.0b1"')
 
-euro = sdvplot.court_coords(
-    euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
-)
-print(euro.select("player", "action", "coord_x", "coord_y", "court_x", "court_y").head(3))
-shots = euro.drop_nulls("court_x")  # free throws are -1,-1 in the source and null here
-made, missed = shots.filter(pl.col("points") > 0), shots.filter(pl.col("points") == 0)
+if euroleague is not None:
+    euro = sdvplot.court_coords(
+        euroleague.euroleague_game_points("1", "E2025"), x="coord_x", y="coord_y", provider="euroleague"
+    )
+    print(euro.select("player", "action", "coord_x", "coord_y", "court_x", "court_y").head(3))
+    shots = euro.drop_nulls("court_x")  # free throws are -1,-1 in the source and null here
+    made, missed = shots.filter(pl.col("points") > 0), shots.filter(pl.col("points") == 0)
 
-fig, ax = plt.subplots(figsize=(7, 6.5))
-sdvplot.surface("fiba", ax=ax, display_range="defense")
-ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=16, linewidths=0.8, color="#3d3d3d", alpha=0.6,
-           zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
-ax.scatter(made["court_x"], made["court_y"], s=20, color="#e8552b", edgecolors="black", linewidths=0.4, zorder=21,
-           label=f"Made ({made.height})")  # fmt: skip
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
-ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
-plt.show()
+    fig, ax = plt.subplots(figsize=(7, 6.5))
+    sdvplot.surface("fiba", ax=ax, display_range="defense")
+    ax.scatter(missed["court_x"], missed["court_y"], marker="x", s=16, linewidths=0.8, color="#3d3d3d", alpha=0.6,
+               zorder=20, label=f"Missed ({missed.height})")  # fmt: skip
+    ax.scatter(made["court_x"], made["court_y"], s=20, color="#e8552b", edgecolors="black", linewidths=0.4, zorder=21,
+               label=f"Made ({made.height})")  # fmt: skip
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, 0.02), ncols=2, frameon=False)
+    ax.set_title("Euroleague 2025-26, game 1: every field goal attempt", loc="left", fontweight="bold")
+    plt.show()
 ```
+
+<div class="sdv-output">
+
+```text
+Skipped: needs sportsdataverse 0.2.0b1 or newer: pip install -U --pre "sportsdataverse>=0.2.0b1"
+```
+
+</div>
 
 ## Run it yourself
 

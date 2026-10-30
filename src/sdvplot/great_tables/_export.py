@@ -492,7 +492,7 @@ def _style_css(style: Mapping[str, Any], font_fallback: str | None = None) -> st
     """A style dict -> inline CSS, in sdvplotR's .style_css() order.
 
     With ``font_fallback`` the font family is always set (composed HTML, which has no table font to inherit); without
-    it a style with no font sets none, so the text inherits the theme's (the wave C2 headers and legends).
+    it a style with no font sets none, so the text inherits the theme's (the title headers and legends).
     """
     font = style.get("font")
     out = []

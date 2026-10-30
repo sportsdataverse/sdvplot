@@ -7,9 +7,9 @@
   "items": [
     {
       "title": "Every lacrosse field and box",
-      "alt": "Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL box, and the PLL, World Lacrosse, NCAA and USA Lacrosse fields",
+      "alt": "Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL and World Lacrosse boxes, and the PLL, NCAA and USA Lacrosse fields",
       "image": "/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_3.png",
-      "anchor": "1-every-lacrosse-field"
+      "anchor": "1-every-lacrosse-field-and-box"
     },
     {
       "title": "A tennis court on clay, grass and a hard court",

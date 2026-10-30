@@ -59,6 +59,13 @@ jobs:
           uv venv "$RUNNER_TEMP/smoke"
           uv pip install --python "$RUNNER_TEMP/smoke" dist/sdvplot-*.whl
           "$RUNNER_TEMP/smoke/bin/python" -c 'import sdvplot as s; assert len(s.teams("nfl")) == 32; assert s.palette("nfl")["KC"] == "#e31837"'
+      - name: Every extra of the wheel resolves from PyPI alone
+        # pyproject's [tool.uv.sources] is not in the published metadata: a floor only a git source meets (sportypy 1.2
+        # while PyPI had 1.0) would make `pip install "sdvplot[all]"` fall back to an older sdvplot. The wheel is pinned
+        # by its path here, so such an extra fails the resolve, and the release stops before the upload.
+        run: |
+          wheel=(dist/sdvplot-*.whl)
+          uv pip install --dry-run --no-sources --python "$RUNNER_TEMP/smoke" "${wheel[0]}[all]"
       - name: Upload build artifacts for the publish job
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

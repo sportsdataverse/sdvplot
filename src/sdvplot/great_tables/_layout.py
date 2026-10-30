@@ -1,4 +1,4 @@
-"""Legends, layout and annotation helpers for great_tables, ported from sdvplotR's ``gt_*`` functions (wave C2)."""
+"""Legends, layout and annotation helpers for great_tables, ported from sdvplotR's ``gt_*`` functions."""
 
 from __future__ import annotations
 
@@ -1617,7 +1617,7 @@ def gt_social_tag(
         box += f" font-weight:{text_weight};"
     social = f"<div style='{box}'>{joined}</div>"
     if caption is not None:
-        from sdvplot.great_tables._cells import gt_538_caption  # wave C1
+        from sdvplot.great_tables._cells import gt_538_caption
 
         return gt_538_caption(gt, top_caption=caption, bottom_caption=social, **kwargs)
     return gt.tab_source_note(html(social))

@@ -30,6 +30,7 @@ with requires_extra("pydeck"):
 from sdvplot._normalize import norm_value
 from sdvplot._placement import _missing, check_alpha, place
 from sdvplot._resolve import resolve
+from sdvplot._surface import SPORTYPY_HINT
 from sdvplot._team_palette import _round, team_palette
 from sdvplot._web import aspect
 
@@ -393,8 +394,8 @@ def _loops(xy: list[tuple[float, float]]) -> list[list[tuple[float, float]]]:
     deck.gl triangulates a polygon as one simple ring and fills the wrong side of it. A loop ends where the path comes
     back to that loop's first point, after at least two other points (a repeated first point does not end it); the
     same rule as sdvplot-js's surfaceLayer."""
-    # ponytail: a loop inside another would be filled, not cut out as a hole; sportypy builds every ring from two half
-    # rings, so none is
+    # A loop inside another would be filled, not cut out as a hole; sportypy builds every ring from two half rings, so
+    # none is.
     out: list[list[tuple[float, float]]] = []
     loop: list[tuple[float, float]] = []
     away = 0  # points of this loop that are not its first
@@ -504,8 +505,8 @@ def _simplify(xy: list[tuple[float, float]], tol: float) -> list[list[float]]:
     corners where a lone radial-distance pass would cut across it. ``t`` is ``tol`` capped at the loop's mean width
     (2 x area / perimeter), so a thin band (a 2-inch line, a faceoff ring) is thinned along its length only. The first
     and last points always stay. Measured on all ten sports: every loop within 5% of its area unthinned."""
-    # ponytail: a Python loop, about 0.2 s for an NHL rink's 123,000 points; numpy can vectorize the keep test if a
-    # surface is ever built in a loop
+    # A Python loop, about 0.2 s for an NHL rink's 123,000 points; numpy can vectorize the keep test if a surface is
+    # ever built in a loop.
     a = np.asarray(xy, dtype=float)
     b = np.roll(a, 1, axis=0)
     area = abs(float(np.sum(a[:, 0] * b[:, 1] - b[:, 0] * a[:, 1]))) / 2
@@ -559,7 +560,7 @@ def surface_layer(
     Raises:
         InputError: (a ValueError) If sportypy has no surface for ``sport``, no ``league`` for it, or ``tolerance`` is
             negative.
-        OptionalDependencyError: If the surfaces extra (sportypy) is not installed.
+        OptionalDependencyError: If sportypy 1.2 or newer (the surfaces extra) is not installed.
 
     Example:
         ::
@@ -581,17 +582,18 @@ def surface_layer(
     try:
         module = importlib.import_module(f"sportypy.surfaces.{sport}")
     except ModuleNotFoundError as e:
-        raise OptionalDependencyError(
-            'sdvplot.pydeck.surface_layer() needs the surfaces extra: pip install "sdvplot[surfaces]"', name=e.name
-        ) from e
+        if (e.name or "").split(".")[0] != "sportypy":  # a library sportypy imports: that library's own error
+            raise
+        # no sportypy, or one before 1.2 (no lacrosse, softball or volleyball module)
+        raise OptionalDependencyError(f"sdvplot.pydeck.surface_layer() {SPORTYPY_HINT}", name="sportypy") from e
     drawing = getattr(module, _SPORTS[sport])(league_code=league, **sportypy_kwargs)
     if drawing.league_code not in drawing.league_dimensions:
         raise InputError(
             f"sportypy has no {sport} surface for {league!r}; supported: {sorted(drawing.league_dimensions)}"
         )
     features = []
-    # ponytail: reads sportypy's private members (the surface's `_features`, each feature's `_translate_feature()` and
-    # `plot_kwargs`, `visible`), as sportypy 1.0 has no public geometry API; pin them if sportypy ever adds one
+    # Reads sportypy's private members (the surface's `_features`, each feature's `_translate_feature()` and
+    # `plot_kwargs`, `visible`), as sportypy 1.2 has no public geometry API; switch to one if sportypy ever adds it.
     for order, f in enumerate(drawing._features):
         fill = f.plot_kwargs.get("facecolor")
         if not f.visible or not fill or re.fullmatch(r"#?[0-9a-fA-F]{6}00", str(fill)):

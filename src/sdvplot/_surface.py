@@ -97,6 +97,12 @@ _DRAW_KWARGS = ("display_range", "xlim", "ylim", "rotation")
 DIAMONDS = ("baseball", "softball")  # origin at home plate: the center logo goes in shallow center field
 FIELD_LOGO_FRACTION = 0.15  # a diamond's logo is this fraction of the center-field distance across (as sdvplotR)
 _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font (data/surface_dimensions.json)
+# Upgrade sportypy alone: re-installing "sdvplot[surfaces]" from an index without sportypy 1.2 makes pip backtrack to
+# an older sdvplot whose extra accepts the sportypy it has.
+SPORTYPY_HINT = (
+    'needs sportypy 1.2 or newer: pip install -U "sportypy>=1.2" (while PyPI has only sportypy 1.0, install it from '
+    'GitHub: pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.3")'
+)
 
 
 def _has_font(family: str) -> bool:
@@ -195,10 +201,7 @@ def _drawing(league: str, **sportypy_kwargs: Any) -> Any:
         if isinstance(e, ModuleNotFoundError) and (e.name or "").split(".")[0] != "sportypy":
             raise
         # sportypy before 1.2 has no lacrosse, tennis, volleyball or curling module, and no PWHLRink
-        raise OptionalDependencyError(
-            'sdvplot.surface() needs the surfaces extra with sportypy 1.2 or newer: pip install -U "sdvplot[surfaces]"',
-            name="sportypy",
-        ) from e
+        raise OptionalDependencyError(f"sdvplot.surface() {SPORTYPY_HINT}", name="sportypy") from e
     return surface_class(**sportypy_kwargs)
 
 
@@ -251,6 +254,9 @@ def surface(
             softball) the logo is the team's dark-background variant, as in sdvplotR.
         **sportypy_kwargs: Passed to sportypy: ``display_range``, ``xlim``, ``ylim`` and ``rotation`` go to
             ``draw()``; the rest (``field_updates``, ``color_updates``, ``units``, ...) to the surface class.
+            sportypy's ``x_trans`` / ``y_trans`` only shift the data plotted through sportypy's own surface methods
+            onto the drawn surface; they do not move the surface or its center logo (unlike sportyR and sdvplotR,
+            where they move the surface), so data drawn on the returned Axes must be in the surface's own frame.
 
     Returns:
         matplotlib.axes.Axes: The Axes sportypy drew on.

@@ -68,7 +68,7 @@ def test_legend_reads_the_scale_recorded_by_a_coloring_call():
 
 
 def test_legend_matches_the_cells_of_wave_c1s_coloring_functions():
-    # gt_color_ranks and gt_color_pills (wave C1) write the record; the legend's steps are the cells' colors
+    # gt_color_ranks and gt_color_pills write the record; the legend's steps are the cells' colors
     palette = ["#3D8B6E", "#EDE0CC", "#BE4D3A"]
     ranks = gt_color_ranks(
         GT(pl.DataFrame({"rk": [1.0, 3.0, 5.0, 7.0, 9.0]})), "rk", palette=palette, domain=(0, 10), reverse=True

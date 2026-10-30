@@ -317,8 +317,8 @@ def test_the_team_theme_without_a_team_and_its_errors(monkeypatch):
     [
         lambda gt: sgt.gt_theme_sdv(gt),  # wave A
         lambda gt: sgt.gt_theme_almanac(gt),  # wave B
-        lambda gt: sgt.gt_border_grid(gt),  # wave C1
-        lambda gt: sgt.gt_watermark(gt, "DRAFT"),  # wave C2
+        lambda gt: sgt.gt_border_grid(gt),
+        lambda gt: sgt.gt_watermark(gt, "DRAFT"),
     ],
     ids=["gt_theme_sdv", "gt_theme_almanac", "gt_border_grid", "gt_watermark"],
 )
@@ -337,8 +337,8 @@ RAW = pl.DataFrame({"team": ["LV"], "w": [1]})
     [
         (lambda: gt_sdv_logos(RAW, "team", league="nfl"), "gt"),  # wave A
         (lambda: sgt.gt_theme_kenpom(RAW), "gt"),  # wave B
-        (lambda: sgt.gt_bold_rows(RAW), "gt"),  # wave C1
-        (lambda: sgt.gt_title_header(RAW, "Week 5"), "gt"),  # wave C2
+        (lambda: sgt.gt_bold_rows(RAW), "gt"),
+        (lambda: sgt.gt_title_header(RAW, "Week 5"), "gt"),
         (lambda: sgt.gt_save_crop(RAW), "data"),  # wave D
     ],
     ids=["A", "B", "C1", "C2", "D"],
@@ -359,7 +359,7 @@ def test_every_wave_words_a_bad_density_and_style_key_alike():
         sgt.gt_theme_kenpom(GT(RAW), density="roomy")  # wave B
     assert str(a.value) == str(b.value) == "density must be 'comfortable', 'compact' or 'social', not 'roomy'"
     with pytest.raises(ValueError) as c:
-        sgt.gt_title_header(GT(RAW), "Week 5", title_style={"colour": "red"})  # wave C2
+        sgt.gt_title_header(GT(RAW), "Week 5", title_style={"colour": "red"})
     with pytest.raises(ValueError) as d:
         sgt.gt_grid([GT(RAW)], title="T", title_style={"colour": "red"})  # wave D
     assert str(c.value) == str(d.value) and str(c.value).startswith("title_style has unknown key(s) ['colour']")

@@ -1,6 +1,7 @@
 ---
 title: Table themes
 sidebar_label: Table themes
+description: "The 122 surveyed table themes sdvplot ships for great_tables, reactable, itables and plottable, shared with sdvplotR and sdvtables."
 ---
 
 # Table themes
