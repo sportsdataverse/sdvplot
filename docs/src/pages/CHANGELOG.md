@@ -79,6 +79,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - The surfaces cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home since
   sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`).
 - The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`).
+- `sdvplot.pydeck.surface_layer()` draws all ten sportypy sports, as sdvplot-js's `surfaceLayer`: lacrosse, softball
+  and volleyball join the seven it drew.
 - `surface()` names the fix when the installed sportypy is older than 1.2 (a key it has no module or class for), and
   a library sportypy itself imports raises its own `ModuleNotFoundError` instead of the surfaces-extra message.
 

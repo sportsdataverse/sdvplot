@@ -290,7 +290,7 @@ def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
 
 
 LEAGUE_OF = {"baseball": "mlb", "basketball": "nba", "curling": "wcf", "football": "nfl", "hockey": "nhl",
-             "soccer": "fifa", "tennis": "atp"}  # fmt: skip
+             "lacrosse": "pll", "soccer": "fifa", "softball": "ncaa", "tennis": "atp", "volleyball": "fivb"}  # fmt: skip
 
 
 @functools.cache
@@ -363,8 +363,8 @@ def test_sportypys_own_arguments_pass_through_and_a_hidden_feature_is_left_out()
 
 def test_an_unknown_sport_or_league_is_an_input_error():
     pytest.importorskip("sportypy")
-    with pytest.raises(sdvplot.InputError, match="lacrosse"):
-        sdeck.surface_layer("lacrosse", "nll")
+    with pytest.raises(sdvplot.InputError, match="cricket"):
+        sdeck.surface_layer("cricket", "icc")
     with pytest.raises(sdvplot.InputError, match="'xyz'"):
         sdeck.surface_layer("hockey", "xyz")
 

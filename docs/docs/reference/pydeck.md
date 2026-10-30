@@ -278,10 +278,10 @@ geometry, so the two languages' vertices differ (the props, colors and extents a
 
 | Name | Type | Description |
 |---|---|---|
-| `sport` | `str` | The sportypy sport: "hockey", "soccer", "basketball", "football", "baseball", "tennis" or "curling". |
+| `sport` | `str` | The sportypy sport: "hockey", "soccer", "basketball", "football", "baseball", "softball", "lacrosse", "tennis", "volleyball" or "curling". |
 | `league` | `str` | sportypy's league code for the sport, e.g. "nhl", "fifa", "nba". |
 | `id` | `str` | The layer id. |
-| `tolerance` | `float \| None` | The simplification distance, in the surface's units; None for a 2,000th of the surface's diagonal (about 0.11 ft on an NHL rink), 0 to keep every point. Each loop caps it at its own mean width and keeps both ends of every segment at least that long, so thin lines and rings keep their corners and shape (every loop within 5% of its area unthinned, measured on all seven sports). |
+| `tolerance` | `float \| None` | The simplification distance, in the surface's units; None for a 2,000th of the surface's diagonal (about 0.11 ft on an NHL rink), 0 to keep every point. Each loop caps it at its own mean width and keeps both ends of every segment at least that long, so thin lines and rings keep their corners and shape (every loop within 5% of its area unthinned, measured on all ten sports). |
 | `**sportypy_kwargs` | `Any` | Passed to the sportypy surface class: ``rink_updates`` / ``pitch_updates`` / ``court_updates`` / ``field_updates``, ``color_updates``, ``units``. |
 
 ### Returns

@@ -47,15 +47,18 @@ def __dir__() -> list[str]:  # dir() and tab completion show the public API only
 # is quoted, which pydeck strips before it sends the value to deck.gl
 _CARTESIAN = "'cartesian'"
 _ICON_PX = 128  # the px height a logo is packed into deck.gl's atlas at (it is drawn at `size`: this is its sharpness)
-# sport -> (sportypy.surfaces module, the class that takes a league_code); sportypy has no lacrosse or volleyball
+# sport -> (sportypy.surfaces module, the class that takes a league_code): the ten sports sporty and sportypy 1.2 draw
 _SPORTS = {
     "baseball": "BaseballField",
     "basketball": "BasketballCourt",
     "curling": "CurlingSheet",
     "football": "FootballField",
     "hockey": "HockeyRink",
+    "lacrosse": "LacrosseField",
     "soccer": "SoccerPitch",
+    "softball": "SoftballField",
     "tennis": "TennisCourt",
+    "volleyball": "VolleyballCourt",
 }
 
 
@@ -500,7 +503,7 @@ def _simplify(xy: list[tuple[float, float]], tol: float) -> list[list[float]]:
     kept, or when the next point is at least ``t`` from it: both ends of a long segment stay, so a thin line keeps its
     corners where a lone radial-distance pass would cut across it. ``t`` is ``tol`` capped at the loop's mean width
     (2 x area / perimeter), so a thin band (a 2-inch line, a faceoff ring) is thinned along its length only. The first
-    and last points always stay. Measured on all seven sports: every loop within 5% of its area unthinned."""
+    and last points always stay. Measured on all ten sports: every loop within 5% of its area unthinned."""
     # ponytail: a Python loop, about 0.2 s for an NHL rink's 123,000 points; numpy can vectorize the keep test if a
     # surface is ever built in a loop
     a = np.asarray(xy, dtype=float)
@@ -536,13 +539,14 @@ def surface_layer(
     geometry, so the two languages' vertices differ (the props, colors and extents agree).
 
     Args:
-        sport: The sportypy sport: "hockey", "soccer", "basketball", "football", "baseball", "tennis" or "curling".
+        sport: The sportypy sport: "hockey", "soccer", "basketball", "football", "baseball", "softball", "lacrosse",
+            "tennis", "volleyball" or "curling".
         league: sportypy's league code for the sport, e.g. "nhl", "fifa", "nba".
         id: The layer id.
         tolerance: The simplification distance, in the surface's units; None for a 2,000th of the surface's
             diagonal (about 0.11 ft on an NHL rink), 0 to keep every point. Each loop caps it at its own mean width
             and keeps both ends of every segment at least that long, so thin lines and rings keep their corners and
-            shape (every loop within 5% of its area unthinned, measured on all seven sports).
+            shape (every loop within 5% of its area unthinned, measured on all ten sports).
         **sportypy_kwargs: Passed to the sportypy surface class: ``rink_updates`` / ``pitch_updates`` /
             ``court_updates`` / ``field_updates``, ``color_updates``, ``units``.
 
