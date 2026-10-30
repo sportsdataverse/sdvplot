@@ -7024,7 +7024,7 @@
         "odzone_faceoff_circle": 8,
         "nodzone_faceoff_spot_ring": 16,
         "center_faceoff_circle": 2,
-        "goaltenders_restricted_area": 6
+        "goaltenders_restricted_area": 4
       },
       "extent_y": null
     },

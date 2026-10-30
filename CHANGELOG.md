@@ -87,6 +87,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   from the code; the README and the getting-started page list the `[itables]` extra, and the README links every
   league tutorial and cookbook; the root docs (main) carry an "unreleased" banner while their version is not yet
   released, and the newest release's snapshot no longer says it is unmaintained.
+- Surfaces follow sportypy 1.2.4 / sportyR 2.4.5: the surfaces extra needs sportypy 1.2.4 (from GitHub while PyPI has
+  only 1.0.0). `surface()` draws what sportypy 1.2.4 draws: a feature with no area and no visible outline is left out,
+  a hockey goaltender trapezoid is two strips and the nhl92 (OHL) crease its arc band and two L marks (each one patch
+  with a sub-path per ring), and the lacrosse goal frame, net and bench outlines close on their first point.
+  `sdvplot.pydeck.surface_layer()` draws each trapezoid's strips as two rows (an NHL rink has 4, was 6: each
+  trapezoid crossed itself at a corner and was split) and the faceoff hash marks as 16 simple loops; the self-crossing
+  split now only catches odd updates (a negative `faceoff_line_width`). The deck.gl fixture shared with sdvplot-js
+  (`tests/fixtures/deckgl_shared.json`) is sdvplot-js's for sporty's sportyR 2.4.5 geometry (4 trapezoid rows).
 
 ### Fixed
 
