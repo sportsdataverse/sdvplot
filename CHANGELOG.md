@@ -74,7 +74,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 - `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
   The surfaces extra now needs sportypy 1.2.0.
 - The surfaces cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home since
-  sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`), and with an
+  sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install -U --pre`), and with an
   older release (the examples still pin 0.1.4) the cell prints that note and draws nothing instead of failing the page.
 - The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`).
 - `sdvplot.pydeck.surface_layer()` draws all ten sportypy sports, as sdvplot-js's `surfaceLayer`: lacrosse, softball

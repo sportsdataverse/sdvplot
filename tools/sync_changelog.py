@@ -23,7 +23,7 @@ FRONT_MATTER = (
 
 def main() -> int:
     DOCS_COPY.write_bytes(FRONT_MATTER + (ROOT / "CHANGELOG.md").read_bytes())
-    subprocess.run(["git", "add", str(DOCS_COPY)], cwd=ROOT, check=False)
+    subprocess.run(["git", "add", str(DOCS_COPY)], cwd=ROOT, check=True)
     return 0
 
 

@@ -61,15 +61,14 @@ def _citation() -> dict:
     return yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
 
 
-def test_citation_cites_a_release_no_newer_than_the_project():
-    """CITATION.cff cites the newest release, so it trails a version bumped ahead of its release; the release run
-    (release_blockers) then requires it to cite the tag, dated as its CHANGELOG heading."""
-    from packaging.version import Version
-
-    project = re.search(r'^version = "([^"]+)"', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.M)[1]
+def test_citation_cites_the_newest_release():
+    """CITATION.cff cites the newest dated CHANGELOG release, version and date, so it trails a version bumped ahead of
+    its release; the release run (release_blockers) then requires it to cite the tag."""
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    newest = re.search(r"^## \[(\d[^]]*)\] - (\d{4}-\d{2}-\d{2})$", changelog, re.M)
     citation = _citation()
-    assert Version(str(citation["version"])) <= Version(project)
     assert isinstance(citation["date-released"], str)  # quoted: a bare YAML date loads as a date, not CFF's string
+    assert (str(citation["version"]), citation["date-released"]) == (newest[1], newest[2])
 
 
 def test_docs_changelog_mirrors_the_root_changelog():  # Review Focus 5

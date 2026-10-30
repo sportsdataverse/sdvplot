@@ -62,9 +62,9 @@ ax = sdvplot.surface("nfl", "KC", center_logo=True)
 
 ## Surface keys
 
-The 59 keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, the sportypy class drawn, and whether the key is an SDV team league, which colors the surface by a `team`; a key that is not refuses one. sdvplotR's `surface_map` and sdvplot-js's `surfaces.ts` use the same keys.
+The 59 keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, the sportypy class drawn, and whether the key is an SDV team league, which takes a `team` (its colors on a basketball court, football field or hockey rink, and its logo through `center_logo`); a key that is not refuses one. sdvplotR's `surface_map` and sdvplot-js's `surfaces.ts` use the same keys.
 
-| Key | Sport | sportypy class | Team league |
+| Key | Sport | sportypy class | Takes a team |
 |---|---|---|---|
 | `nfl` | football | `sportypy.surfaces.football.NFLField` | yes |
 | `aaf` | football | `sportypy.surfaces.football.NFLField` | yes |

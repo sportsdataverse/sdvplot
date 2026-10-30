@@ -397,15 +397,16 @@ sportsdataverse-py's `euroleague_game_points()` reports each shot in centimeters
 basket and free throws as `-1,-1`. `court_coords(provider="euroleague")` moves them onto the FIBA court
 `surface("fiba")` draws, in meters, and turns the free throws into nulls. Which sideline is positive is unverified
 in the source frame, so the chart may be mirrored left to right. The 2025-26 season's first game. This needs
-sportsdataverse 0.2.0b1 or newer (`pip install --pre sportsdataverse`), where EuroLeague lives under
-`sportsdataverse.basketball`; with an older release the cell prints a note and draws nothing:
+sportsdataverse 0.2.0b1 or newer (`pip install -U --pre "sportsdataverse>=0.2.0b1"`, then restart the kernel),
+where EuroLeague lives under `sportsdataverse.basketball`; with an older release the cell prints a note and draws
+nothing:
 
 ```python
 try:
     import sportsdataverse.basketball.euroleague as euroleague
 except ModuleNotFoundError:  # sportsdataverse before 0.2.0b1 has no sportsdataverse.basketball
     euroleague = None
-    print("Skipped: this recipe needs sportsdataverse 0.2.0b1 or newer (pip install --pre sportsdataverse)")
+    print('Skipped: needs sportsdataverse 0.2.0b1 or newer: pip install -U --pre "sportsdataverse>=0.2.0b1"')
 
 if euroleague is not None:
     euro = sdvplot.court_coords(
@@ -429,7 +430,7 @@ if euroleague is not None:
 <div class="sdv-output">
 
 ```text
-Skipped: this recipe needs sportsdataverse 0.2.0b1 or newer (pip install --pre sportsdataverse)
+Skipped: needs sportsdataverse 0.2.0b1 or newer: pip install -U --pre "sportsdataverse>=0.2.0b1"
 ```
 
 </div>

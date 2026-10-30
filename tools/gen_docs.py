@@ -299,9 +299,10 @@ def _surface_keys() -> str:
     out = [
         "## Surface keys\n",
         f"The {len(SURFACES)} keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, the sportypy "
-        "class drawn, and whether the key is an SDV team league, which colors the surface by a `team`; a key that is "
-        "not refuses one. sdvplotR's `surface_map` and sdvplot-js's `surfaces.ts` use the same keys.\n",
-        "| Key | Sport | sportypy class | Team league |",
+        "class drawn, and whether the key is an SDV team league, which takes a `team` (its colors on a basketball "
+        "court, football field or hockey rink, and its logo through `center_logo`); a key that is not refuses one. "
+        "sdvplotR's `surface_map` and sdvplot-js's `surfaces.ts` use the same keys.\n",
+        "| Key | Sport | sportypy class | Takes a team |",
         "|---|---|---|---|",
     ]
     out += [
