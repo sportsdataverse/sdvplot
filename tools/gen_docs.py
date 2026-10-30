@@ -292,6 +292,25 @@ def render_module(sub: str, position: int) -> str:
     return "\n".join(out) + "\n\n" + "\n".join(sections)
 
 
+def _surface_keys() -> str:
+    """The surface() page's table of every surface key, from ``sdvplot._surface`` itself (complete by construction)."""
+    from sdvplot._surface import NO_TEAMS, SURFACES
+
+    out = [
+        "## Surface keys\n",
+        f"The {len(SURFACES)} keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, the sportypy "
+        "class drawn, and whether the key is an SDV team league, which colors the surface by a `team`; a key that is "
+        "not refuses one. sdvplotR's `surface_map` and sdvplot-js's `surfaces.ts` use the same keys.\n",
+        "| Key | Sport | sportypy class | Team league |",
+        "|---|---|---|---|",
+    ]
+    out += [
+        f"| `{key}` | {sport} | `sportypy.surfaces.{sport}.{cls}` | {'no' if key in NO_TEAMS else 'yes'} |"
+        for key, (sport, cls) in SURFACES.items()
+    ]
+    return "\n".join(out) + "\n"
+
+
 def _errors_page(position: int) -> str:
     lines = [
         f"---\ntitle: Errors and warnings\nsidebar_label: Errors and warnings\nsidebar_position: {position}\n---\n",
@@ -445,6 +464,8 @@ def render(out_dir: Path, data_dir: Path) -> list[str]:
         index.append("| Function | What it does |\n|---|---|")
         for n in names:
             page, errs = render_function(n, getattr(sdvplot, n), pos)
+            if n == "surface":
+                page += "\n" + _surface_keys()
             errors += errs
             (out_dir / f"{n}.md").write_text(page, encoding="utf-8", newline="\n")
             summary = docstring_parser.parse(inspect.getdoc(getattr(sdvplot, n)) or "").short_description or ""

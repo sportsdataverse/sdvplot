@@ -194,8 +194,10 @@ def test_a_missing_or_old_sportypy_names_the_extra(monkeypatch):
         raise ModuleNotFoundError(name, name="sportypy")
 
     monkeypatch.setattr(_surface.importlib, "import_module", gone)
-    with pytest.raises(OptionalDependencyError, match=r'sportypy 1\.2 or newer: pip install -U "sdvplot\[surfaces\]"'):
+    # sportypy alone: re-installing the extra lets pip backtrack sdvplot to a release whose extra takes sportypy 1.0
+    with pytest.raises(OptionalDependencyError, match=r'sportypy 1\.2 or newer: pip install -U "sportypy>=1\.2"') as e:
         sdvplot.surface("nfl")
+    assert "sdvplot[" not in str(e.value)
     monkeypatch.setattr(_surface.importlib, "import_module", lambda name: object())  # sportypy 1.0: no PWHLRink
     with pytest.raises(OptionalDependencyError, match=r"sportypy 1\.2 or newer"):
         sdvplot.surface("pwhl")
