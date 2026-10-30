@@ -234,7 +234,7 @@ def _daemon_pipe_readers() -> None:
     thread that ends only when every write end of the pipe closes. choreographer closes its own copy only after the
     browser closes, so a Chrome that will not close (a loaded machine) leaves the reader blocked forever and pytest
     hangs after printing its summary. As daemon threads, the readers can no longer keep the run alive."""
-    # ponytail: patches a third-party module global for the test run only; drop it once choreographer closes the pipe
+    # Patches a third-party module global for the test run only; drop it once choreographer closes the pipe
     # in a finally (choreographer 1.4.0 browser_async.close / browser_sync.close).
     try:
         from logistro import _api

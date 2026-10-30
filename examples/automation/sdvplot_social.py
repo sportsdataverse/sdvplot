@@ -751,7 +751,7 @@ def run_gameday(args: argparse.Namespace) -> Path:
 def graphemes(text: str) -> int:
     """Approximate grapheme count: combining marks, variation selectors and joiners do not count.
 
-    ponytail: overcounts emoji ZWJ sequences (a family emoji counts several), so the 300 limit errs safe; use a
+    It overcounts emoji ZWJ sequences (a family emoji counts several), so the 300 limit errs safe; use a
     grapheme library if captions carry many emoji.
     """
     return sum(1 for ch in text if not unicodedata.combining(ch) and ch not in "‍︎️")

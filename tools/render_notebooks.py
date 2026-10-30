@@ -309,7 +309,7 @@ def _vegalite_html(spec: dict) -> str:
 def _widget_html(view: dict, state: dict) -> str:
     """A widget view plus the notebook's whole widget state.
 
-    ponytail: every model, not only those the view references: a reactable table finds its React module and import
+    Every model, not only those the view references: a reactable table finds its React module and import
     map by name, not by reference. A notebook with many widgets repeats their state in each page."""
     return (
         f'<script type="{WIDGET_STATE}">{_script_json(state)}</script>\n'

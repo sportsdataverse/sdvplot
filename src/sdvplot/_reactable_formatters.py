@@ -48,7 +48,7 @@ _CSS_FUNC = re.compile(r"(?:rgb|hsl)a?\([\w\s.%+\-,/]*\)", re.IGNORECASE)  # rgb
 _CSS_UNSAFE = re.compile(r"[;{}\\]|url\(|expression\(", re.IGNORECASE)
 _SHADOW = "0 6px 6px -4px #888888"
 
-# 16x16 inline SVG bodies. ponytail: a small fixed set; add a path here when a recipe needs another shape.
+# 16x16 inline SVG bodies: a small fixed set; add a path here when a recipe needs another shape.
 _ICONS = {
     "circle": '<circle cx="8" cy="8" r="7"/>',
     "square": '<rect x="1" y="1" width="14" height="14" rx="1.5"/>',

@@ -259,7 +259,7 @@ def test_snapshots_are_written_as_utf8_under_an_ascii_locale(tmp_path):
 
 
 def test_snapshots_use_lf_line_endings(tmp_path):
-    fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)  # same call shape as Task 0's test
+    fs._write("t", [{"a": "1"}, {"a": "2"}], ["a"], tmp_path)  # the call the ascii-locale test above makes
     assert b"\r\n" not in (tmp_path / "t.csv").read_bytes()
 
 
