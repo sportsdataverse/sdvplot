@@ -54,7 +54,7 @@ is for `surface()` (the fields, courts, rinks and sheets of ten sports, from foo
 `sdvplot.perspective` Perspective viewer configs in team colors and a logo column.
 
 `surface()` and `surface_layer()` need sportypy 1.2 or newer. While PyPI has only sportypy 1.0, install it from GitHub:
-`pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.4"`.
+`pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.5"`.
 
 ## Quick example
 

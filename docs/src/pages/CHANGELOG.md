@@ -100,6 +100,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   trapezoid crossed itself at a corner and was split) and the faceoff hash marks as 16 simple loops; the self-crossing
   split now only catches odd updates (a negative `faceoff_line_width`). The deck.gl fixture shared with sdvplot-js
   (`tests/fixtures/deckgl_shared.json`) is sdvplot-js's for sporty's sportyR 2.4.5 geometry (4 trapezoid rows).
+- Hockey surfaces follow sportypy 1.2.5 / sportyR 2.4.5: the surfaces extra needs sportypy 1.2.5 (from GitHub while
+  PyPI has only 1.0.0). `surface()` and `sdvplot.pydeck.surface_layer()` draw sportyR 2.4.5's goal frames, goal crease
+  fills and outlines, a single referee's crease, and penalty boxes anchored at `-rink_width / 2` (an NHL rink's
+  penalty box outline now reaches y = -48.33 ft, so `deck()` centres it at y = 0.25). The shared deck.gl fixture is
+  sdvplot-js's with the faceoff hash marks counted (`odzone_faceoff_lines`: 16 loops).
 
 ### Fixed
 
