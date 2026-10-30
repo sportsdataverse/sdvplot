@@ -501,7 +501,7 @@ def _simplify(xy: list[tuple[float, float]], tol: float) -> list[list[float]]:
     corners where a lone radial-distance pass would cut across it. ``t`` is ``tol`` capped at the loop's mean width
     (2 x area / perimeter), so a thin band (a 2-inch line, a faceoff ring) is thinned along its length only. The first
     and last points always stay. Measured on all seven sports: every loop within 5% of its area unthinned."""
-    # ponytail: a Python loop, about 1 s for an NHL rink's 1.2 million points; numpy can vectorize the keep test if a
+    # ponytail: a Python loop, about 0.2 s for an NHL rink's 123,000 points; numpy can vectorize the keep test if a
     # surface is ever built in a loop
     a = np.asarray(xy, dtype=float)
     b = np.roll(a, 1, axis=0)
@@ -528,9 +528,10 @@ def surface_layer(
     coordinates are in. Each closed loop of a visible sportypy feature is one data row (a faceoff circle is two: its
     half rings; a loop that crosses itself, such as a goaltender trapezoid, is split at the crossing into loops that
     do not, and a loop with no area is left out), in sportypy's drawing order (its zorder), filled with its color
-    (alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 80,000
-    points; each loop is thinned to ``tolerance`` (see below), which leaves an NHL rink about 16,400 points instead
-    of 1.2 million, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a few hundred kilobytes.
+    (alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 8,000
+    points (80,000 before sportypy 1.2.2); each loop is thinned to ``tolerance`` (see below), which leaves an NHL rink
+    about 14,400 points instead of 123,000, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a
+    few hundred kilobytes.
     sdvplot-js's ``surfaceLayer`` draws sporty's own
     geometry, so the two languages' vertices differ (the props, colors and extents agree).
 

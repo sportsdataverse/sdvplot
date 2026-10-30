@@ -282,7 +282,9 @@ def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
     thin = sum(len(d["polygon"]) for d in sdeck.surface_layer("hockey", "nhl")["data"])
     # every point, plus the crossing point each self-crossing split adds to both of its rings (the 4 trapezoids: 8)
     assert kept == every + 8
-    assert thin < every / 50  # 1.2 million points to about 16,000
+    # the default tolerance keeps the layer's payload small however densely sportypy draws its arcs: 1.2 million
+    # points to about 16,000 with sportypy 1.2.0's 10,000-point circles, 123,000 to about 14,000 with 1.2.2's 1,000
+    assert thin < min(every / 5, 20_000)
     with pytest.raises(sdvplot.InputError, match="tolerance"):
         sdeck.surface_layer("hockey", "nhl", tolerance=-1)
 

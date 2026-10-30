@@ -166,7 +166,9 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           uv venv all
-          uv pip install --python all "$(ls dist/sdvplot-*.whl)[all]"
+          # A wheel's metadata drops [tool.uv.sources], and PyPI has only sportypy 1.0.0: install pyproject's sportypy
+          # source with it. Drop the sportypy argument once sportypy 1.2 is on PyPI.
+          uv pip install --python all "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.3" "$(ls dist/sdvplot-*.whl)[all]"
           # sdvplot.perspective needs Python 3.11+ (perspective-python ships cp311-abi3 wheels only; [perspective] is 3.11+)
           all/bin/python -c 'import importlib, pkgutil, sys, sdvplot; [importlib.import_module(f"sdvplot.{m.name}") for m in pkgutil.iter_modules(sdvplot.__path__) if not m.name.startswith("_") and (sys.version_info >= (3, 11) or m.name != "perspective")]'
 

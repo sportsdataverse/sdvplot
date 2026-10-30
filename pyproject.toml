@@ -88,9 +88,9 @@ dev = [{ include-group = "test" }, { include-group = "compat" }, { include-group
 [tool.uv]
 default-groups = ["dev"]
 
-# sportypy 1.2.0 (sportyR 2.3.0 parity) is not on PyPI yet: drop this source once it is published
+# sportypy 1.2 (sportyR 2.3.0 parity, PWHLRink) is not on PyPI yet (it serves 1.0.0): drop this source once 1.2.3 is
 [tool.uv.sources]
-sportypy = { git = "https://github.com/sportsdataverse/sportypy", rev = "24a604836314dfc72354f17645136a07558a1b4c" }
+sportypy = { git = "https://github.com/sportsdataverse/sportypy", tag = "v1.2.3" }
 
 [build-system]
 requires = ["hatchling>=1.27,<2"]  # bounded: a new major could change what the published wheel holds
