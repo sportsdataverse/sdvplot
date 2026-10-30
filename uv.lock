@@ -6151,7 +6151,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2.5" },
     { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck", "perspective"], marker = "extra == 'all'" },
-    { name = "sportypy", marker = "extra == 'surfaces'", git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.3" },
+    { name = "sportypy", marker = "extra == 'surfaces'", git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.4" },
     { name = "urllib3", specifier = ">=2.6" },
 ]
 provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck", "perspective", "all"]
@@ -6503,8 +6503,8 @@ wheels = [
 
 [[package]]
 name = "sportypy"
-version = "1.2.3"
-source = { git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.3#4e4fee3109641bab3919c97758e017f3e4caaa32" }
+version = "1.2.4"
+source = { git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.4#e9ce4e57caa548699b31eae2eb03f6f4418441b4" }
 dependencies = [
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },

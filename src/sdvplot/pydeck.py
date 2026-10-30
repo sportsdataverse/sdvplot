@@ -393,7 +393,9 @@ def _loops(xy: list[tuple[float, float]]) -> list[list[tuple[float, float]]]:
     as a faceoff circle's two half rings each closing back on its first point: matplotlib fills that as it is, but
     deck.gl triangulates a polygon as one simple ring and fills the wrong side of it. A loop ends where the path comes
     back to that loop's first point, after at least two other points (a repeated first point does not end it); the
-    same rule as sdvplot-js's surfaceLayer."""
+    same rule as sdvplot-js's surfaceLayer. A feature sportypy draws as separate rings (since sportypy 1.2.4, marked by
+    a ``group`` column: a goaltender trapezoid's two strips, the nhl92 crease's band and L marks) closes each ring on
+    its first point, so it splits into the same rings as its groups."""
     # A loop inside another would be filled, not cut out as a hole; sportypy builds every ring from two half rings, so
     # none is.
     out: list[list[tuple[float, float]]] = []
@@ -482,9 +484,10 @@ def _first_crossing(a: Any, b: Any) -> tuple[int, int] | None:
 
 def _simple(r: list[list[float]]) -> list[list[list[float]]]:
     """A ring that crosses itself split at each crossing into rings that do not, each to be filled: what an SVG
-    (nonzero) fill shows of a figure-of-eight, and what deck.gl's earcut cannot triangulate. sportypy, like sporty, has
-    a few (the NHL goaltender's trapezoids). sdvplot-js's rule (from its three.js surface): the first crossing in the
-    order i, then j > i + 1, is split first, and each half is split again."""
+    (nonzero) fill shows of a figure-of-eight, and what deck.gl's earcut cannot triangulate. Since sportypy 1.2.4
+    (sportyR 2.4.5) sportypy draws its features as simple rings, so this only catches odd updates (a negative
+    ``faceoff_line_width``). sdvplot-js's rule (from its three.js surface): the first crossing in the order i, then
+    j > i + 1, is split first, and each half is split again."""
     if len(r) < 4:
         return [r]
     a = np.asarray(r, dtype=float)
@@ -530,12 +533,12 @@ def surface_layer(
     The surface is in its own coordinates: deck.gl's "cartesian" coordinate system, in the surface's units (feet for
     a rink, metres for a pitch) with the origin at its centre, the frame sportypy draws in and NHL api-web's shot
     coordinates are in. Each closed loop of a visible sportypy feature is one data row (a faceoff circle is two: its
-    half rings; a loop that crosses itself, such as a goaltender trapezoid, is split at the crossing into loops that
-    do not, and a loop with no area is left out), in sportypy's drawing order (its zorder), filled with its color
-    (alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out. sportypy draws arcs with up to 8,000
-    points (80,000 before sportypy 1.2.2); each loop is thinned to ``tolerance`` (see below), which leaves an NHL rink
-    about 14,400 points instead of 123,000, and the coordinates are rounded to 0.0001 of the unit, so a deck stays a
-    few hundred kilobytes.
+    half rings, a goaltender trapezoid two: its strips; a loop that crosses itself, which only odd updates make, is
+    split at the crossing into loops that do not, and a loop with no area is left out), in sportypy's drawing order
+    (its zorder), filled with its color (alpha included); a hidden one (a ``#rrggbb00`` fill, or none) is left out.
+    sportypy draws arcs with up to 8,000 points (80,000 before sportypy 1.2.2); each loop is thinned to ``tolerance``
+    (see below), which leaves an NHL rink about 14,400 points instead of 123,000, and the coordinates are rounded to
+    0.0001 of the unit, so a deck stays a few hundred kilobytes.
     sdvplot-js's ``surfaceLayer`` draws sporty's own
     geometry, so the two languages' vertices differ (the props, colors and extents agree).
 

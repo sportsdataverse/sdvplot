@@ -222,10 +222,10 @@ def test_an_unresolved_team_is_named_by_its_value_as_text_as_sdvplot_js_names_it
     assert all(d["sourceColor"] == [128, 128, 128, 255] for d in props["data"])
 
 
-def _sportypy_rink():
+def _sportypy_rink(**kwargs):
     from sportypy.surfaces.hockey import HockeyRink
 
-    return HockeyRink(league_code="nhl")
+    return HockeyRink(league_code="nhl", **kwargs)
 
 
 def test_the_rink_is_cartesian_polygons_in_sportypys_order_and_colors():
@@ -280,8 +280,8 @@ def test_tolerance_thins_sportypys_arcs_and_zero_keeps_every_point():
     every = sum(len(f._translate_feature()) for f in _sportypy_rink()._features if f.visible)
     kept = sum(len(d["polygon"]) for d in _unthinned("hockey"))
     thin = sum(len(d["polygon"]) for d in sdeck.surface_layer("hockey", "nhl")["data"])
-    # every point, plus the crossing point each self-crossing split adds to both of its rings (the 4 trapezoids: 8)
-    assert kept == every + 8
+    # every point: since sportypy 1.2.4 (sportyR 2.4.5) no ring crosses itself, so no split adds a crossing point
+    assert kept == every
     # the default tolerance keeps the layer's payload small however densely sportypy draws its arcs: 1.2 million
     # points to about 16,000 with sportypy 1.2.0's 10,000-point circles, 123,000 to about 14,000 with 1.2.2's 1,000
     assert thin < min(every / 5, 20_000)
@@ -342,13 +342,18 @@ def _crosses(r):
 
 def test_a_ring_that_crosses_itself_is_split_and_one_with_no_area_left_out_as_sdvplot_js_does():
     pytest.importorskip("sportypy")
-    # sportypy's NHL goaltender trapezoids cross themselves at a corner: three simple rings each once split
-    trapezoids = [f for f in _sportypy_rink()._features if type(f).__name__ == "GoaltendersRestrictedArea"]
-    assert any(_crosses(f._translate_feature()[["x", "y"]].to_numpy().tolist()) for f in trapezoids)
+    # since sportypy 1.2.4 (sportyR 2.4.5) the rink is simple rings: each goaltender trapezoid is two strips
     rows = sdeck.surface_layer("hockey", "nhl")["data"]
-    assert [d["name"] for d in rows].count("goaltenders_restricted_area") == 6
+    assert [d["name"] for d in rows].count("goaltenders_restricted_area") == 4
     assert [d["name"] for d in rows if _crosses(d["polygon"])] == []
     assert [d["name"] for d in rows if _area(d["polygon"]) < 1e-6] == []
+    # a faceoff L given a negative width crosses its own base (sdvplot-js's test uses the same update)
+    odd = {"rink_updates": {"faceoff_line_width": -1}}
+    lines = [f for f in _sportypy_rink(**odd)._features if type(f).__name__ == "ODZoneFaceoffLines"]
+    assert any(_crosses(f._translate_feature()[["x", "y"]].to_numpy().tolist()) for f in lines)
+    split = [d for d in sdeck.surface_layer("hockey", "nhl", **odd)["data"] if d["name"] == "odzone_faceoff_lines"]
+    assert len(split) > 16
+    assert [d for d in split if _crosses(d["polygon"]) or _area(d["polygon"]) < 1e-6] == []
 
 
 def test_sportypys_own_arguments_pass_through_and_a_hidden_feature_is_left_out():

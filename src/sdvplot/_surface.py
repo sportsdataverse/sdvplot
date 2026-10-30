@@ -101,7 +101,7 @@ _NUMBER_FONT = "Clarendon-Regular"  # sportypy's football yard-line number font 
 # an older sdvplot whose extra accepts the sportypy it has.
 SPORTYPY_HINT = (
     'needs sportypy 1.2 or newer: pip install -U "sportypy>=1.2" (while PyPI has only sportypy 1.0, install it from '
-    'GitHub: pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.3")'
+    'GitHub: pip install -U "sportypy @ git+https://github.com/sportsdataverse/sportypy@v1.2.4")'
 )
 
 
