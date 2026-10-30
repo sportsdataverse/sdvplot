@@ -359,9 +359,9 @@ sdvplot.axis_logos(bars, "y", league="pwhl", height=0.09)
 
 ## 8. The game that decided the Walter Cup
 
-The last game of the 2026 playoffs, every shot on a rink: `surface("pwhl")` draws the rink, the home team shoots at
-the left net and the visitors at the right one (HockeyTech's `x_coord` already fixes that), and each team's logo
-sits in its attacking half.
+The last game of the 2026 playoffs, every shot on a rink: `surface("pwhl")` draws the PWHL's own rink (it has no
+goalie trapezoid), the home team shoots at the left net and the visitors at the right one (HockeyTech's `x_coord`
+already fixes that), and each team's logo sits in its attacking half.
 
 ```python
 playoffs = schedule.filter(pl.col("game_type") == "playoffs").drop(

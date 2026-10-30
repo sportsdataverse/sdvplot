@@ -1,0 +1,21 @@
+{
+  "section": "tutorials/leagues",
+  "stem": "lacrosse-tennis-volleyball-curling",
+  "label": "Lacrosse, tennis, volleyball & curling",
+  "position": 60,
+  "page": "tutorials/leagues/lacrosse-tennis-volleyball-curling.md",
+  "items": [
+    {
+      "title": "Every lacrosse field and box",
+      "alt": "Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL box, and the PLL, World Lacrosse, NCAA and USA Lacrosse fields",
+      "image": "/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_3.png",
+      "anchor": "1-every-lacrosse-field"
+    },
+    {
+      "title": "A tennis court on clay, grass and a hard court",
+      "alt": "Three ATP tennis courts drawn by sdvplot.surface(), recolored as clay, grass and a blue hard court",
+      "image": "/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_9.png",
+      "anchor": "4-tennis-on-clay-grass-and-a-hard-court"
+    }
+  ]
+}

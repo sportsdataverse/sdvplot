@@ -18,8 +18,9 @@ resolves team abbreviations, names and provider ids across 28 leagues and picks 
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
 altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
-sdvplotR's table themes, cell styling, legends and image export, and `surface()` draws a league's field, court or rink
-in a team's colors. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/).
+sdvplotR's table themes, cell styling, legends and image export, and `surface()` draws every sportyR playing surface
+(football, basketball, baseball, softball, hockey, soccer, lacrosse, tennis, volleyball and curling), in a team's colors
+where the league has teams. The Python counterpart to [sdvplotR](https://sdvplotR.sportsdataverse.org/).
 
 ## **Installation**
 
@@ -33,10 +34,10 @@ Plotting libraries are optional extras, for example
 `pip install "sdvplot[mpl]"`. Each extra adds the libraries for one feature: `[svg]` lets `logo_image()`
 rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`, `[holoviews]`, `[tables]`,
 `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that library's plots, tables and
-maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()`, and
-`[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`). `sdvplot.pydeck`
-builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and `sdvplot.perspective`
-Perspective viewer configs in team colors and a logo column (Python 3.11+).
+maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]` is for `surface()` (ten
+sports' fields, courts, rinks and sheets), and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`,
+`sdvplot.plottable`). `sdvplot.pydeck` builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for
+pydeck, and `sdvplot.perspective` Perspective viewer configs in team colors and a logo column (Python 3.11+).
 
 | Extra | Adds |
 | --- | --- |
@@ -60,10 +61,13 @@ Perspective viewer configs in team colors and a logo column (Python 3.11+).
 ### JavaScript / TypeScript
 
 The same colors, logos, wordmarks and headshots are on npm as
-[`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot), with integrations for Observable
-Plot, D3, React, Chart.js, Plotly, Vega-Lite and ECharts, plus shot charts and linked interactivity. Its siblings
-[`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces) and
-[`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (tables) ship from the same
+[`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot): the marks work with Observable
+Plot, D3 and React, plus adapters for 20+ chart, map, grid and 3D libraries (Chart.js, Plotly, Vega-Lite, ECharts,
+Recharts, shadcn/ui, MUI X, nivo, Victory, uPlot, Svelte and LayerChart, G2, TanStack Charts, Unovis, Lightweight
+Charts, Perspective, Cytoscape, deck.gl, MapLibre and Three.js), shot charts and linked interactivity. Its siblings
+[`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces for ten sports) and
+[`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (themed tables in HTML, React,
+MUI X Data Grid, AG Grid and TanStack Table) ship from the same
 [sdvplot-js repo](https://github.com/sportsdataverse/sdvplot-js). Docs for all three:
 [plot.sportsdataverse.org](https://plot.sportsdataverse.org/).
 

@@ -46,7 +46,7 @@ pip install "sdvplot[mpl]"
 `[svg]` lets `logo_image()`, and the adapters that draw decoded images, rasterize SVG marks. With `[mpl]`, `[plotnine]`, `[plotly]`, `[altair]`, `[bokeh]`,
 `[holoviews]`, `[tables]`, `[folium]` or `[pygal]`, `add_logos()`, `add_wordmarks()` and `add_headshots()` draw on that
 library's plots, tables and maps; `axis_logos()` works on matplotlib, seaborn, plotnine, Plotly and Altair. `[surfaces]`
-is for `surface()`, and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
+is for `surface()` (the fields, courts, rinks and sheets of ten sports, from football to curling), and `[reactable]` and `[plottable]` add column helpers (`sdvplot.reactable`, `sdvplot.plottable`).
 `sdvplot.pydeck` builds deck.gl layers (team logos, team-colored arcs, sportypy surfaces) for pydeck, and
 `sdvplot.perspective` Perspective viewer configs in team colors and a logo column.
 

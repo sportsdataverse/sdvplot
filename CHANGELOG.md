@@ -3,14 +3,17 @@
 
 - [Changelog](#changelog)
   - [[Unreleased]](#unreleased)
-    - [Changed](#changed)
-  - [[0.1.1] - 2026-10-26](#011---2026-10-26)
+  - [[0.2.0] - 2026-10-26](#020---2026-10-26)
     - [Added](#added)
-    - [Changed](#changed-1)
+    - [Changed](#changed)
     - [Fixed](#fixed)
+  - [[0.1.1] - 2026-10-26](#011---2026-10-26)
+    - [Added](#added-1)
+    - [Changed](#changed-1)
+    - [Fixed](#fixed-1)
   - [[0.1.0] - 2026-10-05](#010---2026-10-05)
     - [Migrating from the git pre-release](#migrating-from-the-git-pre-release)
-    - [Added](#added-1)
+    - [Added](#added-2)
       - [Core (team identity, colors, logos, cache, adapter contract)](#core-team-identity-colors-logos-cache-adapter-contract)
       - [Repository standards](#repository-standards)
       - [Matplotlib family](#matplotlib-family)
@@ -28,7 +31,7 @@
       - [Documentation](#documentation)
       - [Documentation — example notebooks by section, interactive outputs and the gallery](#documentation--example-notebooks-by-section-interactive-outputs-and-the-gallery)
       - [Release hardening](#release-hardening-1)
-    - [Fixed](#fixed-1)
+    - [Fixed](#fixed-2)
       - [Adapter contract follow-ups](#adapter-contract-follow-ups)
       - [Tables follow-ups](#tables-follow-ups)
       - [Content findings (team index, team tiers, surface)](#content-findings-team-index-team-tiers-surface)
@@ -43,11 +46,52 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-26
+
+### Added
+
+- `surface()` draws every sportyR 2.3.0 surface (sportypy 1.2.0): softball (`ncaa_softball`, a team league, so the
+  field takes the team's `center_logo`), lacrosse (`nll`, `pll`, `world_lacrosse`, `ncaa_mlacrosse`, `ncaa_wlacrosse`,
+  `usa_mlacrosse`, `usa_wlacrosse`), tennis (`atp`, `wta`, `itf`, `ita`, `usta`, `ncaa_tennis`), volleyball (`fivb`,
+  `usa_volleyball`, `ncaa_volleyball`), curling (`wcf`, `curling_canada`) and more leagues of the other sports
+  (`cfl`, `nfhs_football`, `nfhs_basketball`, `little_league`, `pony`, `nfhs_baseball`, `iihf`, `nwhl`, `fifa`, `epl`,
+  `mls`, `nwsl`, `ncaa_soccer`): 59 keys, the same table as sdvplotR and sdvplot-js. A team on a key that is not an
+  SDV team league raises `InputError` ("no team identities for ..."), as in sdvplotR and sdvplot-js.
+- Docs: a lacrosse, tennis, volleyball and curling tutorial (every lacrosse field and box, the men's and women's goal
+  areas, a tennis court on three surfaces, the volleyball free zones, a curling sheet and house); the surfaces
+  cookbook's first recipe draws all ten sports; the college baseball and softball tutorial puts the Women's College
+  World Series champion on a softball field; the PWHL tutorial's shot map is on the PWHL's own rink.
+
 ### Changed
 
+- `surface(..., center_logo=True)` on a baseball or softball field (`mlb`, `milb`, `ncaa_baseball`, `ncaa_softball`)
+  draws the logo in shallow center field instead of on home plate, the field's origin, exactly as sdvplotR: at x = 0,
+  midway between second base (`baseline_distance * sqrt(2)`) and the center-field fence, 0.15 x
+  `center_field_distance` across (60 ft at 263.6 ft from home plate on an MLB field), from the league's field
+  parameters and `field_updates`, in the dark-background variant for the grass. Every surface's center logo now
+  also follows `rotation`, as the surface does (it stayed at the origin).
+- `surface(..., center_logo=True)` draws the team's dark-background logo variant on grass, football fields and soccer
+  pitches as well as diamonds, as sdvplotR does: the variant is `"dark"` wherever white reads better than black on
+  the sport's regulation surface color (basketball's wood and hockey's ice keep the default). A team without a dark
+  variant falls back to its default logo.
+- `surface("pwhl")` draws the PWHL's own rink (sportypy's `PWHLRink`: no goalie trapezoid) instead of the NHL rink.
+  The surfaces extra now needs sportypy 1.2.0.
 - The surfaces cookbook imports EuroLeague from `sportsdataverse.basketball.euroleague`, its home since
   sportsdataverse-py 0.2.0b1; the cookbook says that cell needs 0.2.0b1 or newer (`pip install --pre`).
 - The `altair` extra needs `altair>=5.5`. Altair 5.1-5.4 fail on polars 2 frames (`Data has no parameter 'x'`).
+- `sdvplot.pydeck.surface_layer()` draws all ten sportypy sports, as sdvplot-js's `surfaceLayer`: lacrosse, softball
+  and volleyball join the seven it drew.
+- `surface()` names the fix when the installed sportypy is older than 1.2 (a key it has no module or class for), and
+  a library sportypy itself imports raises its own `ModuleNotFoundError` instead of the surfaces-extra message.
+
+### Fixed
+
+- `surface()` drew no line thinner than a pixel: matplotlib snapped each straight-edged line to the pixel grid, so at
+  screen size a volleyball court lost its attack and end lines, a tennis court its baselines and alleys, a lacrosse field
+  its sidelines, and an NBA half court its free-throw lane end and hash marks. sportypy 1.2.0 draws the surface's
+  shapes unsnapped, so every line shows (antialiased); the NBA half-court image baseline is regenerated with them.
+- `surface(..., team, center_logo=0)` drew no logo and raised nothing; a zero height is now an `InputError`, as any
+  height outside (0, 1] is.
 
 ## [0.1.1] - 2026-10-26
 
@@ -702,6 +746,7 @@ fails loudly, with the message shown:
   had a 60 s timeout of its own, so a server sending a header byte every 59 s held the call open almost indefinitely.
   Through a proxy, the watchdog covers the body only.
 
-[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/sportsdataverse/sdvplot/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/sportsdataverse/sdvplot/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/sportsdataverse/sdvplot/releases/tag/v0.1.0

@@ -1,6 +1,6 @@
 [project]
 name = "sdvplot"
-version = "0.1.1"
+version = "0.2.0"
 description = "Team logos, wordmarks, headshots and colors for Python plots and tables (SportsDataverse)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,7 +42,7 @@ holoviews = ["holoviews>=1.18", "bokeh>=3.8.2"]
 tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.19"]
-surfaces = ["sportypy>=1.0", "mplsoccer>=1.2"]
+surfaces = ["sportypy>=1.2.0", "mplsoccer>=1.2"]
 plottable = ["plottable>=0.1.5"]
 itables = ["itables>=2.4"]  # itables.typing.ITableOptions (2.4.0)
 pygal = ["pygal>=3.0.1"]  # 3.0.0 imports pkg_resources, absent without setuptools
@@ -87,6 +87,10 @@ dev = [{ include-group = "test" }, { include-group = "compat" }, { include-group
 
 [tool.uv]
 default-groups = ["dev"]
+
+# sportypy 1.2 (sportyR 2.3.0 parity, PWHLRink) is not on PyPI yet (it serves 1.0.0): drop this source once 1.2.3 is
+[tool.uv.sources]
+sportypy = { git = "https://github.com/sportsdataverse/sportypy", tag = "v1.2.3" }
 
 [build-system]
 requires = ["hatchling>=1.27,<2"]  # bounded: a new major could change what the published wheel holds

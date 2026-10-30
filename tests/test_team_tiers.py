@@ -18,6 +18,7 @@ import sdvplot.matplotlib as smpl  # noqa: E402
 from sdvplot import _tiers  # noqa: E402
 from sdvplot._errors import InputError, SdvplotWarning  # noqa: E402
 from sdvplot._tiers import prepare  # noqa: E402
+from tests.conftest import sdvplot_warnings  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -286,15 +287,15 @@ def test_one_warning_per_skip_reason_in_both_adapters(mark_images):
     data = _frame(tier_no=[1, 1, 2], team=["LV", "XXX", "LAC"])  # an unknown team; a team with no logo archived
     with pytest.warns(SdvplotWarning) as rec:
         smpl.team_tiers(data, "nfl")
-    assert sorted("archived" in str(w.message) for w in rec if issubclass(w.category, SdvplotWarning)) == [False, True]
+    assert sorted("archived" in str(w.message) for w in sdvplot_warnings(rec)) == [False, True]
 
     sp9 = _sp9()
     with pytest.warns(SdvplotWarning) as built:
         p = sp9.team_tiers(data, "nfl")
-    assert len([w for w in built if issubclass(w.category, SdvplotWarning)]) == 1  # the unknown team, when built
+    assert len(sdvplot_warnings(built)) == 1  # the unknown team, when built
     with pytest.warns(SdvplotWarning, match="archived") as drawn:
         p.draw()
-    assert len([w for w in drawn if issubclass(w.category, SdvplotWarning)]) == 1  # the missing logo, once per render
+    assert len(sdvplot_warnings(drawn)) == 1  # the missing logo, once per render
 
 
 # ---- theme --------------------------------------------------------------------------------------------------------

@@ -5937,7 +5937,7 @@ wheels = [
 
 [[package]]
 name = "sdvplot"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "narwhals" },
@@ -6151,7 +6151,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33" },
     { name = "resvg-py", marker = "extra == 'svg'", specifier = ">=0.2.5" },
     { name = "sdvplot", extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck", "perspective"], marker = "extra == 'all'" },
-    { name = "sportypy", marker = "extra == 'surfaces'", specifier = ">=1.0" },
+    { name = "sportypy", marker = "extra == 'surfaces'", git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.3" },
     { name = "urllib3", specifier = ">=2.6" },
 ]
 provides-extras = ["svg", "mpl", "plotnine", "plotly", "altair", "bokeh", "holoviews", "tables", "reactable", "folium", "surfaces", "plottable", "itables", "pygal", "pydeck", "perspective", "all"]
@@ -6503,8 +6503,8 @@ wheels = [
 
 [[package]]
 name = "sportypy"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
+version = "1.2.3"
+source = { git = "https://github.com/sportsdataverse/sportypy?tag=v1.2.3#4e4fee3109641bab3919c97758e017f3e4caaa32" }
 dependencies = [
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -6516,10 +6516,6 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/ce/1a2c2d361129ca596ab6cb90cf40661056899cedb3a13e9c6641af856a9a/sportypy-1.0.0.tar.gz", hash = "sha256:21e2467bff76f8e5dae7fc33d7851a18e49a2218775481ed63dc7528a25bb604", size = 179715, upload-time = "2022-09-13T20:12:33.371Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/6a/7b891545f44a7c98d3442d84069cb533f58b49538a20c68a0d2430c52e5c/sportypy-1.0.0-py3-none-any.whl", hash = "sha256:e0316039b96930a614e40150e081ee4f04ab2cf08db005d8c13f37fed3432831", size = 163098, upload-time = "2022-09-13T20:12:31.627Z" },
 ]
 
 [[package]]

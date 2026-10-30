@@ -47,7 +47,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_web.py` | `HEADSHOT_ASPECT`, `aspect`, `axis_letter`, `image_src`, `image_sources`: what the web adapters share |
 | `plotly.py`, `altair.py`, `bokeh.py`, `holoviews.py`, `folium.py` | the web adapters (public submodules) |
 | `pygal.py` | the pygal adapter (an xml filter draws the marks at each render) and `team_style` |
-| `_surface.py` | `surface` (sportypy) |
+| `_surface.py` | `surface` (sportypy): `SURFACES`, the 59-key SDV surface table shared with sdvplotR (`surface_map`) and sdvplot-js (`src/surfaces.ts`); `NO_TEAMS`, the keys that are no team league (a team raises) |
 | `_court.py` | `court_coords`: stats.nba.com legacy shot coordinates onto sportypy's court (narwhals, so any dataframe) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) and one module per table wave: `_marks.py` (marks and team identity, `important()`), `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`; `docs/PARITY_TABLES.md` records each R function's port |
