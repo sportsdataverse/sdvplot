@@ -110,7 +110,7 @@ Figures from the tutorials, cookbooks, recipes and leaderboards. Each card links
 
 [<img src="/img/gallery/tutorials/leagues/cricket_22.png" alt="Every team of the 2026 men&#x27;s T20 World Cup as a flag in a tier by how far it went" loading="lazy"/><br/>T20 World Cup tier list<br/><small>Cricket</small>](tutorials/leagues/cricket.md#8-the-t20-world-cup-as-a-tier-list)
 
-[<img src="/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_3.png" alt="Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL box, and the PLL, World Lacrosse, NCAA and USA Lacrosse fields" loading="lazy"/><br/>Every lacrosse field and box<br/><small>Lacrosse, tennis, volleyball & curling</small>](tutorials/leagues/lacrosse-tennis-volleyball-curling.md#1-every-lacrosse-field)
+[<img src="/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_3.png" alt="Seven lacrosse surfaces drawn by sdvplot.surface(): the NLL and World Lacrosse boxes, and the PLL, NCAA and USA Lacrosse fields" loading="lazy"/><br/>Every lacrosse field and box<br/><small>Lacrosse, tennis, volleyball & curling</small>](tutorials/leagues/lacrosse-tennis-volleyball-curling.md#1-every-lacrosse-field-and-box)
 
 [<img src="/img/gallery/tutorials/leagues/lacrosse-tennis-volleyball-curling_9.png" alt="Three ATP tennis courts drawn by sdvplot.surface(), recolored as clay, grass and a blue hard court" loading="lazy"/><br/>A tennis court on clay, grass and a hard court<br/><small>Lacrosse, tennis, volleyball & curling</small>](tutorials/leagues/lacrosse-tennis-volleyball-curling.md#4-tennis-on-clay-grass-and-a-hard-court)
 
