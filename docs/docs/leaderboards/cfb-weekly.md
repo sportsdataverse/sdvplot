@@ -105,15 +105,15 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 7.
+**Season to date:** the 2026 season through week 8.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 5 | 1 | 5-1    |
-| 2006    | Akron     | Mid-American  | 1 | 6 | 1-6    |
-| 333     | Alabama   | SEC           | 5 | 2 | 5-2    |
-| 2026    | App State | Sun Belt      | 4 | 2 | 4-2    |
-| 12      | Arizona   | Big 12        | 5 | 1 | 5-1    |
+| 2005    | Air Force | Mountain West | 5 | 2 | 5-2    |
+| 2006    | Akron     | Mid-American  | 1 | 7 | 1-7    |
+| 333     | Alabama   | SEC           | 6 | 2 | 6-2    |
+| 2026    | App State | Sun Belt      | 5 | 2 | 5-2    |
+| 12      | Arizona   | Big 12        | 6 | 1 | 6-1    |
 
 </div>
 
@@ -173,11 +173,11 @@ top25.head()
 
 | rank | team_id | school     | conference       | record | off      | dfn       | net      |
 |------|---------|------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame | FBS Independents | 6-1    | 0.275566 | -0.170449 | 0.446015 |
-| 2    | 99      | LSU        | SEC              | 5-2    | 0.181346 | -0.210565 | 0.391911 |
-| 3    | 84      | Indiana    | Big Ten          | 6-1    | 0.26615  | -0.097647 | 0.363797 |
-| 4    | 252     | BYU        | Big 12           | 6-0    | 0.238176 | -0.100615 | 0.338791 |
-| 5    | 194     | Ohio State | Big Ten          | 6-1    | 0.174395 | -0.126101 | 0.300496 |
+| 1    | 87      | Notre Dame | FBS Independents | 6-1    | 0.25258  | -0.173787 | 0.426367 |
+| 2    | 99      | LSU        | SEC              | 6-2    | 0.216081 | -0.176191 | 0.392272 |
+| 3    | 2390    | Miami      | ACC              | 7-0    | 0.291921 | -0.07038  | 0.362302 |
+| 4    | 84      | Indiana    | Big Ten          | 7-1    | 0.219247 | -0.123293 | 0.342539 |
+| 5    | 194     | Ohio State | Big Ten          | 6-1    | 0.208672 | -0.108742 | 0.317415 |
 
 </div>
 

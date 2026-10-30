@@ -36,7 +36,7 @@ svg = ["resvg-py>=0.2.5"]
 mpl = ["matplotlib>=3.7"]
 plotnine = ["plotnine>=0.15"]
 plotly = ["plotly>=5.14"]
-altair = ["altair>=5.1"]
+altair = ["altair>=5.5"]  # 5.5 is the first altair that renders polars 2 frames
 bokeh = ["bokeh>=3.8.2"]
 holoviews = ["holoviews>=1.18", "bokeh>=3.8.2"]
 tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
@@ -78,7 +78,7 @@ compat = [
   "pyfonts>=1.4",
   "wordcloud>=1.9.6",
 ]
-lint = ["ruff==0.17.1", "mypy>=1.10", "types-requests", "pyyaml>=6"]
+lint = ["ruff==0.17.2", "mypy>=1.10", "types-requests", "pyyaml>=6"]
 docs = ["docstring_parser>=0.16", "nbclient>=0.10", "nbconvert>=7", "nbformat>=5", "ipykernel>=6", "jinja2>=3", "seaborn>=0.13"]
 # Real data for the example notebooks, cookbooks, recipes, leaderboards and the automation example (sdv-py's
 # loaders read SportsDataverse release files and ESPN): executed by tools/render_notebooks.py, never imported by sdvplot.
