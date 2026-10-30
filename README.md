@@ -61,10 +61,13 @@ pydeck, and `sdvplot.perspective` Perspective viewer configs in team colors and 
 ### JavaScript / TypeScript
 
 The same colors, logos, wordmarks and headshots are on npm as
-[`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot), with integrations for Observable
-Plot, D3, React, Chart.js, Plotly, Vega-Lite and ECharts, plus shot charts and linked interactivity. Its siblings
-[`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces) and
-[`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (tables) ship from the same
+[`@sportsdataverse/sdvplot`](https://www.npmjs.com/package/@sportsdataverse/sdvplot): the marks work with Observable
+Plot, D3 and React, plus adapters for 20+ chart, map, grid and 3D libraries (Chart.js, Plotly, Vega-Lite, ECharts,
+Recharts, shadcn/ui, MUI X, nivo, Victory, uPlot, Svelte and LayerChart, G2, TanStack Charts, Unovis, Lightweight
+Charts, Perspective, Cytoscape, deck.gl, MapLibre and Three.js), shot charts and linked interactivity. Its siblings
+[`@sportsdataverse/sporty`](https://www.npmjs.com/package/@sportsdataverse/sporty) (playing surfaces for ten sports) and
+[`@sportsdataverse/sdvtables`](https://www.npmjs.com/package/@sportsdataverse/sdvtables) (themed tables in HTML, React,
+MUI X Data Grid, AG Grid and TanStack Table) ship from the same
 [sdvplot-js repo](https://github.com/sportsdataverse/sdvplot-js). Docs for all three:
 [plot.sportsdataverse.org](https://plot.sportsdataverse.org/).
 
