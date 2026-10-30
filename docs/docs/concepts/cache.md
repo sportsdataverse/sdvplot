@@ -94,7 +94,7 @@ A bug report needs to say what sdvplot was looking at. `versions()` returns:
 
 ```python
 sdvplot.versions()
-# {'sdvplot': '0.2.0', 'index': '88b114b58b3d', 'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
+# {'sdvplot': '0.3.0', 'index': '88b114b58b3d', 'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
 ```
 
 - `sdvplot` is the package version.

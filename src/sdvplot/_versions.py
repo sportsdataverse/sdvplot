@@ -18,7 +18,7 @@ def versions() -> dict[str, str | None]:
 
             import sdvplot
 
-            sdvplot.versions()["sdvplot"]   # '0.2.0'
+            sdvplot.versions()["sdvplot"]   # '0.3.0'
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
