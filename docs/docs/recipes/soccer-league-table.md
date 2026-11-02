@@ -237,7 +237,7 @@ Image(portrait, width=540)
 <div class="sdv-output">
 
 ```text
-premier_league_1600.png (1600, 1880)
+premier_league_1600.png (1600, 1878)
 premier_league_1080x1350.png (1080, 1350)
 ```
 
