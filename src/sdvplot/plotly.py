@@ -233,13 +233,15 @@ def _add(
     _key(xref, "x")
     _key(yref, "y")
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
-    placements = present(placements, embed=embed)
     xs, x_index = _coords(fig, "x", xref, [p.x for p in placements])
     ys, y_index = _coords(fig, "y", yref, [p.y for p in placements])
     keep = [i for i, (cx, cy) in enumerate(zip(xs, ys, strict=True)) if cx is not None and cy is not None]
     if len(keep) < len(placements):
         off = [p.team_id for i, p in enumerate(placements) if i not in keep]
         warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}")  # fmt: skip
+    placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
+    found = {id(p) for p in present(placements, embed=embed)}  # after the axis filter: an off-axis one never downloads
+    keep = [i for i, p in enumerate(placements) if id(p) in found]
     placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
     if not placements:
         return fig

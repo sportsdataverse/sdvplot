@@ -149,6 +149,17 @@ def test_category_order_follows_the_axis(mark_images):
         sdvplot.add_logos(fig, ["LV"], [3], ["LV"], league="nfl")
 
 
+def test_an_off_axis_headshot_is_never_downloaded_when_embedding(headshot_images, monkeypatch):
+    from sdvplot import _cache
+    from tests.conftest import FakeSession
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession())  # any download fails the test: no response is queued
+    fig = go.Figure(go.Bar(x=["a", "b"], y=[3, 2]))
+    with pytest.warns(SdvplotWarning, match="not on the axis"):
+        splotly.add_headshots(fig, ["a", "zz"], [3, 2], ["3139477", "999"], league="nfl", embed=True)
+    assert [m[0] for m in splotly._drawn_marks(fig)] == ["3139477"]
+
+
 def test_a_category_not_on_the_axis_is_skipped_with_a_warning(mark_images):
     fig = go.Figure(go.Bar(x=["LV", "LAR"], y=[3, 2]))
     with pytest.warns(SdvplotWarning, match="not on the axis"):
