@@ -150,15 +150,17 @@ another ESPN sport), `logo` (the two dominant colors of the team's archived logo
 `fallback` (a placeholder from a fixed palette). One source gives both colors (`COLOR_SOURCES` in
 `tools/build_index.py`); ESPN's stand-in colors (black alone, black with its stock red) count as none.
 `docs/docs/concepts/colors.md` documents the rules. The conference and league rows (`program` "conference" / "league",
-sdvplotR's `include_conferences`; `conference_rows` in `tools/build_index.py` from `data-raw/sdvplotr_conferences.csv`)
-carry cbbplotR's colors (`cbbplotR`) or the placeholder; `team_table()` and every listing leave them out unless
-`teams(include_conferences=True)` asks, and their only aliases are "mark" and "conference" ones (sdvplotR's other
+sdvplotR's `include_conferences`; `conference_rows` in `tools/build_index.py` from the hand-kept
+`data-raw/curated/non_team_rows.csv`, one line per row and mark, the mark named by its manifest key
+`level, mark_league, source, entity_id`) carry cbbplotR's colors (`cbbplotR`) or the placeholder; `team_table()` and
+every listing leave them out unless `teams(include_conferences=True)` asks, and their only aliases are "mark" and "conference" ones (sdvplotR's other
 keys, `conference_aliases`), id systems only the mark functions read, so `resolve()` never answers one.
 
 ## Marks
 
 The manifest `entity_id` is per-source, so it never equals a team id. Map through the `mark` id-system aliases (keys
-`source:entity_id`, built by `mark_aliases` in `tools/build_index.py`) and never match raw ids. `select_mark` chooses
+`source:entity_id`, built by `mark_aliases` in `tools/build_index.py`; a conference, league or division mark's key is
+`level:league:source:entity_id`, `_index.NON_TEAM` the levels) and never match raw ids. `select_mark` chooses
 by variant first, then season within each variant, then source rank.
 
 ## Cache

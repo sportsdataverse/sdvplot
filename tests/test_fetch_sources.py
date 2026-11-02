@@ -109,8 +109,16 @@ def test_manifest_conference_rows_keep_the_non_team_levels_with_their_source_url
             "entity_name": "AFC",
             "url": "afc",
         },
+        {
+            "level": "division",
+            "league": "nhl",
+            "source": "nhl",
+            "entity_id": "18",
+            "entity_name": "Metropolitan",
+            "url": "metro",
+        },
         {"level": "league", "league": "nfl", "source": "espn", "entity_id": "NFL", "entity_name": "NFL", "url": "nfl"},
-    ]
+    ]  # the NHL files its division marks as level "division": kept, with the conference and league ones
 
 
 def test_manifest_mark_rows_dedupe_variants_and_skip_non_teams():

@@ -68,11 +68,12 @@ def _read(name: str, directory: str) -> pl.DataFrame:
     return pl.read_parquet(Path(directory) / f"{name}.parquet")
 
 
-# The ``program`` values of the rows that are not teams: sdvplotR's conference and league rows (its ``type``), which
-# every team listing leaves out unless asked (teams(include_conferences=True)); their only aliases are "mark" and
-# "conference" ones (id systems resolve() never reads), so resolve() never answers them and only the mark functions
-# reach them, by key
-NON_TEAM = ("conference", "league")
+# The ``program`` values of the rows that are not teams (conference and league rows, which every team listing leaves
+# out unless asked: teams(include_conferences=True)), and the manifest levels of their marks (_marks._ranked), where
+# the NHL files its division marks as "division"; an index row's program is only ever "conference" or "league". Their
+# only aliases are "mark" and "conference" ones (id systems resolve() never reads), so resolve() never answers them and
+# only the mark functions reach them, by key
+NON_TEAM = ("conference", "league", "division")
 
 
 @functools.cache
@@ -173,13 +174,14 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
     Args:
         league: An SDV league key such as "nfl"; None returns every league.
         include_conferences: Also list the conference and league rows (sdvplotR's ``include_conferences``): the
-            college conferences of cfb, mbb and wbb, and the AFC, NFC and NFL. Their ``program`` is "conference" or
-            "league", their ``team_id`` and ``abbr`` the conference's short name ("SEC", "Big 12", "AFC"), their
-            colors cbbplotR's (``color_source`` "cbbplotR"), and a team's ``conference_id`` equals its conference
-            row's. The default, False, lists teams only, so code that loops over teams sees only teams; conferences
-            are opt-in everywhere (``resolve`` and ``palette`` never answer one). The mark helpers (``logo_url``,
-            ``marks``, ``add_logos`` and the rest) do draw one, by this key, from the archive's conference and league
-            marks ("SEC", "Big 12", "AFC", "NFL").
+            college conferences of cfb, mbb and wbb, the AFC, NFC and NFL, MLB with the AL and NL, the NBA and WNBA
+            with their East and West, the NHL with its division marks, the AAF, and the NCAA in every college league.
+            Their ``program`` is "conference" or "league", their ``team_id`` and ``abbr`` the short name ("SEC",
+            "Big 12", "AFC", "East"), their colors cbbplotR's (``color_source`` "cbbplotR") or the placeholder, and a
+            team's ``conference_id`` equals its conference row's. The default, False, lists teams only, so code that
+            loops over teams sees only teams; conferences are opt-in everywhere (``resolve`` and ``palette`` never
+            answer one). The mark helpers (``logo_url``, ``marks``, ``add_logos`` and the rest) do draw one, by this
+            key, from the archive's conference, league and division marks ("SEC", "Big 12", "AFC", "NFL", "MLB").
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,

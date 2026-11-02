@@ -494,10 +494,10 @@ def manifest_mark_rows(rows: list[dict]) -> list[dict]:
     return [dict(zip(MARK_COLUMNS, k, strict=True)) for k in sorted(seen)]
 
 
-# The conference and league marks (sdvplotR's logo_marks rows for its include_conferences rows), with the source URL
-# the archive copied: tools/build_index.py joins sdvplotr_conferences.csv's logo_url / logo_dark_url on it
+# The conference, league and division marks (the NHL files its division marks as "division"), with the source URL the
+# archive copied: tools/build_index.py checks that every mark data-raw/curated/non_team_rows.csv names is one of them
 CONFERENCE_MARK_COLUMNS = ["level", "league", "source", "entity_id", "entity_name", "url"]
-NON_TEAM_LEVELS = ("conference", "league")
+NON_TEAM_LEVELS = ("conference", "league", "division")
 
 
 def manifest_conference_rows(rows: list[dict]) -> list[dict]:
