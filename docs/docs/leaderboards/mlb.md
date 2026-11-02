@@ -88,7 +88,7 @@ standings.sort("division", "rank").head()
 
 <div class="sdv-output">
 
-**Postseason:** the final 2026 regular season; the postseason is under way.
+**Offseason:** the final 2026 regular season.
 
 | abbreviation | team_name | division                | rank | w  | l  | pct  | gb   | rs  | ra  | diff | strk |
 |--------------|-----------|-------------------------|------|----|----|------|------|-----|-----|------|------|

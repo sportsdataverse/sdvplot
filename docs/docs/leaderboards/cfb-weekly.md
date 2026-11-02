@@ -105,15 +105,15 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 8.
+**Season to date:** the 2026 season through week 9.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 5 | 2 | 5-2    |
+| 2005    | Air Force | Mountain West | 6 | 2 | 6-2    |
 | 2006    | Akron     | Mid-American  | 1 | 7 | 1-7    |
 | 333     | Alabama   | SEC           | 6 | 2 | 6-2    |
-| 2026    | App State | Sun Belt      | 5 | 2 | 5-2    |
-| 12      | Arizona   | Big 12        | 6 | 1 | 6-1    |
+| 2026    | App State | Sun Belt      | 5 | 3 | 5-3    |
+| 12      | Arizona   | Big 12        | 6 | 2 | 6-2    |
 
 </div>
 
@@ -173,11 +173,11 @@ top25.head()
 
 | rank | team_id | school     | conference       | record | off      | dfn       | net      |
 |------|---------|------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame | FBS Independents | 6-1    | 0.25258  | -0.173787 | 0.426367 |
-| 2    | 99      | LSU        | SEC              | 6-2    | 0.216081 | -0.176191 | 0.392272 |
-| 3    | 2390    | Miami      | ACC              | 7-0    | 0.291921 | -0.07038  | 0.362302 |
-| 4    | 84      | Indiana    | Big Ten          | 7-1    | 0.219247 | -0.123293 | 0.342539 |
-| 5    | 194     | Ohio State | Big Ten          | 6-1    | 0.208672 | -0.108742 | 0.317415 |
+| 1    | 99      | LSU        | SEC              | 6-2    | 0.223124 | -0.176966 | 0.400089 |
+| 2    | 87      | Notre Dame | FBS Independents | 7-1    | 0.248555 | -0.139629 | 0.388184 |
+| 3    | 254     | Utah       | Big 12           | 8-0    | 0.248943 | -0.071642 | 0.320585 |
+| 4    | 84      | Indiana    | Big Ten          | 8-1    | 0.199482 | -0.117096 | 0.316578 |
+| 5    | 194     | Ohio State | Big Ten          | 6-2    | 0.215713 | -0.089467 | 0.30518  |
 
 </div>
 
