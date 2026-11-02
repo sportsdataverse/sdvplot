@@ -36,7 +36,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `_colors.py` | `palette`, `team_colors` |
 | `_marks.py`, `_manifest.py` | `marks`, `logo_url`, `select_mark`; the cached logo manifest |
 | `_images.py` | `logo_image` (PIL; SVG needs `[svg]`) and the decoded-image cache |
-| `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse) |
+| `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse, league ids on the leagues' CDNs incl. HockeyTech) |
 | `_cache.py` | the download cache, `clear_cache`, `key_lock`, and `MEMORY_CACHES`: every in-memory cache of what the cache holds (parsed manifest, decoded images) registers its clear there, so `clear_cache()` frees it |
 | `_dispatch.py` | `add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the adapter registry (`register_adapter`) |
 | `testing.py` | `check_adapter_contract` and `check_table_adapter_contract`, the shared adapter harnesses |

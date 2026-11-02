@@ -35,6 +35,18 @@ def test_espn_ids_return_none_for_invalid_shapes(player_id):
     assert result is None
 
 
+def test_g_league_and_soccer_espn_ids_build_the_combiner_url():
+    # ESPN files G League photos under nba/ (nba-development/ 404s); real ids: an Austin Spurs player, Lionel Messi
+    assert (
+        _headshots.headshot_url("5105337", "nbagl")
+        == "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/5105337.png"
+    )
+    assert (
+        _headshots.headshot_url(45843, "soccer")
+        == "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/45843.png"
+    )
+
+
 def test_espn_ids_build_the_combiner_url():
     assert (
         _headshots.headshot_url(3139477, "nfl")

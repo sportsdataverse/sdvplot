@@ -37,6 +37,27 @@ def test_league_ids_build_each_cdns_url_as_sdvplotr_does(league):
     assert _headshots.headshot_url(pid, league, id_system="league") == url
 
 
+# HockeyTech leagues: the player_id of their feeds on assets.leaguestat.com, the QMJHL under client code "lhjmq"
+HOCKEYTECH = {
+    "pwhl": "pwhl",
+    "ahl": "ahl",
+    "echl": "echl",
+    "ohl": "ohl",
+    "whl": "whl",
+    "qmjhl": "lhjmq",
+    "ushl": "ushl",
+}
+
+
+@pytest.mark.parametrize("league", sorted(HOCKEYTECH))
+def test_hockeytech_league_ids_build_the_leaguestat_url_as_sdvplotr_does(league):
+    url = f"https://assets.leaguestat.com/{HOCKEYTECH[league]}/240x240/52.jpg"
+    assert _headshots.headshot_url(52, league, id_system="league") == url
+    assert _headshots.headshot_url("abc", league, id_system="league") is None
+    with pytest.raises(InputError, match=r"no ESPN headshots for league .*id_system='league'"):
+        _headshots.headshot_url(52, league)
+
+
 @pytest.mark.parametrize("player_id", [2544, "2544", 2544.0, " 2544 ", np.int64(2544)])
 def test_league_ids_accept_numeric_variants(player_id):
     assert _headshots.headshot_url(player_id, "nba", id_system="league") == TEMPLATES["nba"][1]
@@ -47,7 +68,7 @@ def test_league_ids_return_none_for_null_and_malformed_ids(player_id):
     assert _headshots.headshot_url(player_id, "nba", id_system="league") is None
 
 
-@pytest.mark.parametrize("league", ["cfb", "mbb", "wbb", "ohl"])
+@pytest.mark.parametrize("league", ["cfb", "mbb", "wbb", "ufl", "nbagl", "soccer"])
 def test_a_league_without_league_id_headshots_is_an_error_that_names_the_ones_with_them(league):
     with pytest.raises(
         InputError, match=r"no headshots by league player id for league '.*'; supported: \['nfl', 'nba'"

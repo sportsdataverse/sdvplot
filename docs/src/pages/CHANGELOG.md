@@ -52,6 +52,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- `headshot_url()` (and every headshot adapter) covers more leagues, as sdvplotR does: G League (`"nbagl"`; ESPN files
+  its photos with the NBA's) and soccer by ESPN athlete id, and the PWHL, AHL, ECHL, OHL, WHL, QMJHL and USHL by
+  their HockeyTech `player_id` with `id_system="league"` (`assets.leaguestat.com`). ESPN and leaguestat answer an
+  unknown id with a 404, which draws nothing, as any missing image.
 - `surface()` draws every sportyR 2.3.0 surface (sportypy 1.2.0): softball (`ncaa_softball`, a team league, so the
   field takes the team's `center_logo`), lacrosse (`nll`, `pll`, `world_lacrosse`, `ncaa_mlacrosse`, `ncaa_wlacrosse`,
   `usa_mlacrosse`, `usa_wlacrosse`), tennis (`atp`, `wta`, `itf`, `ita`, `usta`, `ncaa_tennis`), volleyball (`fivb`,

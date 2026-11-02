@@ -15,6 +15,8 @@ def test_aspect_comes_from_the_manifest_or_the_headshot_constant(manifest):
     (headshot,) = place([0], [0], ["3139477"], league="nfl", kind="headshot", id_system="espn")
     assert (_web.aspect(logo), _web.aspect(wordmark)) == (1.0, 2.5)
     assert _web.aspect(headshot) == _web.HEADSHOT_ASPECT == pytest.approx(600 / 436)
+    (hockeytech,) = place([0], [0], ["52"], league="pwhl", kind="headshot", id_system="league")
+    assert _web.aspect(hockeytech) == 1.0  # leaguestat's 240x240 squares, not ESPN's 600x436
 
 
 def test_without_embed_the_source_is_the_archive_url_and_nothing_is_downloaded(manifest):
