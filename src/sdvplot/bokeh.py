@@ -16,7 +16,7 @@ with requires_extra("bokeh"):
     from bokeh.models import ColumnDataSource
 
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._web import aspect, image_sources
+from sdvplot._web import aspect, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
 
@@ -81,6 +81,7 @@ def _add(
     h, a = check_height(height), check_alpha(alpha)
     fig = _figure(target)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
+    placements = present(placements, embed=embed)
     _draw(fig, placements, image_sources(placements, embed=embed), kind=kind, height=h, alpha=a)
     return fig
 

@@ -20,7 +20,7 @@ with requires_extra("plotly"):
 
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._types import AxisMarkType
-from sdvplot._web import aspect, axis_letter, image_sources
+from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
 _PLOTLY_DEFAULT_WIDTH, _PLOTLY_DEFAULT_HEIGHT = 700, 450  # plotly.js's figure size when layout.width/height are unset
@@ -239,6 +239,9 @@ def _add(
     if len(keep) < len(placements):
         off = [p.team_id for i, p in enumerate(placements) if i not in keep]
         warn(f"skipped {len(off)} point(s) whose category is not on the axis: {off}")  # fmt: skip
+    placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
+    found = {id(p) for p in present(placements, embed=embed)}  # after the axis filter: an off-axis one never downloads
+    keep = [i for i, p in enumerate(placements) if id(p) in found]
     placements, xs, ys = [placements[i] for i in keep], [xs[i] for i in keep], [ys[i] for i in keep]
     if not placements:
         return fig
@@ -538,6 +541,7 @@ def axis_logos(
     xs, ys = (index, across) if letter == "x" else (across, index)
     placements = place(xs, ys, labels, league=league, season=season, kind=mark_type, variant=variant,
                        id_system=id_system)  # fmt: skip
+    placements = present(placements, embed=embed)
     ax = fig.layout[_key(letter, letter)]
     drawn = {int(p.x if letter == "x" else p.y) for p in placements}
     ax.update(tickmode="array", tickvals=cats, ticktext=["" if i in drawn else lab for i, lab in enumerate(labels)])

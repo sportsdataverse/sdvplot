@@ -20,7 +20,7 @@ with requires_extra("altair"):
 
 from sdvplot._placement import Placement, check_alpha, check_height, place
 from sdvplot._types import AxisMarkType
-from sdvplot._web import aspect, axis_letter, image_sources
+from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
 _VEGA_LITE_DEFAULT_HEIGHT = 300  # px: Vega-Lite's continuous view height when neither chart nor theme sets one
@@ -153,6 +153,7 @@ def _layer(
     y: dict[str, Any],
     embed: bool,
 ) -> alt.Chart:
+    placements = present(placements, embed=embed)
     h_px = height * chart_height
     rows = [
         {_key(x["field"]): _jsonable(p.x), _key(y["field"]): _jsonable(p.y), _URL: src, _TEAM: p.team_id}
@@ -579,6 +580,7 @@ def axis_logos(
     xs, ys = (index, across) if letter == "x" else (across, index)
     placements = place(xs, ys, [str(c) for c in cats], league=league, season=season, kind=mark_type, variant=variant,
                        id_system=id_system)  # fmt: skip
+    placements = present(placements, embed=embed)
     chart_h = _chart_height(spec)
     h_px = h * chart_h
     widest = max((aspect(p) for p in placements), default=1.0)

@@ -16,7 +16,7 @@ with requires_extra("folium"):
 
 from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._web import aspect, image_sources
+from sdvplot._web import aspect, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
 _FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
@@ -68,6 +68,7 @@ def _add(
     h, a = check_height(height), check_alpha(alpha)
     m = _map(target)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
+    placements = present(placements, embed=embed)
     if not placements:
         return m
     names = {} if kind == "headshot" else dict(team_index(league).select("team_id", "name").iter_rows())

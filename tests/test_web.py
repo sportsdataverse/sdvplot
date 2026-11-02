@@ -4,9 +4,9 @@ import pytest
 import requests
 
 from sdvplot import _cache, _web
-from sdvplot._errors import OfflineError
+from sdvplot._errors import DownloadError, OfflineError, SdvplotWarning
 from sdvplot._placement import Placement, place
-from tests.conftest import FakeSession
+from tests.conftest import FakeResponse, FakeSession
 
 
 def test_aspect_comes_from_the_manifest_or_the_headshot_constant(manifest):
@@ -62,3 +62,51 @@ def test_image_sources_read_each_image_once(mark_images, monkeypatch):
     sources = _web.image_sources(placements, embed=True)
     assert calls == ["https://cdn/1111.png", "https://cdn/6666.png"]
     assert sources[0] == sources[2] != sources[1]
+
+
+def test_present_skips_a_404_headshot_with_one_warning(headshot_images, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))  # one download: the unknown id
+    placements = place([0, 1, 2], [0, 0, 0], ["3139477", "999", "4241479"], league="nfl", kind="headshot")
+    with pytest.warns(SdvplotWarning, match=r"skipped 1 point\(s\) whose headshot is missing \(HTTP 404\): '999'"):
+        kept = _web.present(placements, embed=True)
+    assert [p.team_id for p in kept] == ["3139477", "4241479"]
+    assert _web.present(placements) is placements  # without embed the browser loads it: nothing downloads
+
+
+def test_present_raises_any_other_download_error(headshot_images, monkeypatch):
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(500)))
+    placements = place([0], [0], ["999"], league="nfl", kind="headshot")
+    with pytest.raises(DownloadError):
+        _web.present(placements, embed=True)
+
+
+def _pygal_chart():
+    chart = pytest.importorskip("pygal").XY(stroke=False)
+    chart.add("games", [(10, -3), (20, -7)])  # pygal draws no plot area for a chart with no data
+    return chart
+
+
+@pytest.mark.parametrize(
+    ("module", "make_target"),
+    [
+        ("bokeh", lambda: __import__("bokeh.plotting").plotting.figure(x_range=(0, 30), y_range=(-10, 0))),
+        ("plotly", lambda: __import__("plotly.graph_objects").graph_objects.Figure()),
+        (
+            "altair",
+            lambda: (
+                __import__("altair")
+                .Chart(__import__("altair").Data(values=[{"a": 0, "b": 0}]))
+                .mark_point()
+                .encode(x="a:Q", y="b:Q")
+            ),
+        ),  # fmt: skip
+        ("folium", lambda: __import__("folium").Map(location=[0, 0], zoom_start=2)),
+        ("pygal", _pygal_chart),
+    ],
+)
+def test_web_adapters_skip_a_404_headshot_when_embedding(module, make_target, headshot_images, monkeypatch):
+    adapter = pytest.importorskip(f"sdvplot.{module}")
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.warns(SdvplotWarning, match="whose headshot is missing"):
+        out = adapter.add_headshots(make_target(), [10, 20], [-3, -7], ["3139477", "999"], league="nfl", embed=True)
+    assert [m[0] for m in adapter._drawn_marks(out)] == ["3139477"]

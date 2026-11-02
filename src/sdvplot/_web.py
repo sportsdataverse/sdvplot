@@ -11,8 +11,9 @@ from urllib.parse import quote
 
 from PIL import Image
 
+from sdvplot._errors import DownloadError
 from sdvplot._images import mark_file, url_file
-from sdvplot._placement import Placement
+from sdvplot._placement import Placement, _warn_skipped
 
 # ESPN's combiner serves full headshots at 600x436 (measured 2026-10-04 for NFL, NBA and MLB ids); checked by
 # tests/test_web_live.py.
@@ -51,6 +52,24 @@ def image_src(p: Placement, *, embed: bool = False) -> str:
         with Image.open(path) as img:
             mime = Image.MIME.get(img.format or "", "application/octet-stream")
     return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
+
+
+def present(placements: list[Placement], *, embed: bool = False) -> list[Placement]:
+    """With ``embed=True``, the placements minus those whose headshot the CDN answers 404 (an ESPN or HockeyTech id it
+    has no photo for), skipped with one SdvplotWarning as matplotlib skips an unreadable image. Any other download
+    error still raises. Without ``embed`` the browser loads the URL, and shows a missing one as a broken image."""
+    if not embed:
+        return placements
+    missing = set()
+    for url in dict.fromkeys(p.url for p in placements if p.mark is None):
+        try:
+            url_file(url)  # cached now, so image_sources reads it from disk
+        except DownloadError as e:
+            if getattr(getattr(e.__cause__, "response", None), "status_code", None) != 404:
+                raise
+            missing.add(url)
+    _warn_skipped("whose headshot is missing (HTTP 404)", [p.team_id for p in placements if p.url in missing])
+    return [p for p in placements if p.url not in missing]
 
 
 def image_sources(placements: list[Placement], *, embed: bool = False) -> list[str]:

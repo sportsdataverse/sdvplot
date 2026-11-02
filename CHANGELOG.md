@@ -115,6 +115,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- With `embed=True`, the web adapters (Plotly, Altair, Bokeh, HoloViews, Folium, pygal) raised `DownloadError` on a
+  headshot the CDN answers with a 404 (an ESPN or HockeyTech id it has no photo for). They now skip that point with one
+  `SdvplotWarning`, as matplotlib and plotnine do; any other download error still raises.
 - `surface()` drew no line thinner than a pixel: matplotlib snapped each straight-edged line to the pixel grid, so at
   screen size a volleyball court lost its attack and end lines, a tennis court its baselines and alleys, a lacrosse field
   its sidelines, and an NBA half court its free-throw lane end and hash marks. sportypy 1.2.0 draws the surface's
