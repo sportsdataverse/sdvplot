@@ -272,90 +272,78 @@ def _fill_fallback(t: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-# ESPN's conference names as sdvplotR's generate_logo_ref.R has them, where sdvplot's groups snapshot
-# (data-raw/groups_latest.csv, tools/fetch_sources.py) spells the same conference otherwise
-CONFERENCE_NAMES = {"Atlantic Sun Conference": "ASUN Conference", "Summit League": "The Summit League"}
+# The conference, league and division rows sdvplot owns (sdvplotR's logo_ref rows, frozen when sdvplotR dropped it, plus
+# the pro leagues' and the NCAA's): one line per (row, mark), the mark named by its manifest key
+NON_TEAM_ROWS = "curated/non_team_rows.csv"
+MARK_KEY = ["level", "mark_league", "source", "entity_id"]
 
 
 def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
-    """sdvplotR's conference and league rows (data-raw/sdvplotr_conferences.csv: the college conferences, the AFC, NFC
-    and the NFL, from tools/export_sdvplotr.R) as index rows whose ``program`` is "conference" or "league" (R's
-    ``type``), shown only by teams(include_conferences=True). The id is R's key, the conference's short name ("SEC",
-    "Big 12", "AFC"): never a number, so it meets no team id. ``conference_id`` is the group slug the league's team rows
-    carry for the same conference name, so a team joins its conference row on it (a retired conference, the WAC, has
-    none); ``conference`` is the row's own full name (null for the NFL itself). Colors are cbbplotR's through R
-    (``color_source`` "cbbplotR"), the placeholder rule where R has none (the AFC, NFC and NFL, the independents); a
-    secondary equal to the primary is none, as for teams. The rows get NO resolver aliases, only the "mark" ones of
-    ``conference_mark_aliases`` and the "conference" ones of ``conference_aliases`` (id systems resolve() never reads):
-    resolve() never answers a conference key unless asked for it (cfb's "MAC" is the Mid-American Conference and
-    Macalester)."""
-    path = raw / "sdvplotr_conferences.csv"
+    """The conference and league rows (data-raw/curated/non_team_rows.csv: sdvplotR's college conferences, the AFC, NFC
+    and NFL; the MLB, NBA, WNBA, NHL, AAF and NCAA rows, their pro conferences and the NHL's division marks) as index
+    rows whose ``program`` is "conference" or "league" (a division mark's row is a "conference" one), shown only by
+    teams(include_conferences=True). The id is the row's key, its short name ("SEC", "Big 12", "AFC", "East"): never a
+    number, so it meets no team id. ``conference_id`` is the group slug the league's team rows carry for the same
+    conference, so a team joins its conference row on it (a retired conference, the WAC, a division, a league has none);
+    ``conference`` is a conference row's own full name. Colors are cbbplotR's (``color_source`` "cbbplotR", sdvplotR's
+    values), the placeholder rule where the file has none; a secondary equal to the primary is none, as for teams. The
+    rows get NO resolver aliases, only the "mark" ones of ``conference_mark_aliases`` and the "conference" ones of
+    ``conference_aliases`` (id systems resolve() never reads): resolve() never answers a conference key unless asked
+    for it (cfb's "MAC" is the Mid-American Conference and Macalester)."""
+    path = raw / NON_TEAM_ROWS
     if not path.exists():
         return teams.clear()
-    slugs = teams.select("league", pl.col("conference").alias("_conf"), "conference_id").drop_nulls().unique()
-    c = (
-        _csv(raw, path.name)
-        .with_columns(pl.col("team_name").replace(CONFERENCE_NAMES).alias("_conf"))
-        .join(slugs, left_on=["sport", "_conf"], right_on=["league", "_conf"], how="left")
-    )
-    primary, secondary = _hex("color1"), _hex("color2")
+    c = _csv(raw, NON_TEAM_ROWS).drop(*MARK_KEY, "valid_from", "valid_to").unique(maintain_order=True)
+    assert not c.select("league", "team_id").is_duplicated().any(), f"{path.name}: a row's lines disagree: {c}"
+    primary, secondary = _hex("color_primary"), _hex("color_secondary")
     out = c.select(
-        pl.col("sport").alias("league"),
-        pl.col("team_abbr").alias("team_id"),
-        pl.col("team_abbr").alias("abbr"),
-        pl.col("team_name").alias("name"),
-        pl.col("team_short_name").alias("short_name"),
+        "league",
+        "team_id",
+        pl.col("team_id").alias("abbr"),
+        "name",
+        "short_name",
         pl.lit(None, pl.String).alias("location"),
-        pl.col("type").alias("program"),
+        "program",
         "conference_id",
-        pl.when(pl.col("type") == "conference").then(pl.col("team_name")).alias("conference"),
+        pl.when(pl.col("program") == "conference").then(pl.col("name")).alias("conference"),
         primary.alias("color_primary"),
         pl.when(secondary != primary).then(secondary).alias("color_secondary"),
         pl.when(primary.is_not_null()).then(pl.col("color_source")).otherwise(pl.lit("fallback")).alias("color_source"),
     )
-    assert set(out["program"]) <= {"conference", "league"}, f"unknown row type in {path.name}: {set(out['program'])}"
+    assert set(out["program"]) <= {"conference", "league"}, f"unknown program in {path.name}: {set(out['program'])}"
     unknown = out.join(teams.select("league").unique(), on="league", how="anti")["league"].to_list()
     assert not unknown, f"{path.name} names a league with no teams: {unknown}"
-    assert not out.select("league", "team_id").is_duplicated().any(), f"{path.name} repeats a (sport, team_abbr)"
+    slugs = teams.select("league", "conference_id").drop_nulls().unique()
+    stray = out.drop_nulls("conference_id").join(slugs, on=["league", "conference_id"], how="anti")
+    assert stray.height == 0, f"{path.name}: a conference_id no team row carries: {stray.select('league', 'team_id')}"
     assert out.join(teams, on=["league", "team_id"], how="semi").height == 0, "a conference key is a team id"
     return _fill_fallback(out).select(list(TEAM_SCHEMA)).cast(TEAM_SCHEMA).sort("league", "team_id")
 
 
 def conference_mark_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
-    """The conference and league rows' "mark" aliases (sdvplotR's logo_marks rows for its include_conferences rows):
-    the archive's copies of the files sdvplotr_conferences.csv lists (``logo_url``, ``logo_dark_url``), found by URL
-    as generate_logo_marks.R finds them, in data-raw/manifest_conferences.csv (the manifest's conference and league
-    rows). The value is the manifest row's own key, "level:league:source:entity_id", which the runtime builds for
-    every non-team manifest row (_marks._ranked): so a row reaches the conference's every variant (the dark
-    500-dark/8.png beside the listed sec.png), and no key meets a team's "source:entity_id". ESPN files one conference
-    logo under several leagues, with a different group id each (sec.png: cfb 8, mbb and wbb 23): the row's own league
-    is taken where the archive has one, else any (the WAC, the MAAC and the FBS independents are filed once, under
-    "ncaa"). Every listed file must have a copy: one the archive lacks fails the build (R stops too)."""
+    """The conference and league rows' "mark" aliases: each line of data-raw/curated/non_team_rows.csv names a manifest
+    row by its key ``level, mark_league, source, entity_id``, the alias value "level:league:source:entity_id" the
+    runtime builds for every non-team manifest row (_marks._ranked), so a row reaches its mark's every variant (the
+    dark 500-dark/8.png beside sec.png) and no key meets a team's "source:entity_id". ESPN files one conference logo
+    under several leagues with a different group id each (sec.png: cfb 8, mbb and wbb 23), and some once, under
+    "ncaa" (the WAC, the MAAC, the NCAA's own): the line names the one it means. ``valid_from`` / ``valid_to`` date the
+    alias (the NHL's 2024 All-Star teams). Every named mark must be in data-raw/manifest_conferences.csv (the
+    manifest's conference, league and division rows): one the archive lacks fails the build."""
     path = raw / "manifest_conferences.csv"
     if conf.is_empty() or not path.exists():
         return pl.DataFrame(schema=ALIAS_SCHEMA)
-    listed = (
-        _csv(raw, "sdvplotr_conferences.csv")
-        .select(pl.col("sport").alias("league"), pl.col("team_abbr").alias("team_id"), "logo_url", "logo_dark_url")
-        .unpivot(on=["logo_url", "logo_dark_url"], index=["league", "team_id"], value_name="url")
-        .drop_nulls("url")
-        .select("league", "team_id", "url")
-    )
-    assert listed.join(conf, on=["league", "team_id"], how="anti").height == 0, "a listed file is no index row's"
-    m = _csv(raw, path.name).select("url", "level", pl.col("league").alias("_mlg"), "source", "entity_id")
-    j = listed.join(m, on="url", how="left")
-    missing = j.filter(pl.col("level").is_null()).select("league", "team_id", "url")
-    assert missing.height == 0, f"conference files the archive has no copy of: {missing.rows()}"
-    own = pl.col("_mlg") == pl.col("league")
-    j = j.filter(own | ~own.any().over("league", "team_id", "url"))
+    lines = _csv(raw, NON_TEAM_ROWS)
+    m = _csv(raw, path.name).select(*MARK_KEY[:1], pl.col("league").alias("mark_league"), *MARK_KEY[2:]).unique()
+    missing = lines.join(m, on=MARK_KEY, how="anti").select("league", "team_id", *MARK_KEY)
+    assert missing.height == 0, f"marks the archive has no copy of: {missing.rows()}"
     return (
-        j.select(
+        lines.select(
             "league",
             pl.lit("mark").alias("id_system"),
-            pl.concat_str(pl.col("level", "_mlg", "source", "entity_id"), separator=":").alias("value"),
+            pl.concat_str(pl.col(MARK_KEY), separator=":").alias("value"),
             "team_id",
-            pl.lit(None, pl.Int32).alias("valid_from"),
-            pl.lit(None, pl.Int32).alias("valid_to"),
+            pl.col("valid_from").cast(pl.Int32),
+            pl.col("valid_to").cast(pl.Int32),
         )
         .unique()
         .cast(ALIAS_SCHEMA)

@@ -33,13 +33,13 @@ def _raw(tmp_path):
         "groups_latest.csv": "league,team_id,season,conference_id,conference\nnfl,13,2026,nfl:afc-west,AFC West\n",
         "curated/historical_abbrs.csv": "league,id_system,value,canonical,valid_from,valid_to\nnfl,nflverse,OAK,LV,,2019\n",
         "curated/fangraphs_abbrs.csv": "fangraphs,espn_abbr\n",
-        # sdvplotR's AFC and NFL rows as tools/export_sdvplotr.R writes them (no colors: nflplotR has none)
-        "sdvplotr_conferences.csv": '"sport","team_abbr","team_name","team_short_name","logo_url","logo_dark_url",'
-        '"color1","color2","color_source","conference","division","type"\n'
-        '"nfl","AFC","American Football Conference","AFC","https://a.espncdn.com/i/teamlogos/nfl/500/afc.png",'
-        '"https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png",,,,"AFC",,"conference"\n'
-        '"nfl","NFL","National Football League","NFL","https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png",'
-        '"https://a.espncdn.com/i/teamlogos/leagues/500-dark/nfl.png",,,,,,"league"\n',
+        # the curated conference and league rows, one line per mark: the AFC, and the NFL with the shield filed under
+        # "nfl" and its dark copy filed only under "ncaa" (no colors: nflplotR has none)
+        "curated/non_team_rows.csv": "league,team_id,name,short_name,program,conference_id,color_primary,color_secondary,"
+        "color_source,level,mark_league,source,entity_id,valid_from,valid_to\n"
+        "nfl,AFC,American Football Conference,AFC,conference,,,,,conference,nfl,espn,AFC,,\n"
+        "nfl,NFL,National Football League,NFL,league,,,,,league,nfl,espn,NFL,,\n"
+        "nfl,NFL,National Football League,NFL,league,,,,,league,ncaa,espn,nfl_dark,,\n",
         # the manifest's conference and league rows (tools/fetch_sources.py manifest_conference_rows): the AFC's two
         # ESPN files and nflverse's, the NFL shield once under "nfl" and, as ESPN files a shared logo, once under "ncaa"
         "manifest_conferences.csv": "level,league,source,entity_id,entity_name,url\n"
@@ -700,8 +700,8 @@ def test_conference_rows_join_the_index_with_mark_aliases_only(tmp_path):  # sdv
     ]
     assert teams.schema == pl.Schema(_index.TEAM_SCHEMA) and teams.height == 5  # the three teams, then the two rows
     assert conf["color_primary"].str.starts_with("#").all() and (conf["color_secondary"] != conf["color_primary"]).all()
-    # their only aliases are "mark" ones, the manifest rows' keys: the file's own league where it has one (the NFL
-    # shield is filed under "nfl" and "ncaa"), else any (its dark copy only under "ncaa"); nflverse's AFC.png is not listed
+    # their only aliases are "mark" ones, the manifest keys the curated lines name (the NFL's dark shield is filed only
+    # under "ncaa"); nflverse's AFC is not named
     ca = aliases.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     assert set(ca["id_system"]) == {"mark"} and ca["valid_from"].is_null().all()
     assert ca.select("team_id", "value").sort("value").rows() == [
@@ -755,7 +755,14 @@ def test_a_conference_key_never_reaches_a_team_through_a_shared_code(tmp_path):
     raw = _raw(tmp_path)
     _add(raw, "manifest_teams.csv", "cfb,2359,Macalester Scots,football")
     _add(raw, "espn_teams.csv", "cfb,2359,MAC,Macalester Scots,Macalester,Macalester,Scots,c51230,")
-    _add(raw, "sdvplotr_conferences.csv", '"cfb","MAC","Mid-American Conference","Mid-American",,,,,,,,"conference"')
+    _add(
+        raw,
+        "curated/non_team_rows.csv",
+        "cfb,MAC,Mid-American Conference,Mid-American,conference,,,,,conference,cfb,espn,15,,",
+    )
+    _add(
+        raw, "manifest_conferences.csv", "conference,cfb,espn,15,Mid-American Conference,https://a.espncdn.com/mac.png"
+    )
     (raw / "sdvplotr_abbr_mapping.csv").write_text(
         '"sport","key","canon"\n"cfb","MAC","MAC"\n"cfb","MID-AMERICAN CONFERENCE","MAC"\n', encoding="utf-8"
     )
@@ -765,13 +772,28 @@ def test_a_conference_key_never_reaches_a_team_through_a_shared_code(tmp_path):
     assert cfb.select("id_system", "value", "team_id").rows() == [("conference", "MID-AMERICAN CONFERENCE", "MAC")]
 
 
-def test_a_conference_file_the_archive_lacks_fails_the_build(tmp_path):
+def test_a_conference_mark_the_archive_lacks_fails_the_build(tmp_path):
     raw = _raw(tmp_path)
     path = raw / "manifest_conferences.csv"
-    path.write_text(path.read_text(encoding="utf-8").replace("leagues/500/nfl.png", "leagues/500/nfl2.png"))
-    with pytest.raises(AssertionError, match="no copy of.*leagues/500/nfl.png"):
+    path.write_text(path.read_text(encoding="utf-8").replace("league,ncaa,espn,nfl_dark", "league,ncaa,espn,nfl_drk"))
+    with pytest.raises(AssertionError, match="no copy of.*nfl_dark"):
         bi.build(raw)
     path.unlink()  # without the snapshot the rows join with no alias at all (the sdist build)
     teams, aliases, _ = bi.build(raw)
     conf = teams.filter(pl.col("program").is_in(_index.NON_TEAM))
     assert conf.height == 2 and aliases.join(conf, on=["league", "team_id"], how="semi").height == 0
+
+
+def test_curated_rows_check_their_conference_ids_and_agree_across_lines(tmp_path):
+    raw = _raw(tmp_path)
+    path = raw / "curated" / "non_team_rows.csv"
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace("conference,,,,,conference,nfl", "conference,nfl:afc-east,,,,conference,nfl"))
+    with pytest.raises(AssertionError, match="conference_id no team row carries"):
+        bi.build(raw)
+    path.write_text(text.replace("league,,,,,league,ncaa", "league,,#000000,,,league,ncaa"))
+    with pytest.raises(AssertionError, match="lines disagree"):
+        bi.build(raw)
+    path.write_text(text.replace("conference,,,,,conference,nfl", "conference,nfl:afc-west,,,,conference,nfl"))
+    teams, _, _ = bi.build(raw)  # a slug the team rows carry (the Raiders' AFC West) is kept
+    assert teams.filter(pl.col("team_id") == "AFC")["conference_id"].item() == "nfl:afc-west"

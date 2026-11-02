@@ -450,63 +450,117 @@ def test_merge_stack_keeps_missouris_gold_readable_as_sdvplotr_does():  # sdvplo
 RAW = Path(__file__).parents[1] / "data-raw"
 
 
-# sdvplotR's include_conferences (parity audit gap #2): 89 college conferences plus the AFC, NFC and NFL
+# The conference and league rows (sdvplotR's include_conferences, parity audit gap #2): sdvplotR's 89 college
+# conferences, the AFC, NFC and NFL, then the pro leagues, their conferences, the NHL's division marks and the NCAA's
+COUNTS = [("aaf", 1), ("cfb", 26), ("mbb", 33), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 1), ("ncaa_mhockey", 1),
+          ("ncaa_softball", 1), ("ncaa_whockey", 1), ("nfl", 3), ("nhl", 9), ("wbb", 33), ("wnba", 3)]  # fmt: skip
+
+
 def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     everything = sdvplot.teams(include_conferences=True)
     conf = everything.filter(pl.col("program").is_in(_index.NON_TEAM))
-    assert conf.group_by("league").len().sort("league").rows() == [("cfb", 25), ("mbb", 32), ("nfl", 3), ("wbb", 32)]
-    assert conf.filter(pl.col("program") == "league")["abbr"].to_list() == ["NFL"]
+    assert conf.group_by("league").len().sort("league").rows() == COUNTS and conf.height == 118
+    assert set(conf["program"]) == {
+        "conference",
+        "league",
+    }  # a division mark's row is a "conference" one
+    leagues = conf.filter(pl.col("program") == "league").select("league", "abbr").sort("league").rows()
+    assert leagues == [("aaf", "AAF"), ("cfb", "NCAA"), ("mbb", "NCAA"), ("mlb", "MLB"), ("nba", "NBA"),
+                       ("ncaa_baseball", "NCAA"), ("ncaa_mhockey", "NCAA"), ("ncaa_softball", "NCAA"),
+                       ("ncaa_whockey", "NCAA"), ("nfl", "NFL"), ("nhl", "NHL"), ("wbb", "NCAA"), ("wnba", "WNBA")]  # fmt: skip
     assert sdvplot.teams().height + conf.height == everything.height and sdvplot.teams("cfb").height == 687
     assert not sdvplot.teams()["program"].is_in(_index.NON_TEAM).any()
-    # the id is R's key (the short name), never a team id; a team's conference_id is its conference row's
+    # the id is the row's key (the short name), never a team id; a team's conference_id is its conference row's
     assert conf["team_id"].str.contains(r"^[0-9]+$").sum() == 0 and (conf["team_id"] == conf["abbr"]).all()
     sec = conf.filter((pl.col("league") == "cfb") & (pl.col("abbr") == "SEC")).row(0, named=True)
     assert sec["conference_id"] == "cfb:sec" and sec["conference"] == "Southeastern Conference"
     assert sdvplot.teams("cfb").filter(pl.col("conference_id") == "cfb:sec").height == 16
-    retired = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
-    assert retired.select("league", "abbr").rows() == [("cfb", "WAC"), ("mbb", "WAC"), ("wbb", "WAC")]  # ESPN: UAC now
+    al = conf.filter((pl.col("league") == "mlb") & (pl.col("abbr") == "AL")).row(0, named=True)
+    assert al["conference_id"] == "mlb:al" and sdvplot.teams("mlb").filter(pl.col("conference_id") == "mlb:al").height
+    no_slug = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
+    # the WAC is retired (ESPN: UAC now); the NHL's division marks join no team row
+    assert no_slug.select("league", "abbr").sort("league", "abbr").rows() == [
+        ("cfb", "WAC"), ("mbb", "WAC"), ("nhl", "Atlantic"), ("nhl", "Central"), ("nhl", "HGS"), ("nhl", "MAT"),
+        ("nhl", "MCD"), ("nhl", "MKN"), ("nhl", "Metropolitan"), ("nhl", "Pacific"), ("wbb", "WAC"),
+    ]  # fmt: skip
     # opt-in everywhere: the only aliases are "mark" and "conference" ones (id systems resolve() never reads), so no
     # resolution and no palette key; cfb's MAC is still Macalester
     ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     assert set(ca["id_system"]) == {"mark", "conference"}
     marks = ca.filter(pl.col("id_system") == "mark")
-    assert marks.height == conf.height == 92  # every row's primary mark, once
-    assert marks.select("league", "team_id").unique().height == 92
+    assert marks.height == 122 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
-    assert set(everything["color_source"]) == {"nflverse", "espn", "logo", "cbbplotR", "fallback"}
+    assert set(everything["color_source"]) == {
+        "nflverse",
+        "espn",
+        "logo",
+        "cbbplotR",
+        "fallback",
+    }
     assert everything["color_primary"].str.contains(r"^#[0-9a-f]{6}$").all()
     assert everything.filter(pl.col("color_secondary") == pl.col("color_primary")).height == 0
 
 
-def test_conference_colors_are_the_sdvplotr_snapshots_cbbplotr_values():
-    r = pl.read_csv(RAW / "sdvplotr_conferences.csv", infer_schema_length=0).select(
-        pl.col("sport").alias("league"), pl.col("team_abbr").alias("team_id"), pl.col("type").alias("r_type"),
-        pl.col("color1").str.to_lowercase().alias("r1"), pl.col("color2").str.to_lowercase().alias("r2"),
-    )  # fmt: skip
+def test_conference_colors_are_the_curated_cbbplotr_values():  # sdvplotR's logo_ref values, frozen in the curated file
+    r = pl.read_csv(RAW / "curated" / "non_team_rows.csv", infer_schema_length=0).select(
+        "league", "team_id", pl.col("program").alias("r_type"),
+        pl.col("color_primary").str.to_lowercase().alias("r1"), pl.col("color_secondary").str.to_lowercase().alias("r2"),
+    ).unique()  # fmt: skip
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     j = conf.join(r, on=["league", "team_id"], how="inner")
-    assert j.height == conf.height == 92 and (j["program"] == j["r_type"]).all()
+    assert j.height == conf.height == 118 and (j["program"] == j["r_type"]).all()
     colored = j.filter(pl.col("r1").is_not_null())
     assert colored.height == 85 and (colored["color_source"] == "cbbplotR").all()
     assert (colored["color_primary"] == colored["r1"]).all()
     assert (colored["color_secondary"] == colored.select(pl.when(pl.col("r2") != pl.col("r1")).then("r2"))["r2"]).all()
-    none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC and the Pioneer
-    assert none.height == 7 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
+    none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC, the Pioneer, the new rows
+    assert (
+        none.height == 33 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
+    )
 
 
-def test_conference_mark_aliases_name_the_manifests_own_rows():  # sdvplotR logo_marks: 92 of 92 rows have a primary
+def test_conference_mark_aliases_name_the_manifests_own_rows():
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     ca = _index.alias_table().filter(pl.col("id_system") == "mark")
     ca = ca.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
-    key = dict(ca.select(pl.concat_str("league", "team_id", separator="/"), "value").rows())
-    assert len(key) == 92
-    # ESPN files one conference logo under each league with its own group id; the row's own league is taken
-    assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == ("conference:cfb:espn:8", "conference:mbb:espn:23", "conference:wbb:espn:23")  # fmt: skip
-    assert key["cfb/WAC"] == key["mbb/WAC"] == "conference:ncaa:espn:wac"  # filed once, under "ncaa"
-    assert (key["nfl/AFC"], key["nfl/NFL"]) == ("conference:nfl:espn:AFC", "league:nfl:espn:NFL")
-    assert ca["value"].str.contains(r"^(conference|league):[a-z]+:[a-z.]+:").all()
+    keys = ca.group_by(pl.concat_str("league", "team_id", separator="/").alias("k")).agg(pl.col("value").sort())
+    key = dict(keys.rows())
+    assert len(key) == 118
+    # ESPN files one conference logo under each league with its own group id; the row names its own league's
+    assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == (["conference:cfb:espn:8"], ["conference:mbb:espn:23"], ["conference:wbb:espn:23"])  # fmt: skip
+    assert key["cfb/WAC"] == key["mbb/WAC"] == ["conference:ncaa:espn:wac"]  # filed once, under "ncaa"
+    assert (key["nfl/AFC"], key["nfl/NFL"]) == (
+        ["conference:nfl:espn:AFC"],
+        ["league:nfl:espn:NFL"],
+    )
+    assert key["mlb/MLB"] == ["league:mlb:espn:MLB", "league:mlb:mlbstatic:1"]
+    assert key["nhl/NHL"] == ["league:nhl:espn:NHL", "league:nhl:nhl:99"]
+    assert key["nba/East"] == ["conference:nba:espn:East"] and key["wnba/East"] == ["conference:wnba:espn:East"]
+    assert key["nhl/Metropolitan"] == ["division:nhl:nhl:88"]
+    assert key["ncaa_softball/NCAA"] == key["cfb/NCAA"] == ["league:ncaa:espn:NCAA"]
+    assert ca["value"].str.contains(r"^(conference|league|division):[a-z]+:[a-z.]+:").all()
+    # the 2024 All-Star Game's captains' teams (the NHL files them as division marks 7801-7804) are dated 2024
+    dated = ca.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
+    assert sorted(dated.select("team_id", "valid_from", "valid_to").rows()) == [
+        (t, 2024, 2024) for t in ("HGS", "MAT", "MCD", "MKN")
+    ]
+
+
+def test_every_conference_and_league_row_draws_a_mark():
+    # every row has a mark the archive holds (data-raw/manifest_conferences.csv: the CDN manifest's non-team rows), and
+    # the mark functions reach the row by its own key; only cfb's MAC needs id_system="team_id" (Macalester's code)
+    conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
+    m = pl.read_csv(RAW / "manifest_conferences.csv", infer_schema_length=0)
+    archived = m.select(pl.concat_str("level", "league", "source", "entity_id", separator=":"))["level"].to_list()
+    ca = _index.alias_table().filter(pl.col("id_system") == "mark")
+    ca = ca.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
+    drawn = ca.filter(pl.col("value").is_in(archived)).select("league", "team_id").unique()
+    assert conf.join(drawn, on=["league", "team_id"], how="anti").select("league", "team_id").rows() == []
+    rows = conf.select("league", "team_id").rows()
+    assert [(lg, t) for lg, t in rows if resolve_marks(t, lg, id_system="team_id") != t] == []
+    assert [(lg, t) for lg, t in rows if resolve_marks(t, lg) != t] == [("cfb", "MAC")]
 
 
 def test_sdvplotr_conference_keys_reach_their_rows_for_marks_only():
@@ -556,7 +610,7 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     _manifest._read.cache_clear()
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     urls = [sdvplot.logo_url(tid, lg, strict=True) for lg, tid in conf.select("league", "team_id").rows()]
-    assert len(urls) == 92 and all(u and u.startswith(_manifest.MANIFEST_URL.rsplit("/", 2)[0]) for u in urls)
+    assert len(urls) == 118 and all(u and u.startswith(_manifest.MANIFEST_URL.rsplit("/", 2)[0]) for u in urls)
     sec = sdvplot.marks("SEC", "cfb")  # the dark variant beside the listed file
     assert set(sec["variant"]) == {"default", "dark"} and sec["level"].to_list() == ["conference"] * sec.height
     assert sdvplot.logo_url("SEC", "cfb", variant="dark") != sdvplot.logo_url("SEC", "cfb")

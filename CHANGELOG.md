@@ -62,6 +62,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   areas, a tennis court on three surfaces, the volleyball free zones, a curling sheet and house); the surfaces
   cookbook's first recipe draws all ten sports; the college baseball and softball tutorial puts the Women's College
   World Series champion on a softball field; the PWHL tutorial's shot map is on the PWHL's own rink.
+- League, pro-conference and division marks draw: `teams(include_conferences=True)` gains 26 rows, and
+  `logo_url()` / `marks()` reach each by its key: `MLB`, `AL`, `NL` (mlb); `NBA`, `East`, `West` (nba); `WNBA`,
+  `East`, `West` (wnba); `NHL`, its division marks `Atlantic`, `Metropolitan`, `Central`, `Pacific` and the 2024
+  All-Star teams `MAT`, `MCD`, `HGS`, `MKN` (2024 only); `AAF`; and `NCAA` in every college league (`cfb`, `mbb`,
+  `wbb`, `ncaa_baseball`, `ncaa_softball`, `ncaa_mhockey`, `ncaa_whockey`). The conference and league rows now come
+  from sdvplot's own `data-raw/curated/non_team_rows.csv`, which names each row's mark by its manifest key, instead of
+  the frozen `data-raw/sdvplotr_conferences.csv` export (sdvplotR no longer has the table); the 92 existing rows,
+  their colors and aliases are unchanged. The manifest's `division` level counts as a non-team mark level.
 
 ### Changed
 
