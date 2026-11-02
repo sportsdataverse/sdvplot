@@ -24,7 +24,7 @@ from sdvplot._colors import team_colors
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
 from sdvplot._types import IdSystem, Which
-from sdvplot._web import aspect, image_src
+from sdvplot._web import aspect, image_src, present
 
 _SUPPORTS_AXIS_LOGOS = False
 _SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
@@ -99,6 +99,7 @@ def _add(
     _check_chart(chart)
     h, a = check_height(height), check_alpha(alpha)
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
+    placements = present(placements, embed=embed)
     sources: dict[str, str] = {}
     marks = []
     for p in placements:

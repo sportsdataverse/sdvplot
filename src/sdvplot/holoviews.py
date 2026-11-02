@@ -15,7 +15,7 @@ with requires_extra("holoviews"):
 
 from sdvplot import bokeh as _bokeh
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._web import image_sources
+from sdvplot._web import image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
 
@@ -58,6 +58,7 @@ def _add(
         )
     _require_bokeh()
     placements = place(x, y, teams, league=league, season=season, kind=kind, variant=variant, id_system=id_system)
+    placements = present(placements, embed=embed)
     sources = image_sources(placements, embed=embed)
 
     def hook(plot: Any, _element: Any) -> None:

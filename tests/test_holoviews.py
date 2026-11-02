@@ -73,3 +73,13 @@ def test_axis_logos_name_the_workaround(mark_images):
         sdvplot.axis_logos(hv.Bars([("LV", 1)]), "x", league="nfl")
     with pytest.raises(UnsupportedTargetError):  # a headshot axis is no more drawable here than a logo one
         sdvplot.axis_logos(hv.Bars([("LV", 1)]), "x", league="nfl", mark_type="headshot")
+
+
+def test_a_404_headshot_is_skipped_when_embedding(mark_images, headshot_images, monkeypatch):
+    from sdvplot import _cache
+    from tests.conftest import FakeResponse, FakeSession
+
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(404)))
+    with pytest.warns(SdvplotWarning, match="whose headshot is missing"):
+        out = shv.add_headshots(_element(), [10, 20], [-3, -7], ["3139477", "999"], league="nfl", embed=True)
+    assert [m[0] for m in shv._drawn_marks(out)] == ["3139477"]
