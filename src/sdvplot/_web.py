@@ -17,12 +17,15 @@ from sdvplot._placement import Placement
 # ESPN's combiner serves full headshots at 600x436 (measured 2026-10-04 for NFL, NBA and MLB ids); checked by
 # tests/test_web_live.py.
 HEADSHOT_ASPECT = 600 / 436
+HOCKEYTECH_HEADSHOT_PREFIX = "https://assets.leaguestat.com/"  # 240x240 squares (_headshots.HOCKEYTECH_HEADSHOT_URL)
 _URL_PUNCTUATION = "-._~:/?#[]@!$&()*+,;=%"  # SAFE_URL's characters besides letters and digits (quote keeps those)
 
 
 def aspect(p: Placement) -> float:
-    """Width / height of the placement's image: the manifest's, or HEADSHOT_ASPECT for a headshot."""
-    return p.aspect if p.aspect is not None else HEADSHOT_ASPECT
+    """Width / height of the placement's image: the manifest's, 1 for a HockeyTech headshot, else HEADSHOT_ASPECT."""
+    if p.aspect is not None:
+        return p.aspect
+    return 1.0 if p.url.startswith(HOCKEYTECH_HEADSHOT_PREFIX) else HEADSHOT_ASPECT
 
 
 def axis_letter(axis: str) -> str:
