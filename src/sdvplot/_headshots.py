@@ -1,5 +1,5 @@
 """Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table, and the leagues'
-own player ids (NBA / WNBA Stats, MLBAM, NHL) on their CDNs."""
+own player ids (NBA / WNBA Stats, MLBAM, NHL, HockeyTech) on their CDNs."""
 
 from __future__ import annotations
 
@@ -26,12 +26,28 @@ ESPN_HEADSHOT_LEAGUES = {
     "cfb": "college-football",
     "mbb": "mens-college-basketball",
     "wbb": "womens-college-basketball",
+    # ESPN files G League photos under nba/ (nba-development/ 404s): G League and NBA athletes share one ESPN id space
+    "nbagl": "nba",
+    "soccer": "soccer",
 }
 # Headshots by the league's own player id, as sdvplotR's `league_headshot_url` (utils.R) builds them: hoopR's
 # nba_player_headshot_url() / wehoop's wnba_playerheadshot() (NBA and WNBA Stats PERSON_ID), mlbplotR (MLBAM) and the
 # NHL API's `headshot` for players with no current team (mugs/nhl/latest, the same image as the season/team mug). An
 # unknown id gets the CDN's silhouette, not a 404. cdn.nba.com and cdn.wnba.com answer 403 to datacenter IPs (_cache).
 # The NFL's league id is the gsis id: id_system="league" on "nfl" is "gsis" (sdvplotR's id_type="league" for the NFL).
+# The HockeyTech leagues' player_id is the key on their stats provider's CDN (the roster feed's own player_image URL);
+# the QMJHL's client code there is "lhjmq". leaguestat answers 404 for an unknown id, as ESPN does (the roster feed's
+# "nophoto" placeholder is the feed's, not the CDN's).
+HOCKEYTECH_HEADSHOT_URL = "https://assets.leaguestat.com/{client}/240x240/{{}}.jpg"
+HOCKEYTECH_CLIENTS = {
+    "pwhl": "pwhl",
+    "ahl": "ahl",
+    "echl": "echl",
+    "ohl": "ohl",
+    "whl": "whl",
+    "qmjhl": "lhjmq",
+    "ushl": "ushl",
+}
 LEAGUE_HEADSHOT_URLS = {
     "nba": "https://cdn.nba.com/headshots/nba/latest/260x190/{}.png",
     "wnba": "https://cdn.wnba.com/headshots/wnba/latest/260x190/{}.png",
@@ -40,6 +56,7 @@ LEAGUE_HEADSHOT_URLS = {
         "w_213,q_auto:best/v1/people/{}/headshot/67/current.png"
     ),
     "nhl": "https://assets.nhle.com/mugs/nhl/latest/{}.png",
+    **{lg: HOCKEYTECH_HEADSHOT_URL.format(client=c) for lg, c in HOCKEYTECH_CLIENTS.items()},
 }
 LEAGUE_ID_LEAGUES = ("nfl", *LEAGUE_HEADSHOT_URLS)  # the leagues id_system="league" accepts
 NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
@@ -94,13 +111,17 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
 
     Args:
         player_id: One player id: an ESPN athlete id, an nflverse gsis id, or the league's own player id.
-        league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only;
-            "league" works for nfl, nba, wnba, mlb and nhl.
+        league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb, wbb, nbagl and soccer;
+            "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, nhl, pwhl, ahl, echl, ohl, whl, qmjhl and
+            ushl. ESPN files G League (nbagl) photos with the NBA's, so a G League player's ESPN id is the one ESPN
+            uses for him in the NBA. ESPN has photos for only part of the G League and soccer rosters.
         id_system: "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table,
             preferring nflverse's own headshot), or "league" (the league's own player id, sdvplotR's
             ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM
-            id, an NHL API id, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown
-            league id gets the CDN's silhouette image, not a 404.
+            id, an NHL API id, or the ``player_id`` of a HockeyTech feed (pwhl, ahl, echl, ohl, whl, qmjhl, ushl) on
+            ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An
+            unknown NBA, WNBA, MLB or NHL id gets the CDN's silhouette image; an unknown ESPN or HockeyTech id is a
+            404, which the adapters treat as any missing image.
 
     Returns:
         str | None: The image URL, or None when the id is missing, malformed, or not in the player table.
@@ -124,6 +145,8 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             sdvplot.headshot_url("00-0033873", "nfl", id_system="gsis")   # Patrick Mahomes, an nfl.com URL ending .png
             sdvplot.headshot_url(2544, "nba", id_system="league")   # LeBron James by his NBA Stats PERSON_ID
             # 'https://cdn.nba.com/headshots/nba/latest/260x190/2544.png'
+            sdvplot.headshot_url(52, "pwhl", id_system="league")   # a PWHL player by her HockeyTech player_id
+            # 'https://assets.leaguestat.com/pwhl/240x240/52.jpg'
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -131,7 +154,8 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     """
     # check the arguments first, so a null id never hides a bad league or id_system
     if id_system == "espn" and league not in ESPN_HEADSHOT_LEAGUES:
-        raise InputError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}")
+        hint = " (use the league's own player ids with id_system='league')" if league in LEAGUE_HEADSHOT_URLS else ""
+        raise InputError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}{hint}")
     if id_system == "league":
         if league not in LEAGUE_ID_LEAGUES:
             raise InputError(

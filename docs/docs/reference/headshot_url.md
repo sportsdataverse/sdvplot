@@ -26,8 +26,8 @@ A headshot URL for one player.
 | Name | Type | Description |
 |---|---|---|
 | `player_id` | `Any` | One player id: an ESPN athlete id, an nflverse gsis id, or the league's own player id. |
-| `league` | `str` | The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb and wbb; "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb and nhl. |
-| `id_system` | `Literal['espn', 'gsis', 'league']` | "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot), or "league" (the league's own player id, sdvplotR's ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM id, an NHL API id, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown league id gets the CDN's silhouette image, not a 404. |
+| `league` | `str` | The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb, wbb, nbagl and soccer; "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, nhl, pwhl, ahl, echl, ohl, whl, qmjhl and ushl. ESPN files G League (nbagl) photos with the NBA's, so a G League player's ESPN id is the one ESPN uses for him in the NBA. ESPN has photos for only part of the G League and soccer rosters. |
+| `id_system` | `Literal['espn', 'gsis', 'league']` | "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot), or "league" (the league's own player id, sdvplotR's ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM id, an NHL API id, or the ``player_id`` of a HockeyTech feed (pwhl, ahl, echl, ohl, whl, qmjhl, ushl) on ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown NBA, WNBA, MLB or NHL id gets the CDN's silhouette image; an unknown ESPN or HockeyTech id is a 404, which the adapters treat as any missing image. |
 
 ## Returns
 
@@ -49,6 +49,8 @@ sdvplot.headshot_url("3139477", "nfl")
 sdvplot.headshot_url("00-0033873", "nfl", id_system="gsis")   # Patrick Mahomes, an nfl.com URL ending .png
 sdvplot.headshot_url(2544, "nba", id_system="league")   # LeBron James by his NBA Stats PERSON_ID
 # 'https://cdn.nba.com/headshots/nba/latest/260x190/2544.png'
+sdvplot.headshot_url(52, "pwhl", id_system="league")   # a PWHL player by her HockeyTech player_id
+# 'https://assets.leaguestat.com/pwhl/240x240/52.jpg'
 ```
 
 ## See also
