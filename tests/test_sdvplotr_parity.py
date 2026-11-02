@@ -33,7 +33,7 @@ def _csv(name):
 def test_abbr_mapping_keys_resolve_like_their_canonical_abbreviation():
     # a canon that is a conference row's key is the conference's (id system "conference", marks only), even where a
     # team holds the same code (cfb's MAC: Macalester)
-    conf = _csv("sdvplotr_conferences.csv").select("sport", pl.col("team_abbr").alias("canon"))
+    conf = _csv("curated/non_team_rows.csv").select(pl.col("league").alias("sport"), pl.col("team_id").alias("canon"))
     am = _csv("sdvplotr_abbr_mapping.csv").join(conf, on=["sport", "canon"], how="anti")
     agree, has, gaps, wrong = 0, 0, set(), []
     for lg in sorted(set(am["sport"])):
