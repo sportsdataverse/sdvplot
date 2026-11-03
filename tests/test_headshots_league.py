@@ -46,6 +46,20 @@ HOCKEYTECH = {
     "whl": "whl",
     "qmjhl": "lhjmq",
     "ushl": "ushl",
+    # the junior and minor leagues, each probed 2026-11-02 with a roster player_id that returned a 240x240 JPEG
+    "sphl": "sphl",
+    "chl": "chl",
+    "bchl": "bchl",
+    "ajhl": "ajhl",
+    "sjhl": "sjhl",
+    "ojhl": "ojhl",
+    "cchl": "cchl",
+    "gojhl": "gojhl",
+    "mhl": "mhl",
+    "nojhl": "nojhl",
+    "vijhl": "vijhl",
+    "kijhl": "kijhl",
+    "mjhl": "mjhl",
 }
 
 

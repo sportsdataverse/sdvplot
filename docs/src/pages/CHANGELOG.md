@@ -94,8 +94,12 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   softball (`CIAA`, `CNE`, `SIAC`) reuse three of them. A conference or league row whose only mark is a wordmark
   draws it for a logo request; a conference whose only logo is an on-dark one draws it on any background.
 - `headshot_url()` (and every headshot adapter) covers more leagues, as sdvplotR does: G League (`"nbagl"`; ESPN files
-  its photos with the NBA's) and soccer by ESPN athlete id, and the PWHL, AHL, ECHL, OHL, WHL, QMJHL and USHL by
-  their HockeyTech `player_id` with `id_system="league"` (`assets.leaguestat.com`). ESPN and leaguestat answer an
+  its photos with the NBA's) and soccer by ESPN athlete id, and the 20 HockeyTech leagues by their HockeyTech
+  `player_id` with `id_system="league"` (`assets.leaguestat.com`): the PWHL, AHL, ECHL, OHL, WHL, QMJHL and USHL, and
+  the junior and minor leagues `sphl`, `chl`, `bchl`, `ajhl`, `sjhl`, `ojhl`, `cchl`, `gojhl`, `mhl`, `nojhl`, `vijhl`,
+  `kijhl` and `mjhl` (each league's key is its leaguestat client code; the web adapters draw them square, as the
+  others). F1 driver headshots are not covered: formula1.com keys them by its own driver reference (`MAXVER01`), not
+  a driver number or Jolpica `driver_id`. ESPN and leaguestat answer an
   unknown id with a 404, which draws nothing, as any missing image.
 - `surface()` draws every sportyR 2.3.0 surface (sportypy 1.2.0): softball (`ncaa_softball`, a team league, so the
   field takes the team's `center_logo`), lacrosse (`nll`, `pll`, `world_lacrosse`, `ncaa_mlacrosse`, `ncaa_wlacrosse`,
