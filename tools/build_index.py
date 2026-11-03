@@ -448,6 +448,34 @@ def conference_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
     return _alias(m, pl.col("sport"), "conference", "key", "canon").unique().cast(ALIAS_SCHEMA)
 
 
+def conference_name_aliases(conf: pl.DataFrame, teams: pl.DataFrame, marked: pl.DataFrame) -> pl.DataFrame:
+    """A conference or league row's full name and every conference name its league's teams carry under the row's
+    conference_id ("Hockey East Association" -> Hockey East, "Big Ten Conference" -> Big Ten), as "conference" aliases
+    of a row that has a mark (``marked``, its "mark" aliases), so a team's ``conference`` value draws its conference's
+    logo. Only the mark functions read them, never resolve(). A name equal to the row's key adds nothing, and one
+    naming several rows of a league drops."""
+    rows = conf.join(marked.select("league", "team_id").unique(), on=["league", "team_id"], how="semi").select(
+        "league", "team_id", "name", "conference_id"
+    )
+    carried = teams.filter(pl.col("conference_id").is_not_null() & pl.col("conference").is_not_null()).select(
+        "league", "conference_id", pl.col("conference").alias("name")
+    )
+    names = pl.concat([
+        rows.select("league", "team_id", "name"),
+        rows.drop("name").drop_nulls("conference_id").join(carried, on=["league", "conference_id"]).select(
+            "league", "team_id", "name"
+        ),
+    ])  # fmt: skip
+    key = pl.col("name").map_elements(norm_value, return_dtype=pl.String)
+    m = (
+        names.drop_nulls("name")
+        .unique()
+        .filter(key != pl.col("team_id").map_elements(norm_value, return_dtype=pl.String))
+        .filter(pl.col("team_id").n_unique().over("league", key) == 1)
+    )
+    return _alias(m, pl.col("league"), "conference", "name").unique().cast(ALIAS_SCHEMA)
+
+
 def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
     lg = pl.lit(league) if isinstance(league, str) else league
     return df.select(
@@ -941,9 +969,13 @@ def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     conf = conference_rows(raw, teams)
     aliases = build_aliases(raw, teams, conf)  # from the team rows only: a conference row is never a resolver candidate
     # a conference row's only aliases are "mark" (its logos) and "conference" ones; resolve() reads neither id system
-    aliases = pl.concat([aliases, conference_mark_aliases(raw, conf), conference_aliases(raw, conf)]).sort(
-        "league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True
-    )
+    marked = conference_mark_aliases(raw, conf)
+    named = conference_name_aliases(conf, teams, marked)
+    sdvplotr = conference_aliases(raw, conf)
+    key = pl.col("value").map_elements(norm_value, return_dtype=pl.String).alias("_key")
+    named = named.with_columns(key).join(sdvplotr.with_columns(key), on=["league", "_key"], how="anti").drop("_key")
+    aliases = pl.concat([aliases, marked, sdvplotr, named])  # sdvplotR's spelling of a name wins
+    aliases = aliases.sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
     teams = pl.concat([teams, conf])
     return teams, aliases, stamp(teams, aliases)
 

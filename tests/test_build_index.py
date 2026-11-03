@@ -700,10 +700,13 @@ def test_conference_rows_join_the_index_with_mark_aliases_only(tmp_path):  # sdv
     ]
     assert teams.schema == pl.Schema(_index.TEAM_SCHEMA) and teams.height == 5  # the three teams, then the two rows
     assert conf["color_primary"].str.starts_with("#").all() and (conf["color_secondary"] != conf["color_primary"]).all()
-    # their only aliases are "mark" ones, the manifest keys the curated lines name (the NFL's dark shield is filed only
-    # under "ncaa"); nflverse's AFC is not named
+    # their aliases are "mark" ones, the manifest keys the curated lines name (the NFL's dark shield is filed only
+    # under "ncaa"; nflverse's AFC is not named), and "conference" ones for each row's full name
     ca = aliases.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
-    assert set(ca["id_system"]) == {"mark"} and ca["valid_from"].is_null().all()
+    assert set(ca["id_system"]) == {"mark", "conference"} and ca["valid_from"].is_null().all()
+    names = ca.filter(pl.col("id_system") == "conference").select("team_id", "value").sort("value").rows()
+    assert names == [("AFC", "American Football Conference"), ("NFL", "National Football League")]
+    ca = ca.filter(pl.col("id_system") == "mark")
     assert ca.select("team_id", "value").sort("value").rows() == [
         ("AFC", "conference:nfl:espn:AFC"),
         ("NFL", "league:ncaa:espn:nfl_dark"),
