@@ -57,6 +57,22 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   points' `ColumnDataSource` and any `DataTable` on it, in the browser) and Altair (an `area` layer with a `bin_id`
   selection param). The colors cookbook and the WNBA tutorial draw their shot charts with it (hexagons, then squares)
   instead of `ax.hexbin`.
+- Bins: `origin=(x, y)` on `hexbin`, `squarebin`, `binner` and every `add_bins` shifts the lattice so a cell centre
+  falls on it (a hoop-centred lattice: origin = the basket's coordinates); ids stay the absolute centre `"x,y"`, and
+  the default `(0, 0)` bins exactly as before. `weights=` (one non-negative weight per point, by position; a missing
+  or non-finite one counts 0 and the point stays in its bin) gives each `Bin` a `weight`, the sum of its points'
+  (the count without weights), and `add_bins(value="weight")` fills by it instead of the count (`BinValue` in
+  `sdvplot.typing`). `add_bins(fill=...)` draws each cell at a fraction of the lattice cell (default 0.88 for squares,
+  so they no longer touch edge to edge, and 1.0 for hexagons) and `min_count=` leaves sparse cells undrawn
+  (`min_count=2`: single attempts; the bins `hexbin`/`squarebin` return are unchanged); the WNBA tutorial's squares
+  use `min_count=2`. The same names and defaults as sdvplotR's.
+- `add_bins` for plotnine (a `geom_polygon` layer filled by count or weight), HoloViews (the Bokeh glyph through a
+  plot hook, with Bokeh's linked selection: `link=` the points element), folium (one GeoJSON layer of polygons; on a
+  map the lattice is in degrees of longitude and latitude) and pygal (SVG polygons under the series, drawn by an xml
+  filter at each render), so every plotting adapter has it.
+- `sdvplot.plotly.link_script(fig)` links Plotly's bins to the points trace in a static HTML file, with no Python
+  running: pass it to `fig.write_html(post_script=...)` and selecting cells selects their points, selecting points
+  selects their cells, and hovering a cell highlights its points.
 - 21 new leagues in the index (49 in all), from the archive's 2026-11-03 capture: the junior and minor HockeyTech
   leagues `sphl` (16 teams), `chl` (41), `bchl` (23), `ajhl` (17), `sjhl` (13), `ojhl` (28), `cchl` (13), `gojhl`
   (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (22), keyed by their HockeyTech team ids

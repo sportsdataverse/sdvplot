@@ -18,9 +18,9 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
 with requires_extra("plotly"):
     import plotly.graph_objects as go
 
-from sdvplot._bins import _cells
+from sdvplot._bins import _cells, _values
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._types import AxisMarkType, BinShape
+from sdvplot._types import AxisMarkType, BinShape, BinValue
 from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -29,7 +29,7 @@ _PLOTLY_DEFAULT_MARGIN = {"t": 100, "b": 80, "l": 80, "r": 80}  # plotly.js's ma
 _REF = re.compile(r"^([xy])(\d*)$")
 _READABLE = ("scatter", "scattergl", "bar")  # trace types whose extent sdvplot can work out
 
-__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos", "link_script"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -625,24 +625,30 @@ def add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
     colorscale: Any = "Viridis",
     opacity: float = 1.0,
     xref: str = "x",
     yref: str = "y",
 ) -> Any:
-    """Draw hexagonal or square bins, colored by count, on a Plotly Figure.
+    """Draw hexagonal or square bins, colored by count or weight, on a Plotly Figure.
 
     The cells are ``sdvplot.binner``'s, in data units: one ``path`` layout shape per cell (``layer="below"``, so
-    traces draw over it), filled from ``colorscale`` by count. One scatter trace named ``"sdvplot_bins"`` holds a marker
-    at each centre (invisible until selected) that carries the cell for interaction: ``ids`` are the bin ids
-    (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids, the marker colors the
-    counts (and draw the colorbar), and hovering a cell shows its count.
+    traces draw over it), filled from ``colorscale`` by ``value`` (count or weight). One scatter trace named
+    ``"sdvplot_bins"`` holds a marker at each centre (invisible until selected) that carries the cell for interaction:
+    ``ids`` are the bin ids (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids,
+    the marker colors the values (and draw the colorbar), and hovering a cell shows its count and weight.
 
-    Linking: a static Plotly figure cannot run Python, so the link is a ``FigureWidget`` (or Dash) callback. Selecting
-    cells gives ``points.point_inds``; the ``customdata`` of those markers are the point ids (the row numbers when no
-    ``ids`` were given), which set a points trace's ``selectedpoints``. The other way, set the bins trace's
-    ``selectedpoints`` to the cells whose ``customdata`` holds a selected point. ``sdvplot.bin_ids`` gives a table the
-    same key.
+    Linking: in a static HTML file, pass ``sdvplot.plotly.link_script(fig)`` to ``fig.write_html(post_script=...)``
+    (or ``to_html``): plotly.js handlers then link cell and point selections and hover in the browser, with no Python.
+    In a ``FigureWidget`` (or Dash) the link is a callback instead: selecting cells gives ``points.point_inds``; the
+    ``customdata`` of those markers are the point ids (the row numbers when no ``ids`` were given), which set a points
+    trace's ``selectedpoints``. The other way, set the bins trace's ``selectedpoints`` to the cells whose ``customdata``
+    holds a selected point. ``sdvplot.bin_ids`` gives a table the same key.
 
     Args:
         target: A ``plotly.graph_objects.Figure`` (or ``FigureWidget``).
@@ -653,6 +659,15 @@ def add_bins(
         side: The square's side (``shape="square"``).
         equal_area: Squares of a radius-``radius`` hexagon's area.
         ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
         colorscale: A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points.
         opacity: The cells' opacity, 0 to 1.
         xref: The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``.
@@ -662,7 +677,9 @@ def add_bins(
         Figure: ``target``, with the shapes and the trace added.
 
     Raises:
-        InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside
+            [0, 1].
         UnsupportedTargetError: If ``target`` is not a Plotly Figure.
         ValueError: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
 
@@ -687,8 +704,20 @@ def add_bins(
     alpha = check_alpha(opacity)
     _key(xref, "x")
     _key(yref, "y")
-    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
-    counts = [b.count for b in bins]
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=ids,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    counts = _values(bins, value)
     lo, hi = min(counts, default=0), max(counts, default=0)
     # a name, a list of (position, color) pairs, or a list of colors (named, hex or rgb)
     if isinstance(colorscale, str):
@@ -711,12 +740,126 @@ def add_bins(
             x=[b.x for b in bins], y=[b.y for b in bins], ids=[b.id for b in bins], xaxis=xref, yaxis=yref,
             customdata=[list(b.ids) for b in bins], mode="markers", name="sdvplot_bins", showlegend=False,
             marker={"color": counts, "colorscale": scale, "cmin": lo, "cmax": hi, "showscale": True, "opacity": 0,
-                    "size": 8, "colorbar": {"title": {"text": "count"}}},
+                    "size": 8, "colorbar": {"title": {"text": value}}},
             selected={"marker": {"opacity": 1}}, unselected={"marker": {"opacity": 0}},
-            hovertemplate="%{marker.color} points<extra></extra>",
+            text=[f"count {b.count}, weight {b.weight:g}" for b in bins],
+            hovertemplate="%{text}<extra></extra>",
         )
     )  # fmt: skip
     return fig
+
+
+# link_script's body: plotly.js events on the div, restyling selectedpoints. CELLS[i] is the points-trace indices of
+# cell i's points, worked out in Python, so the browser only indexes. A cell selection selects its points, a point
+# selection selects the cells holding them, hovering a cell highlights its points until the pointer leaves.
+_LINK_JS = """(function () {
+  var gd = document.getElementById("{plot_id}");
+  var BINS = %(bins)d, POINTS = %(points)d;
+  var CELLS = %(cells)s;
+  var chosen = null;
+  function show(cells, points) {
+    Plotly.restyle(gd, {selectedpoints: [cells]}, [BINS]);
+    Plotly.restyle(gd, {selectedpoints: [points]}, [POINTS]);
+  }
+  gd.on("plotly_selected", function (ev) {
+    if (!ev || !ev.points) return;
+    var cells = [], points = [];
+    ev.points.forEach(function (p) {
+      if (p.curveNumber === BINS) cells.push(p.pointIndex);
+      else if (p.curveNumber === POINTS) points.push(p.pointIndex);
+    });
+    if (cells.length) {
+      var held = {};
+      cells.forEach(function (c) { CELLS[c].forEach(function (r) { held[r] = true; }); });
+      points = Object.keys(held).map(Number).sort(function (a, b) { return a - b; });
+    } else {
+      var picked = {};
+      points.forEach(function (r) { picked[r] = true; });
+      CELLS.forEach(function (rows, c) { if (rows.some(function (r) { return picked[r]; })) cells.push(c); });
+    }
+    chosen = points;
+    show(cells, points);
+  });
+  gd.on("plotly_deselect", function () { chosen = null; show(null, null); });
+  gd.on("plotly_hover", function (ev) {
+    var p = ev && ev.points && ev.points.filter(function (q) { return q.curveNumber === BINS; })[0];
+    if (p) Plotly.restyle(gd, {selectedpoints: [CELLS[p.pointIndex]]}, [POINTS]);
+  });
+  gd.on("plotly_unhover", function (ev) {
+    if (ev && ev.points && ev.points.some(function (q) { return q.curveNumber === BINS; }))
+      Plotly.restyle(gd, {selectedpoints: [chosen]}, [POINTS]);
+  });
+})();"""
+
+
+def link_script(target: Any, *, points: int = 0, bins: int | None = None) -> str:
+    """The JavaScript that links ``add_bins``' cells to a points trace in a static HTML file, with no Python running.
+
+    Pass it to ``fig.write_html(post_script=...)`` or ``fig.to_html(post_script=...)``: Plotly runs it after the plot
+    is drawn (its ``{plot_id}`` placeholder becomes the div's id). It registers plotly.js handlers on the div:
+    selecting cells (box or lasso select) selects their points on the points trace, selecting points selects the cells
+    holding them, double-click deselects both, and hovering a cell highlights its points until the pointer leaves. A
+    point belongs to a cell when its link id is among the cell's ``customdata``: the points trace's own ``customdata``
+    (its first element when each is a list) as a string, as ``sdvplot.hexbin`` writes ids, else its row number, which
+    is ``add_bins``' default id. The figure is read once, now: call it after the traces are final.
+
+    Args:
+        target: A ``plotly.graph_objects.Figure`` that ``add_bins`` drew on.
+        points: The index of the points trace in ``fig.data`` (default 0, the first trace).
+        bins: The index of the bins trace (default the last trace named ``"sdvplot_bins"``).
+
+    Returns:
+        str: The script, for ``post_script``.
+
+    Raises:
+        UnsupportedTargetError: If ``target`` is not a Plotly Figure.
+        ValueError: If the figure has no ``add_bins`` trace, ``bins`` is not one, or ``points`` is not the index of
+            another trace.
+
+    Example:
+        ::
+
+            import plotly.graph_objects as go
+            from sdvplot.plotly import add_bins, link_script
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            x, y = [0, -1, -44], [0, 7, 252]
+            fig = go.Figure(go.Scatter(x=x, y=y, mode="markers", name="shots"))
+            add_bins(fig, x, y, radius=15)
+            fig.update_layout(dragmode="select")
+            html = fig.to_html(post_script=link_script(fig))  # or fig.write_html("shots.html", post_script=...)
+
+    See Also:
+        sdvplot.plotly.add_bins: https://sdvplot.sportsdataverse.org/docs/reference/plotly ;
+        Plotly post_script: https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+    """
+    import json
+
+    from sdvplot._bins import _to_id
+
+    data = _figure(target).data
+    named = [i for i, t in enumerate(data) if t.name == "sdvplot_bins"]
+    if not named:
+        raise ValueError("the figure has no add_bins trace (named 'sdvplot_bins') to link")
+    b = named[-1] if bins is None else bins
+    if b not in named:
+        raise ValueError(f"bins must be the index of an add_bins trace ({named}), got {bins!r}")
+    if isinstance(points, bool) or not isinstance(points, int) or not 0 <= points < len(data) or points == b:
+        raise ValueError(
+            f"points must be the index of the points trace, another of the {len(data)} traces, got {points!r}"
+        )
+    pts = data[points]
+    custom = pts.customdata
+    n = len(custom) if custom is not None else len(pts.x if pts.x is not None else ())
+    keys: dict[str, list[int]] = {}
+    for r in range(n):
+        k = str(r)
+        if custom is not None:
+            c = custom[r]
+            k = _to_id(c[0] if isinstance(c, (list, tuple)) and c else c)
+        keys.setdefault(k, []).append(r)
+    cells = [sorted(r for i in dict.fromkeys(ids) for r in keys.get(str(i), ())) for ids in data[b].customdata or ()]
+    return _LINK_JS % {"bins": b, "points": points, "cells": json.dumps(cells, separators=(",", ":"))}
 
 
 def _drawn_bins(target: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:

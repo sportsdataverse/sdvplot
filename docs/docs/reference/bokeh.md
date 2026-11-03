@@ -10,7 +10,7 @@ The Bokeh adapter: logos, wordmarks and headshots as one ``image_url`` glyph per
 
 | Name | What it is |
 |---|---|
-| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, as one ``patches`` glyph on a Bokeh figure. |
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count or weight, as one ``patches`` glyph on a Bokeh figure. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Bokeh figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Bokeh figure. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Bokeh figure. |
@@ -31,6 +31,11 @@ add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
     palette: Any = 'Viridis256',
     alpha: float = 1.0,
     link: Any = None,
@@ -39,12 +44,12 @@ add_bins(
 
 </div>
 
-Draw hexagonal or square bins, colored by count, as one ``patches`` glyph on a Bokeh figure.
+Draw hexagonal or square bins, colored by count or weight, as one ``patches`` glyph on a Bokeh figure.
 
 The cells are ``sdvplot.binner``'s, in data units. The glyph (named ``"sdvplot_bins"``) has its own
 ``ColumnDataSource``, one row per cell: ``xs``/``ys`` (the polygon), ``x``/``y`` (the centre), ``count``,
-``bin_id`` (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``point_ids`` (the ids of its points) and ``rows``
-(their row numbers); a ``linear_cmap`` on ``count`` colors it.
+``weight``, ``bin_id`` (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``point_ids`` (the ids of its points)
+and ``rows`` (their row numbers); a ``linear_cmap`` on ``value`` (``count`` or ``weight``) colors it.
 
 Linking: pass the points' ``ColumnDataSource`` (row ``i`` is the point at ``x[i]``, ``y[i]``) as ``link``, and
 two ``CustomJS`` callbacks tie the selections in the browser, with no server: selecting cells (with a ``tap`` or
@@ -63,6 +68,11 @@ that source) selects the cells holding them. A selection already consistent both
 | `side` | `float \| None` | The square's side (``shape="square"``). |
 | `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
 | `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
 | `palette` | `Any` | A Bokeh palette name or list of colors (default ``"Viridis256"``), fewest to most points. |
 | `alpha` | `float` | The cells' fill opacity, 0 to 1. |
 | `link` | `Any` | Optional ``ColumnDataSource`` of the same points, in the same order, to link selections with. |
@@ -73,7 +83,7 @@ that source) selects the cells holding them. A selection already consistent both
 
 ### Raises
 
-- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``alpha`` is outside [0, 1].
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside [0, 1].
 - `UnsupportedTargetError`: If ``target`` is not a ``bokeh.plotting`` figure.
 - `TypeError`: If ``link`` is not a ``ColumnDataSource``.
 - `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or ``link`` does not hold one row per point.

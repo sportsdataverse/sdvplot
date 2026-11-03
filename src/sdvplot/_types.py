@@ -41,3 +41,5 @@ MarkType = Literal["logo", "wordmark"]
 AxisMarkType = Literal["logo", "wordmark", "headshot"]
 # hexbin/squarebin/binner's cell shape and add_bins' shape: _bins.SHAPES
 BinShape = Literal["hex", "square"]
+# add_bins' value, what the fill encodes: _bins.VALUES
+BinValue = Literal["count", "weight"]

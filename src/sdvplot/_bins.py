@@ -72,6 +72,32 @@ def _to_id(v: Any) -> str:
     return str(v)
 
 
+def _origin(v: Any) -> tuple[float, float]:
+    """``origin`` checked: two finite numbers, the point a cell centre falls on."""
+    try:
+        ox, oy = v
+    except (TypeError, ValueError):
+        raise InputError(f"origin must be an (x, y) pair of finite numbers, got {v!r}") from None
+    for c in (ox, oy):
+        if isinstance(c, bool) or not isinstance(c, numbers.Real) or not math.isfinite(c):
+            raise InputError(f"origin must be an (x, y) pair of finite numbers, got {v!r}")
+    return float(ox), float(oy)
+
+
+def _weight(v: Any, row: int) -> float:
+    """One point's weight: a missing or non-finite one counts 0 (the point stays in its bin); a negative one raises."""
+    if _missing(v):
+        return 0.0
+    if isinstance(v, bool) or not isinstance(v, numbers.Real):
+        raise ValueError(f"weights must be numbers, got {v!r} at row {row}")
+    w = float(v)
+    if not math.isfinite(w):
+        return 0.0
+    if w < 0:
+        raise ValueError(f"weights must be >= 0, got {w!r} at row {row}")
+    return w
+
+
 def _positive(name: str, v: Any) -> float:
     if isinstance(v, bool) or not isinstance(v, numbers.Real) or not (math.isfinite(v) and float(v) > 0):
         raise InputError(f"{name} must be a finite number > 0, got {v!r}")
@@ -88,6 +114,8 @@ class Bin:
         y: The centre's y.
         rows: The 0-based positions in ``x``/``y`` of the points in this cell, in input order.
         ids: The link id of each of those points: ``ids[row]`` as a string, or the row number when no ids were given.
+        weight: The sum of its points' weights (a missing or non-finite weight counts 0); the count when no weights
+            were given.
     """
 
     id: str
@@ -95,6 +123,7 @@ class Bin:
     y: float
     rows: tuple[int, ...]
     ids: tuple[str, ...]
+    weight: float
 
     @property
     def count(self) -> int:
@@ -110,30 +139,52 @@ class Binner:
         shape: ``"hex"`` or ``"square"``.
         size: The cell size in the points' units: the hexagon's circumradius, or the square's side.
         lattice: The resolved options, ``{"radius": r}`` or ``{"shape": "square", "side": s}``: ``equal_area`` resolved
-            to the side, so storing it reproduces the same cells.
+            to the side, so storing it reproduces the same cells; plus ``"origin": (ox, oy)`` when it is not (0, 0).
+        origin: The point a cell centre falls on, ``(0.0, 0.0)`` by default.
     """
 
     shape: BinShape
     size: float
     lattice: dict[str, Any] = field(compare=False)
+    origin: tuple[float, float] = (0.0, 0.0)
 
-    def bins(self, x: Sequence[Any], y: Sequence[Any], *, ids: Sequence[Any] | None = None) -> list[Bin]:
+    def bins(
+        self,
+        x: Sequence[Any],
+        y: Sequence[Any],
+        *,
+        ids: Sequence[Any] | None = None,
+        weights: Sequence[Any] | None = None,
+    ) -> list[Bin]:
         """Bin points on this lattice (``hexbin`` or ``squarebin``); see those for the rules."""
-        return _bin(self.shape, self.size, x, y, ids)
+        return _bin(self.shape, self.size, x, y, ids, weights, self.origin)
 
     def cell_points(self, size: float | None = None) -> list[tuple[float, float]]:
         """The cell's vertices around (0, 0) at ``size`` (default this lattice's), as ``cell_points``."""
         return cell_points(self.shape, self.size if size is None else size)
 
 
-def _bin(shape: str, size: float, x: Sequence[Any], y: Sequence[Any], ids: Sequence[Any] | None) -> list[Bin]:
+def _bin(
+    shape: str,
+    size: float,
+    x: Sequence[Any],
+    y: Sequence[Any],
+    ids: Sequence[Any] | None,
+    weights: Sequence[Any] | None = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+) -> list[Bin]:
     n = len(x)
     if len(y) != n:
         raise ValueError(f"x and y must have the same length, got {n} and {len(y)}")
     if ids is not None and len(ids) != n:
         raise ValueError(f"ids must have one value per point ({n}), got {len(ids)}")
+    if weights is not None and len(weights) != n:
+        raise ValueError(f"weights must have one value per point ({n}), got {len(weights)}")
     if ids is not None:
         ids = list(ids)  # by position: a pandas Series indexes by label, so a filtered or reordered one misnames points
+    # by position too, and checked up front: a bad weight raises even on a point that is in no bin
+    w = None if weights is None else [_weight(v, r) for r, v in enumerate(weights)]
+    ox, oy = origin
     if shape == "hex":
         dx, dy = size * 2 * math.sin(_THIRD_PI), size * 1.5
     keys: dict[tuple[int, int], int] = {}
@@ -145,6 +196,7 @@ def _bin(shape: str, size: float, x: Sequence[Any], y: Sequence[Any], ids: Seque
         px, py = float(vx), float(vy)
         if not (math.isfinite(px) and math.isfinite(py)):  # sdvplot-js skips NaN; an infinity has no cell either
             continue
+        px, py = px - ox, py - oy  # the lattice around origin: bin relative to it, add it back to the centre
         if shape == "hex":  # sdvplot-js hexbin.ts, itself d3-hexbin src/hexbin.js:23-50, step for step
             py = py / dy
             pj = _js_round(py)
@@ -161,11 +213,11 @@ def _bin(shape: str, size: float, x: Sequence[Any], y: Sequence[Any], ids: Seque
                     pi = pi2 + (1 if pj & 1 else -1) / 2
                     pj = pj2
             key = (int(pi), pj)
-            centre = ((pi + (pj & 1) / 2) * dx + 0.0, pj * dy + 0.0)  # + 0.0 folds -0, as `|| 0` does
+            centre = ((pi + (pj & 1) / 2) * dx + ox + 0.0, pj * dy + oy + 0.0)  # + 0.0 folds -0, as `|| 0` does
         else:  # sdvplot-js squarebin.ts: half-open cells, an edge point goes to the higher cell
             i, j = _js_round(px / size), _js_round(py / size)
             key = (i, j)
-            centre = (i * size + 0.0, j * size + 0.0)
+            centre = (i * size + ox + 0.0, j * size + oy + 0.0)
         at = keys.get(key)
         if at is None:
             at = keys[key] = len(members)
@@ -179,12 +231,21 @@ def _bin(shape: str, size: float, x: Sequence[Any], y: Sequence[Any], ids: Seque
             y=cy,
             rows=tuple(rows),
             ids=tuple(str(r) if ids is None else _to_id(ids[r]) for r in rows),
+            weight=float(len(rows)) if w is None else math.fsum(w[r] for r in rows),
         )
         for (cx, cy), rows in zip(centres, members, strict=True)
     ]
 
 
-def hexbin(x: Sequence[Any], y: Sequence[Any], *, radius: float, ids: Sequence[Any] | None = None) -> list[Bin]:
+def hexbin(
+    x: Sequence[Any],
+    y: Sequence[Any],
+    *,
+    radius: float,
+    ids: Sequence[Any] | None = None,
+    weights: Sequence[Any] | None = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+) -> list[Bin]:
     """Bin points into pointy-top hexagons of circumradius ``radius``, in the points' own units.
 
     The port of sdvplot-js ``hexbin`` (itself d3-hexbin 0.2.2's): the same lattice, centres and bin order. Each point
@@ -198,15 +259,22 @@ def hexbin(x: Sequence[Any], y: Sequence[Any], *, radius: float, ids: Sequence[A
         radius: The hexagon's circumradius, in the points' units (a finite number > 0).
         ids: Optional link ids, one per point (e.g. a shot id column); each becomes a string, as sdvplot-js's
             ``toId`` (``None``, NaN and ``""`` become ``""``). Default: the row number.
+        weights: Optional non-negative weights, one per point, read by position as ``ids`` (e.g. points per shot); each
+            bin's ``weight`` is the sum of its points'. A missing or non-finite weight counts 0 but the point stays in
+            its bin. Default: every point weighs 1, so ``weight`` equals ``count``.
+        origin: The point a cell centre falls on, ``(x, y)`` in the points' units (default ``(0.0, 0.0)``): a
+            hoop-centred lattice, origin = the basket's coordinates. The points are binned relative to it and it is
+            added back to each centre, so ids stay the absolute centre ``"x,y"``.
 
     Returns:
         list[Bin]: The non-empty cells in first-seen order, each with ``id`` (``"x,y"``, the centre as JavaScript
-        prints it), ``x``, ``y`` (``-0`` folded to ``0``), ``rows`` (the points' 0-based positions), ``ids`` and
-        ``count``. A point with a missing (None), NaN or infinite coordinate is in no bin.
+        prints it), ``x``, ``y`` (``-0`` folded to ``0``), ``rows`` (the points' 0-based positions), ``ids``,
+        ``count`` and ``weight``. A point with a missing (None), NaN or infinite coordinate is in no bin.
 
     Raises:
-        InputError: If ``radius`` is not a finite number greater than 0.
-        ValueError: If ``x``, ``y`` and ``ids`` differ in length, or a coordinate is not a number.
+        InputError: If ``radius`` is not a finite number greater than 0, or ``origin`` is not two finite numbers.
+        ValueError: If ``x``, ``y``, ``ids`` and ``weights`` differ in length, a coordinate is not a number, or a
+            weight is negative or not a number.
 
     Example:
         ::
@@ -222,29 +290,41 @@ def hexbin(x: Sequence[Any], y: Sequence[Any], *, radius: float, ids: Sequence[A
         binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
         sdvplot-js hexbin: https://sdvplot-js.sportsdataverse.org/
     """
-    return _bin("hex", _positive("hexbin radius", radius), x, y, ids)
+    return _bin("hex", _positive("hexbin radius", radius), x, y, ids, weights, _origin(origin))
 
 
-def squarebin(x: Sequence[Any], y: Sequence[Any], *, side: float, ids: Sequence[Any] | None = None) -> list[Bin]:
+def squarebin(
+    x: Sequence[Any],
+    y: Sequence[Any],
+    *,
+    side: float,
+    ids: Sequence[Any] | None = None,
+    weights: Sequence[Any] | None = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+) -> list[Bin]:
     """Bin points into axis-aligned squares of side ``side``, in the points' own units.
 
     The port of sdvplot-js ``squarebin``. As in d3-hexbin's lattice a cell is centred on the origin, so centres are
     ``(i * side, j * side)``. Cells are half-open, ``[c - side/2, c + side/2)`` on each axis: a point exactly on an edge
     goes to the higher cell, because the cell index is JavaScript's ``Math.round(x / side)`` (halves round up, also
-    below zero: -5 with side 10 is in the cell at 0).
+    below zero: -5 with side 10 is in the cell at 0). With ``origin`` the centres are ``origin + (i * side, j * side)``.
 
     Args:
         x: The points' x values (a list, numpy array, or pandas / polars Series).
         y: The points' y values, one per x.
         side: The square's side, in the points' units (a finite number > 0).
         ids: Optional link ids, one per point; as in ``hexbin``. Default: the row number.
+        weights: Optional non-negative weights, one per point; as in ``hexbin``. Default: ``weight`` equals ``count``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates; as in ``hexbin``.
 
     Returns:
         list[Bin]: The non-empty cells in first-seen order, as ``hexbin`` returns them.
 
     Raises:
-        InputError: If ``side`` is not a finite number greater than 0.
-        ValueError: If ``x``, ``y`` and ``ids`` differ in length, or a coordinate is not a number.
+        InputError: If ``side`` is not a finite number greater than 0, or ``origin`` is not two finite numbers.
+        ValueError: If ``x``, ``y``, ``ids`` and ``weights`` differ in length, a coordinate is not a number, or a
+            weight is negative or not a number.
 
     Example:
         ::
@@ -259,11 +339,16 @@ def squarebin(x: Sequence[Any], y: Sequence[Any], *, side: float, ids: Sequence[
         binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
         sdvplot-js squarebin: https://sdvplot-js.sportsdataverse.org/
     """
-    return _bin("square", _positive("squarebin side", side), x, y, ids)
+    return _bin("square", _positive("squarebin side", side), x, y, ids, weights, _origin(origin))
 
 
 def binner(
-    *, shape: BinShape = "hex", radius: float | None = None, side: float | None = None, equal_area: bool = False
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    origin: tuple[float, float] = (0.0, 0.0),
 ) -> Binner:
     """One binning API for both lattices, the port of sdvplot-js ``binner``.
 
@@ -276,16 +361,18 @@ def binner(
         radius: The hexagon's circumradius; with ``shape="square"`` only together with ``equal_area=True``.
         side: The square's side (``shape="square"`` only).
         equal_area: With ``shape="square"`` and ``radius``: squares of the area of that hexagon.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates; as in ``hexbin``.
 
     Returns:
-        Binner: ``shape``, ``size`` (the circumradius, or the side), ``lattice`` (the resolved options:
-        ``{"radius": r}`` or ``{"shape": "square", "side": s}``), ``bins(x, y, *, ids=None)`` (as ``hexbin`` /
-        ``squarebin``) and ``cell_points(size=None)``.
+        Binner: ``shape``, ``size`` (the circumradius, or the side), ``origin``, ``lattice`` (the resolved options:
+        ``{"radius": r}`` or ``{"shape": "square", "side": s}``, plus ``"origin"`` when it is not (0, 0)),
+        ``bins(x, y, *, ids=None, weights=None)`` (as ``hexbin`` / ``squarebin``) and ``cell_points(size=None)``.
 
     Raises:
         InputError: If ``shape`` is not ``"hex"`` or ``"square"``, the size is missing or not a finite number > 0,
-            or the options do not name one lattice (a hexagon with ``side``, a square with both ``side`` and
-            ``radius``, or ``radius`` without ``equal_area=True``).
+            ``origin`` is not two finite numbers, or the options do not name one lattice (a hexagon with ``side``,
+            a square with both ``side`` and ``radius``, or ``radius`` without ``equal_area=True``).
 
     Example:
         ::
@@ -302,11 +389,13 @@ def binner(
     """
     if shape not in SHAPES:
         raise InputError(f'binner shape must be "hex" or "square", got {shape!r}')
+    o = _origin(origin)
+    at = {} if o == (0.0, 0.0) else {"origin": o}
     if shape == "hex":
         if side is not None or equal_area:
             raise InputError("binner hex takes radius only (side and equal_area are for shape='square')")
         r = _positive("binner radius", radius)
-        return Binner("hex", r, {"radius": r})
+        return Binner("hex", r, {"radius": r, **at}, o)
     if side is not None and radius is not None:
         raise InputError("binner square takes side, or radius with equal_area=True, not both")
     if side is None and not (radius is not None and equal_area):
@@ -314,7 +403,7 @@ def binner(
     s = _positive("binner side", side) if side is not None else _positive("binner radius", radius) * _EQUAL_AREA
     if not math.isfinite(s):  # a huge radius times sqrt(3 * sqrt(3) / 2) overflows to infinity
         raise InputError(f"binner radius {radius!r} gives an equal-area side that is not finite")
-    return Binner("square", s, {"shape": "square", "side": s})
+    return Binner("square", s, {"shape": "square", "side": s, **at}, o)
 
 
 def cell_points(shape: BinShape, size: float) -> list[tuple[float, float]]:
@@ -402,9 +491,42 @@ def _cells(
     side: float | None,
     equal_area: bool,
     ids: Sequence[Any] | None,
+    weights: Sequence[Any] | None = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    fill: float | None = None,
+    min_count: int = 1,
 ) -> tuple[list[Bin], list[list[tuple[float, float]]]]:
-    """What every adapter's ``add_bins`` draws: the bins and each one's polygon (its vertices, in data units)."""
-    b = binner(shape=shape, radius=radius, side=side, equal_area=equal_area)
-    bins = b.bins(x, y, ids=ids)
-    corners = b.cell_points()
+    """What every adapter's ``add_bins`` draws: the bins with at least ``min_count`` points and each one's polygon
+    (its vertices, in data units), at ``fill`` of the lattice cell's size (default ``FILL[shape]``)."""
+    b = binner(shape=shape, radius=radius, side=side, equal_area=equal_area, origin=origin)
+    f = _fill(b.shape, fill)
+    if isinstance(min_count, bool) or not isinstance(min_count, numbers.Integral) or min_count < 1:
+        raise InputError(f"add_bins min_count must be a whole number >= 1, got {min_count!r}")
+    bins = [c for c in b.bins(x, y, ids=ids, weights=weights) if c.count >= min_count]
+    corners = b.cell_points(b.size * f)
     return bins, [[(c.x + dx, c.y + dy) for dx, dy in corners] for c in bins]
+
+
+# add_bins' default ``fill``, the drawn cell's size as a fraction of the lattice cell's: squares drawn at full side
+# touch edge to edge and read as a grid, so they get a gap; full-radius hexagons are the tiled hexbin look of a
+# fill-encoded chart. sdvplotR and sdvplot-js (sizeCells) share these defaults.
+FILL: dict[str, float] = {"hex": 1.0, "square": 0.88}
+
+
+def _fill(shape: str, fill: Any) -> float:
+    """``add_bins``' ``fill`` checked: a number in (0, 1], or None for the shape's default."""
+    if fill is None:
+        return FILL[shape]
+    if isinstance(fill, bool) or not isinstance(fill, numbers.Real) or not 0 < float(fill) <= 1:
+        raise InputError(f"add_bins fill must be a number in (0, 1], got {fill!r}")
+    return float(fill)
+
+
+VALUES: tuple[str, ...] = ("count", "weight")
+
+
+def _values(bins: Sequence[Bin], value: str) -> list[float]:
+    """What an adapter's fill encodes, per bin: ``add_bins``' ``value="count"`` or ``"weight"``."""
+    if value not in VALUES:
+        raise InputError(f'add_bins value must be "count" or "weight", got {value!r}')
+    return [float(b.count) if value == "count" else b.weight for b in bins]

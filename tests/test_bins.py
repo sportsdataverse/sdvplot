@@ -8,6 +8,7 @@ import pytest
 
 import sdvplot
 from sdvplot import InputError, UnsupportedTargetError
+from sdvplot._bins import FILL
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "sdvplotjs_bins_bkn_2000.json").read_text())
 X, Y = FIXTURE["x_legacy"], FIXTURE["y_legacy"]
@@ -165,7 +166,8 @@ def test_matplotlib_add_bins(opts):
     assert [d[4] for d in drawn] == [c.ids for c in bins]
     coll = ax.collections[-1]
     assert list(coll.get_array()) == [d[3] for d in drawn]
-    corners = sdvplot.binner(**opts).cell_points()
+    b = sdvplot.binner(**opts)
+    corners = b.cell_points(b.size * FILL[b.shape])  # drawn at add_bins' default fill
     assert coll.get_paths()[0].vertices[: len(corners)].tolist() == [[bins[0].x + a, bins[0].y + b] for a, b in corners]
     fig.colorbar(coll, ax=ax)  # the drop-in for ax.hexbin's return value
     plt.close(fig)
@@ -277,11 +279,12 @@ def test_a_hexagon_in_altair_is_the_polygon_binner_draws():
 
 
 def test_add_bins_on_a_library_without_bins_is_an_unsupported_target():
-    pytest.importorskip("folium")
-    import folium
+    pytest.importorskip("great_tables")
+    import polars as pl
+    from great_tables import GT
 
     with pytest.raises(UnsupportedTargetError, match="has no add_bins"):
-        sdvplot.add_bins(folium.Map(), [0], [0], radius=1)
+        sdvplot.add_bins(GT(pl.DataFrame({"a": [1]})), [0], [0], radius=1)
 
 
 def test_ids_are_read_by_position_and_pandas_missing_values_are_skipped():
@@ -333,3 +336,331 @@ def test_plotly_add_bins_keeps_existing_shapes_and_draws_on_the_named_axes():
     assert {(s.xref, s.yref) for s in one.layout.shapes} == {("x", "y")}  # what add_shape set by default
     with pytest.raises(ValueError, match="xref must name a x axis"):
         sdvplot.add_bins(one, SMALL_X, SMALL_Y, radius=15, xref="y")
+
+
+# origin, weights, value, fill and min_count: the same names and meaning as sdvplotR's.
+HOOP = (25.0, 52.5)  # a basket's coordinates
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_origin_shifts_the_lattice_so_a_centre_falls_on_it(opts):
+    from sdvplot._bins import _js_str
+
+    ox, oy = HOOP
+    base = sdvplot.binner(**opts).bins(SMALL_X, SMALL_Y)
+    moved = sdvplot.binner(**opts, origin=HOOP).bins([v + ox for v in SMALL_X], [v + oy for v in SMALL_Y])
+    assert [c.rows for c in moved] == [c.rows for c in base]  # the points shifted with the lattice: the same cells
+    assert [(c.x, c.y) for c in moved] == pytest.approx([(c.x + ox, c.y + oy) for c in base])
+    assert [c.id for c in moved] == [f"{_js_str(c.x)},{_js_str(c.y)}" for c in moved]  # the absolute centre
+    hit = sdvplot.binner(**opts, origin=HOOP).bins([ox], [oy])
+    assert (hit[0].x, hit[0].y, hit[0].id) == (
+        ox,
+        oy,
+        "25,52.5",
+    )  # a point on the origin sits on a centre
+
+
+def test_origin_reaches_hexbin_squarebin_and_the_lattice_record():
+    assert sdvplot.hexbin([25], [52.5], radius=10, origin=HOOP)[0].id == "25,52.5"
+    assert sdvplot.squarebin([24], [50], side=10, origin=HOOP)[0].id == "25,52.5"
+    b = sdvplot.binner(shape="square", side=10, origin=HOOP)
+    assert b.origin == HOOP and b.lattice == {
+        "shape": "square",
+        "side": 10.0,
+        "origin": HOOP,
+    }
+    assert sdvplot.binner(radius=10).lattice == {"radius": 10.0}  # the default (0, 0) leaves the record as it was
+    for bad in [(1,), (1, 2, 3), (0, math.nan), (True, 0), "ab", None]:
+        with pytest.raises(InputError, match="origin"):
+            sdvplot.hexbin([0], [0], radius=10, origin=bad)
+
+
+def test_weights_sum_per_bin_and_default_to_the_count():
+    x, y = [0, 1, 2, 40, 41], [0, 1, 2, 40, 41]
+    bins = sdvplot.hexbin(x, y, radius=10, weights=[2, 3, 0.5, 1, 1])
+    assert [(c.count, c.weight) for c in bins] == [(3, 5.5), (2, 2.0)]
+    assert [(c.count, c.weight) for c in sdvplot.hexbin(x, y, radius=10)] == [
+        (3, 3.0),
+        (2, 2.0),
+    ]
+    # a missing or non-finite weight counts 0 and the point stays in its bin
+    bins = sdvplot.squarebin(x, y, side=10, weights=[None, math.nan, math.inf, 2, -math.inf])
+    assert [(c.count, c.weight) for c in bins] == [(3, 0.0), (2, 2.0)]
+    assert sdvplot.binner(radius=10).bins(x, y, weights=[1] * 5)[0].weight == 3.0
+    with pytest.raises(ValueError, match="weights must be >= 0"):
+        sdvplot.hexbin(x, y, radius=10, weights=[1, 1, -1, 1, 1])
+    with pytest.raises(ValueError, match="weights must be numbers"):
+        sdvplot.hexbin(x, y, radius=10, weights=[1, "2", 1, 1, 1])
+    with pytest.raises(ValueError, match="one value per point"):
+        sdvplot.hexbin(x, y, radius=10, weights=[1])
+
+
+def test_weights_are_read_by_position_and_pandas_na_counts_zero():
+    pd = pytest.importorskip("pandas")
+    df = pd.DataFrame({"x": [0.0, 1.0, 30.0], "y": [0.0, 1.0, 30.0], "pts": [2, 3, 3]}).iloc[::-1]
+    assert [c.weight for c in sdvplot.hexbin(df.x, df.y, radius=10, weights=df.pts)] == [3.0, 5.0]
+    w = pd.Series([2.0, None, 3.0], dtype="Float64")
+    assert [c.weight for c in sdvplot.hexbin([0, 1, 30], [0, 1, 30], radius=10, weights=w)] == [2.0, 3.0]
+
+
+WEIGHTS = [float(i % 3) for i in range(len(SMALL_X))]  # 0, 1 or 2 points a shot
+
+
+def _want_weights(opts):
+    return [c.weight for c in sdvplot.binner(**opts).bins(SMALL_X, SMALL_Y, weights=WEIGHTS)]
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_value_weight_colors_by_the_weights_in_every_web_and_mpl_adapter(opts):
+    want = _want_weights(opts)
+    assert want != [float(c[3]) for c in _want(opts)]  # the two encodings differ on these points
+    plt = pytest.importorskip("matplotlib.pyplot")
+    fig, ax = plt.subplots()
+    sdvplot.add_bins(ax, SMALL_X, SMALL_Y, **opts, weights=WEIGHTS, value="weight")
+    assert list(ax.collections[-1].get_array()) == want
+    plt.close(fig)
+    go = pytest.importorskip("plotly.graph_objects")
+    fig = sdvplot.add_bins(go.Figure(), SMALL_X, SMALL_Y, **opts, weights=WEIGHTS, value="weight")
+    assert list(fig.data[-1].marker.color) == want and fig.data[-1].marker.colorbar.title.text == "weight"
+    pytest.importorskip("bokeh")
+    from bokeh.plotting import figure
+
+    p = sdvplot.add_bins(figure(), SMALL_X, SMALL_Y, **opts, weights=WEIGHTS, value="weight")
+    glyph = next(r for r in p.renderers if r.name == "sdvplot_bins")
+    assert glyph.data_source.data["weight"] == want and glyph.glyph.fill_color.field == "weight"
+    alt = pytest.importorskip("altair")
+    chart = sdvplot.add_bins(
+        alt.Chart().mark_point(),
+        SMALL_X,
+        SMALL_Y,
+        **opts,
+        weights=WEIGHTS,
+        value="weight",
+    )
+    assert chart.layer[-1].to_dict()["encoding"]["color"]["field"] == "weight"
+    with pytest.raises(InputError, match="value"):
+        sdvplot.add_bins(go.Figure(), SMALL_X, SMALL_Y, **opts, value="sum")
+
+
+def test_default_fill_leaves_a_gap_between_squares_and_tiles_hexagons():
+    plt = pytest.importorskip("matplotlib.pyplot")
+    for opts, size in [
+        ({"shape": "square", "side": 15}, 15.0),
+        ({"shape": "hex", "radius": 15}, 30.0),
+    ]:
+        fig, ax = plt.subplots()
+        sdvplot.add_bins(ax, SMALL_X, SMALL_Y, **opts)
+        widths = {
+            round(float(p.vertices[:, 0].max() - p.vertices[:, 0].min()), 9) for p in ax.collections[-1].get_paths()
+        }
+        if opts["shape"] == "square":
+            assert max(widths) < size  # never the lattice cell's side: neighbours do not touch
+            assert widths == {round(0.88 * size, 9)}
+            sdvplot.add_bins(ax, SMALL_X, SMALL_Y, **opts, fill=1.0)
+            assert {round(float(p.vertices[:, 0].max() - p.vertices[:, 0].min()), 9) for p in ax.collections[-1].get_paths()} == {size}  # fmt: skip
+        else:
+            assert widths == {round(30 * math.sin(math.pi / 3), 9)}  # a full-radius hexagon's width
+        plt.close(fig)
+    for bad in [0, -0.5, 1.5, math.nan, True, "big"]:
+        with pytest.raises(InputError, match="fill"):
+            sdvplot.add_bins(plt.subplots()[1], SMALL_X, SMALL_Y, radius=15, fill=bad)
+    plt.close("all")
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_min_count_drops_sparse_cells_from_the_drawing_only(opts):
+    plt = pytest.importorskip("matplotlib.pyplot")
+    from sdvplot import matplotlib as sdv_mpl
+
+    every = sdvplot.binner(**opts).bins(SMALL_X, SMALL_Y)
+    assert any(c.count == 1 for c in every)
+    fig, ax = plt.subplots()
+    sdvplot.add_bins(ax, SMALL_X, SMALL_Y, **opts, min_count=2)
+    assert [d[:4] for d in sdv_mpl._drawn_bins(ax)] == [(c.id, c.x, c.y, c.count) for c in every if c.count >= 2]
+    assert sdvplot.binner(**opts).bins(SMALL_X, SMALL_Y) == every  # binning itself is unaffected
+    assert sum(c.count for c in every) == len(SMALL_X)  # single attempts still count in the totals
+    plt.close(fig)
+    for bad in [0, 1.5, True, None]:
+        with pytest.raises(InputError, match="min_count"):
+            sdvplot.add_bins(ax, SMALL_X, SMALL_Y, **opts, min_count=bad)
+
+
+# the new adapters: plotnine, HoloViews, folium and pygal draw the same cells
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_plotnine_add_bins_is_a_polygon_layer(opts):
+    pytest.importorskip("plotnine")
+    import pandas as pd
+    from plotnine import aes, geom_point, ggplot
+
+    from sdvplot import plotnine as sdv_p9
+
+    p = ggplot(pd.DataFrame({"x": SMALL_X, "y": SMALL_Y}), aes("x", "y")) + geom_point()
+    out = sdvplot.add_bins(p, SMALL_X, SMALL_Y, **opts, weights=WEIGHTS, value="weight", alpha=0.6)
+    assert out is not p and len(p.layers) == 1  # a copy, as plotnine's +
+    assert [d[:4] for d in sdv_p9._drawn_bins(out)] == _want(opts)
+    layer = out.layers[-1]
+    assert layer.mapping["fill"] == "weight" and layer.mapping["group"] == "bin_id"
+    assert layer.geom.data.drop_duplicates("bin_id")["weight"].tolist() == _want_weights(opts)
+    fig = out.draw()  # it renders
+    import matplotlib.pyplot as plt
+
+    plt.close(fig)
+    two = sdvplot.add_bins(p, SMALL_X, SMALL_Y, **opts, min_count=2)
+    assert all(d[3] >= 2 for d in sdv_p9._drawn_bins(two))
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_holoviews_add_bins_draws_the_bokeh_glyph_and_links_it(opts):
+    hv = pytest.importorskip("holoviews")
+    from bokeh.models import CustomJS
+
+    from sdvplot import holoviews as sdv_hv
+
+    hv.extension("bokeh")
+    shots = hv.Points({"x": SMALL_X, "y": SMALL_Y}, ["x", "y"])
+    plot = sdvplot.add_bins(shots * hv.Curve([(0, 0), (1, 1)]), SMALL_X, SMALL_Y, **opts, link=shots)
+    assert [d[:4] for d in sdv_hv._drawn_bins(plot)] == _want(opts)
+    fig = hv.render(plot, backend="bokeh")
+    cells = next(r for r in fig.renderers if r.name == "sdvplot_bins").data_source
+    callbacks = cells.selected.js_property_callbacks["change:indices"]
+    assert len(callbacks) == 1 and isinstance(callbacks[0], CustomJS)
+    points = callbacks[0].args["points"]
+    assert len(points.data["x"]) == len(SMALL_X)  # the rendered hv.Points source, linked both ways
+    assert points.selected.js_property_callbacks["change:indices"][0].args["cells"] is cells
+    with pytest.raises(ValueError, match="link must be an element of target"):
+        sdvplot.add_bins(shots, SMALL_X, SMALL_Y, **opts, link=hv.Points([(0, 0)]))
+    with pytest.raises(InputError, match="min_count"):  # checked when called, not swallowed by the render hook
+        sdvplot.add_bins(shots, SMALL_X, SMALL_Y, **opts, min_count=0)
+    with pytest.raises(InputError, match="value"):
+        sdvplot.add_bins(shots, SMALL_X, SMALL_Y, **opts, value="sum")
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_folium_add_bins_is_a_geojson_layer_in_degrees(opts):
+    folium = pytest.importorskip("folium")
+    from sdvplot import folium as sdv_folium
+
+    lon = [-74 + v / 1000 for v in SMALL_X]
+    lat = [40.8 + v / 1000 for v in SMALL_Y]
+    deg = {k: (v / 1000 if k in ("radius", "side") else v) for k, v in opts.items()}
+    m = folium.Map(location=[40.9, -74])
+    assert sdvplot.add_bins(m, lon, lat, **deg, origin=(-74, 40.8), value="weight", weights=WEIGHTS) is m
+    want = sdvplot.binner(**deg, origin=(-74, 40.8)).bins(lon, lat, weights=WEIGHTS)
+    assert [d[:4] for d in sdv_folium._drawn_bins(m)] == [(c.id, c.x, c.y, c.count) for c in want]
+    layer = next(c for c in m._children.values() if getattr(c, "_sdvplot_bins", False))
+    feature = layer.data["features"][0]
+    ring = feature["geometry"]["coordinates"][0]
+    assert ring[0] == ring[-1] and len(ring) == (7 if opts["shape"] == "hex" else 5)  # a closed [lon, lat] ring
+    assert feature["properties"]["weight"] == want[0].weight
+    assert layer.layer_name == "sdvplot bins" and "geo_json" in m.get_root().render()  # it renders
+    assert sdv_folium._drawn_marks(m) == []
+    with pytest.raises(ValueError, match="branca"):
+        sdvplot.add_bins(m, lon, lat, **deg, palette="no_such_map")
+
+
+@pytest.mark.parametrize("opts", SHAPES)
+def test_pygal_add_bins_draws_polygons_under_the_series(opts):
+    pygal = pytest.importorskip("pygal")
+    from sdvplot import pygal as sdv_pygal
+
+    chart = pygal.XY(stroke=False)
+    chart.add("shots", list(zip(SMALL_X, SMALL_Y, strict=True)))
+    assert sdvplot.add_bins(chart, SMALL_X, SMALL_Y, **opts, value="weight", weights=WEIGHTS) is chart
+    assert [d[:4] for d in sdv_pygal._drawn_bins(chart)] == _want(opts)
+    root = chart.render_tree()
+    plot = next(el for el in root.iter() if el.get("class") == "plot")
+    kids = [el.get("class") or "" for el in plot]
+    assert kids.index("sdvplot-bins") < next(i for i, k in enumerate(kids) if k.startswith("series"))
+    polygons = [el for el in root.iter() if el.get("data-sdvplot-bin") is not None]
+    assert len(polygons[0].get("points").split()) == (6 if opts["shape"] == "hex" else 4)
+    fills = {el.get("fill") for el in polygons}
+    assert {
+        "#deebf7",
+        "#08519c",
+    } <= fills  # the lowest and highest weight take the two ends of the ramp
+    assert sdv_pygal._drawn_marks(chart) == []
+    with pytest.raises(ValueError):
+        sdvplot.add_bins(chart, SMALL_X, SMALL_Y, **opts, low="not a color")
+
+
+# Plotly in static HTML: link_script
+
+
+def test_plotly_link_script_maps_each_cell_to_its_points_trace_rows():
+    go = pytest.importorskip("plotly.graph_objects")
+    from sdvplot.plotly import link_script
+
+    fig = go.Figure(go.Scatter(x=SMALL_X, y=SMALL_Y, mode="markers"))
+    fig.add_trace(go.Scatter(x=[0], y=[0]))  # another trace between them
+    sdvplot.add_bins(fig, SMALL_X, SMALL_Y, radius=15)
+    bins = sdvplot.hexbin(SMALL_X, SMALL_Y, radius=15)
+    script = link_script(fig)
+    assert "var BINS = 2, POINTS = 0;" in script and '"{plot_id}"' in script
+    assert f"var CELLS = {json.dumps([list(c.rows) for c in bins], separators=(',', ':'))};" in script
+    for event in (
+        "plotly_selected",
+        "plotly_deselect",
+        "plotly_hover",
+        "plotly_unhover",
+    ):
+        assert f'gd.on("{event}"' in script
+    html = fig.to_html(post_script=script, include_plotlyjs=False)
+    assert 'document.getElementById("{plot_id}")' not in html and "var BINS = 2" in html  # plotly filled the id
+    # ids: a points trace's customdata are the ids add_bins was given, matched as strings
+    sid = [f"s{i}" for i in range(len(SMALL_X))][::-1]
+    fig2 = go.Figure(go.Scatter(x=SMALL_X[::-1], y=SMALL_Y[::-1], customdata=sid, mode="markers"))
+    sdvplot.add_bins(fig2, SMALL_X, SMALL_Y, radius=15, ids=[f"s{i}" for i in range(len(SMALL_X))])
+    n = len(SMALL_X)
+    cells = [sorted(n - 1 - r for r in c.rows) for c in bins]  # the points trace is reversed
+    assert f"var CELLS = {json.dumps(cells, separators=(',', ':'))};" in link_script(fig2)
+    with pytest.raises(ValueError, match="no add_bins trace"):
+        link_script(go.Figure(go.Scatter(x=[0], y=[0])))
+    with pytest.raises(ValueError, match="points must be"):
+        link_script(fig, points=2)
+    with pytest.raises(ValueError, match="bins must be"):
+        link_script(fig, bins=0)
+
+
+def test_plotly_link_script_behaves_in_a_js_engine():
+    """Run the script on a fake plotly div in Node: a cell selects its points, a point its cells, hover highlights."""
+    import shutil
+    import subprocess
+
+    go = pytest.importorskip("plotly.graph_objects")
+    from sdvplot.plotly import link_script
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("needs node")
+    x, y = [0, 1, 40, 41, 80], [0, 1, 40, 41, 80]
+    fig = go.Figure(go.Scatter(x=x, y=y, mode="markers"))
+    sdvplot.add_bins(fig, x, y, radius=10)  # cells [0, 1], [2, 3], [4]
+    script = link_script(fig).replace("{plot_id}", "plot")
+    harness = f"""
+const handlers = {{}}, calls = [];
+const gd = {{ on: (name, fn) => {{ handlers[name] = fn; }} }};
+global.document = {{ getElementById: (id) => (id === "plot" ? gd : null) }};
+global.Plotly = {{ restyle: (g, update, traces) => calls.push([update.selectedpoints[0], traces]) }};
+{script}
+const out = [];
+handlers.plotly_selected({{ points: [{{ curveNumber: 1, pointIndex: 1 }}] }}); out.push(calls.splice(0));
+handlers.plotly_selected({{ points: [{{ curveNumber: 0, pointIndex: 4 }}, {{ curveNumber: 0, pointIndex: 0 }}] }});
+out.push(calls.splice(0));
+handlers.plotly_hover({{ points: [{{ curveNumber: 1, pointIndex: 0 }}] }}); out.push(calls.splice(0));
+handlers.plotly_unhover({{ points: [{{ curveNumber: 1, pointIndex: 0 }}] }}); out.push(calls.splice(0));
+handlers.plotly_deselect(); out.push(calls.splice(0));
+console.log(JSON.stringify(out));
+"""
+    res = subprocess.run([node, "-e", harness], capture_output=True, text=True, check=True)
+    assert json.loads(res.stdout) == [
+        [[[1], [1]], [[2, 3], [0]]],  # cell 1 selected: its points 2 and 3
+        [
+            [[0, 2], [1]],
+            [[4, 0], [0]],
+        ],  # points 4 and 0 selected: the cells holding them
+        [[[0, 1], [0]]],  # hovering cell 0 highlights its points
+        [[[4, 0], [0]]],  # leaving it restores the chosen points
+        [[None, [1]], [None, [0]]],  # double-click clears both
+    ]

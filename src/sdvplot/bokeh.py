@@ -15,9 +15,9 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra
 with requires_extra("bokeh"):
     from bokeh.models import ColumnDataSource
 
-from sdvplot._bins import _cells
+from sdvplot._bins import _cells, _values
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._types import BinShape
+from sdvplot._types import BinShape, BinValue
 from sdvplot._web import aspect, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
@@ -358,16 +358,21 @@ def add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
     palette: Any = "Viridis256",
     alpha: float = 1.0,
     link: Any = None,
 ) -> Any:
-    """Draw hexagonal or square bins, colored by count, as one ``patches`` glyph on a Bokeh figure.
+    """Draw hexagonal or square bins, colored by count or weight, as one ``patches`` glyph on a Bokeh figure.
 
     The cells are ``sdvplot.binner``'s, in data units. The glyph (named ``"sdvplot_bins"``) has its own
     ``ColumnDataSource``, one row per cell: ``xs``/``ys`` (the polygon), ``x``/``y`` (the centre), ``count``,
-    ``bin_id`` (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``point_ids`` (the ids of its points) and ``rows``
-    (their row numbers); a ``linear_cmap`` on ``count`` colors it.
+    ``weight``, ``bin_id`` (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``point_ids`` (the ids of its points)
+    and ``rows`` (their row numbers); a ``linear_cmap`` on ``value`` (``count`` or ``weight``) colors it.
 
     Linking: pass the points' ``ColumnDataSource`` (row ``i`` is the point at ``x[i]``, ``y[i]``) as ``link``, and
     two ``CustomJS`` callbacks tie the selections in the browser, with no server: selecting cells (with a ``tap`` or
@@ -383,6 +388,15 @@ def add_bins(
         side: The square's side (``shape="square"``).
         equal_area: Squares of a radius-``radius`` hexagon's area.
         ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
         palette: A Bokeh palette name or list of colors (default ``"Viridis256"``), fewest to most points.
         alpha: The cells' fill opacity, 0 to 1.
         link: Optional ``ColumnDataSource`` of the same points, in the same order, to link selections with.
@@ -391,7 +405,9 @@ def add_bins(
         figure: ``target``, with the glyph added.
 
     Raises:
-        InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``alpha`` is outside [0, 1].
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside
+            [0, 1].
         UnsupportedTargetError: If ``target`` is not a ``bokeh.plotting`` figure.
         TypeError: If ``link`` is not a ``ColumnDataSource``.
         ValueError: If ``x``, ``y`` and ``ids`` differ in length, or ``link`` does not hold one row per point.
@@ -420,16 +436,30 @@ def add_bins(
     fill_alpha = check_alpha(alpha)
     if link is not None and not isinstance(link, ColumnDataSource):
         raise TypeError(f"link must be the points' ColumnDataSource, got {type(link).__name__}")
-    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=ids,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    values = _values(bins, value)
     if link is not None and len(next(iter(link.data.values()), ())) != len(x):
         raise ValueError(f"link must hold one row per point ({len(x)}), in the order of x and y")
     counts = [b.count for b in bins]
     cells = ColumnDataSource({
         "xs": [[p[0] for p in poly] for poly in polygons], "ys": [[p[1] for p in poly] for poly in polygons],
-        "x": [b.x for b in bins], "y": [b.y for b in bins], "count": counts, "bin_id": [b.id for b in bins],
+        "x": [b.x for b in bins], "y": [b.y for b in bins], "count": counts, "weight": [b.weight for b in bins],
+        "bin_id": [b.id for b in bins],
         "point_ids": [list(b.ids) for b in bins], "rows": [list(b.rows) for b in bins],
     })  # fmt: skip
-    color = linear_cmap("count", palette, min(counts, default=0), max(counts, default=1))
+    color = linear_cmap(value, palette, min(values, default=0), max(values, default=1))
     fig.patches("xs", "ys", source=cells, fill_color=color, fill_alpha=fill_alpha, line_color="white",
                 line_width=0.5, name="sdvplot_bins")  # fmt: skip
     if link is not None:

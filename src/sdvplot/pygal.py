@@ -20,18 +20,20 @@ with requires_extra("pygal"):
     import pygal
     from pygal.style import Style
 
+from sdvplot._bins import _cells, _values
 from sdvplot._colors import team_colors
 from sdvplot._placement import check_alpha, check_height, place
 from sdvplot._resolve import _unpack
-from sdvplot._types import IdSystem, Which
+from sdvplot._types import BinShape, BinValue, IdSystem, Which
 from sdvplot._web import aspect, image_src, present
 
 _SUPPORTS_AXIS_LOGOS = False
 _SUPPORTED = "pygal.XY, DateTimeLine, DateLine, TimeLine or TimeDeltaLine"
 _HREF = "{http://www.w3.org/1999/xlink}href"  # pygal writes its own links as xlink:href (SVG 1.1 renderers need it)
 _MARK = "data-sdvplot-mark"  # on each mark <image>: its index in the chart's _sdvplot_marks
+_BIN = "data-sdvplot-bin"  # on each bin <polygon>: its index in the chart's _sdvplot_bins
 
-__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos", "team_style"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos", "team_style"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -79,6 +81,52 @@ class _MarksFilter:
             }  # fmt: skip
             overlay.append(overlay.makeelement("image", attrs))
         return root
+
+
+class _BinsFilter:
+    """The xml filter of one chart's bins: polygons in the plot group, under pygal's series and the marks.
+
+    The polygons go in a nested ``<svg>`` the size of the plot area, which clips a cell at the plot edge (an ``<svg>``
+    clips to its viewport), inserted before the first series group so pygal's dots and lines draw over them.
+    """
+
+    def __init__(self, chart: Any) -> None:
+        self.chart = chart
+
+    def __call__(self, root: Any) -> Any:
+        chart = self.chart
+        view = getattr(chart, "view", None)
+        plot = next((el for el in root.iter() if el.get("class") == "plot"), None)
+        if view is None or plot is None:
+            return root
+        ident = lambda v: v  # noqa: E731
+        adapt = getattr(chart, "_adapt", None) or ident
+        x_adapt = getattr(chart, "_x_adapt", None) or ident
+        box = plot.makeelement("svg", {"x": "0", "y": "0", "width": f"{view.width:.3f}", "height": f"{view.height:.3f}",
+                                       "class": "sdvplot-bins"})  # fmt: skip
+        for index, (b, poly, color, alpha) in enumerate(vars(chart).get("_sdvplot_bins", ())):
+            pts = [view((adapt(x_adapt(px)), adapt(py))) for px, py in poly]
+            if any(p is None or p[0] is None or p[1] is None for p in pts):
+                continue
+            cell = box.makeelement("polygon", {
+                "points": " ".join(f"{px:.3f},{py:.3f}" for px, py in pts), "fill": color, "fill-opacity": f"{alpha:g}",
+                "stroke": "white", "stroke-width": "0.5", _BIN: str(index),
+            })  # fmt: skip
+            title = cell.makeelement("title", {})
+            title.text = f"{b.id}: count {b.count}, weight {b.weight:g}"
+            cell.append(title)
+            box.append(cell)
+        series = next((i for i, el in enumerate(plot) if (el.get("class") or "").startswith("series")), len(plot))
+        plot.insert(series, box)
+        return root
+
+
+def _ramp(low: str, high: str, t: float) -> str:
+    """The color ``t`` (0 to 1) of the way from ``low`` to ``high``, in RGB, as ``#rrggbb``."""
+    from PIL import ImageColor
+
+    lo, hi = ImageColor.getrgb(low)[:3], ImageColor.getrgb(high)[:3]
+    return "#" + "".join(f"{round(a + (b - a) * t):02x}" for a, b in zip(lo, hi, strict=True))
 
 
 def _add(
@@ -401,6 +449,107 @@ def team_style(
     return Style(colors=tuple(c or defaults[i % len(defaults)] for i, c in enumerate(colors)), **style_kwargs)
 
 
+def add_bins(
+    chart: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
+    low: str = "#deebf7",
+    high: str = "#08519c",
+    opacity: float = 1.0,
+) -> Any:
+    """Hexagonal or square bins, colored by count or weight, as SVG polygons on a pygal XY chart.
+
+    As the marks: ``add_bins`` records the cells on the chart and one xml filter (``chart.add_xml_filter``) draws them
+    at each render, through ``chart.view``, pygal's own projection, so each vertex sits where pygal would draw that
+    point. The cells go under pygal's series, clipped to the plot area; each is a ``<polygon>`` with a ``<title>``
+    (its ``bin_id``, count and weight, the browser's hover text). The fill runs from ``low`` (the lowest value) to
+    ``high`` (the highest), in RGB. Linking: none, pygal's SVG is static.
+
+    Args:
+        chart: A pygal XY-family chart (``pygal.XY``, ``DateTimeLine``, ...).
+        x: The points' x values, in the chart's x units.
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
+        low: The color of the lowest value (default ``"#deebf7"``), any CSS color.
+        high: The color of the highest value (default ``"#08519c"``).
+        opacity: The cells' fill opacity, 0 to 1.
+
+    Returns:
+        chart: ``chart``, with the cells recorded.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside
+            [0, 1].
+        UnsupportedTargetError: If ``chart`` is not an XY-family chart.
+        ValueError: If ``x``, ``y`` and ``weights`` differ in length, or ``low`` / ``high`` is not a color.
+
+    Example:
+        ::
+
+            import pygal
+            from sdvplot.pygal import add_bins
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            x, y = [0, -1, -44], [0, 7, 252]
+            chart = pygal.XY(stroke=False)
+            chart.add("shots", list(zip(x, y)))
+            add_bins(chart, x, y, shape="square", side=15, opacity=0.7)
+            svg = chart.render()
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        pygal xml filters: https://www.pygal.org/en/stable/documentation/output.html
+    """
+    _check_chart(chart)
+    a = check_alpha(opacity)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=None,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    vals = _values(bins, value)
+    lo, hi = min(vals, default=0.0), max(vals, default=0.0)
+    _ramp(low, high, 0)  # checks both colors now, not at render
+    cells = [(b, poly, _ramp(low, high, (v - lo) / (hi - lo) if hi > lo else 0.0), a)
+             for b, poly, v in zip(bins, polygons, vals, strict=True)]  # fmt: skip
+    state = vars(chart)
+    state["_sdvplot_bins"] = [*state.get("_sdvplot_bins", ()), *cells]  # a new list, never one another chart holds
+    if not any(isinstance(f, _BinsFilter) and f.chart is chart for f in chart.xml_filters):
+        chart.add_xml_filter(_BinsFilter(chart))
+    return chart
+
+
 def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     """Test hook: render the chart, then (team_id, x, y, height, url) for each mark image in the SVG, in draw order;
     height = the image's height attribute / the plot area's height."""
@@ -415,4 +564,16 @@ def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     for el in images:
         team_id, x, y, _, url = recorded[int(el.get(_MARK))][:5]
         out.append((team_id, x, y, float(el.get("height")) / plot_h, url))
+    return out
+
+
+def _drawn_bins(chart: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: render the chart, then (bin id, x, y, count, ()) for each cell polygon in the SVG, in draw order."""
+    recorded = vars(chart).get("_sdvplot_bins", ())
+    root = chart.render_tree()
+    out: list[tuple[str, float, float, int, tuple[str, ...]]] = []
+    for el in root.iter():
+        if el.get(_BIN) is not None:
+            b = recorded[int(el.get(_BIN))][0]
+            out.append((b.id, b.x, b.y, b.count, ()))
     return out

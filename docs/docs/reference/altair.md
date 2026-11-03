@@ -10,7 +10,7 @@ The Altair adapter: logos, wordmarks and headshots as a native Vega-Lite image l
 
 | Name | What it is |
 |---|---|
-| [add_bins](#add_bins) | Layer hexagonal or square bins, colored by count, onto an Altair chart. |
+| [add_bins](#add_bins) | Layer hexagonal or square bins, colored by count or weight, onto an Altair chart. |
 | [add_headshots](#add_headshots) | Layer each player's headshot, centred on its (x, y) point, onto an Altair chart. |
 | [add_logos](#add_logos) | Layer each team's logo, centred on its (x, y) point, onto an Altair chart. |
 | [add_wordmarks](#add_wordmarks) | Layer each team's wordmark, centred on its (x, y) point, onto an Altair chart. |
@@ -31,6 +31,11 @@ add_bins(
     radius: float | None = None,
     side: float | None = None,
     equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
     scheme: str = 'viridis',
     opacity: float = 1.0,
     link: Any = None,
@@ -39,13 +44,13 @@ add_bins(
 
 </div>
 
-Layer hexagonal or square bins, colored by count, onto an Altair chart.
+Layer hexagonal or square bins, colored by count or weight, onto an Altair chart.
 
 The cells are ``sdvplot.binner``'s, in data units, drawn as one ``area`` mark split by cell (``detail``): a
 pointy-top hexagon and a square are both x-monotone, so each is the band between its top and bottom edges, on the
 chart's own x and y scales. The layer is named ``"sdvplot_bins"``; its rows carry ``bin_id`` (``"x,y"``, as
-sdvplot-js stamps ``data-sdv-id``) and ``count``, and it adds a point selection param named ``"sdvplot_bins"`` on
-``bin_id`` (click a cell; shift-click adds).
+sdvplot-js stamps ``data-sdv-id``), ``count`` and ``weight``, and it adds a point selection param named
+``"sdvplot_bins"`` on ``bin_id`` (click a cell; shift-click adds).
 
 Linking: Vega-Lite links views through a shared field, and the field is ``bin_id``: give the points' data a
 ``bin_id`` column with ``sdvplot.bin_ids`` (on the same ``x``/``y``), then encode them with
@@ -65,7 +70,12 @@ cells hold no point ids, so a large chart stays small.
 | `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
 | `side` | `float \| None` | The square's side (``shape="square"``). |
 | `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
-| `scheme` | `str` | A Vega color scheme for the counts (default ``"viridis"``). |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the color encodes: ``"count"`` (the default) or ``"weight"`` (the sum of ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
+| `scheme` | `str` | A Vega color scheme for the values (default ``"viridis"``). |
 | `opacity` | `float` | The cells' opacity, 0 to 1; a cell outside the selection is drawn at a quarter of it. |
 | `link` | `Any` | Optional selection param of the points' layer, on ``fields=["bin_id"]``, that picks the cells to show. |
 
@@ -75,7 +85,7 @@ cells hold no point ids, so a large chart stays small.
 
 ### Raises
 
-- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside [0, 1].
 - `UnsupportedTargetError`: If ``target`` is not an Altair Chart or LayerChart.
 - `ValueError`: If ``x`` and ``y`` differ in length, or ``target`` is a facet, repeat or concat chart.
 

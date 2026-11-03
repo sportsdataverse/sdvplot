@@ -15,6 +15,8 @@ squarebin(
     *,
     side: float,
     ids: collections.abc.Sequence[Any] | None = None,
+    weights: collections.abc.Sequence[Any] | None = None,
+    origin: tuple[float, float] = (0.0, 0.0),
 ) -> list[sdvplot._bins.Bin]
 ```
 
@@ -25,7 +27,7 @@ Bin points into axis-aligned squares of side ``side``, in the points' own units.
 The port of sdvplot-js ``squarebin``. As in d3-hexbin's lattice a cell is centred on the origin, so centres are
 ``(i * side, j * side)``. Cells are half-open, ``[c - side/2, c + side/2)`` on each axis: a point exactly on an edge
 goes to the higher cell, because the cell index is JavaScript's ``Math.round(x / side)`` (halves round up, also
-below zero: -5 with side 10 is in the cell at 0).
+below zero: -5 with side 10 is in the cell at 0). With ``origin`` the centres are ``origin + (i * side, j * side)``.
 
 ## Arguments
 
@@ -35,6 +37,8 @@ below zero: -5 with side 10 is in the cell at 0).
 | `y` | `collections.abc.Sequence[Any]` | The points' y values, one per x. |
 | `side` | `float` | The square's side, in the points' units (a finite number > 0). |
 | `ids` | `collections.abc.Sequence[Any] \| None` | Optional link ids, one per point; as in ``hexbin``. Default: the row number. |
+| `weights` | `collections.abc.Sequence[Any] \| None` | Optional non-negative weights, one per point; as in ``hexbin``. Default: ``weight`` equals ``count``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates; as in ``hexbin``. |
 
 ## Returns
 
@@ -42,8 +46,8 @@ below zero: -5 with side 10 is in the cell at 0).
 
 ## Raises
 
-- `InputError`: If ``side`` is not a finite number greater than 0.
-- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or a coordinate is not a number.
+- `InputError`: If ``side`` is not a finite number greater than 0, or ``origin`` is not two finite numbers.
+- `ValueError`: If ``x``, ``y``, ``ids`` and ``weights`` differ in length, a coordinate is not a number, or a weight is negative or not a number.
 
 ## Example
 
