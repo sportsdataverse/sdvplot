@@ -856,7 +856,9 @@ def link_script(target: Any, *, points: int = 0, bins: int | None = None) -> str
         k = str(r)
         if custom is not None:
             c = custom[r]
-            k = _to_id(c[0] if isinstance(c, (list, tuple)) and c else c)
+            if isinstance(c, (list, tuple)) or getattr(c, "ndim", 0) >= 1:  # a row of 2-D customdata (Plotly Express)
+                c = c[0] if len(c) else None
+            k = _to_id(c)
         keys.setdefault(k, []).append(r)
     cells = [sorted(r for i in dict.fromkeys(ids) for r in keys.get(str(i), ())) for ids in data[b].customdata or ()]
     return _LINK_JS % {"bins": b, "points": points, "cells": json.dumps(cells, separators=(",", ":"))}

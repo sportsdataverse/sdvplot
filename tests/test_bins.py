@@ -615,6 +615,13 @@ def test_plotly_link_script_maps_each_cell_to_its_points_trace_rows():
     n = len(SMALL_X)
     cells = [sorted(n - 1 - r for r in c.rows) for c in bins]  # the points trace is reversed
     assert f"var CELLS = {json.dumps(cells, separators=(',', ':'))};" in link_script(fig2)
+    # Plotly Express stores custom_data as a 2-D array: the first column is the id, whatever follows it
+    np = pytest.importorskip("numpy")
+    for extra in ((), ([0.5] * n,)):
+        custom = np.column_stack([sid, *extra]) if extra else np.array(sid).reshape(-1, 1)
+        fig3 = go.Figure(go.Scatter(x=SMALL_X[::-1], y=SMALL_Y[::-1], customdata=custom, mode="markers"))
+        sdvplot.add_bins(fig3, SMALL_X, SMALL_Y, radius=15, ids=[f"s{i}" for i in range(n)])
+        assert f"var CELLS = {json.dumps(cells, separators=(',', ':'))};" in link_script(fig3)
     with pytest.raises(ValueError, match="no add_bins trace"):
         link_script(go.Figure(go.Scatter(x=[0], y=[0])))
     with pytest.raises(ValueError, match="points must be"):
