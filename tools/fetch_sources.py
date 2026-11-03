@@ -691,8 +691,9 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
     write("manifest_conferences", manifest_conference_rows(manifest), CONFERENCE_MARK_COLUMNS)
-    soccer = list(csv.DictReader(io.StringIO(_get(s, SOCCER_COMPETITIONS_URL).text)))
-    write("soccer_competitions", soccer, SOCCER_COMPETITION_COLUMNS)
+    if not args.teams_only:  # --teams-only refreshes the manifest, ESPN and F1 team snapshots only
+        soccer = list(csv.DictReader(io.StringIO(_get(s, SOCCER_COMPETITIONS_URL).text)))
+        write("soccer_competitions", soccer, SOCCER_COMPETITION_COLUMNS)
 
     espn: list[dict] = []
     hosts = list(ESPN_HOSTS)  # R7: site.web.* may 403 from some networks; fall back to site.api.*
@@ -821,11 +822,14 @@ def f1_team_rows(
     if unknown:
         raise RuntimeError(f"f1: OpenF1 teams with no constructor_id in OPENF1_CONSTRUCTORS: {unknown}")
     year = {m["meeting_key"]: m["year"] for m in meetings}
+    orphans = sorted({d["meeting_key"] for d in drivers if d.get("team_name")} - set(year))
+    if orphans:  # an unknown meeting would sort as year 0 and let an older session's color win
+        raise RuntimeError(f"f1: OpenF1 driver rows for meetings missing from /meetings: {orphans}")
     color: dict[str, tuple] = {}
     for d in drivers:
         if not d.get("team_name") or not _hex6(d.get("team_colour")):
             continue
-        cid, when = OPENF1_CONSTRUCTORS[d["team_name"]], (year.get(d["meeting_key"], 0), d["session_key"])
+        cid, when = OPENF1_CONSTRUCTORS[d["team_name"]], (year[d["meeting_key"]], d["session_key"])
         if cid not in color or when > color[cid][0]:
             color[cid] = (when, _hex6(d["team_colour"]))
     return [{"team_id": i, "name": names[i], "color": color[i][1] if i in color else ""} for i in ids]

@@ -577,3 +577,5 @@ def test_f1_teams_take_the_latest_jolpica_name_and_openf1_color_through_the_cura
         fs.f1_team_rows(archived, seasons, [*drivers, {**drivers[0], "team_name": "Andretti"}], meetings)
     with pytest.raises(RuntimeError, match=r"no Jolpica constructor for \['rb'\]"):
         fs.f1_team_rows(archived, {2019: seasons[2019]}, drivers, meetings)
+    with pytest.raises(RuntimeError, match=r"meetings missing from /meetings: \[3\]"):  # it would sort as year 0
+        fs.f1_team_rows(archived, seasons, [*drivers, {**drivers[0], "meeting_key": 3}], meetings)
