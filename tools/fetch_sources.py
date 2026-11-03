@@ -983,23 +983,25 @@ def fetch_crosswalks(s: requests.Session, write: Callable[[str, list[dict], list
 
 def team_alias_rows(league: str, a: pl.DataFrame) -> list[dict]:
     """provider_ids.csv rows from one league's team_aliases: per TEAM_ALIAS_SOURCES source and id kind (``team`` or
-    ``school``; ``name`` for a name-only source), one row per (value, team) spanning the seasons its windows cover. An
-    undated window (CBS college football) leaves both seasons blank."""
+    ``school``; ``name`` for a name-only source), one row per (value, team, window). Windows stay apart, so a value two
+    teams took turns holding is not read as an overlap; an undated window (CBS college football) leaves both seasons
+    blank."""
     import polars as pl
 
-    a = a.filter(pl.col("source").is_in(TEAM_ALIAS_SOURCES)).select(
-        "source",
-        pl.coalesce("source_id", "value").alias("value"),
-        pl.col("team_id"),
-        pl.when(pl.col("source_id").is_null()).then(pl.col("name_kind")).otherwise(pl.col("id_kind")).alias("kind"),
-        "valid_from",
-        "valid_to",
+    return (
+        a.filter(pl.col("source").is_in(TEAM_ALIAS_SOURCES))
+        .select(
+            pl.lit(league).alias("league"),
+            pl.col("source").alias("id_system"),
+            pl.when(pl.col("source_id").is_null()).then(pl.col("name_kind")).otherwise(pl.col("id_kind")).alias("kind"),
+            pl.coalesce("source_id", "value").alias("value"),
+            "team_id",
+            pl.col("valid_from").alias("first_season"),
+            pl.col("valid_to").alias("last_season"),
+        )
+        .unique(maintain_order=True)  # an id with a name and an abbreviation is two team_aliases rows
+        .to_dicts()
     )
-    a = a.unpivot(["valid_from", "valid_to"], index=["source", "value", "team_id", "kind"], value_name="season")
-    rows: list[dict] = []
-    for (source, kind), df in a.group_by("source", "kind", maintain_order=True):
-        rows += provider_id_rows(league, str(source), str(kind), df)
-    return rows
 
 
 if __name__ == "__main__":

@@ -158,7 +158,8 @@ def test_provider_crosswalk_ids():
 
 
 def test_team_alias_ids():
-    # data-raw/provider_ids.csv, from sdv-reference-data's {league}_team_aliases (the {league}_groups releases)
+    # data-raw/provider_ids.csv, from sdv-reference-data's {league}_team_aliases (the {league}_groups releases): one
+    # alias per id and window
     systems = ["fox", "yahoo", "cbs", "sports247", "on3", "kenpom", "torvik"]
     counts = dict(
         _index.alias_table()
@@ -169,11 +170,11 @@ def test_team_alias_ids():
     )
     assert counts == {
         "nfl/fox": 32, "nfl/yahoo": 32, "nfl/cbs": 32,
-        "cfb/fox": 439, "cfb/yahoo": 320, "cfb/cbs": 312, "cfb/sports247": 532, "cfb/on3": 151,
+        "cfb/fox": 453, "cfb/yahoo": 599, "cfb/cbs": 312, "cfb/sports247": 532, "cfb/on3": 151,
         "nba/fox": 31, "nba/yahoo": 30, "nba/cbs": 30,
         "wnba/fox": 15, "wnba/yahoo": 15,
-        "mbb/fox": 361, "mbb/yahoo": 320, "mbb/sports247": 730, "mbb/on3": 344, "mbb/kenpom": 389, "mbb/torvik": 359,
-        "wbb/fox": 358, "wbb/yahoo": 309, "wbb/sports247": 363, "wbb/on3": 342, "wbb/torvik": 359,
+        "mbb/fox": 392, "mbb/yahoo": 320, "mbb/sports247": 730, "mbb/on3": 344, "mbb/kenpom": 391, "mbb/torvik": 369,
+        "wbb/fox": 371, "wbb/yahoo": 309, "wbb/sports247": 363, "wbb/on3": 342, "wbb/torvik": 359,
         "mlb/fox": 30, "mlb/yahoo": 30, "mlb/cbs": 30,
         "nhl/fox": 32, "nhl/yahoo": 32, "nhl/cbs": 32,
     }  # fmt: skip

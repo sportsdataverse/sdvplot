@@ -158,3 +158,5 @@ def test_provider_ids_map_to_the_espn_athlete_through_player_aliases(cache, monk
     assert _headshots.headshot_url(2544, "nba", id_system="fox") is None  # a source's ids are its own
     with pytest.raises(ValueError, match=r"'kenpom' player ids map to ESPN athletes in \['mbb'\] only"):
         _headshots.headshot_url(1, "nba", id_system="kenpom")
+    with pytest.raises(ValueError, match="id_system must be"):  # unhashable: still an InputError, not a TypeError
+        _headshots.headshot_url(1, "nba", id_system=[])  # type: ignore[arg-type]

@@ -92,6 +92,7 @@ PLAYER_ALIASES_URL = (
     "{league}_groups/{league}_player_aliases.parquet"
 )
 PLAYER_ALIAS_COLUMNS = ["source", "source_player_id", "athlete_id"]
+PROVIDER_ID_SYSTEMS = tuple(dict.fromkeys(s for v in PLAYER_ALIAS_SOURCES.values() for s in v))
 
 
 @functools.lru_cache(maxsize=1)  # keyed by mtime so a refreshed table is read again; only the current file matters
@@ -214,7 +215,7 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             )
         if league == "nfl":
             id_system = "gsis"  # the NFL's league id is the gsis id
-    elif id_system in {s for v in PLAYER_ALIAS_SOURCES.values() for s in v}:
+    elif id_system in PROVIDER_ID_SYSTEMS:  # a tuple: an unhashable id_system still reaches the InputError below
         if id_system not in PLAYER_ALIAS_SOURCES.get(league, ()):
             with_ids = [lg for lg, v in PLAYER_ALIAS_SOURCES.items() if id_system in v]
             raise InputError(f"id_system={id_system!r} player ids map to ESPN athletes in {with_ids} only")

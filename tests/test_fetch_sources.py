@@ -600,7 +600,9 @@ def test_team_alias_rows_keep_ids_and_kenpom_names_and_span_the_windows():
     a = pl.DataFrame(
         [
             ("194", "fox", "25", "team", "name", "OHIO STATE", 2014, 2016),
-            ("194", "fox", "25", "team", "abbreviation", "OSU", 2019, 2026),  # a gap: one row, 2014-2026
+            ("194", "fox", "25", "team", "abbreviation", "OSU", 2014, 2016),  # one id, two names: one row
+            ("194", "fox", "25", "team", "name", "OHIO STATE", 2019, 2026),  # a gap: its own window
+            ("30", "fox", "32", "team", "name", "LA CLIPPERS", 2015, 2027),  # 32 was another team's in 2002
             ("103", "kenpom", None, "team", "name", "Boston College", 2002, 2026),
             ("99", "cbs", "1123361", "team", None, None, None, None),  # undated curated map
             ("1", "nba_stats", "1610612737", "team", None, None, 1997, 2027),  # reaches the index as nba_api
@@ -615,6 +617,8 @@ def test_team_alias_rows_keep_ids_and_kenpom_names_and_span_the_windows():
     )
     assert got == [
         ("cbs", "team", "1123361", "99", None, None),
-        ("fox", "team", "25", "194", 2014, 2026),
+        ("fox", "team", "25", "194", 2014, 2016),
+        ("fox", "team", "25", "194", 2019, 2026),
+        ("fox", "team", "32", "30", 2015, 2027),
         ("kenpom", "name", "Boston College", "103", 2002, 2026),
     ]
