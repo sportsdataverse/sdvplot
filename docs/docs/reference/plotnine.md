@@ -10,6 +10,7 @@ The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | A copy of the plot with hexagonal or square bins, filled by count or weight, as one ``geom_polygon`` layer. |
 | [add_headshots](#add_headshots) | A copy of the plot with each player's headshot at its (x, y). |
 | [add_logos](#add_logos) | A copy of the plot with each team's logo at its (x, y); the front door's plotnine adapter. |
 | [add_wordmarks](#add_wordmarks) | A copy of the plot with each team's wordmark at its (x, y). |
@@ -25,6 +26,88 @@ The plotnine adapter: logo, wordmark, headshot and image geoms, axis logos, team
 | [scale_fill_sdv](#scale_fill_sdv) | A discrete fill scale that maps each team value (any id system) to its team color. |
 | [team_tiers](#team_tiers) | A tier list as a ggplot: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme. |
 | [title_image](#title_image) | A plot title with an image (a team logo, or any image) beside it, added to a ggplot with ``+``. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: plotnine.ggplot.ggplot,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
+    alpha: float = 1.0,
+    color: str = 'white',
+    size: float = 0.25,
+) -> plotnine.ggplot.ggplot
+```
+
+</div>
+
+A copy of the plot with hexagonal or square bins, filled by count or weight, as one ``geom_polygon`` layer.
+
+The cells are ``sdvplot.binner``'s, in data units, so they match every other adapter's (and sdvplot-js's). The
+layer's data has one row per vertex: ``x``, ``y``, ``bin_id`` (``"x,y"``, its ``group``), ``bin_x``, ``bin_y`` (the
+centre), ``count`` and ``weight``; ``fill`` maps ``value``, so add a fill scale (``scale_fill_cmap("Blues")``) to
+color it. Linking: plotnine draws static images, so there is none; ``sdvplot.bin_ids`` keys a table to the cells.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `plotnine.ggplot.ggplot` | A plotnine ggplot. |
+| `x` | `Any` | The points' x values, in data units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
+| `alpha` | `float` | The cells' opacity, 0 to 1. |
+| `color` | `str` | The cell outline color (default ``"white"``). |
+| `size` | `float` | The cell outline width (default 0.25). |
+
+### Returns
+
+`ggplot` — A new plot with the bins layer; ``target`` is unchanged.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside [0, 1].
+- `UnsupportedTargetError`: (a TypeError) If ``target`` is not a plotnine ggplot.
+- `ValueError`: If ``x``, ``y`` and ``weights`` differ in length.
+
+### Example
+
+```python
+import pandas as pd
+from plotnine import aes, geom_point, ggplot, scale_fill_cmap
+from sdvplot.plotnine import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+shots = pd.DataFrame({"x": [0, -1, -44], "y": [0, 7, 252]})
+p = ggplot(shots, aes("x", "y")) + geom_point()
+p = add_bins(p, shots["x"], shots["y"], shape="square", side=15) + scale_fill_cmap("Blues")
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [plotnine geom_polygon](https://plotnine.org/reference/geom_polygon.html)
 
 ## add_headshots
 

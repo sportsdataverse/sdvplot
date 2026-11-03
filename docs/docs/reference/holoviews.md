@@ -10,10 +10,100 @@ The HoloViews adapter: a Bokeh plot hook that draws the marks through the Bokeh 
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Hexagonal or square bins, colored by count or weight, on a HoloViews element: the Bokeh adapter's ``add_bins``. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a HoloViews element (Bokeh backend). |
 | [axis_logos](#axis_logos) | Not supported on HoloViews (it draws through Bokeh, which has no axis logos yet). |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
+    palette: Any = 'Viridis256',
+    alpha: float = 1.0,
+    link: Any = None,
+) -> Any
+```
+
+</div>
+
+Hexagonal or square bins, colored by count or weight, on a HoloViews element: the Bokeh adapter's ``add_bins``.
+
+A Bokeh plot hook draws the cells with ``sdvplot.bokeh.add_bins`` when the element renders (one ``patches`` glyph
+named ``"sdvplot_bins"``, with its ``ColumnDataSource`` of ``bin_id``, ``count``, ``weight``, ``point_ids`` and
+``rows``), so the cells, ids and colors are the Bokeh adapter's. Only the Bokeh backend is supported.
+
+Linking: as Bokeh's, in the browser with no server. Pass the points element of the plot (e.g. the ``hv.Points`` in
+``target``, or ``target`` itself) as ``link``: its rendered ``ColumnDataSource`` is linked both ways, so selecting
+cells (add ``tools=["tap", "box_select"]``) selects their points and selecting points selects their cells. Its rows
+must be the points of ``x`` and ``y``, in that order.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A HoloViews element or overlay. |
+| `x` | `Any` | The points' x values, in data units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
+| `palette` | `Any` | A Bokeh palette name or list of colors (default ``"Viridis256"``), lowest to highest value. |
+| `alpha` | `float` | The cells' fill opacity, 0 to 1. |
+| `link` | `Any` | Optional points element of ``target`` (or ``target`` itself) to link selections with. |
+
+### Returns
+
+`element` — A clone of ``target`` with the hook added.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside [0, 1].
+- `UnsupportedTargetError`: If ``target`` is not a HoloViews element or overlay.
+- `TypeError`: If the current HoloViews backend is not Bokeh.
+- `ValueError`: If ``x``, ``y``, ``ids`` and ``weights`` differ in length, or ``link`` is not an element of ``target``.
+
+### Example
+
+```python
+import holoviews as hv
+from sdvplot.holoviews import add_bins
+
+hv.extension("bokeh")
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+x, y = [0, -1, -44], [0, 7, 252]
+shots = hv.Points({"x": x, "y": y}, ["x", "y"]).opts(tools=["tap", "box_select"])
+plot = add_bins(shots, x, y, shape="square", side=15, alpha=0.6, link=shots)
+```
+
+### See also
+
+- [sdvplot.bokeh.add_bins](https://sdvplot.sportsdataverse.org/docs/reference/bokeh)
+- [HoloViews hooks](https://holoviews.org/user_guide/Customizing_Plots.html)
 
 ## add_headshots
 

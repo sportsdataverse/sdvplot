@@ -10,11 +10,12 @@ The Plotly adapter: logos, wordmarks, headshots and axis logos as layout images 
 
 | Name | What it is |
 |---|---|
-| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, on a Plotly Figure. |
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count or weight, on a Plotly Figure. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Plotly figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Plotly figure, as layout images. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Plotly figure. |
 | [axis_logos](#axis_logos) | Replace a category axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
+| [link_script](#link_script) | The JavaScript that links ``add_bins``' cells to a points trace in a static HTML file, with no Python running. |
 
 ## add_bins
 
@@ -31,6 +32,11 @@ add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
     colorscale: Any = 'Viridis',
     opacity: float = 1.0,
     xref: str = 'x',
@@ -40,19 +46,20 @@ add_bins(
 
 </div>
 
-Draw hexagonal or square bins, colored by count, on a Plotly Figure.
+Draw hexagonal or square bins, colored by count or weight, on a Plotly Figure.
 
 The cells are ``sdvplot.binner``'s, in data units: one ``path`` layout shape per cell (``layer="below"``, so
-traces draw over it), filled from ``colorscale`` by count. One scatter trace named ``"sdvplot_bins"`` holds a marker
-at each centre (invisible until selected) that carries the cell for interaction: ``ids`` are the bin ids
-(``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids, the marker colors the
-counts (and draw the colorbar), and hovering a cell shows its count.
+traces draw over it), filled from ``colorscale`` by ``value`` (count or weight). One scatter trace named
+``"sdvplot_bins"`` holds a marker at each centre (invisible until selected) that carries the cell for interaction:
+``ids`` are the bin ids (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids,
+the marker colors the values (and draw the colorbar), and hovering a cell shows its count and weight.
 
-Linking: a static Plotly figure cannot run Python, so the link is a ``FigureWidget`` (or Dash) callback. Selecting
-cells gives ``points.point_inds``; the ``customdata`` of those markers are the point ids (the row numbers when no
-``ids`` were given), which set a points trace's ``selectedpoints``. The other way, set the bins trace's
-``selectedpoints`` to the cells whose ``customdata`` holds a selected point. ``sdvplot.bin_ids`` gives a table the
-same key.
+Linking: in a static HTML file, pass ``sdvplot.plotly.link_script(fig)`` to ``fig.write_html(post_script=...)``
+(or ``to_html``): plotly.js handlers then link cell and point selections and hover in the browser, with no Python.
+In a ``FigureWidget`` (or Dash) the link is a callback instead: selecting cells gives ``points.point_inds``; the
+``customdata`` of those markers are the point ids (the row numbers when no ``ids`` were given), which set a points
+trace's ``selectedpoints``. The other way, set the bins trace's ``selectedpoints`` to the cells whose ``customdata``
+holds a selected point. ``sdvplot.bin_ids`` gives a table the same key.
 
 ### Arguments
 
@@ -66,6 +73,11 @@ same key.
 | `side` | `float \| None` | The square's side (``shape="square"``). |
 | `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
 | `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
 | `colorscale` | `Any` | A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points. |
 | `opacity` | `float` | The cells' opacity, 0 to 1. |
 | `xref` | `str` | The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``. |
@@ -77,7 +89,7 @@ same key.
 
 ### Raises
 
-- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside [0, 1].
 - `UnsupportedTargetError`: If ``target`` is not a Plotly Figure.
 - `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
 
@@ -388,3 +400,64 @@ sdvplot.axis_logos(fig, "x", league="nfl", height=0.1)
 ### See also
 
 - [sdvplotR element_sdv_logo()](https://sdvplotR.sportsdataverse.org/)
+
+## link_script
+
+<div class="sdv-signature">
+
+```python
+link_script(
+    target: Any,
+    *,
+    points: int = 0,
+    bins: int | None = None,
+) -> str
+```
+
+</div>
+
+The JavaScript that links ``add_bins``' cells to a points trace in a static HTML file, with no Python running.
+
+Pass it to ``fig.write_html(post_script=...)`` or ``fig.to_html(post_script=...)``: Plotly runs it after the plot
+is drawn (its ``{plot_id}`` placeholder becomes the div's id). It registers plotly.js handlers on the div:
+selecting cells (box or lasso select) selects their points on the points trace, selecting points selects the cells
+holding them, double-click deselects both, and hovering a cell highlights its points until the pointer leaves. A
+point belongs to a cell when its link id is among the cell's ``customdata``: the points trace's own ``customdata``
+(its first element when each is a list) as a string, as ``sdvplot.hexbin`` writes ids, else its row number, which
+is ``add_bins``' default id. The figure is read once, now: call it after the traces are final.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``plotly.graph_objects.Figure`` that ``add_bins`` drew on. |
+| `points` | `int` | The index of the points trace in ``fig.data`` (default 0, the first trace). |
+| `bins` | `int \| None` | The index of the bins trace (default the last trace named ``"sdvplot_bins"``). |
+
+### Returns
+
+`str` — The script, for ``post_script``.
+
+### Raises
+
+- `UnsupportedTargetError`: If ``target`` is not a Plotly Figure.
+- `ValueError`: If the figure has no ``add_bins`` trace, ``bins`` is not one, or ``points`` is not the index of another trace.
+
+### Example
+
+```python
+import plotly.graph_objects as go
+from sdvplot.plotly import add_bins, link_script
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+x, y = [0, -1, -44], [0, 7, 252]
+fig = go.Figure(go.Scatter(x=x, y=y, mode="markers", name="shots"))
+add_bins(fig, x, y, radius=15)
+fig.update_layout(dragmode="select")
+html = fig.to_html(post_script=link_script(fig))  # or fig.write_html("shots.html", post_script=...)
+```
+
+### See also
+
+- [sdvplot.plotly.add_bins](https://sdvplot.sportsdataverse.org/docs/reference/plotly)
+- [Plotly post_script](https://plotly.com/python-api-reference/generated/plotly.io.to_html.html)

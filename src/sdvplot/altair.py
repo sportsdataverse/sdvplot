@@ -18,9 +18,9 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra
 with requires_extra("altair"):
     import altair as alt
 
-from sdvplot._bins import _cells
+from sdvplot._bins import _cells, _values
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._types import AxisMarkType, BinShape
+from sdvplot._types import AxisMarkType, BinShape, BinValue
 from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -668,17 +668,22 @@ def add_bins(
     radius: float | None = None,
     side: float | None = None,
     equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
     scheme: str = "viridis",
     opacity: float = 1.0,
     link: Any = None,
 ) -> Any:
-    """Layer hexagonal or square bins, colored by count, onto an Altair chart.
+    """Layer hexagonal or square bins, colored by count or weight, onto an Altair chart.
 
     The cells are ``sdvplot.binner``'s, in data units, drawn as one ``area`` mark split by cell (``detail``): a
     pointy-top hexagon and a square are both x-monotone, so each is the band between its top and bottom edges, on the
     chart's own x and y scales. The layer is named ``"sdvplot_bins"``; its rows carry ``bin_id`` (``"x,y"``, as
-    sdvplot-js stamps ``data-sdv-id``) and ``count``, and it adds a point selection param named ``"sdvplot_bins"`` on
-    ``bin_id`` (click a cell; shift-click adds).
+    sdvplot-js stamps ``data-sdv-id``), ``count`` and ``weight``, and it adds a point selection param named
+    ``"sdvplot_bins"`` on ``bin_id`` (click a cell; shift-click adds).
 
     Linking: Vega-Lite links views through a shared field, and the field is ``bin_id``: give the points' data a
     ``bin_id`` column with ``sdvplot.bin_ids`` (on the same ``x``/``y``), then encode them with
@@ -695,7 +700,15 @@ def add_bins(
         radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
         side: The square's side (``shape="square"``).
         equal_area: Squares of a radius-``radius`` hexagon's area.
-        scheme: A Vega color scheme for the counts (default ``"viridis"``).
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the color encodes: ``"count"`` (the default) or ``"weight"`` (the sum of ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
+        scheme: A Vega color scheme for the values (default ``"viridis"``).
         opacity: The cells' opacity, 0 to 1; a cell outside the selection is drawn at a quarter of it.
         link: Optional selection param of the points' layer, on ``fields=["bin_id"]``, that picks the cells to show.
 
@@ -703,7 +716,9 @@ def add_bins(
         LayerChart: ``target`` with the cells layered on top.
 
     Raises:
-        InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside
+            [0, 1].
         UnsupportedTargetError: If ``target`` is not an Altair Chart or LayerChart.
         ValueError: If ``x`` and ``y`` differ in length, or ``target`` is a facet, repeat or concat chart.
 
@@ -730,7 +745,20 @@ def add_bins(
     """
     _check_chart(target)
     alpha = check_alpha(opacity)
-    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=None)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=None,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    _values(bins, value)  # checks value
     # cell_points' vertex order, as pairs of vertices on one vertical, left to right: a pointy-top hexagon's left side
     # (5, 4), its top and bottom (0, 3) and right side (1, 2); a square's left (0, 3) and right (1, 2). Each pair is
     # the area's band at that x. By index, not by x value: a hexagon's two side vertices differ in the last bit.
@@ -739,16 +767,17 @@ def add_bins(
     for b, poly in zip(bins, polygons, strict=True):
         for i, j in bands:
             y1, y2 = sorted((poly[i][1], poly[j][1]))
-            rows.append({"sdvplot_x": poly[i][0], "sdvplot_y": y1, "sdvplot_y2": y2, "bin_id": b.id, "count": b.count})
+            rows.append({"sdvplot_x": poly[i][0], "sdvplot_y": y1, "sdvplot_y2": y2, "bin_id": b.id, "count": b.count,
+                         "weight": b.weight})  # fmt: skip
     sel = alt.selection_point(name="sdvplot_bins", fields=["bin_id"])
     layer = (
         alt.Chart(alt.Data(values=rows), name="sdvplot_bins")
         .mark_area(stroke="white", strokeWidth=0.5)
         .encode(
             x=alt.X("sdvplot_x:Q", title=None), y=alt.Y("sdvplot_y:Q", title=None), y2="sdvplot_y2:Q",
-            detail="bin_id:N", color=alt.Color("count:Q", scale=alt.Scale(scheme=scheme)),  # type: ignore[arg-type]
+            detail="bin_id:N", color=alt.Color(f"{value}:Q", scale=alt.Scale(scheme=scheme)),  # type: ignore[arg-type]
             opacity=alt.condition(sel if link is None else link, alt.value(alpha), alt.value(alpha / 4)),
-            tooltip=["bin_id:N", "count:Q"],
+            tooltip=["bin_id:N", "count:Q", "weight:Q"],
         )
         .add_params(sel)
     )  # fmt: skip

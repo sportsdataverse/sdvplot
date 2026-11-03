@@ -15,6 +15,7 @@ binner(
     radius: float | None = None,
     side: float | None = None,
     equal_area: bool = False,
+    origin: tuple[float, float] = (0.0, 0.0),
 ) -> sdvplot._bins.Binner
 ```
 
@@ -34,14 +35,15 @@ each the area of a radius-15 hexagon, so a hex and a square chart of the same da
 | `radius` | `float \| None` | The hexagon's circumradius; with ``shape="square"`` only together with ``equal_area=True``. |
 | `side` | `float \| None` | The square's side (``shape="square"`` only). |
 | `equal_area` | `bool` | With ``shape="square"`` and ``radius``: squares of the area of that hexagon. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates; as in ``hexbin``. |
 
 ## Returns
 
-`Binner` — ``shape``, ``size`` (the circumradius, or the side), ``lattice`` (the resolved options: ``{"radius": r}`` or ``{"shape": "square", "side": s}``), ``bins(x, y, *, ids=None)`` (as ``hexbin`` / ``squarebin``) and ``cell_points(size=None)``.
+`Binner` — ``shape``, ``size`` (the circumradius, or the side), ``origin``, ``lattice`` (the resolved options: ``{"radius": r}`` or ``{"shape": "square", "side": s}``, plus ``"origin"`` when it is not (0, 0)), ``bins(x, y, *, ids=None, weights=None)`` (as ``hexbin`` / ``squarebin``) and ``cell_points(size=None)``.
 
 ## Raises
 
-- `InputError`: If ``shape`` is not ``"hex"`` or ``"square"``, the size is missing or not a finite number > 0, or the options do not name one lattice (a hexagon with ``side``, a square with both ``side`` and ``radius``, or ``radius`` without ``equal_area=True``).
+- `InputError`: If ``shape`` is not ``"hex"`` or ``"square"``, the size is missing or not a finite number > 0, ``origin`` is not two finite numbers, or the options do not name one lattice (a hexagon with ``side``, a square with both ``side`` and ``radius``, or ``radius`` without ``equal_area=True``).
 
 ## Example
 

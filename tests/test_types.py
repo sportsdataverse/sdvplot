@@ -11,12 +11,12 @@ from typing import TYPE_CHECKING, Any, get_args
 import pytest
 
 from sdvplot import InputError, headshot_url
-from sdvplot._bins import SHAPES
+from sdvplot._bins import SHAPES, VALUES
 from sdvplot._colors import _COLUMNS
 from sdvplot._marks import MARK_TYPES
 from sdvplot._placement import KINDS
 from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY
-from sdvplot._types import AxisMarkType, BinShape, HeadshotIdSystem, IdSystem, MarkType, Which
+from sdvplot._types import AxisMarkType, BinShape, BinValue, HeadshotIdSystem, IdSystem, MarkType, Which
 
 
 def test_literals_match_the_runtime_vocabularies() -> None:
@@ -25,6 +25,7 @@ def test_literals_match_the_runtime_vocabularies() -> None:
     assert get_args(MarkType) == MARK_TYPES
     assert get_args(AxisMarkType) == KINDS
     assert get_args(BinShape) == SHAPES
+    assert get_args(BinValue) == VALUES
 
 
 def test_headshot_id_systems_are_the_accepted_ones() -> None:

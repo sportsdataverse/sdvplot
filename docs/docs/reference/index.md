@@ -65,7 +65,7 @@ Every public function, grouped by what it works with. Each top-level function ha
 
 | Function | What it does |
 |---|---|
-| [add_bins](add_bins.md) | Draw hexagonal or square bins, colored by count, on a plot of any library that has a binned form. |
+| [add_bins](add_bins.md) | Draw hexagonal or square bins, colored by count or weight, on a plot of any library that has a binned form. |
 | [binner](binner.md) | One binning API for both lattices, the port of sdvplot-js ``binner``. |
 | [hexbin](hexbin.md) | Bin points into pointy-top hexagons of circumradius ``radius``, in the points' own units. |
 | [squarebin](squarebin.md) | Bin points into axis-aligned squares of side ``side``, in the points' own units. |

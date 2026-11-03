@@ -10,11 +10,96 @@ The pygal adapter: logos, wordmarks and headshots on pygal XY charts, plus team 
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Hexagonal or square bins, colored by count or weight, as SVG polygons on a pygal XY chart. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a pygal XY chart, in every render of the chart. |
 | [axis_logos](#axis_logos) | Not supported: pygal draws axis labels as text nodes, so sdvplot.pygal cannot put logos in their place. |
 | [team_style](#team_style) | A pygal Style whose series colors are the teams' colors, in the order the series are added. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    chart: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
+    low: str = '#deebf7',
+    high: str = '#08519c',
+    opacity: float = 1.0,
+) -> Any
+```
+
+</div>
+
+Hexagonal or square bins, colored by count or weight, as SVG polygons on a pygal XY chart.
+
+As the marks: ``add_bins`` records the cells on the chart and one xml filter (``chart.add_xml_filter``) draws them
+at each render, through ``chart.view``, pygal's own projection, so each vertex sits where pygal would draw that
+point. The cells go under pygal's series, clipped to the plot area; each is a ``<polygon>`` with a ``<title>``
+(its ``bin_id``, count and weight, the browser's hover text). The fill runs from ``low`` (the lowest value) to
+``high`` (the highest), in RGB. Linking: none, pygal's SVG is static.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `chart` | `Any` | A pygal XY-family chart (``pygal.XY``, ``DateTimeLine``, ...). |
+| `x` | `Any` | The points' x values, in the chart's x units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
+| `low` | `str` | The color of the lowest value (default ``"#deebf7"``), any CSS color. |
+| `high` | `str` | The color of the highest value (default ``"#08519c"``). |
+| `opacity` | `float` | The cells' fill opacity, 0 to 1. |
+
+### Returns
+
+`chart` — ``chart``, with the cells recorded.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside [0, 1].
+- `UnsupportedTargetError`: If ``chart`` is not an XY-family chart.
+- `ValueError`: If ``x``, ``y`` and ``weights`` differ in length, or ``low`` / ``high`` is not a color.
+
+### Example
+
+```python
+import pygal
+from sdvplot.pygal import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+x, y = [0, -1, -44], [0, 7, 252]
+chart = pygal.XY(stroke=False)
+chart.add("shots", list(zip(x, y)))
+add_bins(chart, x, y, shape="square", side=15, opacity=0.7)
+svg = chart.render()
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [pygal xml filters](https://www.pygal.org/en/stable/documentation/output.html)
 
 ## add_headshots
 

@@ -14,15 +14,18 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra
 with requires_extra("folium"):
     import folium
 
+from sdvplot._bins import _cells, _values
 from sdvplot._index import teams as team_index
 from sdvplot._placement import check_alpha, check_height, place
+from sdvplot._types import BinShape, BinValue
 from sdvplot._web import aspect, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
 _FOLIUM_REFERENCE_HEIGHT = 500  # px: the reference for a map whose height is not in pixels (the default "100%")
 _GROUP_NAME = "sdvplot logos"
+_BINS_NAME = "sdvplot bins"
 
-__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -303,6 +306,127 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     raise UnsupportedTargetError("a folium map has no category axes; put the logos on the map with add_logos instead")
 
 
+def add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
+    palette: Any = "viridis",
+    opacity: float = 0.7,
+) -> Any:
+    """Hexagonal or square bins, colored by count or weight, as one GeoJSON layer of polygons on a folium map.
+
+    On a map ``x`` is longitude and ``y`` latitude, so the lattice is in degrees: ``radius``, ``side`` and ``origin``
+    are degrees of longitude and latitude, not metres. Leaflet's Web Mercator stretches a degree of longitude less than
+    one of latitude away from the equator, so cells look taller than wide by ``1 / cos(latitude)`` (about 1.3 at 40
+    degrees); bin projected coordinates and convert the vertices yourself for equal-area cells on the ground. The
+    layer is a ``folium.GeoJson`` named ``"sdvplot bins"`` (a ``LayerControl`` toggles it), one ``Polygon`` feature
+    per cell with ``bin_id`` (``"x,y"``), ``count`` and ``weight`` properties, shown on hover. Linking: none, the
+    layer is static.
+
+    Args:
+        target: A ``folium.Map``.
+        x: The points' longitudes, in degrees.
+        y: The points' latitudes, in degrees.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in degrees; for squares, with ``equal_area=True``.
+        side: The square's side, in degrees (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on, ``(longitude, latitude)`` (default ``(0.0, 0.0)``): as a
+            hoop-centred lattice puts origin at the basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
+        palette: A ``branca.colormap.linear`` name (default ``"viridis"``) or a branca colormap, lowest to highest
+            value.
+        opacity: The cells' fill opacity, 0 to 1.
+
+    Returns:
+        Map: ``target``, with the layer added.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``opacity`` is outside
+            [0, 1].
+        UnsupportedTargetError: If ``target`` is not a ``folium.Map``.
+        ValueError: If ``x``, ``y`` and ``weights`` differ in length, or ``palette`` is not a branca linear colormap.
+
+    Example:
+        ::
+
+            import folium
+            from sdvplot.folium import add_bins
+
+            # three stadiums' longitudes and latitudes: two in New Jersey share a half-degree hexagon
+            lon, lat = [-74.074, -74.07, -71.264], [40.813, 40.81, 42.091]
+            m = folium.Map(location=[41.5, -72.5], zoom_start=6)
+            add_bins(m, lon, lat, radius=0.5)
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        folium GeoJson: https://python-visualization.github.io/folium/latest/user_guide/geojson/geojson.html
+    """
+    import branca.colormap as bcm
+
+    m = _map(target)
+    a = check_alpha(opacity)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=None,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    vals = _values(bins, value)
+    if isinstance(palette, str):
+        if not isinstance(getattr(bcm.linear, palette, None), bcm.LinearColormap):
+            raise ValueError(f"palette must name a branca.colormap.linear colormap, got {palette!r}")
+        palette = getattr(bcm.linear, palette)
+    if not isinstance(palette, (bcm.LinearColormap, bcm.StepColormap)):
+        raise ValueError(f"palette must be a branca colormap or the name of one, got {type(palette).__name__}")
+    lo, hi = min(vals, default=0.0), max(vals, default=1.0)
+    cmap = palette.scale(lo, hi if hi > lo else lo + 1)
+    features = [
+        {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[*map(list, poly), list(poly[0])]]},
+         "properties": {"bin_id": b.id, "x": b.x, "y": b.y, "count": b.count, "weight": b.weight,
+                        "fill_color": cmap(v)}}
+        for b, poly, v in zip(bins, polygons, vals, strict=True)
+    ]  # fmt: skip
+    layer: Any = folium.GeoJson(  # Any: it carries the test hook below
+        {"type": "FeatureCollection", "features": features},
+        name=_BINS_NAME,
+        style_function=lambda f: {
+            "fillColor": f["properties"]["fill_color"],
+            "fillOpacity": a,
+            "color": "white",
+            "weight": 0.5,
+        },  # fmt: skip
+        tooltip=folium.GeoJsonTooltip(["bin_id", "count", "weight"]) if features else None,
+    )
+    layer._sdvplot_bins = True
+    layer.add_to(m)
+    return m
+
+
 def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: (team_id, x, y, height, url) for each marker sdvplot added; height = icon px / reference px."""
     m = _map(target)
@@ -315,4 +439,16 @@ def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
                 if hasattr(marker, "_sdvplot_mark"):
                     team_id, x, y, src = marker._sdvplot_mark
                     out.append((team_id, x, y, marker.icon.options["icon_size"][1] / ref, src))
+    return out
+
+
+def _drawn_bins(target: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: (bin id, x, y, count, ()) for each cell add_bins drew, in draw order; no point ids are kept."""
+    out: list[tuple[str, float, float, int, tuple[str, ...]]] = []
+    layers: list[Any] = list(_map(target)._children.values())
+    for layer in layers:
+        if getattr(layer, "_sdvplot_bins", False):
+            for f in layer.data["features"]:
+                p = f["properties"]
+                out.append((p["bin_id"], p["x"], p["y"], p["count"], ()))
     return out

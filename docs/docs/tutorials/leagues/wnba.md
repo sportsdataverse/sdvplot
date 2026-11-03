@@ -308,6 +308,7 @@ sdvplot.add_bins(
     shape="square",  # squares with the area of 2 ft hexagons; drop shape and equal_area for hexagons
     radius=2,
     equal_area=True,
+    min_count=2,  # single attempts not drawn
     norm="log",
     cmap=cmap,
     edgecolors="white",

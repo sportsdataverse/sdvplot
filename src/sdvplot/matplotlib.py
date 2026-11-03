@@ -25,10 +25,10 @@ with requires_extra("mpl"):
     from PIL import Image
 
 from sdvplot import _tiers
-from sdvplot._bins import _cells
+from sdvplot._bins import _cells, _values
 from sdvplot._images import MAX_SIZE, load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
-from sdvplot._types import AxisMarkType, BinShape
+from sdvplot._types import AxisMarkType, BinShape, BinValue
 
 _SUPPORTS_AXIS_LOGOS = True
 _MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
@@ -976,14 +976,20 @@ def add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
     **kwargs: Any,
 ) -> Any:
-    """Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice.
+    """Draw hexagonal or square bins, colored by count or weight, as one ``PolyCollection`` (``ax.hexbin``).
 
     The cells are ``sdvplot.binner``'s, in data units, so a hex chart and a square chart of the same shots (and an
     sdvplot-js chart of them) bin every point alike. Only cells with points are drawn (``ax.hexbin``'s ``mincnt=1``).
-    The collection's array is the counts, so ``fig.colorbar(ax.collections[-1])`` keys it; its ``gid`` is
-    ``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw order).
+    The collection's array is the counts (or the weights, ``value="weight"``), so ``fig.colorbar(ax.collections[-1])``
+    keys it; its ``gid`` is ``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw
+    order).
 
     Linking: matplotlib draws static images, so there is no selection to share. With ``picker=True`` a
     ``pick_event``'s ``event.ind`` indexes ``sdvplot_bins``, whose ``rows`` and ``ids`` name the points in the cell.
@@ -997,6 +1003,15 @@ def add_bins(
         side: The square's side (``shape="square"``).
         equal_area: Squares of a radius-``radius`` hexagon's area.
         ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
         **kwargs: Passed to ``PolyCollection``: ``cmap``, ``norm`` (``"log"`` for ``ax.hexbin``'s ``bins="log"``),
             ``edgecolors``, ``linewidths``, ``alpha``, ``zorder``, ``picker``.
 
@@ -1004,7 +1019,8 @@ def add_bins(
         Axes: The Axes drawn on.
 
     Raises:
-        InputError: If the lattice options are not valid (see ``sdvplot.binner``).
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight".
         UnsupportedTargetError: If ``target`` is not a matplotlib Axes, Figure or seaborn grid.
         ValueError: If ``x``, ``y`` and ``ids`` differ in length, or a Figure or grid has several Axes.
 
@@ -1027,8 +1043,20 @@ def add_bins(
     from matplotlib.collections import PolyCollection
 
     ax = _target_axes(target)
-    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
-    coll = PolyCollection(polygons, array=np.array([b.count for b in bins], dtype=float), **kwargs)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=ids,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    coll = PolyCollection(polygons, array=np.array(_values(bins, value), dtype=float), **kwargs)
     coll.set_gid("sdvplot_bins")
     coll.sdvplot_bins = bins  # type: ignore[attr-defined]
     ax.add_collection(coll, autolim=True)

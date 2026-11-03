@@ -14,12 +14,14 @@ with requires_extra("holoviews"):
     import holoviews as hv
 
 from sdvplot import bokeh as _bokeh
+from sdvplot._bins import _cells, _values
 from sdvplot._placement import check_alpha, check_height, place
+from sdvplot._types import BinShape, BinValue
 from sdvplot._web import image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = False
 
-__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -300,6 +302,124 @@ def axis_logos(target: Any, axis: str, **kwargs: Any) -> Any:
     )
 
 
+def add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
+    palette: Any = "Viridis256",
+    alpha: float = 1.0,
+    link: Any = None,
+) -> Any:
+    """Hexagonal or square bins, colored by count or weight, on a HoloViews element: the Bokeh adapter's ``add_bins``.
+
+    A Bokeh plot hook draws the cells with ``sdvplot.bokeh.add_bins`` when the element renders (one ``patches`` glyph
+    named ``"sdvplot_bins"``, with its ``ColumnDataSource`` of ``bin_id``, ``count``, ``weight``, ``point_ids`` and
+    ``rows``), so the cells, ids and colors are the Bokeh adapter's. Only the Bokeh backend is supported.
+
+    Linking: as Bokeh's, in the browser with no server. Pass the points element of the plot (e.g. the ``hv.Points`` in
+    ``target``, or ``target`` itself) as ``link``: its rendered ``ColumnDataSource`` is linked both ways, so selecting
+    cells (add ``tools=["tap", "box_select"]``) selects their points and selecting points selects their cells. Its rows
+    must be the points of ``x`` and ``y``, in that order.
+
+    Args:
+        target: A HoloViews element or overlay.
+        x: The points' x values, in data units.
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
+        palette: A Bokeh palette name or list of colors (default ``"Viridis256"``), lowest to highest value.
+        alpha: The cells' fill opacity, 0 to 1.
+        link: Optional points element of ``target`` (or ``target`` itself) to link selections with.
+
+    Returns:
+        element: A clone of ``target`` with the hook added.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside
+            [0, 1].
+        UnsupportedTargetError: If ``target`` is not a HoloViews element or overlay.
+        TypeError: If the current HoloViews backend is not Bokeh.
+        ValueError: If ``x``, ``y``, ``ids`` and ``weights`` differ in length, or ``link`` is not an element of
+            ``target``.
+
+    Example:
+        ::
+
+            import holoviews as hv
+            from sdvplot.holoviews import add_bins
+
+            hv.extension("bokeh")
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            x, y = [0, -1, -44], [0, 7, 252]
+            shots = hv.Points({"x": x, "y": y}, ["x", "y"]).opts(tools=["tap", "box_select"])
+            plot = add_bins(shots, x, y, shape="square", side=15, alpha=0.6, link=shots)
+
+    See Also:
+        sdvplot.bokeh.add_bins: https://sdvplot.sportsdataverse.org/docs/reference/bokeh ;
+        HoloViews hooks: https://holoviews.org/user_guide/Customizing_Plots.html
+    """
+    if not isinstance(target, hv.core.Dimensioned):
+        raise UnsupportedTargetError(
+            f"sdvplot.holoviews draws on a HoloViews element or overlay, got {type(target).__name__}"
+        )
+    _require_bokeh()
+    check_alpha(alpha)
+    # checked now: a plot hook's errors only become HoloViews warnings at render
+    bins, _ = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids, weights=weights,
+                     origin=origin, fill=fill, min_count=min_count)  # fmt: skip
+    _values(bins, value)
+    data = getattr(link, "data", object())
+    if link is not None and not any(
+        getattr(e, "data", None) is data for e in target.traverse(lambda e: e)
+    ):  # a clone keeps its data object, so the rendered element of the plot is found by it
+        raise ValueError("link must be an element of target (its points), e.g. the hv.Points it overlays")
+    options = {"shape": shape, "radius": radius, "side": side, "equal_area": equal_area, "ids": ids,
+               "weights": weights, "origin": origin, "value": value, "fill": fill, "min_count": min_count,
+               "palette": palette, "alpha": alpha}  # fmt: skip
+
+    def hook(plot: Any, _element: Any) -> None:
+        source = None
+        if link is not None:
+            source = next(
+                p.handles["source"]
+                for p in plot.traverse(lambda p: p, [lambda p: "source" in getattr(p, "handles", {})])
+                if p.current_frame is not None and p.current_frame.data is data
+            )
+        _bokeh.add_bins(plot.state, x, y, link=source, **options)
+
+    hooks = hv.Store.lookup_options("bokeh", target, "plot").kwargs.get("hooks", [])
+    return target.opts(hooks=[*hooks, hook], clone=True, backend="bokeh")
+
+
 def _drawn_marks(target: Any) -> list[tuple[Any, ...]]:
     """Test hook: render the element with Bokeh and read the marks the hook drew."""
     return _bokeh._drawn_marks(hv.render(target, backend="bokeh"))
+
+
+def _drawn_bins(target: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: render the element with Bokeh and read the cells add_bins' hook drew."""
+    return _bokeh._drawn_bins(hv.render(target, backend="bokeh"))

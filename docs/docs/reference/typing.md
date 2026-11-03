@@ -12,6 +12,7 @@ Types for annotating code that calls sdvplot: the ``Literal`` aliases of its clo
 |---|---|
 | [AxisMarkType](#axismarktype) | The values it accepts (a `Literal` alias). |
 | [BinShape](#binshape) | The values it accepts (a `Literal` alias). |
+| [BinValue](#binvalue) | The values it accepts (a `Literal` alias). |
 | [HeadshotIdSystem](#headshotidsystem) | The values it accepts (a `Literal` alias). |
 | [IdSystem](#idsystem) | The values it accepts (a `Literal` alias). |
 | [MarkType](#marktype) | The values it accepts (a `Literal` alias). |
@@ -33,6 +34,16 @@ AxisMarkType = Literal['logo', 'wordmark', 'headshot']
 
 ```python
 BinShape = Literal['hex', 'square']
+```
+
+</div>
+
+## BinValue
+
+<div class="sdv-signature">
+
+```python
+BinValue = Literal['count', 'weight']
 ```
 
 </div>

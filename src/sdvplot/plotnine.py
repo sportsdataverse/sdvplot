@@ -19,6 +19,7 @@ with requires_extra("plotnine"):
         element_blank,
         element_rect,
         element_text,
+        geom_polygon,
         geom_text,
         ggplot,
         labs,
@@ -34,10 +35,11 @@ with requires_extra("plotnine"):
     from plotnine.geoms.geom import geom
 
 from sdvplot import _tiers
+from sdvplot._bins import _cells, _values
 from sdvplot._colors import _column, team_colors
 from sdvplot._placement import Placement, _warn_skipped, check_alpha, check_height, check_kind, place, place_images
 from sdvplot._resolve import _seasons, _unpack
-from sdvplot._types import AxisMarkType, IdSystem, Which
+from sdvplot._types import AxisMarkType, BinShape, BinValue, IdSystem, Which
 from sdvplot.matplotlib import (
     _add_title_image,
     _align,
@@ -67,6 +69,7 @@ _MARK_PARAMS = {
 }
 
 __all__ = [
+    "add_bins",
     "add_headshots",
     "add_logos",
     "add_wordmarks",
@@ -1097,6 +1100,109 @@ def scale_fill_sdv(
     return _scale(scale_fill_manual, league, which, season, na_value, kwargs, id_system, strict, alpha)
 
 
+def add_bins(
+    target: ggplot,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: BinValue = "count",
+    fill: float | None = None,
+    min_count: int = 1,
+    alpha: float = 1.0,
+    color: str = "white",
+    size: float = 0.25,
+) -> ggplot:
+    """A copy of the plot with hexagonal or square bins, filled by count or weight, as one ``geom_polygon`` layer.
+
+    The cells are ``sdvplot.binner``'s, in data units, so they match every other adapter's (and sdvplot-js's). The
+    layer's data has one row per vertex: ``x``, ``y``, ``bin_id`` (``"x,y"``, its ``group``), ``bin_x``, ``bin_y`` (the
+    centre), ``count`` and ``weight``; ``fill`` maps ``value``, so add a fill scale (``scale_fill_cmap("Blues")``) to
+    color it. Linking: plotnine draws static images, so there is none; ``sdvplot.bin_ids`` keys a table to the cells.
+
+    Args:
+        target: A plotnine ggplot.
+        x: The points' x values, in data units.
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        weights: Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``.
+        origin: The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the
+            basket's coordinates.
+        value: What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of
+            their ``weights``).
+        fill: The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so
+            they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look).
+        min_count: Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts:
+            single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell.
+        alpha: The cells' opacity, 0 to 1.
+        color: The cell outline color (default ``"white"``).
+        size: The cell outline width (default 0.25).
+
+    Returns:
+        ggplot: A new plot with the bins layer; ``target`` is unchanged.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or
+            "weight", ``fill`` is not in (0, 1], ``min_count`` is not a whole number >= 1, or ``alpha`` is outside
+            [0, 1].
+        UnsupportedTargetError: (a TypeError) If ``target`` is not a plotnine ggplot.
+        ValueError: If ``x``, ``y`` and ``weights`` differ in length.
+
+    Example:
+        ::
+
+            import pandas as pd
+            from plotnine import aes, geom_point, ggplot, scale_fill_cmap
+            from sdvplot.plotnine import add_bins
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            shots = pd.DataFrame({"x": [0, -1, -44], "y": [0, 7, 252]})
+            p = ggplot(shots, aes("x", "y")) + geom_point()
+            p = add_bins(p, shots["x"], shots["y"], shape="square", side=15) + scale_fill_cmap("Blues")
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        plotnine geom_polygon: https://plotnine.org/reference/geom_polygon.html
+    """
+    p = _ggplot(target)
+    a = check_alpha(alpha)
+    bins, polygons = _cells(
+        x,
+        y,
+        shape=shape,
+        radius=radius,
+        side=side,
+        equal_area=equal_area,
+        ids=None,
+        weights=weights,
+        origin=origin,
+        fill=fill,
+        min_count=min_count,
+    )
+    _values(bins, value)  # checks value
+    k = [len(poly) for poly in polygons]
+    frame = pd.DataFrame({
+        "x": [px for poly in polygons for px, _ in poly], "y": [py for poly in polygons for _, py in poly],
+        "bin_id": [b.id for b, n in zip(bins, k, strict=True) for _ in range(n)],
+        "bin_x": [b.x for b, n in zip(bins, k, strict=True) for _ in range(n)],
+        "bin_y": [b.y for b, n in zip(bins, k, strict=True) for _ in range(n)],
+        "count": pd.Series([b.count for b, n in zip(bins, k, strict=True) for _ in range(n)], dtype="int64"),
+        "weight": pd.Series([b.weight for b, n in zip(bins, k, strict=True) for _ in range(n)], dtype="float64"),
+    })  # fmt: skip
+    layer = geom_polygon(
+        aes("x", "y", group="bin_id", fill=value), data=frame, inherit_aes=False, alpha=a, color=color, size=size
+    )
+    return p + layer
+
+
 def _drawn(target: ggplot) -> Figure:
     return target.draw()
 
@@ -1110,6 +1216,18 @@ def _drawn_marks(target: ggplot) -> list[tuple[Any, ...]]:
         return [m for ax in fig.axes for m in _mpl_drawn_marks(ax)]
     finally:
         plt.close(fig)
+
+
+def _drawn_bins(target: ggplot) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: (bin id, x, y, count, ()) for each cell of add_bins' layers, in draw order; no point ids are kept."""
+    out: list[tuple[str, float, float, int, tuple[str, ...]]] = []
+    for lay in target.layers:
+        d = lay.geom.data  # the data the layer was given (a layer keeps it as _data)
+        if isinstance(lay.geom, geom_polygon) and isinstance(d, pd.DataFrame) and {"bin_id", "bin_x"} <= set(d):
+            cells = d.drop_duplicates("bin_id")
+            out += [(i, float(cx), float(cy), int(n), ()) for i, cx, cy, n in
+                    zip(cells["bin_id"], cells["bin_x"], cells["bin_y"], cells["count"], strict=True)]  # fmt: skip
+    return out
 
 
 def _drawn_axis_marks(target: ggplot, axis: str) -> list[tuple[str, float, float]]:

@@ -10,7 +10,7 @@ The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figu
 
 | Name | What it is |
 |---|---|
-| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice. |
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count or weight, as one ``PolyCollection`` (``ax.hexbin``). |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot. |
 | [add_images](#add_images) | Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plot. |
@@ -34,18 +34,24 @@ add_bins(
     side: float | None = None,
     equal_area: bool = False,
     ids: Any = None,
+    weights: Any = None,
+    origin: tuple[float, float] = (0.0, 0.0),
+    value: Literal['count', 'weight'] = 'count',
+    fill: float | None = None,
+    min_count: int = 1,
     **kwargs: Any,
 ) -> Any
 ```
 
 </div>
 
-Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice.
+Draw hexagonal or square bins, colored by count or weight, as one ``PolyCollection`` (``ax.hexbin``).
 
 The cells are ``sdvplot.binner``'s, in data units, so a hex chart and a square chart of the same shots (and an
 sdvplot-js chart of them) bin every point alike. Only cells with points are drawn (``ax.hexbin``'s ``mincnt=1``).
-The collection's array is the counts, so ``fig.colorbar(ax.collections[-1])`` keys it; its ``gid`` is
-``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw order).
+The collection's array is the counts (or the weights, ``value="weight"``), so ``fig.colorbar(ax.collections[-1])``
+keys it; its ``gid`` is ``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw
+order).
 
 Linking: matplotlib draws static images, so there is no selection to share. With ``picker=True`` a
 ``pick_event``'s ``event.ind`` indexes ``sdvplot_bins``, whose ``rows`` and ``ids`` name the points in the cell.
@@ -62,6 +68,11 @@ Linking: matplotlib draws static images, so there is no selection to share. With
 | `side` | `float \| None` | The square's side (``shape="square"``). |
 | `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
 | `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `weights` | `Any` | Optional non-negative weights, one per point (see ``sdvplot.hexbin``): each bin's ``weight``. |
+| `origin` | `tuple[float, float]` | The point a cell centre falls on (default ``(0.0, 0.0)``): a hoop-centred lattice, origin = the basket's coordinates. |
+| `value` | `Literal['count', 'weight']` | What the fill encodes: ``"count"`` (the default, the points in each cell) or ``"weight"`` (the sum of their ``weights``). |
+| `fill` | `float \| None` | The drawn cell's size as a fraction of the lattice cell, in (0, 1]: default 0.88 for squares (a gap, so they do not touch edge to edge) and 1.0 for hexagons (the tiled hexbin look). |
+| `min_count` | `int` | Cells with fewer points are not drawn (default 1, every cell). ``min_count=2`` suits shot charts: single attempts are not drawn. ``sdvplot.hexbin`` / ``squarebin`` still return every cell. |
 | `**kwargs` | `Any` | Passed to ``PolyCollection``: ``cmap``, ``norm`` (``"log"`` for ``ax.hexbin``'s ``bins="log"``), ``edgecolors``, ``linewidths``, ``alpha``, ``zorder``, ``picker``. |
 
 ### Returns
@@ -70,7 +81,7 @@ Linking: matplotlib draws static images, so there is no selection to share. With
 
 ### Raises
 
-- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``).
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``), ``value`` is not "count" or "weight".
 - `UnsupportedTargetError`: If ``target`` is not a matplotlib Axes, Figure or seaborn grid.
 - `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or a Figure or grid has several Axes.
 
