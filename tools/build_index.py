@@ -784,6 +784,8 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
         parts.append(_alias(j, "mlb", "fangraphs", "fangraphs"))
     if (raw / "ncaa_cfb_xwalk.csv").exists():
         parts.append(_alias(_csv(raw, "ncaa_cfb_xwalk.csv"), "cfb", "ncaa", "ncaa_id"))
+    if (raw / "provider_ids.csv").exists():
+        parts.append(provider_aliases(_csv(raw, "provider_ids.csv")))
     if (raw / "sr_codes.csv").exists():
         parts += _sr_aliases(_csv(raw, "sr_codes.csv"), espn, franchises)
     parts.append(nhl_aliases(_csv(raw, "nhl_teams.csv"), espn))
@@ -820,6 +822,27 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
     competition = competition.join(known, on=["league", "team_id"], how="semi")
     a = pl.concat([a, mark.cast(ALIAS_SCHEMA), competition.cast(ALIAS_SCHEMA)])
     return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
+
+
+def provider_aliases(p: pl.DataFrame) -> pl.DataFrame:
+    """Other providers' ids for ESPN teams, from the sportsdataverse-data crosswalk releases (data-raw/provider_ids.csv,
+    fetch_sources.fetch_crosswalks): stats.ncaa.org school (org) and season team ids ("ncaa": mbb, wbb, college
+    baseball and softball) and WNBA Stats team ids and tricodes ("nba_api"), one row per (value, team) with the seasons
+    the source pairs them. The source's first and last seasons are its coverage, not the id's, so they stay open: a
+    value one team alone had keeps no range, and a value several teams had (a relocated WNBA franchise's id: Utah in
+    2002, then Las Vegas under a new ESPN id) keeps the seasons between. A value two teams had in overlapping seasons
+    drops."""
+    key = ["league", "id_system", "value"]
+    p = p.with_columns(pl.col("first_season", "last_season").cast(pl.Int32))
+    first, last = pl.col("first_season"), pl.col("last_season")
+    p = p.with_columns(
+        pl.when(first != first.min().over(key)).then(first).alias("valid_from"),
+        pl.when(last != last.max().over(key)).then(last).alias("valid_to"),
+    )
+    other = p.select(*key, pl.col("team_id").alias("_other"), pl.col("valid_from").alias("_from"),
+                     pl.col("valid_to").alias("_to"))  # fmt: skip
+    clash = p.join(other, on=key).filter((pl.col("_other") != pl.col("team_id")) & OVERLAPS)
+    return p.join(clash.select(key).unique(), on=key, how="anti").select(list(ALIAS_SCHEMA))
 
 
 def espn_extra_aliases(extra: pl.DataFrame, espn: pl.DataFrame) -> pl.DataFrame:

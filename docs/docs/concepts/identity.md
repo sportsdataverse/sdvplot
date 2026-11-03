@@ -63,9 +63,9 @@ The index holds aliases from these id systems. With the default `id_system="auto
 | 4 | `nhl` | NHL tri-codes, such as `"NJD"` |
 | 5 | `nflverse` | nflverse abbreviations |
 | 6 | `mlbstats` | MLB Stats API team ids (MLB and MiLB) |
-| 7 | `nba_api` | nba_api team ids, such as `1610612747` |
+| 7 | `nba_api` | NBA and WNBA Stats team ids, such as `1610612747` (the Lakers) and `1611661319` (the Aces), and their tricodes (WNBA: `LVA`) |
 | 8 | `hockeytech` | HockeyTech team ids (AHL, ECHL, OHL, PWHL, QMJHL, USHL, WHL, and the junior and minor leagues SPHL, CHL, BCHL, AJHL, SJHL, OJHL, CCHL, GOJHL, MHL, NOJHL, VIJHL, KIJHL, MJHL) |
-| 9 | `ncaa` | NCAA team ids (college football) |
+| 9 | `ncaa` | stats.ncaa.org team ids: each season's team id (college football, men's and women's basketball, college baseball) and, outside football, each school's org id (Duke is `193`; college softball has org ids only) |
 | 10 | `pff` | PFF franchise ids (AAF) |
 | 11 | `cricinfo` | Cricinfo team ids |
 | 12 | `cfbd` | CFBD school names and abbreviations |

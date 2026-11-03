@@ -8,6 +8,7 @@ Usage:
     uv run python tools/fetch_sources.py --colors-only   # espn_colors.csv and logo_colors.csv alone
     uv run python tools/fetch_sources.py --groups-only   # groups_latest.csv alone
     uv run python tools/fetch_sources.py --teams-only    # the archive's and ESPN's teams and f1_teams.csv alone
+    uv run python tools/fetch_sources.py --crosswalks-only   # provider_ids.csv alone
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from typing import TYPE_CHECKING
 import requests
 
 if TYPE_CHECKING:
+    import polars as pl
     from PIL import Image
 
 OUT = Path(__file__).resolve().parents[1] / "data-raw"
@@ -66,6 +68,18 @@ NFLVERSE_TEAMS_URL = "https://github.com/nflverse/nflverse-data/releases/downloa
 GROUPS_URL = (
     "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/{league}_groups/{league}_{table}.parquet"
 )
+SDV_DATA_URL = "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/{tag}/{name}"
+# The stats.ncaa.org -> ESPN team crosswalks in the {league}_crosswalk releases, as (sdv league, asset, NCAA org id
+# column, NCAA season team id column). ESPN numbers college baseball and softball teams apart from the school, so each
+# sport has its own. College hockey has none (its groups releases key teams by ESPN id alone), and no release maps G
+# League Stats team ids.
+NCAA_CROSSWALKS = [
+    ("mbb", "ncaa_espn_team_crosswalk", "ncaa_org_id", "ncaa_team_id"),
+    ("wbb", "ncaa_espn_team_crosswalk", "ncaa_org_id", "ncaa_team_id"),
+    ("ncaa_baseball", "ncaa_baseball_espn_team_crosswalk", "ncaa_team_id", "ncaa_season_team_id"),
+    ("ncaa_softball", "ncaa_softball_espn_team_crosswalk", "ncaa_team_id", "ncaa_season_team_id"),
+]
+PROVIDER_ID_COLUMNS = ["league", "id_system", "kind", "value", "team_id", "first_season", "last_season"]
 # (sdv league, ESPN sport, ESPN league) — the sdv-assets ESPN_LEAGUES list plus the college sports
 ESPN_LEAGUES = [
     ("nfl", "football", "nfl"),
@@ -655,21 +669,27 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--sr-manifest", type=Path, help="sdv-assets-private manifest/sr_team_seasons.csv")
     p.add_argument("--ncaa-xwalk", type=Path, help="ncaa-mfb-football-raw mfb/xwalk/espn_team_id.json")
-    p.add_argument(
+    only = p.add_mutually_exclusive_group()  # each refreshes one part; two would silently run just the first
+    only.add_argument(
         "--colors-only",
         action="store_true",
         help="refresh only espn_colors.csv and logo_colors.csv, from the committed ESPN team snapshots (no CFBD key)",
     )
-    p.add_argument(
+    only.add_argument(
         "--teams-only",
         action="store_true",
         help="refresh only the archive's snapshots (manifest_*.csv), ESPN's teams lists (espn_teams.csv) and "
         "f1_teams.csv (Jolpica, OpenF1): no CFBD key",
     )
-    p.add_argument(
+    only.add_argument(
         "--groups-only",
         action="store_true",
         help="refresh only groups_latest.csv, from the sportsdataverse-data {league}_groups releases",
+    )
+    only.add_argument(
+        "--crosswalks-only",
+        action="store_true",
+        help="refresh only provider_ids.csv, from the sportsdataverse-data NCAA and WNBA crosswalk releases",
     )
     args = p.parse_args()
     stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
@@ -686,8 +706,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
 
     s = requests.Session()
     s.headers.update(UA)
-    if args.groups_only:
-        fetch_groups(s, write)
+    if args.groups_only or args.crosswalks_only:
+        (fetch_groups if args.groups_only else fetch_crosswalks)(s, write)
         return
 
     text = _get(s, MANIFEST_URL, timeout=120).text
@@ -809,6 +829,7 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     )
     write("mlbstats_history", mlbstats_history_rows(fetch_mlbstats_seasons(direct, season)), MLB_HISTORY_COLUMNS)
     fetch_groups(s, write)
+    fetch_crosswalks(s, write)
 
     if args.ncaa_xwalk:
         xwalk = json.loads(args.ncaa_xwalk.read_text(encoding="utf-8"))
@@ -897,6 +918,58 @@ def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str
                 }
             )
     write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
+
+
+def provider_id_rows(league: str, id_system: str, kind: str, df: pl.DataFrame) -> list[dict]:
+    """One provider_ids.csv row per (value, team_id) of a per-season crosswalk ``df`` (value, team_id, season), with
+    the first and last season the source pairs them. Ids are integers or strings, never floats ("123.0")."""
+    import polars as pl
+
+    for c in ("value", "team_id"):
+        assert not df.schema[c].is_float(), f"{league} {kind}: a float {c} would stringify as '123.0'"
+    return (
+        df.drop_nulls(["value", "team_id"])
+        .group_by(pl.col("value").cast(pl.String), pl.col("team_id").cast(pl.String))
+        .agg(pl.col("season").min().alias("first_season"), pl.col("season").max().alias("last_season"))
+        .with_columns(league=pl.lit(league), id_system=pl.lit(id_system), kind=pl.lit(kind))
+        .to_dicts()
+    )
+
+
+def fetch_crosswalks(s: requests.Session, write: Callable[[str, list[dict], list[str]], None]) -> None:
+    """provider_ids.csv: other providers' team ids for ESPN teams, from the sportsdataverse-data crosswalk releases
+    (``--crosswalks-only`` refreshes just this one). id_system "ncaa": each NCAA_CROSSWALKS league's stats.ncaa.org
+    school (org) ids and season team ids; "nba_api": the WNBA Stats team ids and tricodes of every season wehoop's
+    wnba_team_crosswalk covers. A season is its end year ("2015-16" is 2016)."""
+    import polars as pl
+
+    def read(tag: str, name: str) -> pl.DataFrame:
+        return pl.read_parquet(io.BytesIO(_get(s, SDV_DATA_URL.format(tag=tag, name=name), timeout=120).content))
+
+    season = pl.col("season").cast(pl.String)
+    end_year = (
+        pl.when(season.str.contains("-"))
+        .then(season.str.slice(0, 4).cast(pl.Int32) + 1)
+        .otherwise(season.cast(pl.Int32))
+        .alias("season")
+    )
+    rows: list[dict] = []
+    for league, asset, org, team in NCAA_CROSSWALKS:
+        x = read(f"{league}_crosswalk", f"{asset}.parquet")
+        for kind, col in (("org", org), ("team", team)):
+            df = x.select(pl.col(col).alias("value"), pl.col("espn_team_id").alias("team_id"), end_year)
+            rows += provider_id_rows(league, "ncaa", kind, df)
+    listing = _get(s, SDV_DATA_URL.format(tag="wnba_crosswalk", name="wnba_team_crosswalk_in_data_repo.csv")).text
+    cols = ["season", "espn_team_id", "wnba_team_id", "wnba_team_tricode"]
+    wnba = pl.concat(
+        [read("wnba_crosswalk", f"wnba_team_crosswalk_{r['season']}.parquet").select(cols)
+         for r in csv.DictReader(io.StringIO(listing))],
+        how="vertical_relaxed",
+    )  # fmt: skip
+    for kind, col in (("id", "wnba_team_id"), ("tricode", "wnba_team_tricode")):
+        df = wnba.select(pl.col(col).alias("value"), pl.col("espn_team_id").alias("team_id"), end_year)
+        rows += provider_id_rows("wnba", "nba_api", kind, df)
+    write("provider_ids", rows, PROVIDER_ID_COLUMNS)
 
 
 if __name__ == "__main__":

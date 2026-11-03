@@ -47,6 +47,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- More provider team ids in the index, from the sportsdataverse-data crosswalk releases (`tools/fetch_sources.py
+  --crosswalks-only` snapshots them into `data-raw/provider_ids.csv`): stats.ncaa.org org (school) ids and season team
+  ids as `id_system="ncaa"` for men's and women's college basketball and college baseball, and org ids for college
+  softball (`resolve(193, "mbb", id_system="ncaa")` is Duke), and WNBA Stats team ids and tricodes as `"nba_api"`
+  (`resolve(1611661319, "wnba", id_system="nba_api")` is the Aces). An id two teams held in overlapping seasons is
+  left out; one a relocated franchise kept under a new ESPN id carries each team's seasons. Under `"auto"` an ESPN id
+  wins over an equal NCAA id, so pass `id_system="ncaa"` for NCAA ids. College hockey and the G League get none: no
+  release maps their stats.ncaa.org or G League Stats ids to ESPN's.
 - Hexagonal and square bins, ported from sdvplot-js `@sportsdataverse/sdvplot/bins`: `hexbin`, `squarebin`,
   `binner` (`shape="hex"` or `"square"`, and `equal_area=True` for squares of a hexagon's area), `cell_points` and
   `bin_ids`, with `BinShape` in `sdvplot.typing`. Each bin records its centre, its points' row numbers and link ids, and
