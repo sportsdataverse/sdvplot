@@ -167,6 +167,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- A team's `conference` value now draws its conference's logo: conference and league rows with a mark get
+  "conference" aliases for their full name and for every conference name their league's teams carry under their
+  `conference_id` (`logo_url("Hockey East Association", "ncaa_mhockey")`, `"Big Ten Conference"` in college
+  baseball). The college baseball, softball and hockey rows had drawn only by their short keys.
 - Five college hockey teams (men's Augsburg, Concordia (MN), Stonehill; women's LIU, Union) take their school's ESPN
   colors instead of their logo's. Which ESPN name an id with no color kept depended on how the build happened to order
   its rows, so the exact-name match to the school's basketball entry could miss; the teams list's name now always

@@ -590,9 +590,18 @@ def test_every_conference_and_league_row_draws_a_mark():
 
 def test_sdvplotr_conference_keys_reach_their_rows_for_marks_only():
     # sdvplotR's abbr_mapping keys whose canon is a conference or league row: 367 (cfb 116, mbb 125, wbb 120, nfl 6),
-    # less each row's own key and its case variants, and none names two rows of a league
+    # less each row's own key and its case variants, and none names two rows of a league; plus each marked row's full
+    # name and the conference names its league's teams carry (conference_name_aliases)
     ca = _index.alias_table().filter(pl.col("id_system") == "conference")
-    assert ca.group_by("league").len().sort("league").rows() == [("cfb", 91), ("mbb", 93), ("nfl", 3), ("wbb", 88)]
+    assert ca.group_by("league").len().sort("league").rows() == [
+        ("aaf", 1), ("cfb", 155), ("cfl", 1), ("mbb", 94), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 36),
+        ("ncaa_mhockey", 10), ("ncaa_softball", 39), ("ncaa_whockey", 7), ("nfl", 3), ("nhl", 11), ("wbb", 89),
+        ("wnba", 3),
+    ]  # fmt: skip
+    # a team's conference value draws its conference's logo in every college league that has one
+    for league in ("ncaa_baseball", "ncaa_softball", "ncaa_mhockey", "ncaa_whockey"):
+        carried = set(_index.team_table().filter(pl.col("league") == league)["conference"].drop_nulls())
+        assert [c for c in carried if resolve_marks(c, league) is None] == [], league
     pairs = [("Southeastern Conference", "SEC", "cfb"), ("B1G", "Big Ten", "cfb"), ("B10", "Big Ten", "mbb"),
              ("Pac-10", "Pac-12", "wbb"), ("American Football Conference", "AFC", "nfl"),
              ("National Football League", "NFL", "nfl")]  # fmt: skip
