@@ -605,6 +605,16 @@ def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     return [t for t in (_figure(target).layout[_key(axis_letter(axis), axis)].ticktext or ()) if t]
 
 
+def _rgb_string(c: str) -> str:
+    """A CSS color name or hex as plotly's 'rgb(r, g, b)' (validate_colors takes no names)."""
+    from PIL import ImageColor
+
+    if c.startswith("rgb"):
+        return c
+    r, g, b = ImageColor.getrgb(c)[:3]
+    return f"rgb({r}, {g}, {b})"
+
+
 def add_bins(
     target: Any,
     x: Any,
@@ -674,7 +684,14 @@ def add_bins(
     bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
     counts = [b.count for b in bins]
     lo, hi = min(counts, default=0), max(counts, default=0)
-    scale = get_colorscale(colorscale) if isinstance(colorscale, str) else colorscale
+    # a name, a list of (position, color) pairs, or a list of colors (named, hex or rgb)
+    if isinstance(colorscale, str):
+        scale = get_colorscale(colorscale)
+    elif all(isinstance(c, (list, tuple)) for c in colorscale):
+        scale = [[float(pos), _rgb_string(c)] for pos, c in colorscale]
+    else:
+        colors = [_rgb_string(c) for c in colorscale] * (2 if len(colorscale) == 1 else 1)
+        scale = [[i / (len(colors) - 1), c] for i, c in enumerate(colors)]  # evenly spaced, as plotly reads a list
     fills = sample_colorscale(scale, [(c - lo) / (hi - lo) if hi > lo else 0.0 for c in counts]) if bins else []
     for b, poly, fill in zip(bins, polygons, fills, strict=True):
         path = "M" + "L".join(f"{px},{py}" for px, py in poly) + "Z"

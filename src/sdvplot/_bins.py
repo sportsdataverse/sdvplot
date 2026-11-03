@@ -9,6 +9,7 @@ imports nothing heavy; ``tests/test_bins.py`` checks it against sdvplot-js's own
 from __future__ import annotations
 
 import math
+import numbers
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -48,15 +49,31 @@ def _js_str(v: float) -> str:
     return ("-" if sign else "") + out
 
 
+def _missing(v: Any) -> bool:
+    """None, NaN or pandas' NA (any value that is not equal to itself, or NA's own type), without importing pandas."""
+    if v is None:
+        return True
+    try:
+        return bool(v != v)
+    except TypeError:  # pandas.NA: its comparisons are NA, and bool(NA) raises
+        return True
+
+
 def _to_id(v: Any) -> str:
-    """sdvplot-js ``toId``: ``str(v)``, or ``""`` (never matched) for None, NaN and ``""``; a whole float is no int."""
-    if v is None or v == "" or (isinstance(v, float) and math.isnan(v)):
+    """sdvplot-js ``toId``: JavaScript's ``String(v)``, or ``""`` (never matched) for None, NaN, NA and ``""``."""
+    if _missing(v) or (isinstance(v, str) and v == ""):
         return ""
-    return _js_str(v) if isinstance(v, float) else str(v)
+    if isinstance(v, bool) or type(v).__name__ == "bool_":  # Python and numpy booleans: JS writes true / false
+        return "true" if v else "false"
+    if isinstance(v, numbers.Integral):
+        return str(int(v))
+    if isinstance(v, numbers.Real):  # float, numpy float32 / float64: JS's shortest form ("2", not "2.0")
+        return _js_str(float(v))
+    return str(v)
 
 
 def _positive(name: str, v: Any) -> float:
-    if isinstance(v, bool) or not isinstance(v, (int, float)) or not (math.isfinite(v) and v > 0):
+    if isinstance(v, bool) or not isinstance(v, numbers.Real) or not (math.isfinite(v) and float(v) > 0):
         raise InputError(f"{name} must be a finite number > 0, got {v!r}")
     return float(v)
 
@@ -115,13 +132,15 @@ def _bin(shape: str, size: float, x: Sequence[Any], y: Sequence[Any], ids: Seque
         raise ValueError(f"x and y must have the same length, got {n} and {len(y)}")
     if ids is not None and len(ids) != n:
         raise ValueError(f"ids must have one value per point ({n}), got {len(ids)}")
+    if ids is not None:
+        ids = list(ids)  # by position: a pandas Series indexes by label, so a filtered or reordered one misnames points
     if shape == "hex":
         dx, dy = size * 2 * math.sin(_THIRD_PI), size * 1.5
     keys: dict[tuple[int, int], int] = {}
     centres: list[tuple[float, float]] = []
     members: list[list[int]] = []
     for row, (vx, vy) in enumerate(zip(x, y, strict=True)):
-        if vx is None or vy is None:
+        if _missing(vx) or _missing(vy):
             continue
         px, py = float(vx), float(vy)
         if not (math.isfinite(px) and math.isfinite(py)):  # sdvplot-js skips NaN; an infinity has no cell either

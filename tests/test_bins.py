@@ -282,3 +282,20 @@ def test_add_bins_on_a_library_without_bins_is_an_unsupported_target():
 
     with pytest.raises(UnsupportedTargetError, match="has no add_bins"):
         sdvplot.add_bins(folium.Map(), [0], [0], radius=1)
+
+
+def test_ids_are_read_by_position_and_pandas_missing_values_are_skipped():
+    pd = pytest.importorskip("pandas")
+    df = pd.DataFrame({"x": [0.0, 1.0, 30.0, 40.0], "y": [0.0, 1.0, 30.0, 40.0], "sid": [10, 11, 12, 13]})
+    rev = df.iloc[::-1]  # a reversed index: ids[r] by label would name the wrong points
+    assert [b.ids for b in sdvplot.hexbin(rev.x, rev.y, radius=10, ids=rev.sid)] == [("13",), ("12",), ("11", "10")]
+    kept = df[df.x != 0]  # a filtered index: no label 0
+    assert [b.ids for b in sdvplot.hexbin(kept.x, kept.y, radius=10, ids=kept.sid)] == [("11",), ("12",), ("13",)]
+    x = pd.Series([0.0, None, 30.0], dtype="Float64")  # pandas' NA is missing, as None and NaN are
+    assert sum(b.count for b in sdvplot.hexbin(x, [0.0, 1.0, 30.0], radius=10)) == 2
+
+
+def test_ids_follow_javascript_string_and_numpy_sizes_are_accepted():
+    np = pytest.importorskip("numpy")
+    bins = sdvplot.hexbin([0, 30], [0, 30], radius=np.int64(10), ids=[True, np.float32(2.0)])
+    assert [b.ids for b in bins] == [("true",), ("2",)]  # String(true), String(2)
