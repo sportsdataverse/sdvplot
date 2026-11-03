@@ -285,7 +285,9 @@ plt.show()
 PyPalettes' `create_cmap` turns a list of colors into a matplotlib colormap; built from a pale tint and a
 team's two colors, it shades a density chart in that team. Shai Gilgeous-Alexander's shots, from the stats-API
 shot file the SportsDataverse publishes as a GitHub release (no stats.nba.com call), moved onto sportypy's
-court with `court_coords`, then binned into 1.8 ft hexagons with `add_bins` (`shape="square"` draws squares):
+court with `court_coords`, then binned into 1.8 ft hexagons with `add_bins` (`shape="square", equal_area=True`
+draws squares of the same area). Only the shots on the drawn half court are binned, so a heave from beyond it
+cannot set the top of the color scale:
 
 ```python
 from pypalettes import create_cmap
@@ -297,7 +299,8 @@ cmap = create_cmap(["#d6e8f5", okc_primary, okc_secondary], cmap_type="continuou
 
 fig, ax = plt.subplots(figsize=(7.5, 6.5))
 sdvplot.surface("nba", ax=ax, display_range="defense")
-sdvplot.add_bins(ax, sga["court_x"], sga["court_y"], radius=1.8, norm="log", cmap=cmap, linewidths=0.3,
+half = sga.filter(pl.col("court_x").is_between(-47, 0) & pl.col("court_y").is_between(-25, 25))  # the drawn half
+sdvplot.add_bins(ax, half["court_x"], half["court_y"], radius=1.8, norm="log", cmap=cmap, linewidths=0.3,
                  edgecolors="white", zorder=20)  # fmt: skip
 fig.colorbar(ax.collections[-1], ax=ax, shrink=0.6, label="Shots (log scale)")
 ax.set_title(f"Shai Gilgeous-Alexander's {sga.height:,} shots, 2025-26 regular season", loc="left", fontweight="bold")
