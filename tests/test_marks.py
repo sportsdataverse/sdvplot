@@ -199,3 +199,18 @@ def test_select_mark_hands_out_a_copy_of_the_cached_row():
     row = _marks.select_mark("LV", "nfl")
     row["archive_url"] = "edited by the caller"
     assert _marks.logo_url("LV", "nfl") == "https://cdn/1111.png"
+
+
+def test_a_conference_with_only_a_wordmark_draws_it_as_its_logo_and_a_team_never_does(monkeypatch):
+    # the NHL's Eastern and Western Conference Final marks are wordmarks (variant "conference_final"), its only ones
+    rows = {
+        "AFC": [{"level": "conference", "mark_type": "wordmark", "variant": "conference_final", "valid_from": 2024,
+                 "valid_to": 2026, "archive_url": "https://cdn/ecf.png"}],
+        "13": [{"level": "team", "mark_type": "wordmark", "variant": "default", "valid_from": None, "valid_to": None,
+                "archive_url": "https://cdn/lv-wordmark.png"}],
+    }  # fmt: skip
+    monkeypatch.setattr(_marks, "_team_rows", lambda team_id, league: rows[team_id])
+    for season in (None, 2025, 2010):
+        assert _marks.select_mark("AFC", "nfl", season)["archive_url"] == "https://cdn/ecf.png"
+    assert _marks.select_mark("AFC", "nfl", variant="dark")["archive_url"] == "https://cdn/ecf.png"
+    assert _marks.select_mark("LV", "nfl") is None

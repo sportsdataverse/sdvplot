@@ -29,7 +29,7 @@ The bundled team index: one row per (league, team_id), with names, abbreviation,
 
 ## Returns
 
-`polars.DataFrame` — The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``, ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``: "nflverse", "espn" or "openf1" (published colors), "logo" (derived from the team's archived logo, where no source publishes any), "cbbplotR" (a conference row's) or "fallback" (a placeholder).
+`polars.DataFrame` — The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``, ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``: "nflverse", "espn" or "openf1" (published colors), "logo" (derived from the team's archived logo, where no source publishes any), "cbbplotR" (a conference row's) or "fallback" (a placeholder). In ``soccer``, one pool of ESPN club ids, ``conference_id`` and ``conference`` are a club's domestic league (ESPN's slug and name: "eng.1", "English Premier League"), null for a national team (``program`` "national").
 
 ## Raises
 

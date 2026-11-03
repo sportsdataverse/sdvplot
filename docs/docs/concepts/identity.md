@@ -29,6 +29,14 @@ conference row's. Every other listing shows teams only, and `resolve()` and `pal
 (CFB's `MAC` is Macalester, not the Mid-American Conference). The logo functions take a conference's key and sdvplotR's
 other names for it (`logo_url("Southeastern Conference", "cfb")` is `logo_url("SEC", "cfb")`), after every team.
 
+Soccer is one league key, `soccer`, for every club ESPN covers. There `conference_id` and `conference` mean a club's
+**domestic league**: the league competition it was seen in in its latest season, as ESPN's slug and name (`"eng.1"`,
+`"English Premier League"`), so `teams("soccer").filter(pl.col("conference_id") == "eng.1")` is the Premier League.
+Cups and the confederations' competitions are not leagues, and a club in two leagues that season gets none. National
+teams (a World Cup or its qualifying) have `program` `"national"` and no domestic league. Every competition a club was
+seen in, the Champions League and the cups included, is an alias of id system `"competition"` (value: the slug, dated
+by that competition's season) in the index's alias table; `resolve()` never reads it, since one slug names many clubs.
+
 ## Resolving what you have
 
 `resolve()` turns the identifiers in your data into canonical `team_id`s:
