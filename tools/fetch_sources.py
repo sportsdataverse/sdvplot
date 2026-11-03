@@ -669,23 +669,24 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--sr-manifest", type=Path, help="sdv-assets-private manifest/sr_team_seasons.csv")
     p.add_argument("--ncaa-xwalk", type=Path, help="ncaa-mfb-football-raw mfb/xwalk/espn_team_id.json")
-    p.add_argument(
+    only = p.add_mutually_exclusive_group()  # each refreshes one part; two would silently run just the first
+    only.add_argument(
         "--colors-only",
         action="store_true",
         help="refresh only espn_colors.csv and logo_colors.csv, from the committed ESPN team snapshots (no CFBD key)",
     )
-    p.add_argument(
+    only.add_argument(
         "--teams-only",
         action="store_true",
         help="refresh only the archive's snapshots (manifest_*.csv), ESPN's teams lists (espn_teams.csv) and "
         "f1_teams.csv (Jolpica, OpenF1): no CFBD key",
     )
-    p.add_argument(
+    only.add_argument(
         "--groups-only",
         action="store_true",
         help="refresh only groups_latest.csv, from the sportsdataverse-data {league}_groups releases",
     )
-    p.add_argument(
+    only.add_argument(
         "--crosswalks-only",
         action="store_true",
         help="refresh only provider_ids.csv, from the sportsdataverse-data NCAA and WNBA crosswalk releases",
