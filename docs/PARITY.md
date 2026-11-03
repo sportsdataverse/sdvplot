@@ -195,7 +195,8 @@ archived mark with `sdvplot.marks(team, "nfl")`.
 with cbbplotR's colors and ESPN's conference logo URLs, listed by `team_reference()` / `valid_team_names()` only with
 `include_conferences = TRUE` and drawn by every geom. sdvplotR has since dropped `logo_ref`, so sdvplot keeps them
 itself, in `data-raw/curated/non_team_rows.csv` (first exported by `tools/export_sdvplotr.R`, now hand-kept, with the
-MLB, NBA, WNBA, NHL, AAF and NCAA rows, their conferences and the NHL's division marks beside them: 118 rows), and
+MLB, NBA, WNBA, NHL, AAF and NCAA rows, their conferences, the NHL's division marks and the college baseball,
+softball and men's hockey conferences beside them: 180 rows), and
 `tools/build_index.py` (`conference_rows`) adds them to the one team index
 after the team rows, so `teams(league, include_conferences=True)` lists them. Decision: the same table, not a second
 one, because the rows share every column and the opt-in keeps every consumer unchanged; `program` carries R's `type`
@@ -220,8 +221,8 @@ conference's every variant: the `dark` copy the archive holds beside the listed 
 the AFC, NFC and NFL; MBB and WBB have none, as in R). At run time `_marks._ranked` builds that key for every non-team manifest
 row, and the mark functions (`logo_url`, `marks`, `logo_image`, `select_mark`, every adapter through `_placement`)
 resolve with `_resolve.resolve_marks`, which reads a value no team alias names as a conference row's key, after every
-team alias. 118 of 118 rows have a mark (`test_every_conference_and_league_row_draws_a_mark`; the gated live test
-draws all 118). A named mark the archive lacks fails the build, as R's `stopifnot` does. The NHL's division marks
+team alias. 180 of 180 rows have a mark (`test_every_conference_and_league_row_draws_a_mark`; the gated live test
+draws all 180). A named mark the archive lacks fails the build, as R's `stopifnot` does. The NHL's division marks
 are manifest level `"division"`, a non-team mark level (`_index.NON_TEAM`); their rows' `program` is `"conference"`.
 A new key never meets a team code: the division rows are `Atlantic`, `Metropolitan`, `Central` and `Pacific`, not
 the manifest's `ATL` / `MET` / `CEN` / `PAC` (NHL `ATL` is the Atlanta Thrashers' code).

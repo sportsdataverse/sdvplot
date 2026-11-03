@@ -52,6 +52,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- College baseball, softball and men's and women's hockey teams carry a `conference` and `conference_id`
+  (`ncaa_baseball`, `ncaa_softball`, `ncaa_mhockey`, `ncaa_whockey`), from sdv-reference-data's ESPN-keyed groups:
+  78%, 77%, 58% and 98% of each league's teams (non-Division I and defunct programs stay null).
+  `teams(league, include_conferences=True)` adds their conference rows where the archive has the conference's logo
+  (the basketball conference logos ESPN shares across sports): 30 baseball, 31 softball and the men's hockey Big Ten.
+  The hockey-only conferences (Hockey East, NCHC, ECAC, CCHA, Atlantic Hockey America, WCHA, NEWHA, CHA) have no
+  archived logo yet, so their teams carry the conference with no row. `tools/fetch_sources.py --groups-only`
+  refreshes `data-raw/groups_latest.csv` alone.
 - `headshot_url()` (and every headshot adapter) covers more leagues, as sdvplotR does: G League (`"nbagl"`; ESPN files
   its photos with the NBA's) and soccer by ESPN athlete id, and the PWHL, AHL, ECHL, OHL, WHL, QMJHL and USHL by
   their HockeyTech `player_id` with `id_system="league"` (`assets.leaguestat.com`). ESPN and leaguestat answer an
