@@ -21,6 +21,54 @@ KNOWN_GAPS = {
     ("nfl", "NEW YORK"),
     ("nhl", "NEW YORK"),
     ("cfb", "CHARLOTTE"),  # CFBD names two teams "Charlotte", and cfbd decides before sdvplotr
+    # soccer, since the 2026-11-03 capture: a second ESPN club now has the name (Liga MX Femenil, the Women's FA Cup and
+    # women's national sides; 8352 took 21133's "Wellington Phoenix"), so the name names neither
+    *[
+        ("soccer", k)
+        for k in (
+            "AFC FYLDE",
+            "AFC WIMBLEDON",
+            "ATLANTE",
+            "CRUZ AZUL",
+            "ETHIOPIA",
+            "EXETER CITY",
+            "FC JUAREZ",
+            "GUADALAJARA",
+            "HUDDERSFIELD TOWN",
+            "LEEDS UNITED",
+            "LEON",
+            "OXFORD UNITED",
+            "PLYMOUTH ARGYLE",
+            "PUEBLA",
+            "PUMAS UNAM",
+            "QUERETARO",
+            "SAUDI ARABIA",
+            "SERVETTE",
+            "TIGRES UANL",
+            "TIJUANA",
+            "TOLUCA",
+            "WELLINGTON PHOENIX",
+            "WEST BROMWICH ALBION",
+        )
+    ],
+    # ESPN renamed the club (Shanghai Port FC, Persib Bandung, ...): sdvplotR's key is the old name, which the index
+    # no longer holds
+    *[
+        ("soccer", k)
+        for k in (
+            "AL GHARAFA",
+            "AL RAYYAN",
+            "AL-JAZIRA",
+            "BG TAMPINES ROVERS FC",
+            "CENTRAL COAST MARINERS",
+            "PERSIB",
+            "SC EAST BENGAL",
+            "SHANGHAI PORT",
+            "SHANGHAI SHENHUA",
+            "WELLINGTON PHOENIX FC",
+            "WESTERN SYDNEY WANDERERS",
+        )
+    ],
 }
 # ESPN's cfb teams list omits UTRGV (292); its per-team endpoint's RGV is in data-raw/espn_abbrs.csv, so sdvplotR's
 # UTRGV and TEXAS-RIO GRANDE VALLEY keys resolve through their canonical RGV (tests/test_real_index.py).
@@ -72,6 +120,11 @@ def test_historical_keys_resolve_to_the_franchise_today():
             assert sdvplot.resolve(key, lg) != sdvplot.resolve(canon, lg), (lg, key, canon)
 
 
+# Teams whose archived logo changed after the fixture was exported, so the colors measured from it changed too: soccer
+# 20703's logo was replaced in the 2026-11-03 capture (its fixture colors are the old logo's).
+LOGO_CHANGED_SINCE_FIXTURE = {("soccer", "20703")}
+
+
 def test_team_colors_agree_where_both_hold_a_real_one():  # parity audit 2026-10-05, 4b
     # sdvplotR #63 reads sdvplot's colours for the teams ESPN gives none (its `logo` rows), so those agree by
     # construction; the rest both read from ESPN or nflverse. A secondary ESPN repeats as the primary is null here.
@@ -83,7 +136,10 @@ def test_team_colors_agree_where_both_hold_a_real_one():  # parity audit 2026-10
     both = j.filter(pl.col("color_source").is_not_null() & (pl.col("color_source_right") != "fallback"))
     assert both.height == r.height
     lower = {c: pl.col(c).str.to_lowercase() for c in ("color1", "color2", "color_primary", "color_secondary")}
-    differ = both.filter(
+    changed = pl.DataFrame(sorted(LOGO_CHANGED_SINCE_FIXTURE), schema=["sport", "espn_team_id"], orient="row")
+    # the shipped colors of its new logo (logo_colors.csv), so a refresh that changes them again is seen
+    assert sdvplot.team_colors("soccer", "20703") == "#08459c"
+    differ = both.join(changed, on=["sport", "espn_team_id"], how="anti").filter(
         (lower["color1"] != lower["color_primary"])
         | (
             pl.col("color2").is_not_null()

@@ -78,6 +78,20 @@ def test_manifest_teams_keep_the_latest_name_per_team():
     ]
 
 
+def test_excluded_marks_drop_only_the_listed_league_source_and_id():
+    rows = [
+        {"league": "qmjhl", "source": "hockeytech", "entity_id": "65"},
+        {"league": "qmjhl", "source": "hockeytech", "entity_id": "1"},
+        {"league": "ohl", "source": "hockeytech", "entity_id": "65"},
+        {"league": "qmjhl", "source": "espn", "entity_id": "65"},  # same league and id, another source: kept
+    ]
+    excluded = [{"league": "qmjhl", "source": "hockeytech", "entity_id": "65", "reason": "OHL exhibition opponent"}]
+    assert fs.drop_excluded(rows, excluded) == rows[1:]
+    # the committed list parses and names each row once
+    committed = list(fs.csv.DictReader(fs.EXCLUDED_MARKS.open(encoding="utf-8")))
+    assert committed and len({(r["league"], r["source"], r["entity_id"]) for r in committed}) == len(committed)
+
+
 def test_manifest_teams_come_from_identity_keyed_sources_only():
     rows = [
         _row("espn", "1", "Boston Bruins", "2026-09-01", league="nhl"),

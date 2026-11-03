@@ -59,7 +59,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   instead of `ax.hexbin`.
 - 21 new leagues in the index (49 in all), from the archive's 2026-11-03 capture: the junior and minor HockeyTech
   leagues `sphl` (16 teams), `chl` (41), `bchl` (23), `ajhl` (17), `sjhl` (13), `ojhl` (28), `cchl` (13), `gojhl`
-  (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (22), keyed by their HockeyTech team ids
+  (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (19), keyed by their HockeyTech team ids
   (`id_system="hockeytech"`); Australia's `nbl` (10, ESPN ids); the national teams pooled by sport, `fiba` (30:
   basketball's men's, women's and ESPN's ungendered FIBA list, `program` `mens` / `womens` / `national`) and `iihf`
   (16, ice hockey, `program` `national`), both ESPN ids, so an abbreviation such as `AUS` that names a men's and a
@@ -130,6 +130,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- The team index takes the rest of the archive's 2026-11-03 capture: 50 more soccer clubs (Liga MX Femenil and
+  Women's FA Cup sides, Copa del Rey, India's I-League 2 and friendlies; 16 renamed to ESPN's current names), ESPN's
+  current names for three women's basketball teams (Central Arkansas Sugar Bears, East Tennessee State Buccaneers,
+  Hawai'i Rainbow Wahine), and ESPN's current college baseball and softball abbreviations. A women's club that shares a
+  name with the men's club (Cruz Azul, Leeds United) makes that name match both; the team id picks one.
+- Nine HockeyTech interleague and exhibition opponents are no longer teams of the league whose season lists them: six
+  OHL teams in the QMJHL and three NAHL, SJHL and SIJHL teams in the MJHL. `data-raw/curated/excluded_marks.csv` names
+  each with its reason, and `tools/fetch_sources.py` drops them before any snapshot is written.
 - `surface(..., center_logo=True)` on a baseball or softball field (`mlb`, `milb`, `ncaa_baseball`, `ncaa_softball`)
   draws the logo in shallow center field instead of on home plate, the field's origin, exactly as sdvplotR: at x = 0,
   midway between second base (`baseline_distance * sqrt(2)`) and the center-field fence, 0.15 x

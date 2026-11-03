@@ -38,6 +38,8 @@ MANIFEST_URL = "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/manife
 SOCCER_COMPETITIONS_URL = "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/manifest/soccer_competitions.csv"
 SOCCER_COMPETITION_COLUMNS = ["competition", "season", "team_id", "competition_name"]
 NHL_TEAM_URL = "https://api.nhle.com/stats/rest/en/team"
+# manifest rows that are not their league's own teams (each with its reason): dropped before any snapshot is written
+EXCLUDED_MARKS = OUT / "curated" / "excluded_marks.csv"
 NHL_FRANCHISE_URL = "https://api.nhle.com/stats/rest/en/franchise"
 ESPN_HOSTS = ["site.web.api.espn.com", "site.api.espn.com"]
 # manifest sources whose entity_id IS the canonical team id (Ruling R19); mlbstatic counts only in milb
@@ -520,6 +522,13 @@ def _get(s: requests.Session, url: str, **kw) -> requests.Response:
     return r
 
 
+def drop_excluded(rows: list[dict], excluded: list[dict]) -> list[dict]:
+    """The manifest without data-raw/curated/excluded_marks.csv's (league, source, entity_id) rows: the interleague and
+    exhibition opponents HockeyTech lists on a league's season team lists."""
+    drop = {(e["league"], e["source"], e["entity_id"]) for e in excluded}
+    return [r for r in rows if (r["league"], r["source"], r["entity_id"]) not in drop]
+
+
 def _is_team_row(r: dict) -> bool:
     return r["level"] == "team"
 
@@ -682,7 +691,10 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         return
 
     text = _get(s, MANIFEST_URL, timeout=120).text
-    manifest = list(csv.DictReader(io.StringIO(text)))
+    manifest = drop_excluded(
+        list(csv.DictReader(io.StringIO(text))),
+        list(csv.DictReader(io.StringIO(EXCLUDED_MARKS.read_text(encoding="utf-8")))),
+    )
     if args.colors_only:
         listed, unlisted = (
             list(csv.DictReader(io.StringIO((OUT / f"{n}.csv").read_text(encoding="utf-8"))))

@@ -28,12 +28,12 @@ def test_the_readme_and_get_started_examples():
     assert oak.select("team_id", "valid_from", "valid_to").rows() == [("13", 1960, 2019)]
 
 
-def test_palette_never_merges_teams_that_share_an_abbreviation():  # KSU: Kansas State (264), Kennesaw State (307)
-    with pytest.warns(sdvplot.SdvplotWarning, match="KSU, LIN, PAC") as w:
+def test_palette_never_merges_teams_that_share_an_abbreviation():  # DEP: DePaul (342), DePauw (1286)
+    with pytest.warns(sdvplot.SdvplotWarning, match="DEP, LIN, MER, PAC") as w:
         p = sdvplot.palette("ncaa_baseball")
     assert len(w) == 1
     assert len(p) == sdvplot.teams("ncaa_baseball")["color_primary"].is_not_null().sum()
-    assert "KSU" not in p and p["264"] == "#633194" and p["307"] == "#fdbb30"  # 307: the school's ESPN gold, by name
+    assert "DEP" not in p and p["342"] == "#2d649c" and p["1286"] == "#ffce34"  # 1286: its logo's gold
 
 
 @pytest.mark.parametrize("id_system", PRIORITY + EXPLICIT_ONLY)
@@ -322,12 +322,12 @@ COLOR_FLOORS = {
     "aaf": (0, 8), "ahl": (0, 61), "cfb": (383, 304), "cricket": (0, 111), "echl": (0, 59), "mbb": (356, 10),
     "milb": (0, 286), "mlb": (30, 0), "nba": (30, 0), "nbagl": (29, 3), "ncaa_baseball": (370, 44),
     "ncaa_mhockey": (53, 55), "ncaa_softball": (358, 57), "ncaa_whockey": (30, 18), "nfl": (32, 0), "nhl": (32, 0),
-    "ohl": (0, 27), "phf": (0, 8), "pwhl": (0, 12), "qmjhl": (0, 30), "soccer": (2125, 506), "ufl": (11, 0),
+    "ohl": (0, 27), "phf": (0, 8), "pwhl": (0, 12), "qmjhl": (0, 26), "soccer": (2125, 506), "ufl": (11, 0),
     "usfl": (0, 9), "ushl": (0, 17), "wbb": (354, 10), "whl": (0, 23), "wnba": (15, 0), "xfl": (7, 4),
     # the leagues of the 2026-11-03 capture (published: ESPN or OpenF1)
     "ajhl": (0, 17), "bchl": (0, 23), "cchl": (0, 13), "cebl": (0, 15), "cfl": (0, 9), "chl": (0, 41), "easl": (0, 12),
     "f1": (14, 17), "fiba": (24, 6), "gojhl": (0, 45), "iihf": (0, 16), "kijhl": (0, 23), "lba": (0, 24), "mhl": (0, 13),
-    "mjhl": (0, 22), "nbl": (10, 0), "nojhl": (0, 27), "ojhl": (0, 28), "sjhl": (0, 13), "sphl": (0, 16),
+    "mjhl": (0, 19), "nbl": (10, 0), "nojhl": (0, 27), "ojhl": (0, 28), "sjhl": (0, 13), "sphl": (0, 16),
     "vijhl": (0, 12),
 }  # fmt: skip
 
@@ -633,7 +633,9 @@ def test_core_api_abbreviations_of_the_teams_espns_lists_omit(league, code, team
 def test_abbr_falls_back_to_the_current_espn_abbrs_code():  # the teams ESPN's lists omit; the list's code wins
     abbr = dict(sdvplot.teams().select(pl.concat_str("league", "team_id", separator="/"), "abbr").rows())
     assert (abbr["cfb/292"], abbr["ncaa_baseball/1189"]) == ("RGV", "LOR")
-    assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "95")["abbr"].item() == "NCST"  # not NCSU
+    assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "1286")["abbr"].item() == "DEP"  # not DPU
+    # NC State: the teams list and the per-team endpoint both give NCSU since the 2026-11-03 refresh
+    assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "95")["abbr"].item() == "NCSU"
 
 
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
@@ -661,7 +663,7 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
 
 NEW_LEAGUES_2026_11 = {  # league: teams, from the archive's 2026-11-03 capture
     "sphl": 16, "chl": 41, "bchl": 23, "ajhl": 17, "sjhl": 13, "ojhl": 28, "cchl": 13, "gojhl": 45, "mhl": 13,
-    "nojhl": 27, "vijhl": 12, "kijhl": 23, "mjhl": 22, "nbl": 10, "fiba": 30, "iihf": 16, "cfl": 9, "cebl": 15,
+    "nojhl": 27, "vijhl": 12, "kijhl": 23, "mjhl": 19, "nbl": 10, "fiba": 30, "iihf": 16, "cfl": 9, "cebl": 15,
     "easl": 12, "lba": 24, "f1": 31,
 }  # fmt: skip
 
@@ -671,6 +673,12 @@ def test_the_2026_11_leagues_draw_every_team(league):
     t = sdvplot.teams(league)
     assert t.height >= NEW_LEAGUES_2026_11[league]
     assert all(sdvplot.logo_url(team, league) for team in t["team_id"])
+
+
+@pytest.mark.parametrize("league", ["mjhl", "qmjhl"])
+def test_hockeytech_interleague_opponents_are_not_teams(league):  # data-raw/curated/excluded_marks.csv
+    names = sdvplot.teams(league)["name"]
+    assert not names.str.contains("(", literal=True).any(), names.filter(names.str.contains("(", literal=True))
 
 
 def test_national_teams_resolve_by_espn_id_and_never_by_a_shared_code():
