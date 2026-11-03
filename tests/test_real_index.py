@@ -634,6 +634,8 @@ def test_abbr_falls_back_to_the_current_espn_abbrs_code():  # the teams ESPN's l
     abbr = dict(sdvplot.teams().select(pl.concat_str("league", "team_id", separator="/"), "abbr").rows())
     assert (abbr["cfb/292"], abbr["ncaa_baseball/1189"]) == ("RGV", "LOR")
     assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "1286")["abbr"].item() == "DEP"  # not DPU
+    # NC State: the teams list and the per-team endpoint both give NCSU since the 2026-11-03 refresh
+    assert sdvplot.teams("ncaa_baseball").filter(pl.col("team_id") == "95")["abbr"].item() == "NCSU"
 
 
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
@@ -671,6 +673,12 @@ def test_the_2026_11_leagues_draw_every_team(league):
     t = sdvplot.teams(league)
     assert t.height >= NEW_LEAGUES_2026_11[league]
     assert all(sdvplot.logo_url(team, league) for team in t["team_id"])
+
+
+@pytest.mark.parametrize("league", ["mjhl", "qmjhl"])
+def test_hockeytech_interleague_opponents_are_not_teams(league):  # data-raw/curated/excluded_marks.csv
+    names = sdvplot.teams(league)["name"]
+    assert not names.str.contains("(", literal=True).any(), names.filter(names.str.contains("(", literal=True))
 
 
 def test_national_teams_resolve_by_espn_id_and_never_by_a_shared_code():

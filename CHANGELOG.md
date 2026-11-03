@@ -59,7 +59,7 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   instead of `ax.hexbin`.
 - 21 new leagues in the index (49 in all), from the archive's 2026-11-03 capture: the junior and minor HockeyTech
   leagues `sphl` (16 teams), `chl` (41), `bchl` (23), `ajhl` (17), `sjhl` (13), `ojhl` (28), `cchl` (13), `gojhl`
-  (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (22), keyed by their HockeyTech team ids
+  (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (19), keyed by their HockeyTech team ids
   (`id_system="hockeytech"`); Australia's `nbl` (10, ESPN ids); the national teams pooled by sport, `fiba` (30:
   basketball's men's, women's and ESPN's ungendered FIBA list, `program` `mens` / `womens` / `national`) and `iihf`
   (16, ice hockey, `program` `national`), both ESPN ids, so an abbreviation such as `AUS` that names a men's and a

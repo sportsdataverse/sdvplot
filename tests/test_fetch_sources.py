@@ -83,6 +83,7 @@ def test_excluded_marks_drop_only_the_listed_league_source_and_id():
         {"league": "qmjhl", "source": "hockeytech", "entity_id": "65"},
         {"league": "qmjhl", "source": "hockeytech", "entity_id": "1"},
         {"league": "ohl", "source": "hockeytech", "entity_id": "65"},
+        {"league": "qmjhl", "source": "espn", "entity_id": "65"},  # same league and id, another source: kept
     ]
     excluded = [{"league": "qmjhl", "source": "hockeytech", "entity_id": "65", "reason": "OHL exhibition opponent"}]
     assert fs.drop_excluded(rows, excluded) == rows[1:]

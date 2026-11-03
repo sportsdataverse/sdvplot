@@ -137,6 +137,8 @@ def test_team_colors_agree_where_both_hold_a_real_one():  # parity audit 2026-10
     assert both.height == r.height
     lower = {c: pl.col(c).str.to_lowercase() for c in ("color1", "color2", "color_primary", "color_secondary")}
     changed = pl.DataFrame(sorted(LOGO_CHANGED_SINCE_FIXTURE), schema=["sport", "espn_team_id"], orient="row")
+    # the shipped colors of its new logo (logo_colors.csv), so a refresh that changes them again is seen
+    assert sdvplot.team_colors("soccer", "20703") == "#08459c"
     differ = both.join(changed, on=["sport", "espn_team_id"], how="anti").filter(
         (lower["color1"] != lower["color_primary"])
         | (
