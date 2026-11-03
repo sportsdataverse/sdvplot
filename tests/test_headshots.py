@@ -137,3 +137,26 @@ def test_a_refreshed_or_cleared_players_table_is_not_kept_in_memory(cache, monke
     assert _headshots._players.cache_info().currsize == 1  # the new table only
     _cache.clear_cache()
     assert _headshots._players.cache_info().currsize == 0
+
+
+def test_provider_ids_map_to_the_espn_athlete_through_player_aliases(cache, monkeypatch):
+    # real rows of nba_player_aliases: LeBron James (ESPN 1966) by his Yahoo, Fox and NBA Stats ids
+    buf = io.BytesIO()
+    pl.DataFrame(
+        {
+            "source": ["yahoo", "fox", "nba_stats", "yahoo"],
+            "source_player_id": ["nba.p.3704", "1120", "2544", "nba.p.3704"],  # a second season's row: one athlete
+            "athlete_id": ["1966", "1966", "1966", "1966"],
+        }
+    ).write_parquet(buf)
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, buf.getvalue())))
+    _headshots._player_aliases.cache_clear()
+    lebron = "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/1966.png"
+    assert _headshots.headshot_url("nba.p.3704", "nba", id_system="yahoo") == lebron
+    assert _headshots.headshot_url(1120, "nba", id_system="fox") == lebron
+    assert _headshots.headshot_url(2544, "nba", id_system="nba_stats") == lebron
+    assert _headshots.headshot_url(2544, "nba", id_system="fox") is None  # a source's ids are its own
+    with pytest.raises(ValueError, match=r"'kenpom' player ids map to ESPN athletes in \['mbb'\] only"):
+        _headshots.headshot_url(1, "nba", id_system="kenpom")
+    with pytest.raises(ValueError, match="id_system must be"):  # unhashable: still an InputError, not a TypeError
+        _headshots.headshot_url(1, "nba", id_system=[])  # type: ignore[arg-type]

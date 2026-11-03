@@ -29,8 +29,9 @@ def test_literals_match_the_runtime_vocabularies() -> None:
 
 
 def test_headshot_id_systems_are_the_accepted_ones() -> None:
-    for id_system in get_args(HeadshotIdSystem):
-        assert headshot_url(None, "nfl", id_system=id_system) is None
+    for id_system in get_args(HeadshotIdSystem):  # each provider in a league whose player_aliases has it
+        league = {"kenpom": "mbb", "ncaa": "mbb", "nba_stats": "nba", "wnba_stats": "wnba"}.get(id_system, "nfl")
+        assert headshot_url(None, league, id_system=id_system) is None
     with pytest.raises(InputError):
         headshot_url(None, "nfl", id_system="nflverse")  # type: ignore[arg-type]
 

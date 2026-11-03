@@ -26,7 +26,7 @@ perspective_logo_column(
     name: str | None = None,
     season: Any = None,
     variant: str = 'default',
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> Any
 ```
@@ -49,7 +49,7 @@ Perspective 5.5's Datagrid draws no images.
 | `name` | `str \| None` | The new column's name. Default: ``f"{team_col}_logo"``. It must not be a column already. |
 | `season` | `Any` | One season for every team: the logo of that season (relocations and rebrands). |
 | `variant` | `str` | "default", "dark", or a named variant from ``marks()``. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values, as in ``resolve``. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the team values, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError for a team that does not resolve, instead of warning. |
 
 ### Returns
@@ -95,7 +95,7 @@ perspective_sdv_config(
     background: str | None = None,
     formats: dict[str, dict[str, Any] | None] | None = None,
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> dict[str, Any]
 ```
@@ -144,7 +144,7 @@ plain (no grouping: 2024, not 2,024). ``formats`` overrides them.
 | `formats` | `dict[str, dict[str, Any] \| None] \| None` | Per column, a ``number_format`` (Intl.NumberFormat options, e.g. ``{"maximumFractionDigits": 2}``) to use instead of the default, or None for none. |
 | `background` | `str \| None` | The color the teams must read against. Default: the Perspective theme's background (#ffffff for "Pro Light", #242526 for "Pro Dark"). |
 | `season` | `Any` | One season for every team (the table rule). |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values, as in ``resolve``. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the team values, as in ``resolve``. |
 | `strict` | `bool` | Raise UnresolvedTeamError for a team that does not resolve, instead of warning once and giving it #808080. |
 
 ### Returns

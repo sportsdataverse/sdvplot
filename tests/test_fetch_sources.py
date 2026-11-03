@@ -2,6 +2,7 @@ import importlib.util
 import json
 from pathlib import Path
 
+import polars as pl
 import pytest
 import requests
 
@@ -593,3 +594,31 @@ def test_f1_teams_take_the_latest_jolpica_name_and_openf1_color_through_the_cura
         fs.f1_team_rows(archived, {2019: seasons[2019]}, drivers, meetings)
     with pytest.raises(RuntimeError, match=r"meetings missing from /meetings: \[3\]"):  # it would sort as year 0
         fs.f1_team_rows(archived, seasons, [*drivers, {**drivers[0], "meeting_key": 3}], meetings)
+
+
+def test_team_alias_rows_keep_ids_and_kenpom_names_and_span_the_windows():
+    a = pl.DataFrame(
+        [
+            ("194", "fox", "25", "team", "name", "OHIO STATE", 2014, 2016),
+            ("194", "fox", "25", "team", "abbreviation", "OSU", 2014, 2016),  # one id, two names: one row
+            ("194", "fox", "25", "team", "name", "OHIO STATE", 2019, 2026),  # a gap: its own window
+            ("30", "fox", "32", "team", "name", "LA CLIPPERS", 2015, 2027),  # 32 was another team's in 2002
+            ("103", "kenpom", None, "team", "name", "Boston College", 2002, 2026),
+            ("99", "cbs", "1123361", "team", None, None, None, None),  # undated curated map
+            ("1", "nba_stats", "1610612737", "team", None, None, 1997, 2027),  # reaches the index as nba_api
+        ],
+        schema={"team_id": pl.String, "source": pl.String, "source_id": pl.String, "id_kind": pl.String,
+                "name_kind": pl.String, "value": pl.String, "valid_from": pl.Int32, "valid_to": pl.Int32},
+        orient="row",
+    )  # fmt: skip
+    got = sorted(
+        (r["id_system"], r["kind"], r["value"], r["team_id"], r["first_season"], r["last_season"])
+        for r in fs.team_alias_rows("cfb", a)
+    )
+    assert got == [
+        ("cbs", "team", "1123361", "99", None, None),
+        ("fox", "team", "25", "194", 2014, 2016),
+        ("fox", "team", "25", "194", 2019, 2026),
+        ("fox", "team", "32", "30", 2015, 2027),
+        ("kenpom", "name", "Boston College", "103", 2002, 2026),
+    ]

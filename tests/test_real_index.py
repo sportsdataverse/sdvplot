@@ -157,6 +157,39 @@ def test_provider_crosswalk_ids():
     assert sdvplot.resolve([1611661319, "LVA"], "wnba") == ["17", "17"]
 
 
+def test_team_alias_ids():
+    # data-raw/provider_ids.csv, from sdv-reference-data's {league}_team_aliases (the {league}_groups releases): one
+    # alias per id and window
+    systems = ["fox", "yahoo", "cbs", "sports247", "on3", "kenpom", "torvik"]
+    counts = dict(
+        _index.alias_table()
+        .filter(pl.col("id_system").is_in(systems))
+        .group_by(pl.concat_str("league", "id_system", separator="/"))
+        .len()
+        .iter_rows()
+    )
+    assert counts == {
+        "nfl/fox": 32, "nfl/yahoo": 32, "nfl/cbs": 32,
+        "cfb/fox": 453, "cfb/yahoo": 599, "cfb/cbs": 312, "cfb/sports247": 532, "cfb/on3": 151,
+        "nba/fox": 31, "nba/yahoo": 30, "nba/cbs": 30,
+        "wnba/fox": 15, "wnba/yahoo": 15,
+        "mbb/fox": 392, "mbb/yahoo": 320, "mbb/sports247": 730, "mbb/on3": 344, "mbb/kenpom": 391, "mbb/torvik": 369,
+        "wbb/fox": 371, "wbb/yahoo": 309, "wbb/sports247": 363, "wbb/on3": 342, "wbb/torvik": 359,
+        "mlb/fox": 30, "mlb/yahoo": 30, "mlb/cbs": 30,
+        "nhl/fox": 32, "nhl/yahoo": 32, "nhl/cbs": 32,
+    }  # fmt: skip
+    # Fox 25 is Ohio State; under "auto" 25 stays ESPN's California, as Fox / CBS / 247 / On3 are explicit-only
+    assert sdvplot.resolve("25", "cfb") == "25"
+    assert sdvplot.resolve("25", "cfb", id_system="fox") == "194"
+    # one Yahoo id per league resolves under "auto" (dotted: no other system's)
+    yahoo = {"nfl": ("nfl.t.1", "1"), "cfb": ("ncaaf.t.1", "228"), "nba": ("nba.t.1", "1"),
+             "wnba": ("wnba.t.10", "3"), "mbb": ("ncaab.t.10", "2016"), "wbb": ("ncaaw.t.10", "2016"),
+             "mlb": ("mlb.t.1", "1"), "nhl": ("nhl.t.1", "1")}  # fmt: skip
+    for league, (value, team) in yahoo.items():
+        assert sdvplot.resolve(value, league) == team, league
+    assert sdvplot.resolve("Boston College", "mbb", id_system="kenpom") == "103"
+
+
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
 def test_live_readme_logo_examples(tmp_path, monkeypatch):
     from sdvplot import _manifest

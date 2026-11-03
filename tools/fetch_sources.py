@@ -80,6 +80,11 @@ NCAA_CROSSWALKS = [
     ("ncaa_softball", "ncaa_softball_espn_team_crosswalk", "ncaa_team_id", "ncaa_season_team_id"),
 ]
 PROVIDER_ID_COLUMNS = ["league", "id_system", "kind", "value", "team_id", "first_season", "last_season"]
+# The {league}_groups releases' team_aliases (sdv-reference-data CONTRACT.md): each source's id, or for the name-only
+# KenPom and Torvik its team name, becomes that source's id_system. Its other sources reach the index another way:
+# ncaa (NCAA_CROSSWALKS), nba_stats / wnba_stats (nba_api), mlb (mlbstats), nhl (nhl_id), and cfbd, whose ids are ESPN's
+TEAM_ALIAS_LEAGUES = ["nfl", "cfb", "nba", "wnba", "mbb", "wbb", "mlb", "nhl"]
+TEAM_ALIAS_SOURCES = ["fox", "yahoo", "cbs", "sports247", "on3", "kenpom", "torvik"]
 # (sdv league, ESPN sport, ESPN league) — the sdv-assets ESPN_LEAGUES list plus the college sports
 ESPN_LEAGUES = [
     ("nfl", "football", "nfl"),
@@ -689,7 +694,8 @@ def main() -> None:
     only.add_argument(
         "--crosswalks-only",
         action="store_true",
-        help="refresh only provider_ids.csv, from the sportsdataverse-data NCAA and WNBA crosswalk releases",
+        help="refresh only provider_ids.csv, from the sportsdataverse-data NCAA and WNBA crosswalk releases and the "
+        "{league}_groups team_aliases",
     )
     args = p.parse_args()
     stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
@@ -940,7 +946,8 @@ def fetch_crosswalks(s: requests.Session, write: Callable[[str, list[dict], list
     """provider_ids.csv: other providers' team ids for ESPN teams, from the sportsdataverse-data crosswalk releases
     (``--crosswalks-only`` refreshes just this one). id_system "ncaa": each NCAA_CROSSWALKS league's stats.ncaa.org
     school (org) ids and season team ids; "nba_api": the WNBA Stats team ids and tricodes of every season wehoop's
-    wnba_team_crosswalk covers. A season is its end year ("2015-16" is 2016)."""
+    wnba_team_crosswalk covers; and each TEAM_ALIAS_LEAGUES league's team_aliases (team_alias_rows). A season is its end
+    year ("2015-16" is 2016)."""
     import polars as pl
 
     def read(tag: str, name: str) -> pl.DataFrame:
@@ -969,7 +976,32 @@ def fetch_crosswalks(s: requests.Session, write: Callable[[str, list[dict], list
     for kind, col in (("id", "wnba_team_id"), ("tricode", "wnba_team_tricode")):
         df = wnba.select(pl.col(col).alias("value"), pl.col("espn_team_id").alias("team_id"), end_year)
         rows += provider_id_rows("wnba", "nba_api", kind, df)
+    for league in TEAM_ALIAS_LEAGUES:
+        rows += team_alias_rows(league, read(f"{league}_groups", f"{league}_team_aliases.parquet"))
     write("provider_ids", rows, PROVIDER_ID_COLUMNS)
+
+
+def team_alias_rows(league: str, a: pl.DataFrame) -> list[dict]:
+    """provider_ids.csv rows from one league's team_aliases: per TEAM_ALIAS_SOURCES source and id kind (``team`` or
+    ``school``; ``name`` for a name-only source), one row per (value, team, window). Windows stay apart, so a value two
+    teams took turns holding is not read as an overlap; an undated window (CBS college football) leaves both seasons
+    blank."""
+    import polars as pl
+
+    return (
+        a.filter(pl.col("source").is_in(TEAM_ALIAS_SOURCES))
+        .select(
+            pl.lit(league).alias("league"),
+            pl.col("source").alias("id_system"),
+            pl.when(pl.col("source_id").is_null()).then(pl.col("name_kind")).otherwise(pl.col("id_kind")).alias("kind"),
+            pl.coalesce("source_id", "value").alias("value"),
+            "team_id",
+            pl.col("valid_from").alias("first_season"),
+            pl.col("valid_to").alias("last_season"),
+        )
+        .unique(maintain_order=True)  # an id with a name and an abbreviation is two team_aliases rows
+        .to_dicts()
+    )
 
 
 if __name__ == "__main__":

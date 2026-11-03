@@ -90,10 +90,11 @@ def place(
     whose team is unknown, whose x or y is missing, or that have no mark.
 
     ``x``, ``y`` and ``teams`` are read positionally (a pandas index is ignored). For ``kind="headshot"``, ``teams``
-    holds player ids, ``season`` is ignored and ``id_system`` must be ``"espn"``, ``"gsis"`` or ``"league"`` (as in
-    ``headshot_url``; ``"auto"`` means ``"espn"``); otherwise ``strict=True`` raises UnresolvedTeamError for a team that
-    does not resolve, as ``resolve`` does. ``_warn=False`` skips the same points without warning, for an adapter that
-    already warned for them (no process-wide warning filter is touched, so it is thread-safe).
+    holds player ids, ``season`` is ignored and ``id_system`` must be one of ``headshot_url``'s (``"espn"``,
+    ``"gsis"``, ``"league"`` or a provider; ``"auto"`` means ``"espn"``); otherwise ``strict=True`` raises
+    UnresolvedTeamError for a team that does not resolve, as ``resolve`` does. ``_warn=False`` skips the same points
+    without warning, for an adapter that already warned for them (no process-wide warning filter is touched, so it is
+    thread-safe).
     """
     skipped = _warn_skipped if _warn else lambda reason, values: None
     check_kind(kind)
@@ -119,9 +120,11 @@ def place(
             if url is None:
                 no_image.append(pid)
                 continue
-            # the id the URL was built from: headshot_url reads an espn or league id through norm_value, so an id that
-            # went through a float ("3139477.0") is 3139477; gsis ids (nfl "gsis" or "league") are looked up as given
-            key = norm_value(pid) if id_system == "espn" or (id_system == "league" and league != "nfl") else None
+            # the id the URL was built from: headshot_url reads an espn, league or provider id through norm_value, so an
+            # id that went through a float ("3139477.0") is 3139477; gsis ids (nfl "gsis" or "league") are looked up as
+            # given
+            gsis = id_system == "gsis" or (id_system == "league" and league == "nfl")
+            key = None if gsis else norm_value(pid)
             out.append(Placement(key or str(pid).strip(), xi, yi, url, None, None))
         skipped("with no headshot", no_image)
     else:
