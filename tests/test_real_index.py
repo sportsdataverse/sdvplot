@@ -326,7 +326,7 @@ COLOR_FLOORS = {
     "usfl": (0, 9), "ushl": (0, 17), "wbb": (354, 10), "whl": (0, 23), "wnba": (15, 0), "xfl": (7, 4),
     # the leagues of the 2026-11-03 capture (published: ESPN or OpenF1)
     "ajhl": (0, 17), "bchl": (0, 23), "cchl": (0, 13), "cebl": (0, 15), "cfl": (0, 9), "chl": (0, 41), "easl": (0, 12),
-    "f1": (14, 3), "fiba": (24, 6), "gojhl": (0, 45), "iihf": (0, 16), "kijhl": (0, 23), "lba": (0, 24), "mhl": (0, 13),
+    "f1": (14, 17), "fiba": (24, 6), "gojhl": (0, 45), "iihf": (0, 16), "kijhl": (0, 23), "lba": (0, 24), "mhl": (0, 13),
     "mjhl": (0, 22), "nbl": (10, 0), "nojhl": (0, 27), "ojhl": (0, 28), "sjhl": (0, 13), "sphl": (0, 16),
     "vijhl": (0, 12),
 }  # fmt: skip
@@ -458,13 +458,6 @@ RAW = Path(__file__).parents[1] / "data-raw"
 # Share of each college league's teams with a conference (sdv-reference-data's ESPN-keyed groups): the ESPN lists
 # also hold non-D-I and defunct programs, which stay null. Set from the 2026-11-02 build (0.775 / 0.766 / 0.582 / 0.979)
 CONFERENCE_FLOORS = {"ncaa_baseball": 0.75, "ncaa_softball": 0.75, "ncaa_mhockey": 0.55, "ncaa_whockey": 0.95}
-# Their conferences no archived mark draws yet (hockey-only and non-D-I ones): a new mark adds a row and leaves this list
-NO_MARK = {
-    "ncaa_baseball": ["scac"],
-    "ncaa_mhockey": ["atlantic-hockey", "ccha", "cha", "ecac", "hockey-east", "nchc", "wcha"],
-    "ncaa_softball": ["saa", "scac"],
-    "ncaa_whockey": ["atlantic-hockey", "ecac", "hockey-east", "newha", "wcha"],
-}
 
 
 @pytest.mark.parametrize("league", sorted(CONFERENCE_FLOORS))
@@ -474,28 +467,29 @@ def test_college_teams_carry_their_conference(league):  # plan gap (c): baseball
     assert (teams["conference_id"].is_null() == teams["conference"].is_null()).all()
     rows = sdvplot.teams(league, include_conferences=True).filter(pl.col("program") == "conference")
     unrowed = set(teams["conference_id"].drop_nulls()) - set(rows["conference_id"].drop_nulls())
-    assert sorted(unrowed) == [f"{league}:{slug}" for slug in NO_MARK[league]]
+    assert sorted(unrowed) == []  # every conference a team carries has a row (the hockey-only ones since 2026-11)
 
 
 # The conference and league rows (sdvplotR's include_conferences, parity audit gap #2): sdvplotR's 89 college
 # conferences, the AFC, NFC and NFL, then the pro leagues, their conferences, the NHL's division marks, the NCAA's, and
 # the college baseball, softball and men's hockey conferences that reuse an mbb / wbb mark; the NHL's Eastern and
-# Western Conference Final marks; cfb's D-II / D-III conferences (Wayback-pinned site logos), three of which baseball
-# and softball reuse
-COUNTS = [("aaf", 1), ("cfb", 65), ("mbb", 33), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 33), ("ncaa_mhockey", 2),
-          ("ncaa_softball", 35), ("ncaa_whockey", 1), ("nfl", 3), ("nhl", 11), ("wbb", 33), ("wnba", 3)]  # fmt: skip
+# Western Conference Final marks; cfb's D-II / D-III conferences (Wayback-pinned site logos), five of which baseball
+# and softball reuse; the hockey-only conferences (Wayback-pinned site logos); the CFL
+COUNTS = [("aaf", 1), ("cfb", 70), ("cfl", 1), ("mbb", 33), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 34),
+          ("ncaa_mhockey", 9), ("ncaa_softball", 37), ("ncaa_whockey", 6), ("nfl", 3), ("nhl", 11), ("wbb", 33),
+          ("wnba", 3)]  # fmt: skip
 
 
 def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     everything = sdvplot.teams(include_conferences=True)
     conf = everything.filter(pl.col("program").is_in(_index.NON_TEAM))
-    assert conf.group_by("league").len().sort("league").rows() == COUNTS and conf.height == 226
+    assert conf.group_by("league").len().sort("league").rows() == COUNTS and conf.height == 247
     assert set(conf["program"]) == {
         "conference",
         "league",
     }  # a division mark's row is a "conference" one
     leagues = conf.filter(pl.col("program") == "league").select("league", "abbr").sort("league").rows()
-    assert leagues == [("aaf", "AAF"), ("cfb", "NCAA"), ("mbb", "NCAA"), ("mlb", "MLB"), ("nba", "NBA"),
+    assert leagues == [("aaf", "AAF"), ("cfb", "NCAA"), ("cfl", "CFL"), ("mbb", "NCAA"), ("mlb", "MLB"), ("nba", "NBA"),
                        ("ncaa_baseball", "NCAA"), ("ncaa_mhockey", "NCAA"), ("ncaa_softball", "NCAA"),
                        ("ncaa_whockey", "NCAA"), ("nfl", "NFL"), ("nhl", "NHL"), ("wbb", "NCAA"), ("wnba", "WNBA")]  # fmt: skip
     assert sdvplot.teams().height + conf.height == everything.height and sdvplot.teams("cfb").height == 687
@@ -518,7 +512,7 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     assert set(ca["id_system"]) == {"mark", "conference"}
     marks = ca.filter(pl.col("id_system") == "mark")
-    assert marks.height == 230 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
+    assert marks.height == 251 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
@@ -541,14 +535,14 @@ def test_conference_colors_are_the_curated_cbbplotr_values():  # sdvplotR's logo
     ).unique()  # fmt: skip
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     j = conf.join(r, on=["league", "team_id"], how="inner")
-    assert j.height == conf.height == 226 and (j["program"] == j["r_type"]).all()
+    assert j.height == conf.height == 247 and (j["program"] == j["r_type"]).all()
     colored = j.filter(pl.col("r1").is_not_null())
     assert colored.height == 147 and (colored["color_source"] == "cbbplotR").all()
     assert (colored["color_primary"] == colored["r1"]).all()
     assert (colored["color_secondary"] == colored.select(pl.when(pl.col("r2") != pl.col("r1")).then("r2"))["r2"]).all()
     none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC, the Pioneer, the new rows
     assert (
-        none.height == 79 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
+        none.height == 100 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
     )
 
 
@@ -558,7 +552,7 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     ca = ca.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     keys = ca.group_by(pl.concat_str("league", "team_id", separator="/").alias("k")).agg(pl.col("value").sort())
     key = dict(keys.rows())
-    assert len(key) == 226
+    assert len(key) == 247
     # ESPN files one conference logo under each league with its own group id; the row names its own league's
     assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == (["conference:cfb:espn:8"], ["conference:mbb:espn:23"], ["conference:wbb:espn:23"])  # fmt: skip
     assert key["cfb/WAC"] == key["mbb/WAC"] == ["conference:ncaa:espn:wac"]  # filed once, under "ncaa"
@@ -571,7 +565,7 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     assert key["nba/East"] == ["conference:nba:espn:East"] and key["wnba/East"] == ["conference:wnba:espn:East"]
     assert key["nhl/Metropolitan"] == ["division:nhl:nhl:88"]
     assert key["ncaa_softball/NCAA"] == key["cfb/NCAA"] == ["league:ncaa:espn:NCAA"]
-    assert ca["value"].str.contains(r"^(conference|league|division):[a-z]+:[a-z.]+:").all()
+    assert ca["value"].str.contains(r"^(conference|league|division):[a-z_]+:[a-z.]+:").all()
     # the 2024 All-Star Game's captains' teams (the NHL files them as division marks 7801-7804) are dated 2024
     dated = ca.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
     assert sorted(dated.select("team_id", "valid_from", "valid_to").rows()) == [
@@ -659,7 +653,7 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
 NEW_LEAGUES_2026_11 = {  # league: teams, from the archive's 2026-11-03 capture
     "sphl": 16, "chl": 41, "bchl": 23, "ajhl": 17, "sjhl": 13, "ojhl": 28, "cchl": 13, "gojhl": 45, "mhl": 13,
     "nojhl": 27, "vijhl": 12, "kijhl": 23, "mjhl": 22, "nbl": 10, "fiba": 30, "iihf": 16, "cfl": 9, "cebl": 15,
-    "easl": 12, "lba": 24, "f1": 17,
+    "easl": 12, "lba": 24, "f1": 31,
 }  # fmt: skip
 
 

@@ -65,12 +65,14 @@ conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_c
 conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pac_12.png
 conference,cfb,wayback,100,American Southwest,https://web.archive.org/web/20260929075954id_/https://ascsports.org/images/logos/site/site.png
 conference,cfb,wayback,102,CCIW,https://web.archive.org/web/20261025133216id_/https://cciw.org/images/logos/site/site.png
+conference,cfb,wayback,103,Centennial,https://web.archive.org/web/20260925073724id_/https://dbukjj6eu5tsf.cloudfront.net/centennial.org/images/responsive_2023/logo_main.svg
 conference,cfb,wayback,104,CIAA,https://web.archive.org/web/20260903103126id_/https://theciaa.com/images/logos/site/site.png
 conference,cfb,wayback,106,Empire 8,https://web.archive.org/web/20261011161643id_/https://empire8.com/images/logos/site/site.png
 conference,cfb,wayback,107,GLIAC,https://web.archive.org/web/20250822230428id_/https://gliac.org/images/logos/GLIAC.png
 conference,cfb,wayback,108,Great Lakes,https://web.archive.org/web/20261023054801id_/https://glvcsports.com/images/logos/site/site.png
 conference,cfb,wayback,110,Gulf South,https://web.archive.org/web/20261012114940id_/https://gscsports.org/images/logos/site/site.png
 conference,cfb,wayback,111,Heartland,https://web.archive.org/web/20261012193424id_/https://heartlandconf.org/images/logos/site/site.png
+conference,cfb,wayback,114,American Rivers Conference,https://web.archive.org/web/20190903215727id_/https://rollrivers.com/images/logos/site/site.png
 conference,cfb,wayback,115,Liberty League,https://web.archive.org/web/20260608175724id_/https://libertyleagueathletics.com/images/logos/site/site.png
 conference,cfb,wayback,116,Lone Star,https://web.archive.org/web/20260910161920id_/https://lonestarconference.org/images/logos/site/site.png
 conference,cfb,wayback,117,Michigan,https://web.archive.org/web/20261006173319id_/https://miaa.org/images/logos/site/site.png
@@ -98,7 +100,10 @@ conference,cfb,wayback,143,USA South,https://web.archive.org/web/20260801132010i
 conference,cfb,wayback,144,Mountain East Conference,https://web.archive.org/web/20261013020634id_/https://mountaineast.org/images/logos/site/site.png
 conference,cfb,wayback,145,Wisconsin,https://web.archive.org/web/20261016063747id_/https://wiacsports.com/images/logos/site/site.png
 conference,cfb,wayback,146,Great American Conference,https://web.archive.org/web/20261019150211id_/https://greatamericanconference.com/images/logos/site/site.png
+conference,cfb,wayback,147,Southern Athletic Association,https://web.archive.org/web/20260831102435id_/https://dbukjj6eu5tsf.cloudfront.net/saa-sports.com/images/responsive_2024/logo_main.svg
+conference,cfb,wayback,148,Southern Collegiate Athletic Conference,https://web.archive.org/web/20210213045613id_/https://d2o2figo6ddd0g.cloudfront.net/q/d/gjx0210r3zmht6/2020_logo.png
 conference,cfb,wayback,160,Massachusetts State Collegiate Athletic Conference,https://web.archive.org/web/20260812051246id_/https://mascac.com/assets/Primary_Logo_-_.5x-9-.png
+conference,cfb,wayback,165,Great Midwest Athletic Conference,https://web.archive.org/web/20261014150736id_/https://greatmidwestsports.com/images/logos/site/site.png
 conference,cfb,wayback,166,New England Women's and Men's Athletic Conference,https://web.archive.org/web/20261016161449id_/https://newmacsports.com/images/logos/site/site.png
 conference,cfb,wayback,178,Landmark Conference,https://web.archive.org/web/20260323122958id_/https://dbukjj6eu5tsf.cloudfront.net/landmarkconference.org/images/responsive_2021/main/landmark_on-dark.svg
 conference,cfb,wayback,187,Conference Carolinas,https://web.archive.org/web/20261005015639id_/https://conferencecarolinas.com/images/logos/site/site.png
@@ -152,6 +157,18 @@ conference,ncaa,espn,maac,maac,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/m
 conference,ncaa,espn,mid_continent,mid_continent,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_continent.png
 conference,ncaa,espn,trans_america,trans_america,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/trans_america.png
 conference,ncaa,espn,wac,wac,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/wac.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:atlantic-hockey,Atlantic Hockey America,https://web.archive.org/web/20240730042537id_/https://atlantichockeyamerica.com/images/logos/site/site.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:ccha,Central Collegiate Hockey Association,https://web.archive.org/web/20260805040243id_/https://ccha.com/images/logos/site/site.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:cha,College Hockey America,https://web.archive.org/web/20220215035001id_/https://chawomenshockey.com/images/logos/site/site.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:ecac,ECAC Hockey,https://web.archive.org/web/20240913223956id_/https://ecachockey.com/images/logos/site/site.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:hockey-east,Hockey East Association,https://web.archive.org/web/20261025084236id_/https://hockeyeastonline.com/images/design23/healogo-300.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:nchc,National Collegiate Hockey Conference,https://web.archive.org/web/20240924032255id_/https://nchchockey.com/images/logos/site/site.png
+conference,ncaa_mhockey,wayback,ncaa_mhockey:wcha,Western Collegiate Hockey Association,https://web.archive.org/web/20190123034305id_/https://wcha.com/images/splashlogo.png
+conference,ncaa_whockey,wayback,ncaa_whockey:atlantic-hockey,Atlantic Hockey America,https://web.archive.org/web/20240730042537id_/https://atlantichockeyamerica.com/images/logos/site/site.png
+conference,ncaa_whockey,wayback,ncaa_whockey:ecac,ECAC Hockey,https://web.archive.org/web/20240913223956id_/https://ecachockey.com/images/logos/site/site.png
+conference,ncaa_whockey,wayback,ncaa_whockey:hockey-east,Hockey East Association,https://web.archive.org/web/20261025084236id_/https://hockeyeastonline.com/images/design23/healogo-300.png
+conference,ncaa_whockey,wayback,ncaa_whockey:newha,New England Women's Hockey Alliance,https://web.archive.org/web/20240920144305id_/https://www.newhaonline.com/assets/Primary_Logo_-_.5x.png
+conference,ncaa_whockey,wayback,ncaa_whockey:wcha,Western Collegiate Hockey Association,https://web.archive.org/web/20240914024830id_/https://wcha.com/images/logos/site/site.png
 conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/afc.png
 conference,nfl,espn,AFC,AFC,https://a.espncdn.com/i/teamlogos/nfl/500/afc.png
 conference,nfl,espn,NFC,NFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/nfc.png
