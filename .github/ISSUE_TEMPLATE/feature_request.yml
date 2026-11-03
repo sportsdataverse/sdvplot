@@ -63,6 +63,12 @@ body:
         - surface
         - court_coords
         - pitch_coords
+        - add_bins
+        - binner
+        - hexbin
+        - squarebin
+        - cell_points
+        - bin_ids
         - table_theme_spec
         - sdv_table_themes
         - versions

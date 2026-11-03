@@ -10,10 +10,93 @@ The Plotly adapter: logos, wordmarks, headshots and axis logos as layout images 
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, on a Plotly Figure. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Plotly figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Plotly figure, as layout images. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Plotly figure. |
 | [axis_logos](#axis_logos) | Replace a category axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    colorscale: Any = 'Viridis',
+    opacity: float = 1.0,
+    xref: str = 'x',
+    yref: str = 'y',
+) -> Any
+```
+
+</div>
+
+Draw hexagonal or square bins, colored by count, on a Plotly Figure.
+
+The cells are ``sdvplot.binner``'s, in data units: one ``path`` layout shape per cell (``layer="below"``, so
+traces draw over it), filled from ``colorscale`` by count. One scatter trace named ``"sdvplot_bins"`` holds a marker
+at each centre (invisible until selected) that carries the cell for interaction: ``ids`` are the bin ids
+(``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids, the marker colors the
+counts (and draw the colorbar), and hovering a cell shows its count.
+
+Linking: a static Plotly figure cannot run Python, so the link is a ``FigureWidget`` (or Dash) callback. Selecting
+cells gives ``points.point_inds``; the ``customdata`` of those markers are the point ids (the row numbers when no
+``ids`` were given), which set a points trace's ``selectedpoints``. The other way, set the bins trace's
+``selectedpoints`` to the cells whose ``customdata`` holds a selected point. ``sdvplot.bin_ids`` gives a table the
+same key.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``plotly.graph_objects.Figure`` (or ``FigureWidget``). |
+| `x` | `Any` | The points' x values, in the axes' data units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `colorscale` | `Any` | A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points. |
+| `opacity` | `float` | The cells' opacity, 0 to 1. |
+| `xref` | `str` | The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``. |
+| `yref` | `str` | The y axis to draw on ("y", "y2", ...). |
+
+### Returns
+
+`Figure` — ``target``, with the shapes and the trace added.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+- `UnsupportedTargetError`: If ``target`` is not a Plotly Figure.
+- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
+
+### Example
+
+```python
+import plotly.graph_objects as go
+from sdvplot.plotly import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+x, y = [0, -1, -44], [0, 7, 252]
+fig = go.Figure(go.Scatter(x=x, y=y, mode="markers", name="shots"))
+add_bins(fig, x, y, shape="square", side=15, colorscale="Blues")
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [Plotly FigureWidget selection](https://plotly.com/python/click-events/)
 
 ## add_headshots
 

@@ -1,7 +1,7 @@
 ---
 title: sdvplot.typing
 sidebar_label: sdvplot.typing
-sidebar_position: 36
+sidebar_position: 42
 ---
 
 # sdvplot.typing
@@ -11,6 +11,7 @@ Types for annotating code that calls sdvplot: the ``Literal`` aliases of its clo
 | Name | What it is |
 |---|---|
 | [AxisMarkType](#axismarktype) | The values it accepts (a `Literal` alias). |
+| [BinShape](#binshape) | The values it accepts (a `Literal` alias). |
 | [HeadshotIdSystem](#headshotidsystem) | The values it accepts (a `Literal` alias). |
 | [IdSystem](#idsystem) | The values it accepts (a `Literal` alias). |
 | [MarkType](#marktype) | The values it accepts (a `Literal` alias). |
@@ -22,6 +23,16 @@ Types for annotating code that calls sdvplot: the ``Literal`` aliases of its clo
 
 ```python
 AxisMarkType = Literal['logo', 'wordmark', 'headshot']
+```
+
+</div>
+
+## BinShape
+
+<div class="sdv-signature">
+
+```python
+BinShape = Literal['hex', 'square']
 ```
 
 </div>

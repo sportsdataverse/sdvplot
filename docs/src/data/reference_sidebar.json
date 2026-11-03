@@ -60,6 +60,18 @@
   },
   {
     "type": "category",
+    "label": "Bins",
+    "items": [
+      "reference/add_bins",
+      "reference/binner",
+      "reference/hexbin",
+      "reference/squarebin",
+      "reference/cell_points",
+      "reference/bin_ids"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Table themes",
     "items": [
       "reference/table_theme_spec",

@@ -280,7 +280,8 @@ leaders = (
 
 `load_wnba_shots` holds ESPN's shot locations, already in feet on a center-court frame, the same frame as sportypy's
 court, so `sdvplot.court_coords` (for the stats.wnba.com legacy frame) is not needed. Fold the right-basket shots onto
-the left one, then bin them: where Caitlin Clark shot from, on Indiana's court.
+the left one, then bin the ones on the drawn half court into squares with `add_bins`: where Caitlin Clark shot
+from, on Indiana's court.
 
 ```python
 from matplotlib.colors import LinearSegmentedColormap
@@ -299,19 +300,21 @@ fig, ax = plt.subplots(figsize=(7, 6.5))
 sdvplot.surface("wnba", "IND", display_range="defense", ax=ax)
 red = sdvplot.team_colors("wnba", ["IND"], which="secondary")[0]
 cmap = LinearSegmentedColormap.from_list("indiana", ["#fff4e0", red])
-hexes = ax.hexbin(
-    clark["x"],
-    clark["y"],
-    gridsize=(14, 15),
-    extent=(-47, 0, -25, 25),
-    mincnt=1,
-    bins="log",
+half = clark.filter(pl.col("x").is_between(-47, 0) & pl.col("y").is_between(-25, 25))  # the drawn half court
+sdvplot.add_bins(
+    ax,
+    half["x"],
+    half["y"],
+    shape="square",  # squares with the area of 2 ft hexagons; drop shape and equal_area for hexagons
+    radius=2,
+    equal_area=True,
+    norm="log",
     cmap=cmap,
     edgecolors="white",
     linewidths=0.4,
     zorder=20,
 )
-fig.colorbar(hexes, ax=ax, shrink=0.6, label="Attempts (log scale)")
+fig.colorbar(ax.collections[-1], ax=ax, shrink=0.6, label="Attempts (log scale)")
 ax.set_title(
     f"Caitlin Clark's field goal attempts, {SEASON} regular season\n"
     f"{clark.height} attempts, {made / clark.height:.1%} made",

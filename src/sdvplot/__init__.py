@@ -3,10 +3,11 @@
 from importlib.metadata import PackageNotFoundError as _PackageNotFoundError
 from importlib.metadata import version as _version
 
+from sdvplot._bins import bin_ids, binner, cell_points, hexbin, squarebin
 from sdvplot._cache import clear_cache
 from sdvplot._colors import palette, team_colors
 from sdvplot._court import court_coords
-from sdvplot._dispatch import add_headshots, add_logos, add_wordmarks, axis_logos
+from sdvplot._dispatch import add_bins, add_headshots, add_logos, add_wordmarks, axis_logos
 from sdvplot._errors import (
     DownloadError,
     InputError,
@@ -50,13 +51,18 @@ __all__ = [
     "UnsafeDownloadError",
     "UnsupportedTargetError",
     "__version__",
+    "add_bins",
     "add_headshots",
     "add_logos",
     "add_wordmarks",
     "axis_logos",
+    "bin_ids",
+    "binner",
+    "cell_points",
     "clear_cache",
     "court_coords",
     "headshot_url",
+    "hexbin",
     "logo_image",
     "logo_url",
     "marks",
@@ -64,6 +70,7 @@ __all__ = [
     "pitch_coords",
     "resolve",
     "sdv_table_themes",
+    "squarebin",
     "suggest",
     "surface",
     "table_theme_spec",

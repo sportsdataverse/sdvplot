@@ -10,6 +10,7 @@ The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figu
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a matplotlib or seaborn plot. |
 | [add_images](#add_images) | Draw any image, by local path or URL, centred on each (x, y) point of a matplotlib or seaborn plot. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a matplotlib or seaborn plot. |
@@ -17,6 +18,79 @@ The matplotlib adapter: logos, wordmarks and headshots on Axes, single-Axes Figu
 | [axis_logos](#axis_logos) | Replace a team axis' tick labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
 | [team_tiers](#team_tiers) | A tier list: each team's logo in its tier's row, tier 1 on top, on a dark (sdvplotR) or light theme. |
 | [title_image](#title_image) | Set the plot title and draw an image (a team logo, or any image) beside it. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    **kwargs: Any,
+) -> Any
+```
+
+</div>
+
+Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice.
+
+The cells are ``sdvplot.binner``'s, in data units, so a hex chart and a square chart of the same shots (and an
+sdvplot-js chart of them) bin every point alike. Only cells with points are drawn (``ax.hexbin``'s ``mincnt=1``).
+The collection's array is the counts, so ``fig.colorbar(ax.collections[-1])`` keys it; its ``gid`` is
+``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw order).
+
+Linking: matplotlib draws static images, so there is no selection to share. With ``picker=True`` a
+``pick_event``'s ``event.ind`` indexes ``sdvplot_bins``, whose ``rows`` and ``ids`` name the points in the cell.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A matplotlib Axes (or a one-Axes Figure or seaborn grid). |
+| `x` | `Any` | The points' x values, in the Axes' data units (e.g. ``court_x`` from ``sdvplot.court_coords``). |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `**kwargs` | `Any` | Passed to ``PolyCollection``: ``cmap``, ``norm`` (``"log"`` for ``ax.hexbin``'s ``bins="log"``), ``edgecolors``, ``linewidths``, ``alpha``, ``zorder``, ``picker``. |
+
+### Returns
+
+`Axes` — The Axes drawn on.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``).
+- `UnsupportedTargetError`: If ``target`` is not a matplotlib Axes, Figure or seaborn grid.
+- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or a Figure or grid has several Axes.
+
+### Example
+
+```python
+import matplotlib.pyplot as plt
+import sdvplot
+from sdvplot.matplotlib import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+fig, ax = plt.subplots()
+add_bins(ax, [0, -1, -44], [0, 7, 252], shape="square", radius=10, equal_area=True, cmap="Blues")
+fig.colorbar(ax.collections[-1], ax=ax, label="Shots")
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [matplotlib PolyCollection](https://matplotlib.org/stable/api/collections_api.html)
 
 ## add_headshots
 

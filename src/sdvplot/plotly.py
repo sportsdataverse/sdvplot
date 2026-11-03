@@ -18,8 +18,9 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra, warn
 with requires_extra("plotly"):
     import plotly.graph_objects as go
 
+from sdvplot._bins import _cells
 from sdvplot._placement import check_alpha, check_height, place
-from sdvplot._types import AxisMarkType
+from sdvplot._types import AxisMarkType, BinShape
 from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -28,7 +29,7 @@ _PLOTLY_DEFAULT_MARGIN = {"t": 100, "b": 80, "l": 80, "r": 80}  # plotly.js's ma
 _REF = re.compile(r"^([xy])(\d*)$")
 _READABLE = ("scatter", "scattergl", "bar")  # trace types whose extent sdvplot can work out
 
-__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -602,3 +603,127 @@ def _drawn_axis_marks(target: Any, axis: str) -> list[tuple[str, float, float]]:
 def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     """Test hook: the tick labels on ``axis`` still shown as text."""
     return [t for t in (_figure(target).layout[_key(axis_letter(axis), axis)].ticktext or ()) if t]
+
+
+def _rgb_string(c: str) -> str:
+    """A CSS color name or hex as plotly's 'rgb(r, g, b)' (validate_colors takes no names)."""
+    from PIL import ImageColor
+
+    if c.startswith("rgb"):
+        return c
+    r, g, b = ImageColor.getrgb(c)[:3]
+    return f"rgb({r}, {g}, {b})"
+
+
+def add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    colorscale: Any = "Viridis",
+    opacity: float = 1.0,
+    xref: str = "x",
+    yref: str = "y",
+) -> Any:
+    """Draw hexagonal or square bins, colored by count, on a Plotly Figure.
+
+    The cells are ``sdvplot.binner``'s, in data units: one ``path`` layout shape per cell (``layer="below"``, so
+    traces draw over it), filled from ``colorscale`` by count. One scatter trace named ``"sdvplot_bins"`` holds a marker
+    at each centre (invisible until selected) that carries the cell for interaction: ``ids`` are the bin ids
+    (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``customdata`` each cell's point ids, the marker colors the
+    counts (and draw the colorbar), and hovering a cell shows its count.
+
+    Linking: a static Plotly figure cannot run Python, so the link is a ``FigureWidget`` (or Dash) callback. Selecting
+    cells gives ``points.point_inds``; the ``customdata`` of those markers are the point ids (the row numbers when no
+    ``ids`` were given), which set a points trace's ``selectedpoints``. The other way, set the bins trace's
+    ``selectedpoints`` to the cells whose ``customdata`` holds a selected point. ``sdvplot.bin_ids`` gives a table the
+    same key.
+
+    Args:
+        target: A ``plotly.graph_objects.Figure`` (or ``FigureWidget``).
+        x: The points' x values, in the axes' data units.
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        colorscale: A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points.
+        opacity: The cells' opacity, 0 to 1.
+        xref: The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``.
+        yref: The y axis to draw on ("y", "y2", ...).
+
+    Returns:
+        Figure: ``target``, with the shapes and the trace added.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+        UnsupportedTargetError: If ``target`` is not a Plotly Figure.
+        ValueError: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
+
+    Example:
+        ::
+
+            import plotly.graph_objects as go
+            from sdvplot.plotly import add_bins
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            x, y = [0, -1, -44], [0, 7, 252]
+            fig = go.Figure(go.Scatter(x=x, y=y, mode="markers", name="shots"))
+            add_bins(fig, x, y, shape="square", side=15, colorscale="Blues")
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        Plotly FigureWidget selection: https://plotly.com/python/click-events/
+    """
+    from plotly.colors import get_colorscale, sample_colorscale  # type: ignore[attr-defined]  # lazy re-exports
+
+    fig = _figure(target)
+    alpha = check_alpha(opacity)
+    _key(xref, "x")
+    _key(yref, "y")
+    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
+    counts = [b.count for b in bins]
+    lo, hi = min(counts, default=0), max(counts, default=0)
+    # a name, a list of (position, color) pairs, or a list of colors (named, hex or rgb)
+    if isinstance(colorscale, str):
+        scale = get_colorscale(colorscale)
+    elif all(isinstance(c, (list, tuple)) for c in colorscale):
+        scale = [[float(pos), _rgb_string(c)] for pos, c in colorscale]
+    else:
+        colors = [_rgb_string(c) for c in colorscale] * (2 if len(colorscale) == 1 else 1)
+        scale = [[i / (len(colors) - 1), c] for i, c in enumerate(colors)]  # evenly spaced, as plotly reads a list
+    fills = sample_colorscale(scale, [(c - lo) / (hi - lo) if hi > lo else 0.0 for c in counts]) if bins else []
+    shapes = [
+        {"type": "path", "path": "M" + "L".join(f"{px},{py}" for px, py in poly) + "Z", "xref": xref, "yref": yref,
+         "fillcolor": fill, "opacity": alpha, "layer": "below", "line": {"color": "white", "width": 0.5},
+         "name": f"sdvplot_bins:{b.id}"}
+        for b, poly, fill in zip(bins, polygons, fills, strict=True)
+    ]  # fmt: skip
+    fig.update_layout(shapes=[*fig.layout.shapes, *shapes])  # one layout update: add_shape per cell is quadratic
+    fig.add_trace(
+        go.Scatter(
+            x=[b.x for b in bins], y=[b.y for b in bins], ids=[b.id for b in bins], xaxis=xref, yaxis=yref,
+            customdata=[list(b.ids) for b in bins], mode="markers", name="sdvplot_bins", showlegend=False,
+            marker={"color": counts, "colorscale": scale, "cmin": lo, "cmax": hi, "showscale": True, "opacity": 0,
+                    "size": 8, "colorbar": {"title": {"text": "count"}}},
+            selected={"marker": {"opacity": 1}}, unselected={"marker": {"opacity": 0}},
+            hovertemplate="%{marker.color} points<extra></extra>",
+        )
+    )  # fmt: skip
+    return fig
+
+
+def _drawn_bins(target: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: (bin id, x, y, count, point ids) for each cell add_bins drew, in draw order."""
+    out = []
+    for t in _figure(target).data:
+        if t.name == "sdvplot_bins":
+            cells = zip(t.ids, t.x, t.y, t.marker.color, t.customdata, strict=True)
+            out += [(i, float(cx), float(cy), int(n), tuple(c)) for i, cx, cy, n, c in cells]
+    return out
