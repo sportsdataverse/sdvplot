@@ -312,6 +312,8 @@ def binner(
     if side is None and not (radius is not None and equal_area):
         raise InputError("binner square needs side, or radius with equal_area=True")
     s = _positive("binner side", side) if side is not None else _positive("binner radius", radius) * _EQUAL_AREA
+    if not math.isfinite(s):  # a huge radius times sqrt(3 * sqrt(3) / 2) overflows to infinity
+        raise InputError(f"binner radius {radius!r} gives an equal-area side that is not finite")
     return Binner("square", s, {"shape": "square", "side": s})
 
 

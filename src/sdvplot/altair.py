@@ -731,17 +731,15 @@ def add_bins(
     _check_chart(target)
     alpha = check_alpha(opacity)
     bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=None)
+    # cell_points' vertex order, as pairs of vertices on one vertical, left to right: a pointy-top hexagon's left side
+    # (5, 4), its top and bottom (0, 3) and right side (1, 2); a square's left (0, 3) and right (1, 2). Each pair is
+    # the area's band at that x. By index, not by x value: a hexagon's two side vertices differ in the last bit.
+    bands = [(5, 4), (0, 3), (1, 2)] if shape == "hex" else [(0, 3), (1, 2)]
     rows = []
     for b, poly in zip(bins, polygons, strict=True):
-        # A pointy-top hexagon's six vertices fall on three x values and a square's four on two, two vertices each
-        # (rounded: the two side vertices of a hexagon differ in the last bit); each pair is the band at that x.
-        by_x: dict[float, list[float]] = {}
-        for px, py in poly:
-            by_x.setdefault(round(px, 9), []).append(py)
-        for px, ys in sorted(by_x.items()):
-            rows.append(
-                {"sdvplot_x": px, "sdvplot_y": min(ys), "sdvplot_y2": max(ys), "bin_id": b.id, "count": b.count}
-            )
+        for i, j in bands:
+            y1, y2 = sorted((poly[i][1], poly[j][1]))
+            rows.append({"sdvplot_x": poly[i][0], "sdvplot_y": y1, "sdvplot_y2": y2, "bin_id": b.id, "count": b.count})
     sel = alt.selection_point(name="sdvplot_bins", fields=["bin_id"])
     layer = (
         alt.Chart(alt.Data(values=rows), name="sdvplot_bins")

@@ -299,3 +299,37 @@ def test_ids_follow_javascript_string_and_numpy_sizes_are_accepted():
     np = pytest.importorskip("numpy")
     bins = sdvplot.hexbin([0, 30], [0, 30], radius=np.int64(10), ids=[True, np.float32(2.0)])
     assert [b.ids for b in bins] == [("true",), ("2",)]  # String(true), String(2)
+
+
+def test_an_equal_area_side_that_overflows_is_an_input_error():
+    with pytest.raises(InputError, match="equal-area side that is not finite"):
+        sdvplot.binner(shape="square", radius=1.5e308, equal_area=True)  # * 1.61 > 1.8e308
+
+
+@pytest.mark.parametrize("opts", [{"radius": 1e-12}, {"radius": 1e12}, {"shape": "square", "side": 1e-12}])
+def test_altair_bands_hold_at_any_cell_size(opts):
+    # by vertex index: rounding x to 9 places folded a 1e-12 hexagon's three bands into one
+    alt = pytest.importorskip("altair")
+    chart = sdvplot.add_bins(alt.Chart().mark_point(), [0], [0], **opts)
+    rows = chart.layer[-1].data.values
+    xs = [r["sdvplot_x"] for r in rows]
+    assert len(rows) == (3 if "radius" in opts else 2) and xs == sorted(xs) and len(set(xs)) == len(xs)
+    assert all(r["sdvplot_y"] < r["sdvplot_y2"] for r in rows)
+
+
+def test_plotly_add_bins_keeps_existing_shapes_and_draws_on_the_named_axes():
+    go = pytest.importorskip("plotly.graph_objects")
+    from plotly.subplots import make_subplots
+
+    fig = make_subplots(rows=1, cols=2)
+    fig.add_shape(type="line", x0=0, x1=1, y0=0, y1=1)
+    sdvplot.add_bins(fig, SMALL_X, SMALL_Y, shape="square", side=15, xref="x2", yref="y2")
+    n = len(sdvplot.squarebin(SMALL_X, SMALL_Y, side=15))
+    assert len(fig.layout.shapes) == 1 + n and fig.layout.shapes[0].type == "line"
+    assert {(s.xref, s.yref) for s in fig.layout.shapes[1:]} == {("x2", "y2")}
+    assert (fig.data[-1].xaxis, fig.data[-1].yaxis) == ("x2", "y2")
+    one = go.Figure()
+    sdvplot.add_bins(one, SMALL_X, SMALL_Y, radius=15)
+    assert {(s.xref, s.yref) for s in one.layout.shapes} == {("x", "y")}  # what add_shape set by default
+    with pytest.raises(ValueError, match="xref must name a x axis"):
+        sdvplot.add_bins(one, SMALL_X, SMALL_Y, radius=15, xref="y")

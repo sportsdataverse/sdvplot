@@ -627,6 +627,8 @@ def add_bins(
     ids: Any = None,
     colorscale: Any = "Viridis",
     opacity: float = 1.0,
+    xref: str = "x",
+    yref: str = "y",
 ) -> Any:
     """Draw hexagonal or square bins, colored by count, on a Plotly Figure.
 
@@ -653,6 +655,8 @@ def add_bins(
         ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
         colorscale: A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points.
         opacity: The cells' opacity, 0 to 1.
+        xref: The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``.
+        yref: The y axis to draw on ("y", "y2", ...).
 
     Returns:
         Figure: ``target``, with the shapes and the trace added.
@@ -660,7 +664,7 @@ def add_bins(
     Raises:
         InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
         UnsupportedTargetError: If ``target`` is not a Plotly Figure.
-        ValueError: If ``x``, ``y`` and ``ids`` differ in length.
+        ValueError: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
 
     Example:
         ::
@@ -681,6 +685,8 @@ def add_bins(
 
     fig = _figure(target)
     alpha = check_alpha(opacity)
+    _key(xref, "x")
+    _key(yref, "y")
     bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
     counts = [b.count for b in bins]
     lo, hi = min(counts, default=0), max(counts, default=0)
@@ -693,13 +699,16 @@ def add_bins(
         colors = [_rgb_string(c) for c in colorscale] * (2 if len(colorscale) == 1 else 1)
         scale = [[i / (len(colors) - 1), c] for i, c in enumerate(colors)]  # evenly spaced, as plotly reads a list
     fills = sample_colorscale(scale, [(c - lo) / (hi - lo) if hi > lo else 0.0 for c in counts]) if bins else []
-    for b, poly, fill in zip(bins, polygons, fills, strict=True):
-        path = "M" + "L".join(f"{px},{py}" for px, py in poly) + "Z"
-        fig.add_shape(type="path", path=path, fillcolor=fill, opacity=alpha, layer="below",
-                      line={"color": "white", "width": 0.5}, name=f"sdvplot_bins:{b.id}")  # fmt: skip
+    shapes = [
+        {"type": "path", "path": "M" + "L".join(f"{px},{py}" for px, py in poly) + "Z", "xref": xref, "yref": yref,
+         "fillcolor": fill, "opacity": alpha, "layer": "below", "line": {"color": "white", "width": 0.5},
+         "name": f"sdvplot_bins:{b.id}"}
+        for b, poly, fill in zip(bins, polygons, fills, strict=True)
+    ]  # fmt: skip
+    fig.update_layout(shapes=[*fig.layout.shapes, *shapes])  # one layout update: add_shape per cell is quadratic
     fig.add_trace(
         go.Scatter(
-            x=[b.x for b in bins], y=[b.y for b in bins], ids=[b.id for b in bins],
+            x=[b.x for b in bins], y=[b.y for b in bins], ids=[b.id for b in bins], xaxis=xref, yaxis=yref,
             customdata=[list(b.ids) for b in bins], mode="markers", name="sdvplot_bins", showlegend=False,
             marker={"color": counts, "colorscale": scale, "cmin": lo, "cmax": hi, "showscale": True, "opacity": 0,
                     "size": 8, "colorbar": {"title": {"text": "count"}}},

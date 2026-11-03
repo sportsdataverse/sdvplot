@@ -33,6 +33,8 @@ add_bins(
     ids: Any = None,
     colorscale: Any = 'Viridis',
     opacity: float = 1.0,
+    xref: str = 'x',
+    yref: str = 'y',
 ) -> Any
 ```
 
@@ -66,6 +68,8 @@ same key.
 | `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
 | `colorscale` | `Any` | A Plotly colorscale name or list (default ``"Viridis"``), mapped from the fewest to the most points. |
 | `opacity` | `float` | The cells' opacity, 0 to 1. |
+| `xref` | `str` | The x axis to draw on ("x", "x2", ...), for subplots: the shapes' ``xref`` and the trace's ``xaxis``. |
+| `yref` | `str` | The y axis to draw on ("y", "y2", ...). |
 
 ### Returns
 
@@ -75,7 +79,7 @@ same key.
 
 - `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
 - `UnsupportedTargetError`: If ``target`` is not a Plotly Figure.
-- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length.
+- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or ``xref``/``yref`` does not name an x/y axis.
 
 ### Example
 
