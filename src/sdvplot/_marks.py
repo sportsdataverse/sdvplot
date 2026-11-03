@@ -205,7 +205,8 @@ def select_mark(
     """The best mark: the requested variant; then, keeping its polarity (R44), "default" and an on_light variant
     ("on_light", "*_on_light"), or for "dark" an on_dark variant and then "default"; then any variant. Within each,
     season-covering rows first (explicit ranges before open-ended ones), else any row; within a set, official
-    sources and current marks first. An unknown or ambiguous team gives None with the resolver's warning."""
+    sources and current marks first. A conference or league row with no logo takes its wordmark for a logo (the NHL's
+    Eastern and Western Conference Final marks). An unknown or ambiguous team gives None with the resolver's warning."""
     _check_mark_type(mark_type)
     s = norm_season(season, league)
     _check_variant(variant, league)
@@ -214,7 +215,10 @@ def select_mark(
         return None
     # a team has tens of rows: choosing in Python costs less than one polars filter per step (R45); the rows are
     # shared with _TEAM_ROWS, so the chosen one is handed out as a copy
-    rows = [r for r in _team_rows(team_id, league) if r["mark_type"] == mark_type]
+    every = _team_rows(team_id, league)
+    rows = [r for r in every if r["mark_type"] == mark_type]
+    if not rows and mark_type == "logo":  # a conference whose only official mark is a wordmark (the NHL's conference
+        rows = [r for r in every if r["level"] in _index.NON_TEAM]  # final marks) draws it as its logo; teams never do
     side = "dark" if variant == "dark" else "light"
 
     def polarity(v: str) -> bool:

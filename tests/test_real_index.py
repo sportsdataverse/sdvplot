@@ -455,9 +455,9 @@ RAW = Path(__file__).parents[1] / "data-raw"
 CONFERENCE_FLOORS = {"ncaa_baseball": 0.75, "ncaa_softball": 0.75, "ncaa_mhockey": 0.55, "ncaa_whockey": 0.95}
 # Their conferences no archived mark draws yet (hockey-only and non-D-I ones): a new mark adds a row and leaves this list
 NO_MARK = {
-    "ncaa_baseball": ["cne", "scac", "siac"],
+    "ncaa_baseball": ["scac"],
     "ncaa_mhockey": ["atlantic-hockey", "ccha", "cha", "ecac", "hockey-east", "nchc", "wcha"],
-    "ncaa_softball": ["ciaa", "cne", "saa", "scac", "siac"],
+    "ncaa_softball": ["saa", "scac"],
     "ncaa_whockey": ["atlantic-hockey", "ecac", "hockey-east", "newha", "wcha"],
 }
 
@@ -474,15 +474,17 @@ def test_college_teams_carry_their_conference(league):  # plan gap (c): baseball
 
 # The conference and league rows (sdvplotR's include_conferences, parity audit gap #2): sdvplotR's 89 college
 # conferences, the AFC, NFC and NFL, then the pro leagues, their conferences, the NHL's division marks, the NCAA's, and
-# the college baseball, softball and men's hockey conferences that reuse an mbb / wbb mark
-COUNTS = [("aaf", 1), ("cfb", 26), ("mbb", 33), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 31), ("ncaa_mhockey", 2),
-          ("ncaa_softball", 32), ("ncaa_whockey", 1), ("nfl", 3), ("nhl", 9), ("wbb", 33), ("wnba", 3)]  # fmt: skip
+# the college baseball, softball and men's hockey conferences that reuse an mbb / wbb mark; the NHL's Eastern and
+# Western Conference Final marks; cfb's D-II / D-III conferences (Wayback-pinned site logos), three of which baseball
+# and softball reuse
+COUNTS = [("aaf", 1), ("cfb", 65), ("mbb", 33), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 33), ("ncaa_mhockey", 2),
+          ("ncaa_softball", 35), ("ncaa_whockey", 1), ("nfl", 3), ("nhl", 11), ("wbb", 33), ("wnba", 3)]  # fmt: skip
 
 
 def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     everything = sdvplot.teams(include_conferences=True)
     conf = everything.filter(pl.col("program").is_in(_index.NON_TEAM))
-    assert conf.group_by("league").len().sort("league").rows() == COUNTS and conf.height == 180
+    assert conf.group_by("league").len().sort("league").rows() == COUNTS and conf.height == 226
     assert set(conf["program"]) == {
         "conference",
         "league",
@@ -501,17 +503,17 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     al = conf.filter((pl.col("league") == "mlb") & (pl.col("abbr") == "AL")).row(0, named=True)
     assert al["conference_id"] == "mlb:al" and sdvplot.teams("mlb").filter(pl.col("conference_id") == "mlb:al").height
     no_slug = conf.filter((pl.col("program") == "conference") & pl.col("conference_id").is_null())
-    # the WAC is retired (ESPN: UAC now); the NHL's division marks join no team row
+    # the WAC is retired (ESPN: UAC now); no cfb team plays in the CNE; the NHL's division marks join no team row
     assert no_slug.select("league", "abbr").sort("league", "abbr").rows() == [
-        ("cfb", "WAC"), ("mbb", "WAC"), ("nhl", "Atlantic"), ("nhl", "Central"), ("nhl", "HGS"), ("nhl", "MAT"),
-        ("nhl", "MCD"), ("nhl", "MKN"), ("nhl", "Metropolitan"), ("nhl", "Pacific"), ("wbb", "WAC"),
+        ("cfb", "CNE"), ("cfb", "WAC"), ("mbb", "WAC"), ("nhl", "Atlantic"), ("nhl", "Central"), ("nhl", "HGS"),
+        ("nhl", "MAT"), ("nhl", "MCD"), ("nhl", "MKN"), ("nhl", "Metropolitan"), ("nhl", "Pacific"), ("wbb", "WAC"),
     ]  # fmt: skip
     # opt-in everywhere: the only aliases are "mark" and "conference" ones (id systems resolve() never reads), so no
     # resolution and no palette key; cfb's MAC is still Macalester
     ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     assert set(ca["id_system"]) == {"mark", "conference"}
     marks = ca.filter(pl.col("id_system") == "mark")
-    assert marks.height == 184 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
+    assert marks.height == 230 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
@@ -533,14 +535,14 @@ def test_conference_colors_are_the_curated_cbbplotr_values():  # sdvplotR's logo
     ).unique()  # fmt: skip
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     j = conf.join(r, on=["league", "team_id"], how="inner")
-    assert j.height == conf.height == 180 and (j["program"] == j["r_type"]).all()
+    assert j.height == conf.height == 226 and (j["program"] == j["r_type"]).all()
     colored = j.filter(pl.col("r1").is_not_null())
     assert colored.height == 147 and (colored["color_source"] == "cbbplotR").all()
     assert (colored["color_primary"] == colored["r1"]).all()
     assert (colored["color_secondary"] == colored.select(pl.when(pl.col("r2") != pl.col("r1")).then("r2"))["r2"]).all()
     none = j.filter(pl.col("r1").is_null())  # the AFC, NFC, NFL, the independents, the MVFC, the Pioneer, the new rows
     assert (
-        none.height == 33 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
+        none.height == 79 and (none["color_source"] == "fallback").all() and none["color_primary"].is_not_null().all()
     )
 
 
@@ -550,7 +552,7 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     ca = ca.join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     keys = ca.group_by(pl.concat_str("league", "team_id", separator="/").alias("k")).agg(pl.col("value").sort())
     key = dict(keys.rows())
-    assert len(key) == 180
+    assert len(key) == 226
     # ESPN files one conference logo under each league with its own group id; the row names its own league's
     assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == (["conference:cfb:espn:8"], ["conference:mbb:espn:23"], ["conference:wbb:espn:23"])  # fmt: skip
     assert key["cfb/WAC"] == key["mbb/WAC"] == ["conference:ncaa:espn:wac"]  # filed once, under "ncaa"
@@ -646,3 +648,27 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     assert sdvplot.logo_url("Southeastern Conference", "cfb") == sdvplot.logo_url("SEC", "cfb")
     assert sdvplot.logo_url("B10", "mbb") == sdvplot.logo_url("Big Ten", "mbb")
     assert sdvplot.logo_url("Mid-American Conference", "cfb") == sdvplot.logo_url("MAC", "cfb", id_system="team_id")
+
+
+# Soccer stays one pooled league of ESPN club ids (plan gap (h)): a club's conference is its domestic league, its
+# competitions are "competition" aliases, and the World Cups' teams are national teams
+LEAGUE_SIZES = {"eng.1": 20, "esp.1": 20, "ger.1": 18, "ita.1": 20, "fra.1": 18, "usa.1": 30, "usa.nwsl": 16}
+
+
+def test_soccer_clubs_carry_their_domestic_league_and_competitions():
+    clubs = sdvplot.teams("soccer")
+    sizes = dict(clubs.group_by("conference_id").len().rows())
+    assert all(sizes[slug] >= n for slug, n in LEAGUE_SIZES.items()), sizes
+    assert clubs.filter(pl.col("conference_id") == "eng.1")["conference"].unique().to_list() == [
+        "English Premier League"
+    ]
+    assert clubs["conference_id"].is_not_null().sum() >= 1600
+    national = clubs.filter(pl.col("program") == "national")
+    assert national.height >= 80 and national["conference_id"].is_null().all()
+    comp = _index.alias_table().filter((pl.col("league") == "soccer") & (pl.col("id_system") == "competition"))
+    assert comp.filter(pl.col("value") == "uefa.champions").height == 36
+    assert comp.filter(pl.col("value") == "fifa.world")["team_id"].is_in(national["team_id"].to_list()).all()
+    # a slug names many clubs: resolve() never reads it and suggest() never offers it
+    with pytest.warns(sdvplot.SdvplotWarning, match="'eng.1'"):
+        assert sdvplot.resolve("eng.1", "soccer") is None
+    assert sdvplot.suggest("eng.1", "soccer") == []

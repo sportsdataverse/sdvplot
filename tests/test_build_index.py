@@ -797,3 +797,33 @@ def test_curated_rows_check_their_conference_ids_and_agree_across_lines(tmp_path
     path.write_text(text.replace("conference,,,,,conference,nfl", "conference,nfl:afc-west,,,,conference,nfl"))
     teams, _, _ = bi.build(raw)  # a slug the team rows carry (the Raiders' AFC West) is kept
     assert teams.filter(pl.col("team_id") == "AFC")["conference_id"].item() == "nfl:afc-west"
+
+
+def test_soccer_clubs_take_their_latest_domestic_league_competition_aliases_and_national_teams(tmp_path):  # plan (h)
+    raw = _raw(tmp_path)
+    for line in ("soccer,359,Arsenal,", "soccer,19973,Arsenal,", "soccer,660,United States,", "soccer,9,Twin FC,"):
+        _add(raw, "manifest_teams.csv", line)
+    (raw / "soccer_competitions.csv").write_text(
+        "competition,season,team_id,competition_name\n"
+        "eng.1,2026,359,English Premier League\neng.fa,2026,359,English FA Cup\n"
+        "uefa.champions,2026,359,UEFA Champions League\neng.2,2025,359,English League Championship\n"
+        "eng.w.1,2026,19973,English Women's Super League\nfifa.w.champions_cup,2027,19973,FIFA Women's Champions Cup\n"
+        "fifa.worldq.concacaf,2024,660,FIFA World Cup Qualifying - Concacaf\n"
+        "usa.nwsl,2026,9,NWSL\nmex.w.1,2026,9,Mexican Liga BBVA MX Femenil\n"  # two leagues in one season: none
+        "eng.1,2026,404,English Premier League\n",  # a club the index lacks: no alias
+        encoding="utf-8",
+    )
+    teams, aliases, _ = bi.build(raw)
+    got = {r[0]: r[1:] for r in teams.filter(pl.col("league") == "soccer").select(
+        "team_id", "conference_id", "conference", "program").rows()}  # fmt: skip
+    assert got == {
+        "359": ("eng.1", "English Premier League", None),  # a cup, the UCL and an older season's league are not it
+        "19973": ("eng.w.1", "English Women's Super League", None),  # a later-season cup does not hide its league
+        "660": (None, None, "national"),
+        "9": (None, None, None),
+    }
+    comp = aliases.filter(pl.col("id_system") == "competition")
+    assert comp.filter(pl.col("team_id") == "359").select("value", "valid_from", "valid_to").sort("value").rows() == [
+        ("eng.1", 2026, 2026), ("eng.2", 2025, 2025), ("eng.fa", 2026, 2026), ("uefa.champions", 2026, 2026)
+    ]  # fmt: skip
+    assert "404" not in comp["team_id"].to_list()

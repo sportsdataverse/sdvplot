@@ -41,9 +41,10 @@ PRIORITY: tuple[str, ...] = (
 )
 # Systems "auto" never tries, only an explicit id_system: NHL stats API ids 1-28 are other teams' ESPN ids (R49)
 EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id",)
-# The index's internal id systems, for the mark functions only: never an id_system= and never read by resolve(). "mark"
-# keys archive rows to teams; "conference" holds sdvplotR's other keys of the conference rows (suggest() skips it)
-_MARKS_ONLY: tuple[str, ...] = ("mark", "conference")
+# The index's internal id systems: never an id_system= and never read by resolve(). "mark" keys archive rows to teams;
+# "conference" holds sdvplotR's other keys of the conference rows; "competition" lists the soccer competitions each
+# club was seen in, one slug naming many clubs (suggest() skips both)
+_MARKS_ONLY: tuple[str, ...] = ("mark", "conference", "competition")
 Candidates = list[tuple[str, int | None, int | None]]
 
 
@@ -387,7 +388,7 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
         return []
     merged: dict[str, list[str]] = {}
     for name, system in _lookup(league).items():
-        if name == "conference":  # a conference row's key: never a team candidate (marks only)
+        if name in ("conference", "competition"):  # a conference row's key, a competition slug: never a team's
             continue
         for k, cands in system.items():
             merged.setdefault(k, []).extend(c[0] for c in cands)

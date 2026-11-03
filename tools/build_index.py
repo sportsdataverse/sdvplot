@@ -174,6 +174,50 @@ def _first_source(value: Callable[[str, str], pl.Expr]) -> pl.Expr:
     return e
 
 
+# Soccer is one pooled league of ESPN club ids. A domestic league's competition slug is a country code, optional
+# qualifiers and its tier number (eng.1, eng.w.1, usa.usl.1, usa.ncaa.m.1), or one of the leagues ESPN names instead
+# of numbering; cups, super cups, promotion playoffs and the confederations' and FIFA's competitions (eng.fa,
+# eng.league_cup, fra.1.promotion.relegation, uefa.champions, fifa.world) are none. A team in a World Cup or its
+# qualifying (men's, women's, youth) is a national team: no club plays in one.
+SOCCER_LEAGUE = r"^[a-z]{3}(\.[a-z]+)*\.\d+$"
+SOCCER_NAMED_LEAGUES = ["usa.nwsl", "usa.usl.l1", "can.w.nsl"]
+SOCCER_NATIONAL = r"^fifa\.(w?world|wwc|w?worldq|wcq|wwcq)(\.|$)"
+
+
+def soccer_competitions(raw: Path) -> pl.DataFrame:
+    """data-raw/soccer_competitions.csv (sdv-assets' side manifest: each competition's latest season and the clubs ESPN
+    lists in it), one row per (competition, club), with ``_domestic`` and ``_national`` flags from the slug."""
+    cols = ["league", "competition", "season", "team_id", "competition_name", "_domestic", "_national"]
+    if not (raw / "soccer_competitions.csv").exists():
+        return pl.DataFrame(schema=dict.fromkeys(cols, pl.String)).cast({"season": pl.Int32, "_domestic": pl.Boolean,
+                                                                         "_national": pl.Boolean})  # fmt: skip
+    c = pl.col("competition")
+    return (
+        _csv(raw, "soccer_competitions.csv")
+        .with_columns(
+            pl.lit("soccer").alias("league"),
+            pl.col("season").cast(pl.Int32),
+            (c.str.contains(SOCCER_LEAGUE) | c.is_in(SOCCER_NAMED_LEAGUES)).alias("_domestic"),
+            c.str.contains(SOCCER_NATIONAL).alias("_national"),
+        )
+        .select(cols)
+        .unique(["competition", "team_id"], maintain_order=True)
+    )
+
+
+def soccer_leagues(sc: pl.DataFrame) -> pl.DataFrame:
+    """(league, team_id, conference_id, conference): a club's domestic league, the league competition it was seen in
+    in its latest season (slug and ESPN's name: "eng.1", "English Premier League"). A club in several that season gets
+    none, never a guess."""
+    d = sc.filter("_domestic").filter(pl.col("season") == pl.col("season").max().over("team_id"))
+    return d.filter(pl.len().over("team_id") == 1).select(
+        "league",
+        "team_id",
+        pl.col("competition").alias("conference_id"),
+        pl.col("competition_name").alias("conference"),
+    )
+
+
 def build_teams(raw: Path) -> pl.DataFrame:
     all_espn, unlisted, _ = espn_teams(raw)
     base = _csv(raw, "manifest_teams.csv")
@@ -216,7 +260,14 @@ def build_teams(raw: Path) -> pl.DataFrame:
     assert not nflv["team_id"].is_duplicated().any(), f"several current nflverse codes per ESPN team: {nflv}"
     unmatched = sorted(set(nfl["team_abbr"]) - set(nflv["nflv_abbr"]))
     assert nflv.height == nfl.height and not unmatched, f"current nflverse teams with no ESPN team: {unmatched}"
-    groups = _csv(raw, "groups_latest.csv").select("league", "team_id", "conference_id", "conference")
+    sc = soccer_competitions(raw)
+    groups = pl.concat(
+        [_csv(raw, "groups_latest.csv").select("league", "team_id", "conference_id", "conference"), soccer_leagues(sc)]
+    )
+    national = sc.filter("_national").select("league", "team_id", pl.lit("national").alias("_national")).unique()
+    base = base.join(national, on=["league", "team_id"], how="left").with_columns(
+        pl.coalesce("_national", "program").alias("program")
+    )
     t = (
         base.join(espn, on=["league", "team_id"], how="left")
         .join(nflv, on=["league", "team_id"], how="left")
@@ -699,7 +750,18 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
     )
     if (raw / "curated" / "mark_ranges.csv").exists():
         mark = curated_mark_ranges(mark, _csv(raw, "curated/mark_ranges.csv"))
-    a = pl.concat([a, mark.cast(ALIAS_SCHEMA)])
+    # every soccer competition a club was seen in (UCL, cups, fifa.world), dated by that competition's season: id
+    # system "competition", value = the slug. resolve() never reads it (_resolve._MARKS_ONLY)
+    competition = soccer_competitions(raw).select(
+        "league",
+        pl.lit("competition").alias("id_system"),
+        pl.col("competition").alias("value"),
+        "team_id",
+        pl.col("season").alias("valid_from"),
+        pl.col("season").alias("valid_to"),
+    )
+    competition = competition.join(known, on=["league", "team_id"], how="semi")
+    a = pl.concat([a, mark.cast(ALIAS_SCHEMA), competition.cast(ALIAS_SCHEMA)])
     return a.unique().sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
 
 
