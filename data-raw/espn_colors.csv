@@ -13,7 +13,7 @@ cfb,110438,cfb,Dean College Bulldogs,Dean College,,
 cfb,111674,cfb,Alvernia Golden Wolves,Alvernia,,
 cfb,111675,cfb,University of New England Nor'easters,University of New England,,
 cfb,112334,cfb,Franklin Pierce Ravens,Franklin Pierce,,
-cfb,112334,ncaa_mhockey,Franklin Pierce Franklin Pierce,Franklin Pierce,,
+cfb,112334,ncaa_mhockey,Franklin Pierce,Franklin Pierce,,
 cfb,112335,cfb,Wheeling Cardinals,Wheeling,,
 cfb,118,cfb,Johns Hopkins Blue Jays,Johns Hopkins,000000,
 cfb,118,mbb,Johns Hopkins Blue Jays,Johns Hopkins,000000,
@@ -135,7 +135,7 @@ cfb,2042,mbb,Augustana (IL) Vikings,Augustana (IL),000000,
 cfb,2042,wbb,Augustana (IL) Vikings,Augustana (IL),000000,
 cfb,2043,cfb,Augustana (SD) Vikings,Augustana (SD),000000,
 cfb,2043,mbb,Augustana (SD) Vikings,Augustana (SD),000000,
-cfb,2043,ncaa_mhockey,Augustana (SD) Vikings,Augustana (SD),NULL,
+cfb,2043,ncaa_mhockey,Augustana University (SD) Vikings,Augustana University (SD),NULL,NULL
 cfb,2043,wbb,Augustana (SD) Vikings,Augustana (SD),000000,
 cfb,2045,cfb,Austin 'Roos,Austin,000000,
 cfb,2045,mbb,Austin 'Roos,Austin,000000,
@@ -446,7 +446,7 @@ cfb,2644,mbb,Thiel Tomcats,Thiel,000000,
 cfb,2644,wbb,Thiel Tomcats,Thiel,000000,
 cfb,2651,cfb,Trine University Thunder,Trine University,000000,
 cfb,2651,mbb,Trine Thunder,Trine,000000,
-cfb,2651,ncaa_mhockey,Trine University Trine University,Trine University,,
+cfb,2651,ncaa_mhockey,Trine University,Trine University,,
 cfb,2651,wbb,Trine Thunder,Trine,000000,
 cfb,2654,cfb,Truman State Bulldogs,Truman State,000000,
 cfb,2654,mbb,Truman State Bulldogs,Truman State,000000,
@@ -555,7 +555,7 @@ cfb,2782,wbb,Cortland Red Dragons,Cortland,000000,
 cfb,2790,cfb,Albion Britons,Albion,000000,
 cfb,2790,mbb,Albion Britons,Albion,000000,
 cfb,2790,wbb,Albion Britons,Albion,000000,
-cfb,2800,cfb,Alma College Scots,Alma College,000000,
+cfb,2800,cfb,Alma Scots,Alma,000000,
 cfb,2800,mbb,Alma Scots,Alma,000000,
 cfb,2800,wbb,Alma Scots,Alma,000000,
 cfb,2804,cfb,Chowan Hawks,Chowan,000000,
@@ -606,7 +606,7 @@ cfb,2838,mbb,Tiffin Dragons,Tiffin,000000,
 cfb,2838,wbb,Tiffin Dragons,Tiffin,000000,
 cfb,284,cfb,Stonehill Skyhawks,Stonehill,000000,
 cfb,284,mbb,Stonehill Skyhawks,Stonehill,000000,
-cfb,284,ncaa_mhockey,Stonehill Stonehill,Stonehill,,
+cfb,284,ncaa_mhockey,Stonehill,Stonehill,,
 cfb,284,ncaa_whockey,Stonehill Skyhawks,Stonehill,,
 cfb,284,wbb,Stonehill Skyhawks,Stonehill,000000,
 cfb,2844,cfb,Wayne State (NE) Wildcats,Wayne State (NE),000000,
@@ -655,7 +655,7 @@ cfb,2896,mbb,Southern Virginia Knights,Southern Virginia,000000,
 cfb,2896,wbb,Southern Virginia Knights,Southern Virginia,000000,
 cfb,2900,cfb,St. Thomas Tommies,St. Thomas,000000,
 cfb,2900,mbb,St. Thomas Tommies,St. Thomas,000000,
-cfb,2900,ncaa_mhockey,St. Thomas Tommies,St. Thomas,,
+cfb,2900,ncaa_mhockey,St. Thomas - Minnesota Tommies,St. Thomas - Minnesota,,
 cfb,2900,ncaa_whockey,St. Thomas-Minnesota Tommies,St. Thomas-Minnesota,,
 cfb,2900,wbb,St. Thomas Tommies,St. Thomas,000000,
 cfb,291,cfb,Methodist Monarchs,Methodist,000000,
@@ -690,7 +690,7 @@ cfb,2951,wbb,SUNY Maritime Privateers,SUNY Maritime,000000,
 cfb,2963,cfb,Case Western Reserve Spartans,Case Western Reserve,000000,
 cfb,2963,mbb,Case Western Reserve Spartans,Case Western Reserve,000000,
 cfb,2967,cfb,Framingham State Rams,Framingham State,000000,
-cfb,2967,ncaa_mhockey,Manitoba MANITOBA,Manitoba,,
+cfb,2967,ncaa_mhockey,MANITOBA,Manitoba,,
 cfb,2969,cfb,Misericordia Cougars,Misericordia,000000,
 cfb,2974,cfb,Shepherd Rams,Shepherd,000000,
 cfb,2974,mbb,Shepherd Rams,Shepherd,000000,
@@ -760,7 +760,7 @@ cfb,375,mbb,St. Scholastica Saints,St. Scholastica,000000,
 cfb,375,wbb,St. Scholastica Saints,St. Scholastica,000000,
 cfb,379,cfb,UMass Dartmouth Corsairs,UMass Dartmouth,000000,
 cfb,379,mbb,UMass Dartmouth MASS. DARTMOUTH,UMass Dartmouth,000000,
-cfb,379,ncaa_mhockey,UMass Dartmouth UMass Dartmouth,UMass Dartmouth,,
+cfb,379,ncaa_mhockey,UMass Dartmouth,UMass Dartmouth,,
 cfb,379,wbb,UMass Dartmouth MASS. DARTMOUTH,UMass Dartmouth,000000,
 cfb,386,cfb,Trinity (TX) Tigers,Trinity (TX),000000,
 cfb,386,mbb,Trinity (TX) Tigers,Trinity (TX),000000,
@@ -806,8 +806,8 @@ cfb,512,cfb,Dakota State University Trojans,Dakota State University,000000,
 cfb,512,mbb,Dakota State Trojans,Dakota State,000000,
 cfb,512,wbb,Dakota State Trojans,Dakota State,000000,
 cfb,530,cfb,Graceland University Graceland,Graceland University,000000,
-cfb,530,mbb,Graceland GRACELAND,Graceland,000000,
-cfb,530,wbb,Graceland GRACELAND,Graceland,000000,
+cfb,530,mbb,GRACELAND,Graceland,000000,
+cfb,530,wbb,GRACELAND,Graceland,000000,
 cfb,548,cfb,LaGrange College Panthers,LaGrange College,000000,
 cfb,548,mbb,LaGrange Panthers,LaGrange,000000,
 cfb,548,wbb,LaGrange Panthers,LaGrange,000000,
@@ -892,12 +892,12 @@ mbb,2837,mbb,East Texas A&M Lions,East Texas A&M,000000,
 mbb,2837,wbb,East Texas A&M Lions,East Texas A&M,000000,
 mbb,284,cfb,Stonehill Skyhawks,Stonehill,000000,
 mbb,284,mbb,Stonehill Skyhawks,Stonehill,000000,
-mbb,284,ncaa_mhockey,Stonehill Stonehill,Stonehill,,
+mbb,284,ncaa_mhockey,Stonehill,Stonehill,,
 mbb,284,ncaa_whockey,Stonehill Skyhawks,Stonehill,,
 mbb,284,wbb,Stonehill Skyhawks,Stonehill,000000,
 mbb,2900,cfb,St. Thomas Tommies,St. Thomas,000000,
 mbb,2900,mbb,St. Thomas Tommies,St. Thomas,000000,
-mbb,2900,ncaa_mhockey,St. Thomas Tommies,St. Thomas,,
+mbb,2900,ncaa_mhockey,St. Thomas - Minnesota Tommies,St. Thomas - Minnesota,,
 mbb,2900,ncaa_whockey,St. Thomas-Minnesota Tommies,St. Thomas-Minnesota,,
 mbb,2900,wbb,St. Thomas Tommies,St. Thomas,000000,
 mbb,3101,cfb,Utah Tech Trailblazers,Utah Tech,000000,
@@ -1039,11 +1039,11 @@ ncaa_mhockey,107,cfb,Holy Cross Crusaders,Holy Cross,582c83,ffffff
 ncaa_mhockey,107,ncaa_mhockey,Holy Cross Crusaders,Holy Cross,,
 ncaa_mhockey,108,cfb,Harvard Crimson,Harvard,990000,dbdbdb
 ncaa_mhockey,108,ncaa_mhockey,Harvard Crimson,Harvard,,
-ncaa_mhockey,110133,ncaa_mhockey,Long Island University Long Island University,Long Island University,,
+ncaa_mhockey,110133,ncaa_mhockey,Long Island University,Long Island University,,
 ncaa_mhockey,111,cfb,Northeastern Huskies,Northeastern,cc0001,c2c3c0
 ncaa_mhockey,111,ncaa_mhockey,Northeastern Huskies,Northeastern,,
 ncaa_mhockey,112334,cfb,Franklin Pierce Ravens,Franklin Pierce,,
-ncaa_mhockey,112334,ncaa_mhockey,Franklin Pierce Franklin Pierce,Franklin Pierce,,
+ncaa_mhockey,112334,ncaa_mhockey,Franklin Pierce,Franklin Pierce,,
 ncaa_mhockey,113,cfb,Massachusetts Minutemen,Massachusetts,881c1c,ffffff
 ncaa_mhockey,113,ncaa_mhockey,Massachusetts Minutemen,Massachusetts,,
 ncaa_mhockey,12,cfb,Arizona Wildcats,Arizona,cc0033,003366
@@ -1112,7 +1112,7 @@ ncaa_mhockey,2038,ncaa_mhockey,Assumption Falcons,Assumption,,
 ncaa_mhockey,2038,wbb,Assumption Greyhounds,Assumption,000000,
 ncaa_mhockey,2043,cfb,Augustana (SD) Vikings,Augustana (SD),000000,
 ncaa_mhockey,2043,mbb,Augustana (SD) Vikings,Augustana (SD),000000,
-ncaa_mhockey,2043,ncaa_mhockey,Augustana (SD) Vikings,Augustana (SD),NULL,
+ncaa_mhockey,2043,ncaa_mhockey,Augustana University (SD) Vikings,Augustana University (SD),NULL,NULL
 ncaa_mhockey,2043,wbb,Augustana (SD) Vikings,Augustana (SD),000000,
 ncaa_mhockey,2060,cfb,Bentley Falcons,Bentley,000000,
 ncaa_mhockey,2060,mbb,Bentley Falcons,Bentley,000000,
@@ -1196,7 +1196,7 @@ ncaa_mhockey,261,mbb,Vermont Catamounts,Vermont,154734,ffc72c
 ncaa_mhockey,261,ncaa_mhockey,Vermont Catamounts,Vermont,,
 ncaa_mhockey,2651,cfb,Trine University Thunder,Trine University,000000,
 ncaa_mhockey,2651,mbb,Trine Thunder,Trine,000000,
-ncaa_mhockey,2651,ncaa_mhockey,Trine University Trine University,Trine University,,
+ncaa_mhockey,2651,ncaa_mhockey,Trine University,Trine University,,
 ncaa_mhockey,2651,wbb,Trine Thunder,Trine,000000,
 ncaa_mhockey,2711,cfb,Western Michigan Broncos,Western Michigan,532e1f,f1c500
 ncaa_mhockey,2711,ncaa_mhockey,Western Michigan Broncos,Western Michigan,,
@@ -1240,7 +1240,7 @@ ncaa_mhockey,2830,ncaa_whockey,St. Anselm Hawks,St. Anselm,,
 ncaa_mhockey,2830,wbb,Saint Anselm Hawks,Saint Anselm,000000,
 ncaa_mhockey,284,cfb,Stonehill Skyhawks,Stonehill,000000,
 ncaa_mhockey,284,mbb,Stonehill Skyhawks,Stonehill,000000,
-ncaa_mhockey,284,ncaa_mhockey,Stonehill Stonehill,Stonehill,,
+ncaa_mhockey,284,ncaa_mhockey,Stonehill,Stonehill,,
 ncaa_mhockey,284,ncaa_whockey,Stonehill Skyhawks,Stonehill,,
 ncaa_mhockey,284,wbb,Stonehill Skyhawks,Stonehill,000000,
 ncaa_mhockey,285,mbb,Lake Superior State Lakers,Lake Superior State,000000,
@@ -1248,7 +1248,7 @@ ncaa_mhockey,285,ncaa_mhockey,Lake Superior State Lakers,Lake Superior State,,
 ncaa_mhockey,285,wbb,Lake Superior State Lakers,Lake Superior State,000000,
 ncaa_mhockey,2900,cfb,St. Thomas Tommies,St. Thomas,000000,
 ncaa_mhockey,2900,mbb,St. Thomas Tommies,St. Thomas,000000,
-ncaa_mhockey,2900,ncaa_mhockey,St. Thomas Tommies,St. Thomas,,
+ncaa_mhockey,2900,ncaa_mhockey,St. Thomas - Minnesota Tommies,St. Thomas - Minnesota,,
 ncaa_mhockey,2900,ncaa_whockey,St. Thomas-Minnesota Tommies,St. Thomas-Minnesota,,
 ncaa_mhockey,2900,wbb,St. Thomas Tommies,St. Thomas,000000,
 ncaa_mhockey,298,mbb,Alaska Nanooks,Alaska,000000,
@@ -1264,13 +1264,13 @@ ncaa_mhockey,349,cfb,Army Black Knights,Army,000000,d3bc8d
 ncaa_mhockey,349,ncaa_mhockey,Army Black Knights,Army,,
 ncaa_mhockey,379,cfb,UMass Dartmouth Corsairs,UMass Dartmouth,000000,
 ncaa_mhockey,379,mbb,UMass Dartmouth MASS. DARTMOUTH,UMass Dartmouth,000000,
-ncaa_mhockey,379,ncaa_mhockey,UMass Dartmouth UMass Dartmouth,UMass Dartmouth,,
+ncaa_mhockey,379,ncaa_mhockey,UMass Dartmouth,UMass Dartmouth,,
 ncaa_mhockey,379,wbb,UMass Dartmouth MASS. DARTMOUTH,UMass Dartmouth,000000,
 ncaa_mhockey,41,cfb,UConn Huskies,UConn,0c2340,a2aaad
 ncaa_mhockey,41,ncaa_mhockey,UConn Huskies,UConn,,
 ncaa_mhockey,43,cfb,Yale Bulldogs,Yale,004a81,286dc0
 ncaa_mhockey,43,ncaa_mhockey,Yale Bulldogs,Yale,,
-ncaa_mhockey,430,mbb,Post POST,Post,,
+ncaa_mhockey,430,mbb,POST,Post,,
 ncaa_mhockey,430,ncaa_mhockey,Post University Eagles,Post University,,
 ncaa_mhockey,430,ncaa_whockey,Post University Eagles,Post University,,
 ncaa_mhockey,87,cfb,Notre Dame Fighting Irish,Notre Dame,062340,c99700
@@ -1445,7 +1445,7 @@ ncaa_whockey,2142,ncaa_whockey,Colgate Raiders,Colgate,,
 ncaa_whockey,225,cfb,Brown Bears,Brown,411e09,949300
 ncaa_whockey,225,ncaa_whockey,Brown Bears,Brown,,
 ncaa_whockey,2341,cfb,Long Island University Sharks,Long Island University,,
-ncaa_whockey,2341,ncaa_whockey,Long Island University Long Island University,Long Island University,,
+ncaa_whockey,2341,ncaa_whockey,Long Island University,Long Island University,,
 ncaa_whockey,2341,wbb,LIU Brooklyn Blackbirds,LIU Brooklyn,000000,f0f0f0
 ncaa_whockey,2364,cfb,Minnesota State Mankato Mavericks,Minnesota State Mankato,000000,
 ncaa_whockey,2364,mbb,Minnesota State Mavericks,Minnesota State,000000,
@@ -1506,12 +1506,12 @@ ncaa_whockey,2830,ncaa_whockey,St. Anselm Hawks,St. Anselm,,
 ncaa_whockey,2830,wbb,Saint Anselm Hawks,Saint Anselm,000000,
 ncaa_whockey,284,cfb,Stonehill Skyhawks,Stonehill,000000,
 ncaa_whockey,284,mbb,Stonehill Skyhawks,Stonehill,000000,
-ncaa_whockey,284,ncaa_mhockey,Stonehill Stonehill,Stonehill,,
+ncaa_whockey,284,ncaa_mhockey,Stonehill,Stonehill,,
 ncaa_whockey,284,ncaa_whockey,Stonehill Skyhawks,Stonehill,,
 ncaa_whockey,284,wbb,Stonehill Skyhawks,Stonehill,000000,
 ncaa_whockey,2900,cfb,St. Thomas Tommies,St. Thomas,000000,
 ncaa_whockey,2900,mbb,St. Thomas Tommies,St. Thomas,000000,
-ncaa_whockey,2900,ncaa_mhockey,St. Thomas Tommies,St. Thomas,,
+ncaa_whockey,2900,ncaa_mhockey,St. Thomas - Minnesota Tommies,St. Thomas - Minnesota,,
 ncaa_whockey,2900,ncaa_whockey,St. Thomas-Minnesota Tommies,St. Thomas-Minnesota,,
 ncaa_whockey,2900,wbb,St. Thomas Tommies,St. Thomas,000000,
 ncaa_whockey,311,cfb,Maine Black Bears,Maine,127dbe,
@@ -1522,12 +1522,13 @@ ncaa_whockey,41,cfb,UConn Huskies,UConn,0c2340,a2aaad
 ncaa_whockey,41,ncaa_whockey,UConn Huskies,UConn,,
 ncaa_whockey,43,cfb,Yale Bulldogs,Yale,004a81,286dc0
 ncaa_whockey,43,ncaa_whockey,Yale Bulldogs,Yale,,
-ncaa_whockey,430,mbb,Post POST,Post,,
+ncaa_whockey,430,mbb,POST,Post,,
 ncaa_whockey,430,ncaa_mhockey,Post University Eagles,Post University,,
 ncaa_whockey,430,ncaa_whockey,Post University Eagles,Post University,,
 ncaa_whockey,48,cfb,Delaware Blue Hens,Delaware,00539f,ffd200
 ncaa_whockey,48,ncaa_whockey,Delaware Blue Hens,Delaware,,
 soccer,10,soccer,Huracán,Huracán,C60000,000000
+soccer,100,soccer,Numancia,Numancia,C42A32,1a1a1a
 soccer,10000,soccer,Deportivo Maldonado,Deportivo Maldonado,000000,000000
 soccer,10052,soccer,Villa San Carlos,Villa San Carlos,000000,000000
 soccer,10054,soccer,Excursionistas,Excursionistas,000000,000000
@@ -1677,6 +1678,7 @@ soccer,124,soccer,Borussia Dortmund,Borussia Dortmund,ffee00,272726
 soccer,124510,soccer,St. Thomas Tommies,St. Thomas,512773,98999B
 soccer,12498,soccer,Vejle Boldklub,Vejle Boldklub,000000,C60000
 soccer,125,soccer,Eintracht Frankfurt,Eintracht Frankfurt,ffffff,272726
+soccer,12504,soccer,Esbjerg FB,Esbjerg FB,000000,C60000
 soccer,12587,soccer,Amorebieta,Amorebieta,000000,C60000
 soccer,12594,soccer,UCAM Murcia,UCAM Murcia,000000,C60000
 soccer,12597,soccer,Burgos,Burgos,000000,C60000
@@ -1787,7 +1789,9 @@ soccer,131790,soccer,Inter de San Carlos,Inter de San Carlos,000000,C60000
 soccer,131835,soccer,Deportivo San Pedro,Deportivo San Pedro,000000,C60000
 soccer,131858,soccer,RC Celta Fortuna,RC Celta Fortuna,6cace4,004996
 soccer,132,soccer,Bayern Munich,Bayern Munich,dc052d,1a1a1a
+soccer,132160,soccer,Hillerod Fodbold,Hillerod Fodbold,000000,000000
 soccer,132334,soccer,Çorum FK,Çorum FK,000000,C60000
+soccer,132335,soccer,Amed SFK,Amed SFK,000000,C60000
 soccer,132376,soccer,Ghana U17,Ghana U17,fbd632,000000
 soccer,13238,soccer,Víkingur,Víkingur,BFD2E6,FFFFFF
 soccer,132429,soccer,Kalamata,Kalamata,000000,C60000
@@ -1803,8 +1807,17 @@ soccer,13317,soccer,Marumo Gallants,Marumo Gallants,000000,C60000
 soccer,133875,soccer,Vanuatu,Vanuatu,C0102E,FFCD00
 soccer,133876,soccer,Solomon Islands,Solomon Islands,000000,000000
 soccer,133877,soccer,Namibia,Namibia,D20300,FFCE00
+soccer,133981,soccer,Pumas UNAM,Pumas UNAM,ffffff,060040
+soccer,133982,soccer,Cruz Azul,Cruz Azul,0000ff,ffffff
 soccer,133983,soccer,Necaxa,Necaxa,EF0107,000000
+soccer,133984,soccer,FC Juárez,FC Juárez,89f442,ffffff
+soccer,133985,soccer,Santos,Santos,15926d,00331b
+soccer,133986,soccer,León,León,008000,FFF61B
+soccer,133987,soccer,Querétaro,Querétaro,212121,02b0d0
+soccer,133988,soccer,Toluca,Toluca,EF0107,ffffff
+soccer,133989,soccer,Atlante,Atlante,022789,022789
 soccer,133990,soccer,Atlas,Atlas,EF0107,e1e1e1
+soccer,133991,soccer,Puebla,Puebla,ffffff,0032a8
 soccer,133992,soccer,Atlético de San Luis,Atlético de San Luis,EF0107,dfa829
 soccer,134,soccer,VfB Stuttgart,VfB Stuttgart,ffffff,DA0308
 soccer,13450,soccer,Waasland-Beveren,Waasland-Beveren,f2ff00,ffd32e
@@ -1812,7 +1825,7 @@ soccer,13481,soccer,Metropolitanos,Metropolitanos,000000,C60000
 soccer,135,soccer,TSV 1860 Munich,TSV 1860 Munich,1a1a1a,1a1a1a
 soccer,13582,soccer,Dominica,Dominica,32ad42,C60000
 soccer,13584,soccer,St. Vincent and the Grenadines,St. Vincent and the Grenadines,32ad42,C60000
-soccer,13696,soccer,Western Sydney Wanderers,Western Sydney Wanderers,C60000,c9b177
+soccer,13696,soccer,Western Sydney Wanderers FC,Western Sydney Wanderers FC,C60000,c9b177
 soccer,137,soccer,Werder Bremen,Werder Bremen,03915c,ffffff
 soccer,13783,soccer,Anzoátegui FC,Anzoátegui FC,000000,C60000
 soccer,138,soccer,VfL Wolfsburg,VfL Wolfsburg,81f733,1a1a1a
@@ -1854,7 +1867,7 @@ soccer,1538,soccer,Levante,Levante,C8142F,000000
 soccer,154,soccer,Vitesse,Vitesse,FCEE33,ffffff
 soccer,15424,soccer,Paysandu,Paysandu,0093EC,fafafc
 soccer,155,soccer,RKC Waalwijk,RKC Waalwijk,0c57f2,84aee7
-soccer,15515,soccer,Shanghai Port,Shanghai Port,C60000,fcfcfc
+soccer,15515,soccer,Shanghai Port FC,Shanghai Port FC,C60000,fcfcfc
 soccer,15582,soccer,FC Ural Ekaterinburg,FC Ural Ekaterinburg,f2581d,000000
 soccer,156,soccer,Willem II,Willem II,1a316b,96c0df
 soccer,15713,soccer,FK Kukesi,FK Kukesi,000000,C60000
@@ -1982,7 +1995,7 @@ soccer,18,soccer,San Lorenzo,San Lorenzo,0060f0,C60000
 soccer,180,soccer,Strasbourg,Strasbourg,0000bf,ffffff
 soccer,18000,soccer,Chennaiyin FC,Chennaiyin FC,000000,C60000
 soccer,18002,soccer,Mumbai City FC,Mumbai City FC,000000,C60000
-soccer,18003,soccer,FC Goa,FC Goa,000000,C60000
+soccer,18003,soccer,FC GOA,FC GOA,000000,C60000
 soccer,18004,soccer,NorthEast United FC,NorthEast United FC,000000,C60000
 soccer,18009,soccer,San José State Spartans,San José State,000000,C60000
 soccer,18010,soccer,Grand Canyon Antelopes,Grand Canyon,522398,000000
@@ -2081,6 +2094,7 @@ soccer,18851,soccer,Bengaluru FC,Bengaluru FC,0000fd,C60000
 soccer,18885,soccer,Hereford F.C.,Hereford F.C.,000000,C60000
 soccer,18889,soccer,Croatia,Croatia,ff0000,ffffff
 soccer,18894,soccer,Punjab FC,Punjab FC,8f171a,ffc80b
+soccer,18896,soccer,Gokulam Kerala FC,Gokulam Kerala FC,000000,C60000
 soccer,189,soccer,New England Revolution,New England Revolution,022166,ce0e2d
 soccer,1895,soccer,Besiktas,Besiktas,ffffff,1a1a1a
 soccer,18959,soccer,Manaus,Manaus,006838,8FCD48
@@ -2104,6 +2118,7 @@ soccer,19195,soccer,Deportes Limache,Deportes Limache,000000,C60000
 soccer,19197,soccer,Deportes Recoleta,Deportes Recoleta,FFFFFF,800080
 soccer,19198,soccer,Deportes Santa Cruz,Deportes Santa Cruz,000000,C60000
 soccer,19208,soccer,Türkiye U21,Türkiye U21,E70000,ffffff
+soccer,19212,soccer,South Korea U21,South Korea U21,000000,C60000
 soccer,19213,soccer,Scotland U21,Scotland U21,1a2d69,ffec00
 soccer,19243,soccer,Drita Gjilan,Drita Gjilan,000000,C60000
 soccer,19244,soccer,FC Wacker Innsbruck,FC Wacker Innsbruck,000000,C60000
@@ -2125,6 +2140,7 @@ soccer,19314,soccer,Bonaire,Bonaire,000000,C60000
 soccer,19321,soccer,RKAV Volendam,RKAV Volendam,000000,C60000
 soccer,19333,soccer,California Baptist Lancers,California Baptist,000000,C60000
 soccer,19340,soccer,Macarthur FC,Macarthur FC,dbc242,000000
+soccer,19341,soccer,Real Kashmir,Real Kashmir,000000,C60000
 soccer,19344,soccer,Cornell Big Red,Cornell,B31B1B,000000
 soccer,19345,soccer,Poland,Poland,ffffff,D12F2A
 soccer,19348,soccer,Croatia U21,Croatia U21,DE2400,112855
@@ -2162,6 +2178,7 @@ soccer,20003,soccer,Republic of Ireland U21,Republic of Ireland U21,32ad42,fffff
 soccer,20024,soccer,Ararat-Armenia,Ararat-Armenia,000000,C60000
 soccer,20025,soccer,Iberia 1999,Iberia 1999,000000,C60000
 soccer,20028,soccer,Kauno Zalgiris,Kauno Zalgiris,000000,C60000
+soccer,20032,soccer,Servette,Servette,B8273B,F7E8A6
 soccer,20036,soccer,Deportivo Mixco,Deportivo Mixco,0079d2,0079d2
 soccer,20039,soccer,Larne,Larne,C60000,ffffff
 soccer,20041,soccer,Umraniyespor,Umraniyespor,000000,C60000
@@ -2404,7 +2421,7 @@ soccer,20516,soccer,BYU Cougars,BYU,002E5D,FFFFFF
 soccer,20517,soccer,Texas Longhorns,Texas,BF5700,333F48
 soccer,20518,soccer,TCU Horned Frogs,TCU,4D1979,A3A9AC
 soccer,20519,soccer,Purdue Boilermakers,Purdue,CEB888,000000
-soccer,2052,soccer,BEIJING GUOAN,BEIJING GUOAN,02a300,FFF212
+soccer,2052,soccer,Beijing Guoan,Beijing Guoan,02a300,FFF212
 soccer,20520,soccer,Utah Utes,Utah,CC0000,808080
 soccer,20521,soccer,Central Connecticut Blue Devils,Central Connecticut,1A4784,FFFFFF
 soccer,20522,soccer,Baylor Bears,Baylor,154734,FFB81C
@@ -2548,6 +2565,7 @@ soccer,20721,soccer,Tepatitlán FC,Tepatitlán FC,000000,C60000
 soccer,20722,soccer,Tlaxcala FC,Tlaxcala FC,000000,C60000
 soccer,20728,soccer,Leeds United U21,Leeds United U21,ffffff,cdcdcd
 soccer,20729,soccer,Eyupspor,Eyupspor,000000,C60000
+soccer,20736,soccer,Fatih Karagümrük,Fatih Karagümrük,000000,C60000
 soccer,20738,soccer,Jong Sparta Rotterdam,Jong Sparta Rotterdam,de292e,8ac9f8
 soccer,20740,soccer,SC Farense,SC Farense,000000,C60000
 soccer,20747,soccer,Kings Lynn Town,Kings Lynn Town,1302b0,dbaf00
@@ -2564,7 +2582,7 @@ soccer,20802,soccer,PSV Eindhoven,PSV Eindhoven,ef2f24,000000
 soccer,20814,soccer,Sekhukhune United FC,Sekhukhune United FC,000000,C60000
 soccer,20830,soccer,Benfica,Benfica,ca281d,FFFFFF
 soccer,20835,soccer,Servette,Servette,65202F,FFFFFF
-soccer,20836,soccer,Valerenga,Valerenga,034ea2,ed1c24
+soccer,20836,soccer,Vålerenga,Valerenga,034ea2,ed1c24
 soccer,20843,soccer,Hungary U21,Hungary U21,E70000,ffffff
 soccer,20844,soccer,Slovenia U21,Slovenia U21,ffffff,0c2fff
 soccer,20851,soccer,Athletic,Athletic,000000,FFFFFF
@@ -2587,6 +2605,7 @@ soccer,20909,soccer,Belarus,Belarus,ffffff,E70000
 soccer,20910,soccer,Utah Tech Trailblazers,Utah Tech,C60000,003DA5
 soccer,20914,soccer,Venezuela,Venezuela,880007,ffffff
 soccer,20916,soccer,Botswana,Botswana,0099ff,000000
+soccer,20917,soccer,Ethiopia,Ethiopia,039411,f6fa0a
 soccer,20919,soccer,Hungary,Hungary,E70000,ffffff
 soccer,20920,soccer,Bosnia-Herzegovina,Bosnia-Herzegovina,112855,ffffff
 soccer,20921,soccer,Slovenia,Slovenia,ffffff,0c2fff
@@ -2636,13 +2655,20 @@ soccer,21036,soccer,Leicester City,Leicester City,0202fb,ffffff
 soccer,21037,soccer,Crystal Palace,Crystal Palace,0055a5,ee2e24
 soccer,21038,soccer,Sheffield United,Sheffield United,f42727,1a1a1a
 soccer,21039,soccer,Southampton,Southampton,ED1A3B,081d54
+soccer,21041,soccer,Huddersfield Town,Huddersfield Town,0074d0,081d54
 soccer,21042,soccer,Wolverhampton,Wolverhampton,fdb913,231f20
+soccer,21043,soccer,Oxford United,Oxford United,001f59,fff200
 soccer,21048,soccer,Burnley,Burnley,8bd3f5,fff216
 soccer,21053,soccer,London City Lionesses,London City Lionesses,8bb8e8,ff6900
+soccer,21058,soccer,West Bromwich Albion,West Bromwich Albion,091453,1a1a1a
 soccer,21060,soccer,Sunderland,Sunderland,EB172B,0000fa
+soccer,21063,soccer,Plymouth Argyle,Plymouth Argyle,003e00,9eefe1
+soccer,21066,soccer,AFC Fylde,AFC Fylde,003e7e,ee3124
 soccer,21068,soccer,Ipswich Town,Ipswich Town,0000fa,890000
 soccer,21070,soccer,Nottingham Forest,Nottingham Forest,f42727,1f365e
+soccer,21071,soccer,Gwalia United,Gwalia United,2b58ae,b31d27
 soccer,21076,soccer,Newcastle United,Newcastle United,231F20,2e4b60
+soccer,21087,soccer,Exeter City,Exeter City,C8142F,ffff00
 soccer,21092,soccer,C.D. Platense,C.D. Platense,000000,C60000
 soccer,211,soccer,Peru,Peru,cb292e,ffffff
 soccer,21101,soccer,Southern Illinois Salukis,Southern Illinois,000000,000000
@@ -2664,6 +2690,8 @@ soccer,21165,soccer,Chicago State Cougars,Chicago State,000000,C60000
 soccer,21175,soccer,Dux Logroño,Dux Logroño,C60000,ffffff
 soccer,21181,soccer,Dominican Republic,Dominican Republic,002d62,ce1127
 soccer,212,soccer,Uruguay,Uruguay,55B5E5,000080
+soccer,21214,soccer,Leeds United,Leeds United,ffe003,0060a9
+soccer,21218,soccer,AFC Wimbledon,AFC Wimbledon,000000,e30613
 soccer,213,soccer,Venezuela,Venezuela,d02a36,f7d531
 soccer,21300,soccer,Charlotte FC,Charlotte FC,0085ca,000000
 soccer,21302,soccer,Algeria,Algeria,5bbd19,000000
@@ -2692,6 +2720,7 @@ soccer,21424,soccer,Sevilla,Sevilla,ffffff,c9282d
 soccer,21425,soccer,Madrid CFF,Madrid CFF,D8BFD8,000000
 soccer,21426,soccer,Levante,Levante,C8142F,000000
 soccer,21428,soccer,Real Sociedad,Real Sociedad,3366CC,C8142F
+soccer,21446,soccer,Al Faisaly,Al Faisaly,70111C,FFFFFF
 soccer,21476,soccer,El Salvador,El Salvador,0537e4,000000
 soccer,21478,soccer,Armenia,Armenia,DE2400,ffffff
 soccer,21479,soccer,Kosovo,Kosovo,0000cd,ffec00
@@ -2782,6 +2811,8 @@ soccer,21922,soccer,Sabah FK,Sabah FK,000000,FF1493
 soccer,21926,soccer,FC Stade Lausanne-Ouchy,FC Stade Lausanne-Ouchy,000000,C60000
 soccer,21927,soccer,Rodina Moscow,Rodina Moscow,000000,C60000
 soccer,21931,soccer,Morocco U23,Morocco U23,009060,df2027
+soccer,21932,soccer,Saudi Arabia,Saudi Arabia,dddddd,00843D
+soccer,21933,soccer,Hvidovre IF,Hvidovre IF,000000,C60000
 soccer,21943,soccer,Egnatia,Egnatia,000000,C60000
 soccer,21949,soccer,FC Baltika Kaliningrad,FC Baltika Kaliningrad,000000,C60000
 soccer,21950,soccer,FC Blau-Weiß Linz,FC Blau-Weiß Linz,163277,05070C
@@ -2841,8 +2872,11 @@ soccer,22344,soccer,Auckland FC,Auckland FC,000000,0900FF
 soccer,22348,soccer,Durban City,Durban City,000000,C60000
 soccer,22350,soccer,Kruger United,Kruger United,000000,C60000
 soccer,22408,soccer,Hammarby IF,Hammarby IF,ffcc00,007a43
+soccer,22413,soccer,Tigres UANL,Tigres UANL,ffd011,0000ff
 soccer,22414,soccer,Pachuca,Pachuca,001C58,02b0d0
 soccer,22415,soccer,América,América,ffff91,001C58
+soccer,22416,soccer,Guadalajara,Guadalajara,EF0107,104e8a
+soccer,22417,soccer,Tijuana,Tijuana,EF0107,e1e1e1
 soccer,22488,soccer,Gibraltar,Gibraltar,DE2918,ffffff
 soccer,225,soccer,Santos,Santos,15926d,00331b
 soccer,2250,soccer,Sporting CP,Sporting CP,008127,ffffff
@@ -2894,6 +2928,7 @@ soccer,251,soccer,Ross County,Ross County,181146,C8142F
 soccer,252,soccer,Arbroath,Arbroath,873041,C60000
 soccer,2528,soccer,Kairat Almaty,Kairat Almaty,FCEE33,81c0ff
 soccer,253,soccer,Inverness Caledonian Thistle,Inverness Caledonian Thistle,000099,1a1a1a
+soccer,2530,soccer,Gomel,Gomel,000000,000000
 soccer,2533,soccer,Zenit St Petersburg,Zenit St Petersburg,0098dc,FFFFFF
 soccer,2539,soccer,Dinamo Minsk,Dinamo Minsk,5f65bb,000000
 soccer,254,soccer,Falkirk,Falkirk,000099,C60000
@@ -3062,11 +3097,13 @@ soccer,2925,soccer,Cagliari,Cagliari,282846,ffffff
 soccer,2926,soccer,Livorno,Livorno,A9414C,1a1a1a
 soccer,293,soccer,Dover Athletic,Dover Athletic,ffffff,ffd700
 soccer,2936,soccer,Östers IF,Östers IF,FFD700,55aaff
+soccer,2942,soccer,Otelul Galati,Otelul Galati,000000,000000
 soccer,2950,soccer,Mainz,Mainz,DA0308,000055
 soccer,2952,soccer,Lokomotiv Plovdiv,Lokomotiv Plovdiv,000000,d62612
 soccer,2975,soccer,Instituto (Córdoba),Instituto (Córdoba),C60000,000000
 soccer,2976,soccer,Greece,Greece,295da8,ffffff
 soccer,2980,soccer,Bodo/Glimt,Bodo/Glimt,FCEE33,ffffff
+soccer,2986,soccer,AaB,AaB,b51c21,000000
 soccer,2988,soccer,Rijeka,Rijeka,42BEFD,000000
 soccer,2990,soccer,Lech Poznan,Lech Poznan,004B92,ffffff
 soccer,2991,soccer,Akhmat Grozny,Akhmat Grozny,499e55,000000
@@ -3154,7 +3191,7 @@ soccer,345,soccer,Tranmere Rovers,Tranmere Rovers,ffffff,4c00b3
 soccer,3454,soccer,Vasco da Gama,Vasco da Gama,000000,fafafc
 soccer,3456,soccer,Coritiba,Coritiba,417505,fafafc
 soccer,3457,soccer,Vitória,Vitória,C6101C,C60000
-soccer,3458,soccer,Athletico Paranaense,Athletico Paranaense,D80518,C60000
+soccer,3458,soccer,Athletico-PR,Athletico Paranaense,D80518,C60000
 soccer,3459,soccer,Ponte Preta,Ponte Preta,000000,fafafc
 soccer,346,soccer,Blackpool,Blackpool,F5A12D,ffffff
 soccer,3461,soccer,Figueirense,Figueirense,000000,fafafc
@@ -3466,11 +3503,11 @@ soccer,529,soccer,IF Elfsborg,IF Elfsborg,ffef32,ff0900
 soccer,5291,soccer,Almere City,Almere City,C60000,9df9f7
 soccer,5308,soccer,Vitoria Setubal,Vitoria Setubal,3b8649,ffea01
 soccer,5309,soccer,Vitória de Guimaraes,Vitória de Guimaraes,ffffff,000000
-soccer,5321,soccer,Adelaide United,Adelaide United,ea413c,ffffff
-soccer,5322,soccer,Perth Glory,Perth Glory,562D84,ffffff
+soccer,5321,soccer,Adelaide United FC,Adelaide United FC,ea413c,ffffff
+soccer,5322,soccer,Perth Glory FC,Perth Glory FC,562D84,ffffff
 soccer,5323,soccer,Newcastle Jets,Newcastle Jets,0000dd,ffffff
-soccer,5325,soccer,Central Coast Mariners,Central Coast Mariners,f5fe05,104C94
-soccer,5326,soccer,Brisbane Roar,Brisbane Roar,F5A12D,d3d3d3
+soccer,5325,soccer,Central Coast Mariners FC,Central Coast Mariners FC,f5fe05,104C94
+soccer,5326,soccer,Brisbane Roar FC,Brisbane Roar FC,F5A12D,d3d3d3
 soccer,5327,soccer,Sydney FC,Sydney FC,87cefa,fafafc
 soccer,5328,soccer,Melbourne Victory,Melbourne Victory,104C94,d3d3d3
 soccer,5351,soccer,Ivory Coast U17,Ivory Coast U17,d48c00,5bbd19
@@ -3501,9 +3538,10 @@ soccer,5518,soccer,Cambodia,Cambodia,d50032,032EA1
 soccer,552,soccer,Maritimo,Maritimo,008222,01e5db
 soccer,5533,soccer,Madagascar,Madagascar,F9423A,00843D
 soccer,5534,soccer,Mauritius,Mauritius,EA2839,00A551
+soccer,555,soccer,Legia Warsaw,Legia Warsaw,2b6a36,ffffff
 soccer,557,soccer,St. Gallen,St. Gallen,007c27,FCD116
 soccer,5570,soccer,Sport Boys,Sport Boys,ffadcc,000000
-soccer,5579,soccer,Oud-Heverlee Leuven,Oud-Heverlee Leuven,048a28,000000
+soccer,5579,soccer,OH Leuven,Oud-Heverlee Leuven,048a28,000000
 soccer,5583,soccer,Sportivo Luqueño,Sportivo Luqueño,212121,000000
 soccer,5584,soccer,Nacional Asunción,Nacional Asunción,7CBDE7,000000
 soccer,5585,soccer,Indiana Hoosiers,Indiana,990000,EEEDEB
@@ -3729,6 +3767,7 @@ soccer,6071,soccer,Antofagasta,Antofagasta,142e93,000000
 soccer,6072,soccer,O'Higgins,O'Higgins,517ab7,000000
 soccer,6077,soccer,Houston Dynamo FC,Houston Dynamo FC,ff6b00,101820
 soccer,6079,soccer,Red Bull Bragantino,Red Bull Bragantino,000000,fafafc
+soccer,608,soccer,FK Torpedo Moscow,FK Torpedo Moscow,000000,ffffff
 soccer,6086,soccer,Botafogo,Botafogo,000000,fafafc
 soccer,6087,soccer,Nova Iguaçu,Nova Iguaçu,fc7e01,000000
 soccer,609,soccer,Sigma Olomouc,Sigma Olomouc,000000,000000
@@ -3741,6 +3780,7 @@ soccer,615,soccer,Bohemians,Bohemians,000000,000000
 soccer,6154,soccer,América Mineiro,América Mineiro,417505,fafafc
 soccer,6167,soccer,Palestine,Palestine,CE1126,007A3D
 soccer,617,soccer,Omonia Nicosia,Omonia Nicosia,025719,ffffff
+soccer,6175,soccer,Lokomotiv Sofia,Lokomotiv Sofia,000000,000000
 soccer,619,soccer,NK Maribor,NK Maribor,391669,ffff00
 soccer,6196,soccer,ASA,ASA,000000,fafafa
 soccer,620,soccer,SK Brann,SK Brann,FF0000,32CD32
@@ -3776,11 +3816,13 @@ soccer,6640,soccer,Lesotho,Lesotho,0000cd,009543
 soccer,6649,soccer,Belgium U17,Belgium U17,DE2918,FCD116
 soccer,6672,soccer,Kristiansund BK,Kristiansund BK,000000,000000
 soccer,6686,soccer,Eswatini,Eswatini,000000,E70000
+soccer,6717,soccer,Basque Country,Basque Country,,
 soccer,6722,soccer,Macau,Macau,00795E,FBD20E
 soccer,6723,soccer,Tajikistan,Tajikistan,E70000,006600
 soccer,6724,soccer,Kyrgyz Republic,Kyrgyz Republic,E70000,E70000
 soccer,6725,soccer,Namibia,Namibia,D20300,FFCE00
 soccer,6726,soccer,Seychelles,Seychelles,002F6C,D92323
+soccer,6740,soccer,Fehérvár,Fehérvár,000000,000000
 soccer,6741,soccer,Drogheda United,Drogheda United,000000,000000
 soccer,6742,soccer,Valur Reykjavik,Valur Reykjavik,000000,000000
 soccer,6748,soccer,Tobol Kostanay,Tobol Kostanay,000000,000000
@@ -3808,6 +3850,7 @@ soccer,6851,soccer,Paris FC,Paris FC,000000,000000
 soccer,6866,soccer,Progreso,Progreso,212121,000000
 soccer,6870,soccer,Kasimpasa,Kasimpasa,000000,000000
 soccer,6902,soccer,Shonan Bellmare,Shonan Bellmare,000000,000000
+soccer,6903,soccer,Tokushima Vortis,Tokushima Vortis,000000,000000
 soccer,6907,soccer,TSV Hartberg,TSV Hartberg,000000,000000
 soccer,6927,soccer,Winthrop Eagles,Winthrop,872434,FFC82E
 soccer,6946,soccer,Ukraine U19,Ukraine U19,0074AB,fafafc
@@ -3843,14 +3886,15 @@ soccer,7115,soccer,Kashima Antlers,Kashima Antlers,EF0107,060040
 soccer,7116,soccer,Yokohama F. Marinos,Yokohama F. Marinos,000000,000000
 soccer,7120,soccer,Ulsan HD,Ulsan HD,0143c6,dbad08
 soccer,7128,soccer,Al Ain,Al Ain,7300ec,000000
-soccer,7129,soccer,AL GHARAFA AL GHARAFA,AL GHARAFA AL GHARAFA,000000,000000
-soccer,7135,soccer,AL SADD,AL SADD,ffffff,000000
+soccer,7129,soccer,Al-Gharafa,Al-Gharafa,000000,000000
+soccer,7135,soccer,Al Sadd,Al Sadd,ffffff,000000
 soccer,7137,soccer,Arema Indonesia,Arema Indonesia,000000,C60000
 soccer,7138,soccer,Buriram United,Buriram United,000000,C60000
 soccer,7151,soccer,Netherlands,Netherlands,ec2f00,003da5
 soccer,7155,soccer,Chelmsford,Chelmsford,800000,FFFFFF
 soccer,7156,soccer,Maidenhead United,Maidenhead United,000000,9932cc
 soccer,7166,soccer,Annan Athletic,Annan Athletic,F7AA25,000000
+soccer,7206,soccer,UD Logroñés,UD Logroñés,C60000,000000
 soccer,7224,soccer,Isidro Metapán,Isidro Metapán,000000,C60000
 soccer,7225,soccer,Alianza FC,Alianza FC,000000,C60000
 soccer,7226,soccer,Águila,Águila,000000,C60000
@@ -3893,7 +3937,7 @@ soccer,7476,soccer,Kashiwa Reysol,Kashiwa Reysol,000000,000000
 soccer,7477,soccer,Vissel Kobe,Vissel Kobe,000000,000000
 soccer,7507,soccer,Turkmenistan,Turkmenistan,009f4d,FFFFFF
 soccer,7521,soccer,Shandong Taishan,Shandong Taishan,C60000,C60000
-soccer,7527,soccer,Al Rayyan,Al Rayyan,ef0e0e,fcfcfc
+soccer,7527,soccer,Al-Rayyan SC,Al-Rayyan SC,ef0e0e,fcfcfc
 soccer,7531,soccer,CSA,CSA,265891,fafafa
 soccer,7536,soccer,Finland,Finland,003580,ffffff
 soccer,7632,soccer,Atlético-MG,Atlético-MG,000000,fafafc
@@ -3915,6 +3959,7 @@ soccer,7764,soccer,Platense,Platense,000000,000000
 soccer,7767,soccer,Tigre,Tigre,C60000,792DCD
 soccer,7790,soccer,New Zealand U20,New Zealand U20,ea2300,0081d6
 soccer,7825,soccer,Vojvodina,Vojvodina,000000,000000
+soccer,7833,soccer,Dinamo Brest,Dinamo Brest,000000,000000
 soccer,7834,soccer,BK Häcken,BK Häcken,000000,f7ee09
 soccer,7845,soccer,San Martín (San Juan),San Martín (San Juan),288A00,000000
 soccer,7853,soccer,AGF,AGF,000000,000000
@@ -3932,7 +3977,8 @@ soccer,7914,soccer,Istanbul Basaksehir,Istanbul Basaksehir,ff6600,091453
 soccer,7915,soccer,Llaneros FC,Llaneros FC,000000,000000
 soccer,7922,soccer,Jablonec,Jablonec,025719,000000
 soccer,793,soccer,Al Shabab,Al Shabab,FFAC1C,ffffff
-soccer,7998,soccer,BG Tampines Rovers FC,BG Tampines Rovers FC,000000,C60000
+soccer,7944,soccer,Orebro SK,Orebro SK,000000,000000
+soccer,7998,soccer,Tampines Rovers FC,Tampines Rovers FC,000000,C60000
 soccer,8,soccer,Estudiantes de La Plata,Estudiantes de La Plata,C60000,288A00
 soccer,8040,soccer,Lion City Sailors FC,Lion City Sailors FC,000000,C60000
 soccer,8089,soccer,CSU Craiova,CSU Craiova,000000,C60000
@@ -3946,6 +3992,7 @@ soccer,8169,soccer,KuPS Kuopio,KuPS Kuopio,000000,000000
 soccer,817,soccer,Al Nassr,Al Nassr,f7f316,1c31ce
 soccer,8186,soccer,Coquimbo Unido,Coquimbo Unido,000000,FBE805
 soccer,819,soccer,Flamengo,Flamengo,C60000,000000
+soccer,8219,soccer,TPS,TPS,,
 soccer,8221,soccer,IF Brommapojkarna,IF Brommapojkarna,000000,DF1E1E
 soccer,8222,soccer,GAIS,GAIS,009d58,ee293c
 soccer,8239,soccer,Tianjin Jinmen Tiger,Tianjin Jinmen Tiger,C60000,C60000
@@ -3953,13 +4000,13 @@ soccer,8240,soccer,Henan,Henan,C60000,C60000
 soccer,8249,soccer,Vikingur Reykjavik,Vikingur Reykjavik,C60000,ffffff
 soccer,8281,soccer,FK Sutjeska,FK Sutjeska,000000,000000
 soccer,8284,soccer,Dila Gori,Dila Gori,C60000,000000
-soccer,8293,soccer,Persib,Persib,000000,C60000
+soccer,8293,soccer,Persib Bandung,Persib Bandung,000000,C60000
 soccer,83,soccer,Barcelona,Barcelona,990000,FCE38A
 soccer,8346,soccer,Al Ahli,Al Ahli,078543,193b67
-soccer,8352,soccer,Wellington Phoenix FC,Wellington Phoenix FC,f5fe05,000000
+soccer,8352,soccer,Wellington Phoenix,Wellington Phoenix,f5fe05,000000
 soccer,8354,soccer,Asteras Tripoli,Asteras Tripoli,000000,000000
 soccer,8363,soccer,Al Ettifaq,Al Ettifaq,00b32c,E40010
-soccer,8364,soccer,Al-Jazira,Al-Jazira,d34e52,000000
+soccer,8364,soccer,Al Jazira Club,Al Jazira Club,d34e52,000000
 soccer,8365,soccer,Al Wasl,Al Wasl,000000,000000
 soccer,8377,soccer,Esperance Sportive de Tunis,Esperance Sportive de Tunis,EF0107,6c8294
 soccer,84,soccer,Mallorca,Mallorca,C8142F,ccff00
@@ -4008,7 +4055,7 @@ soccer,88,soccer,Espanyol,Espanyol,3366CC,C8142F
 soccer,884,soccer,Club Deportivo Olimpia,Club Deportivo Olimpia,000000,000000
 soccer,885,soccer,Universidad Católica,Universidad Católica,0a4f8d,000000
 soccer,887,soccer,AEK Athens,AEK Athens,ffff00,000000
-soccer,8897,soccer,SC East Bengal,SC East Bengal,000000,C60000
+soccer,8897,soccer,East Bengal FC,East Bengal FC,000000,C60000
 soccer,89,soccer,Real Sociedad,Real Sociedad,3366CC,000000
 soccer,8931,soccer,Correcaminos UAT,Correcaminos UAT,e4370c,000000
 soccer,8937,soccer,Niger,Niger,E05206,0DB02B
@@ -4028,6 +4075,7 @@ soccer,91,soccer,Real Zaragoza,Real Zaragoza,000099,1a1a1a
 soccer,9104,soccer,Pendikspor,Pendikspor,000000,000000
 soccer,9169,soccer,Mirassol,Mirassol,FEDC00,417505
 soccer,92,soccer,Real Oviedo,Real Oviedo,e23627,ffd200
+soccer,9249,soccer,Consadole Sapporo,Consadole Sapporo,d00707,000000
 soccer,9280,soccer,Truro City,Truro City,BF1829,FFFFFF
 soccer,9283,soccer,Universidad Católica (Quito),Universidad Católica (Quito),0a4f8d,000000
 soccer,929,soccer,Al Hilal,Al Hilal,1c31ce,e3e4ed
@@ -4062,7 +4110,7 @@ soccer,9747,soccer,Atletico Rafaela,Atletico Rafaela,0a82ab,C60000
 soccer,9761,soccer,Alianza FC,Alianza FC,000000,ffff00
 soccer,9762,soccer,Águilas Doradas,Águilas Doradas,ffff00,000000
 soccer,9769,soccer,Itagüí Leones,Itagüí Leones,212121,C60000
-soccer,977,soccer,Shanghai Shenhua,Shanghai Shenhua,C60000,C60000
+soccer,977,soccer,Shanghai Shenhua FC,Shanghai Shenhua FC,C60000,C60000
 soccer,9770,soccer,Tigres FC,Tigres FC,DD8603,000000
 soccer,9773,soccer,Patriotas,Patriotas,ca0034,000000
 soccer,9774,soccer,Real Santander,Real Santander,000000,C60000
@@ -4124,14 +4172,14 @@ wbb,2837,mbb,East Texas A&M Lions,East Texas A&M,000000,
 wbb,2837,wbb,East Texas A&M Lions,East Texas A&M,000000,
 wbb,284,cfb,Stonehill Skyhawks,Stonehill,000000,
 wbb,284,mbb,Stonehill Skyhawks,Stonehill,000000,
-wbb,284,ncaa_mhockey,Stonehill Stonehill,Stonehill,,
+wbb,284,ncaa_mhockey,Stonehill,Stonehill,,
 wbb,284,ncaa_whockey,Stonehill Skyhawks,Stonehill,,
 wbb,284,wbb,Stonehill Skyhawks,Stonehill,000000,
 wbb,2856,mbb,California Baptist Lancers,California Baptist,000080,
 wbb,2856,wbb,California Baptist Lancers,California Baptist,000000,
 wbb,2900,cfb,St. Thomas Tommies,St. Thomas,000000,
 wbb,2900,mbb,St. Thomas Tommies,St. Thomas,000000,
-wbb,2900,ncaa_mhockey,St. Thomas Tommies,St. Thomas,,
+wbb,2900,ncaa_mhockey,St. Thomas - Minnesota Tommies,St. Thomas - Minnesota,,
 wbb,2900,ncaa_whockey,St. Thomas-Minnesota Tommies,St. Thomas-Minnesota,,
 wbb,2900,wbb,St. Thomas Tommies,St. Thomas,000000,
 wbb,3101,cfb,Utah Tech Trailblazers,Utah Tech,000000,
