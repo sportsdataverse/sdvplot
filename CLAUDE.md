@@ -49,6 +49,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `pygal.py` | the pygal adapter (an xml filter draws the marks at each render) and `team_style` |
 | `_surface.py` | `surface` (sportypy): `SURFACES`, the 59-key SDV surface table shared with sdvplotR (`surface_map`) and sdvplot-js (`src/surfaces.ts`); `NO_TEAMS`, the keys that are no team league (a team raises) |
 | `_court.py` | `court_coords`: stats.nba.com legacy shot coordinates onto sportypy's court (narwhals, so any dataframe) |
+| `_bins.py` | `hexbin`, `squarebin`, `binner`, `cell_points`, `bin_ids`: the port of sdvplot-js `bins/` (same cells, order, centres and `"x,y"` ids, `tests/test_bins.py` against `tools/sdvplotjs_bins_oracle.ts` output); `_cells`, what each adapter's `add_bins` draws (matplotlib, plotly, bokeh, altair; `_drawn_bins` is their test hook) |
 | `_tables.py` | `check_px`, `img_tag`, `mark_html`: what the table adapters share (pixel heights, `<img>` markup) |
 | `great_tables/` | `sdvplot.great_tables`: `__init__.py` (public names, front-door verbs, test hooks) and one module per table wave: `_marks.py` (marks and team identity, `important()`), `_themes.py`, `_cells.py`, `_layout.py`, `_export.py`; `docs/PARITY_TABLES.md` records each R function's port |
 | `great_tables/_themes.py` | the `gt_theme_*` ports and `gt_theme_preview`; reads `GT._options`, `_tbl_data`, `_spanners`, `_styles` (pinned by tests) |

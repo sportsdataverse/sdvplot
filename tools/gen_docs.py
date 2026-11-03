@@ -44,6 +44,7 @@ SECTIONS = [
         "Plots and tables",
         ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface", "court_coords", "pitch_coords"],
     ),
+    ("Bins", ["add_bins", "binner", "hexbin", "squarebin", "cell_points", "bin_ids"]),
     ("Table themes", ["table_theme_spec", "sdv_table_themes"]),
     ("Housekeeping", ["versions", "clear_cache"]),
 ]

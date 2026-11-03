@@ -18,8 +18,9 @@ from sdvplot._errors import UnsupportedTargetError, requires_extra
 with requires_extra("altair"):
     import altair as alt
 
+from sdvplot._bins import _cells
 from sdvplot._placement import Placement, check_alpha, check_height, place
-from sdvplot._types import AxisMarkType
+from sdvplot._types import AxisMarkType, BinShape
 from sdvplot._web import aspect, axis_letter, image_sources, present
 
 _SUPPORTS_AXIS_LOGOS = True
@@ -32,7 +33,7 @@ _SUBCHARTS = {"FacetChart": "spec", "RepeatChart": "spec", "HConcatChart": "hcon
               "VConcatChart": "vconcat[i]", "ConcatChart": "concat[i]"}  # fmt: skip
 _BLANKED = re.compile(r"^indexof\((\[.*?\]), datum\.label\) >= 0")
 
-__all__ = ["add_headshots", "add_logos", "add_wordmarks", "axis_logos", "logo_layer"]
+__all__ = ["add_bins", "add_headshots", "add_logos", "add_wordmarks", "axis_logos", "logo_layer"]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -626,7 +627,7 @@ def _drawn_marks(chart: Any) -> list[tuple[Any, ...]]:
     ref = _chart_height(chart.to_dict())
     out = []
     for layer in _named(chart, "sdvplot_"):
-        if layer.name.startswith("sdvplot_axis_"):
+        if layer.name.startswith("sdvplot_axis_") or layer.name == "sdvplot_bins":
             continue
         xk, yk = _key(layer.encoding.x.to_dict()["field"]), _key(layer.encoding.y.to_dict()["field"])
         out += [(r[_TEAM], r[xk], r[yk], layer.mark.height / ref, r[_URL]) for r in layer.data.values]
@@ -656,3 +657,111 @@ def _visible_axis_labels(chart: Any, axis: str) -> list[str]:
     found = _BLANKED.match(enc.get("axis", {}).get("labelExpr", ""))
     blanked = set(json.loads(found.group(1))) if found else set()
     return [str(c) for c in _categories(spec, unit, enc) if str(c) not in blanked]
+
+
+def add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    scheme: str = "viridis",
+    opacity: float = 1.0,
+    link: Any = None,
+) -> Any:
+    """Layer hexagonal or square bins, colored by count, onto an Altair chart.
+
+    The cells are ``sdvplot.binner``'s, in data units, drawn as one ``area`` mark split by cell (``detail``): a
+    pointy-top hexagon and a square are both x-monotone, so each is the band between its top and bottom edges, on the
+    chart's own x and y scales. The layer is named ``"sdvplot_bins"``; its rows carry ``bin_id`` (``"x,y"``, as
+    sdvplot-js stamps ``data-sdv-id``) and ``count``, and it adds a point selection param named ``"sdvplot_bins"`` on
+    ``bin_id`` (click a cell; shift-click adds).
+
+    Linking: Vega-Lite links views through a shared field, and the field is ``bin_id``: give the points' data a
+    ``bin_id`` column with ``sdvplot.bin_ids`` (on the same ``x``/``y``), then encode them with
+    ``alt.condition(alt.param("sdvplot_bins"), ...)`` (an ``alt.param`` of that name refers to this one) to highlight
+    a clicked cell's points. The other way, pass the points layer's own selection param on ``fields=["bin_id"]`` as
+    ``link``: the cells holding its selected points stay opaque (and clicking a cell no longer dims the others). The
+    cells hold no point ids, so a large chart stays small.
+
+    Args:
+        target: An Altair ``Chart`` or ``LayerChart``.
+        x: The points' x values, in the chart's x units.
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        scheme: A Vega color scheme for the counts (default ``"viridis"``).
+        opacity: The cells' opacity, 0 to 1; a cell outside the selection is drawn at a quarter of it.
+        link: Optional selection param of the points' layer, on ``fields=["bin_id"]``, that picks the cells to show.
+
+    Returns:
+        LayerChart: ``target`` with the cells layered on top.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+        UnsupportedTargetError: If ``target`` is not an Altair Chart or LayerChart.
+        ValueError: If ``x`` and ``y`` differ in length, or ``target`` is a facet, repeat or concat chart.
+
+    Example:
+        ::
+
+            import altair as alt
+            import polars as pl
+            import sdvplot
+            from sdvplot.altair import add_bins
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            shots = pl.DataFrame({"x": [0, -1, -44], "y": [0, 7, 252]})
+            bins = sdvplot.binner(shape="square", side=15).bins(shots["x"], shots["y"])
+            shots = shots.with_columns(bin_id=pl.Series(sdvplot.bin_ids(bins, shots.height)))
+            points = alt.Chart(shots).mark_circle().encode(
+                x="x:Q", y="y:Q", opacity=alt.condition(alt.param("sdvplot_bins"), alt.value(1), alt.value(0.2))
+            )
+            chart = add_bins(points, shots["x"], shots["y"], shape="square", side=15, opacity=0.6)
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        Vega-Lite selection parameters: https://vega.github.io/vega-lite/docs/selection.html
+    """
+    _check_chart(target)
+    alpha = check_alpha(opacity)
+    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=None)
+    rows = []
+    for b, poly in zip(bins, polygons, strict=True):
+        # A pointy-top hexagon's six vertices fall on three x values and a square's four on two, two vertices each
+        # (rounded: the two side vertices of a hexagon differ in the last bit); each pair is the band at that x.
+        by_x: dict[float, list[float]] = {}
+        for px, py in poly:
+            by_x.setdefault(round(px, 9), []).append(py)
+        for px, ys in sorted(by_x.items()):
+            rows.append(
+                {"sdvplot_x": px, "sdvplot_y": min(ys), "sdvplot_y2": max(ys), "bin_id": b.id, "count": b.count}
+            )
+    sel = alt.selection_point(name="sdvplot_bins", fields=["bin_id"])
+    layer = (
+        alt.Chart(alt.Data(values=rows), name="sdvplot_bins")
+        .mark_area(stroke="white", strokeWidth=0.5)
+        .encode(
+            x=alt.X("sdvplot_x:Q", title=None), y=alt.Y("sdvplot_y:Q", title=None), y2="sdvplot_y2:Q",
+            detail="bin_id:N", color=alt.Color("count:Q", scale=alt.Scale(scheme=scheme)),  # type: ignore[arg-type]
+            opacity=alt.condition(sel if link is None else link, alt.value(alpha), alt.value(alpha / 4)),
+            tooltip=["bin_id:N", "count:Q"],
+        )
+        .add_params(sel)
+    )  # fmt: skip
+    return target + layer
+
+
+def _drawn_bins(chart: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: (bin id, x, y, count, ()) for each cell add_bins drew, in draw order; Altair keeps no point ids."""
+    out: dict[str, tuple[str, float, float, int, tuple[str, ...]]] = {}
+    for layer in _named(chart, "sdvplot_bins"):
+        for r in layer.data.values:
+            cx, cy = (float(v) for v in r["bin_id"].split(","))
+            out.setdefault(r["bin_id"], (r["bin_id"], cx, cy, r["count"], ()))
+    return list(out.values())

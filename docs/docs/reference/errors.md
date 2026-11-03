@@ -1,7 +1,7 @@
 ---
 title: Errors and warnings
 sidebar_label: Errors and warnings
-sidebar_position: 37
+sidebar_position: 43
 ---
 
 # Errors and warnings

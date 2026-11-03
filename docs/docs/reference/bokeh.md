@@ -10,10 +10,92 @@ The Bokeh adapter: logos, wordmarks and headshots as one ``image_url`` glyph per
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Draw hexagonal or square bins, colored by count, as one ``patches`` glyph on a Bokeh figure. |
 | [add_headshots](#add_headshots) | Draw each player's headshot centred on its (x, y) point of a Bokeh figure. |
 | [add_logos](#add_logos) | Draw each team's logo centred on its (x, y) point of a Bokeh figure. |
 | [add_wordmarks](#add_wordmarks) | Draw each team's wordmark centred on its (x, y) point of a Bokeh figure. |
 | [axis_logos](#axis_logos) | Not supported on Bokeh: Bokeh glyphs cannot sit outside the plot frame at a fixed pixel offset. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    palette: Any = 'Viridis256',
+    alpha: float = 1.0,
+    link: Any = None,
+) -> Any
+```
+
+</div>
+
+Draw hexagonal or square bins, colored by count, as one ``patches`` glyph on a Bokeh figure.
+
+The cells are ``sdvplot.binner``'s, in data units. The glyph (named ``"sdvplot_bins"``) has its own
+``ColumnDataSource``, one row per cell: ``xs``/``ys`` (the polygon), ``x``/``y`` (the centre), ``count``,
+``bin_id`` (``"x,y"``, as sdvplot-js stamps ``data-sdv-id``), ``point_ids`` (the ids of its points) and ``rows``
+(their row numbers); a ``linear_cmap`` on ``count`` colors it.
+
+Linking: pass the points' ``ColumnDataSource`` (row ``i`` is the point at ``x[i]``, ``y[i]``) as ``link``, and
+two ``CustomJS`` callbacks tie the selections in the browser, with no server: selecting cells (with a ``tap`` or
+``box_select`` tool on the figure) selects their points, and selecting points (in any glyph or ``DataTable`` on
+that source) selects the cells holding them. A selection already consistent both ways is left as it is.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | A ``bokeh.plotting`` figure. |
+| `x` | `Any` | The points' x values, in data units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `ids` | `Any` | Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``. |
+| `palette` | `Any` | A Bokeh palette name or list of colors (default ``"Viridis256"``), fewest to most points. |
+| `alpha` | `float` | The cells' fill opacity, 0 to 1. |
+| `link` | `Any` | Optional ``ColumnDataSource`` of the same points, in the same order, to link selections with. |
+
+### Returns
+
+`figure` — ``target``, with the glyph added.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``alpha`` is outside [0, 1].
+- `UnsupportedTargetError`: If ``target`` is not a ``bokeh.plotting`` figure.
+- `TypeError`: If ``link`` is not a ``ColumnDataSource``.
+- `ValueError`: If ``x``, ``y`` and ``ids`` differ in length, or ``link`` does not hold one row per point.
+
+### Example
+
+```python
+from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
+from sdvplot.bokeh import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+shots = ColumnDataSource({"x": [0, -1, -44], "y": [0, 7, 252]})
+p = figure(tools="tap,box_select,reset", frame_height=300)
+p.scatter("x", "y", source=shots)
+add_bins(p, shots.data["x"], shots.data["y"], shape="square", side=15, alpha=0.6, link=shots)
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [Bokeh linked selection](https://docs.bokeh.org/en/latest/docs/user_guide/interaction/linking.html)
 
 ## add_headshots
 

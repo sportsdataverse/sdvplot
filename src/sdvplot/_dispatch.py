@@ -332,6 +332,52 @@ def axis_logos(target: Any, *args: Any, **kwargs: Any) -> Any:
     return adapter_for(target).axis_logos(target, *args, **kwargs)
 
 
+def add_bins(target: Any, *args: Any, **kwargs: Any) -> Any:
+    """Draw hexagonal or square bins, colored by count, on a plot of any library that has a binned form.
+
+    Routes to the adapter's ``add_bins``: matplotlib (a ``PolyCollection``), Plotly (path shapes plus a selectable
+    trace), Bokeh (a ``patches`` glyph, with linked selection) and Altair (an ``area`` layer with a selection param).
+    Every adapter bins with ``sdvplot.binner``, so the cells, their ids (``"x,y"``, the ``data-sdv-id`` of sdvplot-js)
+    and the points in each are the same everywhere; each adapter's page says how its cells link to points and tables.
+
+    Args:
+        target: The plot object. Its type picks the adapter.
+        *args: Passed to the adapter: ``x`` and ``y``, the points' coordinates in the plot's data units.
+        **kwargs: Passed to the adapter: ``shape`` (``"hex"`` or ``"square"``), ``radius``, ``side``, ``equal_area``
+            (as ``sdvplot.binner``), and the adapter's own styling and linking options.
+
+    Returns:
+        object: The drawn-on plot: ``target`` itself, or the new chart (Altair).
+
+    Raises:
+        UnsupportedTargetError: (a TypeError) If no adapter is registered for ``target``'s library, or its library has
+            no ``add_bins`` (plotnine, HoloViews, folium, pygal and the table libraries).
+        OptionalDependencyError: (a ModuleNotFoundError) If the adapter's optional extra is not installed.
+        InputError: (a ValueError) If the lattice options are not valid (see ``sdvplot.binner``).
+        ValueError: If ``x`` and ``y`` differ in length.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            import sdvplot
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            fig, ax = plt.subplots()
+            sdvplot.add_bins(ax, [0, -1, -44], [0, 7, 252], shape="square", side=15, cmap="Blues")
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        sdvplot-js shot charts: https://sdvplot-js.sportsdataverse.org/
+    """
+    adapter = adapter_for(target)
+    if not hasattr(adapter, "add_bins"):
+        raise UnsupportedTargetError(
+            f"{adapter.__name__} has no add_bins; bins draw on matplotlib, Plotly, Bokeh and Altair plots"
+        )
+    return adapter.add_bins(target, *args, **kwargs)
+
+
 # The adapters sdvplot ships. Registering imports nothing: the adapter module loads on first use.
 register_adapter(Adapter("matplotlib", "matplotlib", "sdvplot.matplotlib", "mpl"))
 register_adapter(Adapter("seaborn", "seaborn", "sdvplot.matplotlib", "mpl"))

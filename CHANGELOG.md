@@ -47,6 +47,16 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Hexagonal and square bins, ported from sdvplot-js `@sportsdataverse/sdvplot/bins`: `hexbin`, `squarebin`,
+  `binner` (`shape="hex"` or `"square"`, and `equal_area=True` for squares of a hexagon's area), `cell_points` and
+  `bin_ids`, with `BinShape` in `sdvplot.typing`. Each bin records its centre, its points' row numbers and link ids, and
+  its own id `"x,y"`, the `data-sdv-id` sdvplot-js stamps on a cell; on 2000 real 2025-26 Brooklyn shots the bins,
+  their order, centres and ids equal sdvplot-js's own output bit for bit (`tests/test_bins.py`).
+  `add_bins(target, x, y, shape=...)` draws them in matplotlib (a `PolyCollection`), Plotly (path shapes and a
+  selectable trace carrying bin ids and point ids), Bokeh (a `patches` glyph whose selection links both ways with the
+  points' `ColumnDataSource` and any `DataTable` on it, in the browser) and Altair (an `area` layer with a `bin_id`
+  selection param). The colors cookbook and the WNBA tutorial draw their shot charts with it (hexagons, then squares)
+  instead of `ax.hexbin`.
 - 21 new leagues in the index (49 in all), from the archive's 2026-11-03 capture: the junior and minor HockeyTech
   leagues `sphl` (16 teams), `chl` (41), `bchl` (23), `ajhl` (17), `sjhl` (13), `ojhl` (28), `cchl` (13), `gojhl`
   (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (22), keyed by their HockeyTech team ids

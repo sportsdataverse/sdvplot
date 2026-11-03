@@ -61,6 +61,17 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [sdvplot.itables](itables.md) | itables styling (``pip install sdvplot[itables]``): a surveyed table theme as DataTables CSS and ``show`` options. |
 | [sdvplot.perspective](perspective.md) | Perspective (``pip install sdvplot[perspective]``, Python 3.11+): team colors, registry fonts and a logo column for a Perspective viewer. |
 
+## Bins
+
+| Function | What it does |
+|---|---|
+| [add_bins](add_bins.md) | Draw hexagonal or square bins, colored by count, on a plot of any library that has a binned form. |
+| [binner](binner.md) | One binning API for both lattices, the port of sdvplot-js ``binner``. |
+| [hexbin](hexbin.md) | Bin points into pointy-top hexagons of circumradius ``radius``, in the points' own units. |
+| [squarebin](squarebin.md) | Bin points into axis-aligned squares of side ``side``, in the points' own units. |
+| [cell_points](cell_points.md) | A cell's vertices around (0, 0), in the points' units, to outline a bin as a polygon. |
+| [bin_ids](bin_ids.md) | Each point's bin id: the column that links a point layer or a table row to the cell it is drawn in. |
+
 ## Table themes
 
 | Function | What it does |

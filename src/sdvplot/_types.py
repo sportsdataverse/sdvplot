@@ -39,3 +39,5 @@ Which = Literal["primary", "secondary"]
 MarkType = Literal["logo", "wordmark"]
 # axis_logos()'s mark_type: _placement.KINDS (a headshot axis holds player ids)
 AxisMarkType = Literal["logo", "wordmark", "headshot"]
+# hexbin/squarebin/binner's cell shape and add_bins' shape: _bins.SHAPES
+BinShape = Literal["hex", "square"]

@@ -10,11 +10,97 @@ The Altair adapter: logos, wordmarks and headshots as a native Vega-Lite image l
 
 | Name | What it is |
 |---|---|
+| [add_bins](#add_bins) | Layer hexagonal or square bins, colored by count, onto an Altair chart. |
 | [add_headshots](#add_headshots) | Layer each player's headshot, centred on its (x, y) point, onto an Altair chart. |
 | [add_logos](#add_logos) | Layer each team's logo, centred on its (x, y) point, onto an Altair chart. |
 | [add_wordmarks](#add_wordmarks) | Layer each team's wordmark, centred on its (x, y) point, onto an Altair chart. |
 | [axis_logos](#axis_logos) | Replace a discrete axis' team labels with the teams' logos (or wordmarks), or a player axis' with headshots. |
 | [logo_layer](#logo_layer) | A Vega-Lite image layer of team logos, to layer onto a chart: ``alt.layer(chart, logo_layer(...))``. |
+
+## add_bins
+
+<div class="sdv-signature">
+
+```python
+add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: Literal['hex', 'square'] = 'hex',
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    scheme: str = 'viridis',
+    opacity: float = 1.0,
+    link: Any = None,
+) -> Any
+```
+
+</div>
+
+Layer hexagonal or square bins, colored by count, onto an Altair chart.
+
+The cells are ``sdvplot.binner``'s, in data units, drawn as one ``area`` mark split by cell (``detail``): a
+pointy-top hexagon and a square are both x-monotone, so each is the band between its top and bottom edges, on the
+chart's own x and y scales. The layer is named ``"sdvplot_bins"``; its rows carry ``bin_id`` (``"x,y"``, as
+sdvplot-js stamps ``data-sdv-id``) and ``count``, and it adds a point selection param named ``"sdvplot_bins"`` on
+``bin_id`` (click a cell; shift-click adds).
+
+Linking: Vega-Lite links views through a shared field, and the field is ``bin_id``: give the points' data a
+``bin_id`` column with ``sdvplot.bin_ids`` (on the same ``x``/``y``), then encode them with
+``alt.condition(alt.param("sdvplot_bins"), ...)`` (an ``alt.param`` of that name refers to this one) to highlight
+a clicked cell's points. The other way, pass the points layer's own selection param on ``fields=["bin_id"]`` as
+``link``: the cells holding its selected points stay opaque (and clicking a cell no longer dims the others). The
+cells hold no point ids, so a large chart stays small.
+
+### Arguments
+
+| Name | Type | Description |
+|---|---|---|
+| `target` | `Any` | An Altair ``Chart`` or ``LayerChart``. |
+| `x` | `Any` | The points' x values, in the chart's x units. |
+| `y` | `Any` | The points' y values. |
+| `shape` | `Literal['hex', 'square']` | ``"hex"`` (the default) or ``"square"``. |
+| `radius` | `float \| None` | The hexagon's circumradius, in data units; for squares, with ``equal_area=True``. |
+| `side` | `float \| None` | The square's side (``shape="square"``). |
+| `equal_area` | `bool` | Squares of a radius-``radius`` hexagon's area. |
+| `scheme` | `str` | A Vega color scheme for the counts (default ``"viridis"``). |
+| `opacity` | `float` | The cells' opacity, 0 to 1; a cell outside the selection is drawn at a quarter of it. |
+| `link` | `Any` | Optional selection param of the points' layer, on ``fields=["bin_id"]``, that picks the cells to show. |
+
+### Returns
+
+`LayerChart` — ``target`` with the cells layered on top.
+
+### Raises
+
+- `InputError`: If the lattice options are not valid (see ``sdvplot.binner``) or ``opacity`` is outside [0, 1].
+- `UnsupportedTargetError`: If ``target`` is not an Altair Chart or LayerChart.
+- `ValueError`: If ``x`` and ``y`` differ in length, or ``target`` is a facet, repeat or concat chart.
+
+### Example
+
+```python
+import altair as alt
+import polars as pl
+import sdvplot
+from sdvplot.altair import add_bins
+
+# three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+shots = pl.DataFrame({"x": [0, -1, -44], "y": [0, 7, 252]})
+bins = sdvplot.binner(shape="square", side=15).bins(shots["x"], shots["y"])
+shots = shots.with_columns(bin_id=pl.Series(sdvplot.bin_ids(bins, shots.height)))
+points = alt.Chart(shots).mark_circle().encode(
+    x="x:Q", y="y:Q", opacity=alt.condition(alt.param("sdvplot_bins"), alt.value(1), alt.value(0.2))
+)
+chart = add_bins(points, shots["x"], shots["y"], shape="square", side=15, opacity=0.6)
+```
+
+### See also
+
+- [sdvplot.binner](https://sdvplot.sportsdataverse.org/docs/reference/binner)
+- [Vega-Lite selection parameters](https://vega.github.io/vega-lite/docs/selection.html)
 
 ## add_headshots
 

@@ -25,16 +25,26 @@ with requires_extra("mpl"):
     from PIL import Image
 
 from sdvplot import _tiers
+from sdvplot._bins import _cells
 from sdvplot._images import MAX_SIZE, load_mark_image, load_path_image, load_url_image, logo_image
 from sdvplot._placement import Placement, _real, _warn_skipped, check_alpha, check_height, place, place_images
-from sdvplot._types import AxisMarkType
+from sdvplot._types import AxisMarkType, BinShape
 
 _SUPPORTS_AXIS_LOGOS = True
 _MAX_IMAGE_HEIGHT = 512  # px handed to matplotlib: sharp at 0.25 of a 6-inch Axes at 300 dpi, small in PDF/SVG
 _TITLE_GAP = 4  # points between a title image and its title text
 _HA = {"left": 0.0, "center": 0.5, "right": 1.0}
 
-__all__ = ["add_headshots", "add_images", "add_logos", "add_wordmarks", "axis_logos", "team_tiers", "title_image"]
+__all__ = [
+    "add_bins",
+    "add_headshots",
+    "add_images",
+    "add_logos",
+    "add_wordmarks",
+    "axis_logos",
+    "team_tiers",
+    "title_image",
+]
 
 
 def __dir__() -> list[str]:  # dir() and tab completion show the public API only
@@ -954,3 +964,84 @@ def _visible_axis_labels(target: Any, axis: str) -> list[str]:
     """Test hook: the tick labels on ``axis`` still shown as text."""
     _, labels = _ticks(_axis(_target_axes(target), axis))
     return [lab for lab in labels if lab]
+
+
+def add_bins(
+    target: Any,
+    x: Any,
+    y: Any,
+    *,
+    shape: BinShape = "hex",
+    radius: float | None = None,
+    side: float | None = None,
+    equal_area: bool = False,
+    ids: Any = None,
+    **kwargs: Any,
+) -> Any:
+    """Draw hexagonal or square bins, colored by count, as one ``PolyCollection``: ``ax.hexbin`` on sdvplot's lattice.
+
+    The cells are ``sdvplot.binner``'s, in data units, so a hex chart and a square chart of the same shots (and an
+    sdvplot-js chart of them) bin every point alike. Only cells with points are drawn (``ax.hexbin``'s ``mincnt=1``).
+    The collection's array is the counts, so ``fig.colorbar(ax.collections[-1])`` keys it; its ``gid`` is
+    ``"sdvplot_bins"`` and it keeps the bins as ``sdvplot_bins`` (a list of ``Bin``, in draw order).
+
+    Linking: matplotlib draws static images, so there is no selection to share. With ``picker=True`` a
+    ``pick_event``'s ``event.ind`` indexes ``sdvplot_bins``, whose ``rows`` and ``ids`` name the points in the cell.
+
+    Args:
+        target: A matplotlib Axes (or a one-Axes Figure or seaborn grid).
+        x: The points' x values, in the Axes' data units (e.g. ``court_x`` from ``sdvplot.court_coords``).
+        y: The points' y values.
+        shape: ``"hex"`` (the default) or ``"square"``.
+        radius: The hexagon's circumradius, in data units; for squares, with ``equal_area=True``.
+        side: The square's side (``shape="square"``).
+        equal_area: Squares of a radius-``radius`` hexagon's area.
+        ids: Optional link ids, one per point (default the row number); see ``sdvplot.hexbin``.
+        **kwargs: Passed to ``PolyCollection``: ``cmap``, ``norm`` (``"log"`` for ``ax.hexbin``'s ``bins="log"``),
+            ``edgecolors``, ``linewidths``, ``alpha``, ``zorder``, ``picker``.
+
+    Returns:
+        Axes: The Axes drawn on.
+
+    Raises:
+        InputError: If the lattice options are not valid (see ``sdvplot.binner``).
+        UnsupportedTargetError: If ``target`` is not a matplotlib Axes, Figure or seaborn grid.
+        ValueError: If ``x``, ``y`` and ``ids`` differ in length, or a Figure or grid has several Axes.
+
+    Example:
+        ::
+
+            import matplotlib.pyplot as plt
+            import sdvplot
+            from sdvplot.matplotlib import add_bins
+
+            # three Brooklyn shots of 2025-26, legacy tenths of a foot (sportsdataverse-data nba_stats_shots)
+            fig, ax = plt.subplots()
+            add_bins(ax, [0, -1, -44], [0, 7, 252], shape="square", radius=10, equal_area=True, cmap="Blues")
+            fig.colorbar(ax.collections[-1], ax=ax, label="Shots")
+
+    See Also:
+        sdvplot.binner: https://sdvplot.sportsdataverse.org/docs/reference/binner ;
+        matplotlib PolyCollection: https://matplotlib.org/stable/api/collections_api.html
+    """
+    from matplotlib.collections import PolyCollection
+
+    ax = _target_axes(target)
+    bins, polygons = _cells(x, y, shape=shape, radius=radius, side=side, equal_area=equal_area, ids=ids)
+    coll = PolyCollection(polygons, array=np.array([b.count for b in bins], dtype=float), **kwargs)
+    coll.set_gid("sdvplot_bins")
+    coll.sdvplot_bins = bins  # type: ignore[attr-defined]
+    ax.add_collection(coll, autolim=True)
+    ax.autoscale_view()
+    return ax
+
+
+def _drawn_bins(target: Any) -> list[tuple[str, float, float, int, tuple[str, ...]]]:
+    """Test hook: (bin id, x, y, count, point ids) for each cell add_bins drew, in draw order."""
+    ax = _target_axes(target)
+    return [
+        (b.id, b.x, b.y, b.count, b.ids)
+        for c in ax.collections
+        if c.get_gid() == "sdvplot_bins"
+        for b in c.sdvplot_bins  # type: ignore[attr-defined]
+    ]
