@@ -60,8 +60,13 @@ def test_edge_cases_equal_sdvplot_js(result):
 
 
 def test_cell_points_equal_sdvplot_js():
-    assert [list(p) for p in sdvplot.cell_points("hex", 10)] == FIXTURE["cells"]["hex10"]
-    assert [list(p) for p in sdvplot.cell_points("square", 10)] == FIXTURE["cells"]["square10"]
+    # hexagon corners come from sin / cos, which differ in the last bit between libms (glibc, macOS, UCRT, V8):
+    # equal to sdvplot-js's within 1e-12, not byte for byte (ids and centres use only sqrt and are exact)
+    for shape, key in (("hex", "hex10"), ("square", "square10")):
+        got = [list(p) for p in sdvplot.cell_points(shape, 10)]
+        want = FIXTURE["cells"][key]
+        assert len(got) == len(want)
+        assert all(g == pytest.approx(w, abs=1e-12) for g, w in zip(got, want, strict=True)), shape
 
 
 def test_the_documented_hexbin_quirk_holds_on_the_real_shots():
