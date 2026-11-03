@@ -369,7 +369,7 @@ team_style(
     league: str,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
     **style_kwargs: Any,
 ) -> pygal.style.Style
@@ -390,7 +390,7 @@ other series keep theirs.
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``teams``: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of ``teams``: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` for a team that does not resolve, instead of keeping pygal's default color for it with one ``SdvplotWarning``. |
 | `**style_kwargs` | `Any` | Any other ``pygal.style.Style`` option (``background``, ``font_family``, ...). |
 

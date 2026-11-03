@@ -72,8 +72,11 @@ The index holds aliases from these id systems. With the default `id_system="auto
 | 13 | `bref` | Sports Reference abbreviations (MLB, NBA, NFL, WNBA) |
 | 14 | `sportsipy` | sportsipy abbreviations (MLB, NBA, NFL, WNBA) |
 | 15 | `fangraphs` | FanGraphs abbreviations (MLB) |
-| 16 | `sdvplotr` | sdvplotR's `clean_team_abbrs` keys |
-| 17 | `name` | team names, short names and locations |
+| 16 | `yahoo` | Yahoo team ids, such as `"nba.t.1"` and `"ncaaf.t.1"` (NFL, college football, NBA, WNBA, men's and women's college basketball, MLB, NHL) |
+| 17 | `kenpom` | KenPom team names (men's college basketball) |
+| 18 | `torvik` | Torvik (Barttorvik) team names (men's and women's college basketball) |
+| 19 | `sdvplotr` | sdvplotR's `clean_team_abbrs` keys |
+| 20 | `name` | team names, short names and locations |
 
 `sdvplotr` sits after every id system, so it only fills gaps. `name` comes last.
 
@@ -115,7 +118,7 @@ sdvplot.suggest("New York", "nfl")
 # [('19', 'New York Giants'), ('20', 'New York Jets'), ('18', 'New Orleans Saints')]
 ```
 
-## Numeric NHL API ids
+## Numeric NHL API, Fox, CBS, 247Sports and On3 ids
 
 The NHL stats API numbers its teams 1 and up, and those numbers are also ESPN ids for other NHL teams. Under `"auto"` a
 number is read as an ESPN id, so pass `id_system="nhl_id"` for NHL API ids. `"auto"` never tries `nhl_id`
@@ -125,6 +128,17 @@ number is read as an ESPN id, so pass `id_system="nhl_id"` for NHL API ids. `"au
 sdvplot.resolve(1, "nhl")  # '1'  (ESPN id 1: the Boston Bruins)
 sdvplot.resolve(1, "nhl", id_system="nhl_id")  # '11' (NHL API id 1: the New Jersey Devils)
 sdvplot.resolve("NJD", "nhl")  # '11'
+```
+
+Fox, CBS, 247Sports and On3 number teams too, and their numbers are also other teams' ESPN ids, so they are
+explicit-only as well: `id_system="fox"`, `"cbs"`, `"sports247"` (247Sports team ids and institution keys) or `"on3"`
+(On3 org keys). They come from sdv-reference-data's `{league}_team_aliases` tables, as do the Yahoo, KenPom and Torvik
+aliases, with the seasons the source gives each id.
+
+```python
+sdvplot.resolve("25", "cfb")  # '25'  (ESPN id 25: California)
+sdvplot.resolve("25", "cfb", id_system="fox")  # '194' (Fox id 25: Ohio State)
+sdvplot.resolve("ncaaf.t.1", "cfb")  # Yahoo's dotted ids resolve under "auto"
 ```
 
 ## Containers

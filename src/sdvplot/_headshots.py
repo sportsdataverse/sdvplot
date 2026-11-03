@@ -1,5 +1,6 @@
-"""Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table, and the leagues'
-own player ids (NBA / WNBA Stats, MLBAM, NHL, HockeyTech) on their CDNs."""
+"""Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table, the leagues'
+own player ids (NBA / WNBA Stats, MLBAM, NHL, HockeyTech) on their CDNs, and other providers' player ids through
+sdv-reference-data's player_aliases."""
 
 from __future__ import annotations
 
@@ -75,6 +76,22 @@ LEAGUE_HEADSHOT_URLS = {
 LEAGUE_ID_LEAGUES = ("nfl", *LEAGUE_HEADSHOT_URLS)  # the leagues id_system="league" accepts
 NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
 PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
+# Other providers' player ids, mapped to ESPN athlete ids by sdv-reference-data's {league}_player_aliases (its
+# CONTRACT.md; the sportsdataverse-data {league}_groups releases): the headshot is that athlete's ESPN headshot.
+# sdvplotR's player_alias_sources (utils.R) lists the same.
+PLAYER_ALIAS_SOURCES = {
+    "nfl": ("fox", "yahoo", "cbs"),
+    "cfb": ("fox", "yahoo", "cbs", "ncaa"),
+    "nba": ("fox", "yahoo", "nba_stats"),
+    "wnba": ("fox", "yahoo", "wnba_stats"),
+    "mbb": ("fox", "yahoo", "kenpom", "ncaa"),
+    "wbb": ("fox", "yahoo", "ncaa"),
+}
+PLAYER_ALIASES_URL = (
+    "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/"
+    "{league}_groups/{league}_player_aliases.parquet"
+)
+PLAYER_ALIAS_COLUMNS = ["source", "source_player_id", "athlete_id"]
 
 
 @functools.lru_cache(maxsize=1)  # keyed by mtime so a refreshed table is read again; only the current file matters
@@ -95,6 +112,17 @@ def _players(path: str, mtime: float) -> dict[str, tuple[str | None, str | None]
 
 
 MEMORY_CACHES.append(_players.cache_clear)  # clear_cache() also frees the player table
+
+
+@functools.lru_cache(maxsize=8)  # keyed by mtime, as _players; one league's table serves all its sources
+def _player_aliases(path: str, mtime: float) -> dict[tuple[str, str], str]:
+    """(source, source player id) -> ESPN athlete id. A provider id is one athlete in every season (the contract's
+    cross-season rule), so the windows and teams drop out."""
+    p = pl.read_parquet(path, columns=PLAYER_ALIAS_COLUMNS).drop_nulls().unique()
+    return {(s, i): a for s, i, a in p.iter_rows()}
+
+
+MEMORY_CACHES.append(_player_aliases.cache_clear)
 
 
 def _is_valid_espn_id(normalized_id: str) -> bool:
@@ -133,7 +161,10 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             have none: formula1.com keys its photos by its own driver reference (``MAXVER01``), not a driver number or
             Jolpica ``driver_id``.
         id_system: "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table,
-            preferring nflverse's own headshot), or "league" (the league's own player id, sdvplotR's
+            preferring nflverse's own headshot), another provider's player id mapped to its ESPN athlete through
+            sdv-reference-data's ``{league}_player_aliases`` ("fox", "yahoo" and "cbs" for nfl and cfb, "ncaa" for
+            cfb, mbb and wbb, "fox" and "yahoo" for nba, wnba, mbb and wbb, "kenpom" for mbb, "nba_stats" for nba,
+            "wnba_stats" for wnba), or "league" (the league's own player id, sdvplotR's
             ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM
             id, an NHL API id, or the ``player_id`` of a HockeyTech feed (the 20 HockeyTech leagues above) on
             ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An
@@ -146,7 +177,8 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     Raises:
         InputError: (a ValueError) If ``league`` has no ESPN headshots or ``id_system`` is not valid for ``league``
             ("league" names the leagues that have league-id headshots).
-        OfflineError: If ``id_system`` is "gsis" (or "league" on "nfl") and the nflverse player table cannot be
+        OfflineError: If ``id_system`` is "gsis" (or "league" on "nfl"), or a provider, and the nflverse player
+            table, or the league's player_aliases table, cannot be
             downloaded and no cached copy exists (a DownloadError, also an OSError, when GitHub answers with an error
             status).
         UnsafeDownloadError: (an OSError) If ``id_system`` is "gsis" and the player table download is refused: larger
@@ -164,6 +196,7 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             # 'https://cdn.nba.com/headshots/nba/latest/260x190/2544.png'
             sdvplot.headshot_url(52, "pwhl", id_system="league")   # a PWHL player by her HockeyTech player_id
             # 'https://assets.leaguestat.com/pwhl/240x240/52.jpg'
+            sdvplot.headshot_url("nba.p.3704", "nba", id_system="yahoo")   # LeBron James by his Yahoo id
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -181,10 +214,14 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             )
         if league == "nfl":
             id_system = "gsis"  # the NFL's league id is the gsis id
+    elif id_system in {s for v in PLAYER_ALIAS_SOURCES.values() for s in v}:
+        if id_system not in PLAYER_ALIAS_SOURCES.get(league, ()):
+            with_ids = [lg for lg, v in PLAYER_ALIAS_SOURCES.items() if id_system in v]
+            raise InputError(f"id_system={id_system!r} player ids map to ESPN athletes in {with_ids} only")
     elif id_system != "espn" and (id_system, league) != ("gsis", "nfl"):
         raise InputError(
-            f"id_system must be 'espn' (any league), 'gsis' (nfl) or 'league' ({', '.join(LEAGUE_ID_LEAGUES)}), "
-            f"got {id_system!r} for {league!r}"
+            f"id_system must be 'espn' (any league), 'gsis' (nfl), 'league' ({', '.join(LEAGUE_ID_LEAGUES)}) or a "
+            f"provider ({PLAYER_ALIAS_SOURCES}), got {id_system!r} for {league!r}"
         )
     pid = norm_value(player_id)
     if pid is None:
@@ -193,6 +230,14 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
         return _espn(pid, league)
     if id_system == "league":
         return LEAGUE_HEADSHOT_URLS[league].format(pid) if _is_valid_espn_id(pid) else None  # digits, as R's grepl
+    if id_system != "gsis":
+        path = fetch_cached(
+            PLAYER_ALIASES_URL.format(league=league),
+            f"sportsdataverse-data/{league}_player_aliases.parquet",
+            validate=lambda body: pl.read_parquet(io.BytesIO(body), columns=PLAYER_ALIAS_COLUMNS),
+        )
+        athlete = _player_aliases(str(path), path.stat().st_mtime).get((id_system, pid))
+        return None if athlete is None else _espn(athlete, league)
     path = fetch_cached(
         NFLVERSE_PLAYERS_URL,
         "nflverse/players.parquet",

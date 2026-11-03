@@ -234,8 +234,8 @@ class geom_sdv_headshots(_geom_sdv_marks):
         mapping: ``aes(x=..., y=..., player_id=...)``.
         data: The layer's data (pandas or polars), when not the plot's.
         **kwargs: ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1],
-            default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis" or "league", as in ``headshot_url``) and
-            plotnine's layer arguments (``inherit_aes``, ...).
+            default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis", "league" or a provider, as in
+            ``headshot_url``) and plotnine's layer arguments (``inherit_aes``, ...).
 
     Returns:
         geom: A plotnine layer to add with ``+``. Marks that cannot be placed (an unknown team, a missing mark) are

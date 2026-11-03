@@ -52,6 +52,20 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Fox, Yahoo, CBS, 247Sports, On3, KenPom and Torvik team ids in the index, from sdv-reference-data's
+  `{league}_team_aliases` tables in the sportsdataverse-data `{league}_groups` releases (NFL, college football, NBA,
+  WNBA, men's and women's college basketball, MLB, NHL), snapshotted by `tools/fetch_sources.py --crosswalks-only`
+  into `data-raw/provider_ids.csv`. Yahoo's dotted ids resolve under `"auto"` (`resolve("ncaaf.t.1", "cfb")`).
+  Fox, CBS, 247Sports (team and institution ids) and On3 (org ids) numbers are other teams' ESPN ids, so, like
+  `nhl_id`, they answer only an explicit `id_system`: `resolve("25", "cfb")` is ESPN's California, `resolve("25",
+  "cfb", id_system="fox")` is Ohio State. KenPom and Torvik team names (`"kenpom"`, `"torvik"`) come before `"name"`
+  under `"auto"`. Each id keeps the seasons the source gives it, and one two teams held in overlapping seasons is left
+  out.
+- `headshot_url()` (and every headshot adapter) takes other providers' player ids: `id_system="fox"`, `"yahoo"`,
+  `"cbs"`, `"kenpom"`, `"ncaa"`, `"nba_stats"` or `"wnba_stats"` (by league: NFL, college football, NBA, WNBA, men's
+  and women's college basketball) draw the ESPN headshot of the athlete sdv-reference-data's `{league}_player_aliases`
+  matches the id to (`headshot_url("nba.p.3704", "nba", id_system="yahoo")` is LeBron James). The league's table is
+  downloaded and cached when first needed.
 - More provider team ids in the index, from the sportsdataverse-data crosswalk releases (`tools/fetch_sources.py
   --crosswalks-only` snapshots them into `data-raw/provider_ids.csv`): stats.ncaa.org org (school) ids and season team
   ids as `id_system="ncaa"` for men's and women's college basketball and college baseball, and org ids for college

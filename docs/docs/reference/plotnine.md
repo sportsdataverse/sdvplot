@@ -557,7 +557,7 @@ Player headshots at (x, y), as a plotnine layer.
 |---|---|
 | `mapping` | ``aes(x=..., y=..., player_id=...)``. |
 | `data` | The layer's data (pandas or polars), when not the plot's. |
-| `**kwargs` | ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1], default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis" or "league", as in ``headshot_url``) and plotnine's layer arguments (``inherit_aes``, ...). |
+| `**kwargs` | ``league`` (required, e.g. "nfl"), ``height`` (a fraction of the panel height, in (0, 1], default 0.1), ``alpha`` (0 to 1), ``id_system`` ("espn", "gsis", "league" or a provider, as in ``headshot_url``) and plotnine's layer arguments (``inherit_aes``, ...). |
 
 ### Returns
 
@@ -705,7 +705,7 @@ scale_color_sdv(
     *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
@@ -724,7 +724,7 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
@@ -765,7 +765,7 @@ scale_colour_sdv(
     *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
@@ -784,7 +784,7 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
@@ -825,7 +825,7 @@ scale_fill_sdv(
     *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
@@ -844,7 +844,7 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season for every value. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the team values: ``"auto"`` (the default) tries them in order; pass ``"nhl_id"`` for NHL stats ids, which ``"auto"`` never tries. |
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |

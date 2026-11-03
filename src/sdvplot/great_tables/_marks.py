@@ -309,8 +309,8 @@ def gt_sdv_cols_label(
         season: One season whose marks to show; None for today's.
         mark_type: "logo", "wordmark", or "headshot" (the column names are player ids).
         id_system: The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means
-            "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis" or "league" as in ``headshot_url``
-            (None means "espn").
+            "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis", "league" or a provider as in
+            ``headshot_url`` (None means "espn").
         strict: Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team.
 
     Returns:

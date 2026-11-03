@@ -94,7 +94,7 @@ and never let a lock bump ride into an unrelated commit.
 | File | Regenerate | Check |
 | --- | --- | --- |
 | `src/sdvplot/data/*` | `uv run python tools/build_index.py` (after `tools/fetch_sources.py` for new sources) | `--check` |
-| `data-raw/provider_ids.csv` | `uv run python tools/fetch_sources.py --crosswalks-only` (network: the sportsdataverse-data NCAA and WNBA crosswalk releases), then rebuild the index | `--check` |
+| `data-raw/provider_ids.csv` | `uv run python tools/fetch_sources.py --crosswalks-only` (network: the sportsdataverse-data NCAA and WNBA crosswalk releases and the `{league}_groups` `team_aliases`), then rebuild the index | `--check` |
 | `data-raw/espn_colors.csv`, `data-raw/logo_colors.csv` | `uv run python tools/fetch_sources.py --colors-only` (network), then rebuild the index | `--check` |
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |
@@ -139,8 +139,9 @@ VS Code terminal matches the CI cron's. On Windows, run renders with `PYTHONIOEN
 - `team_id` is always a string. Never cast a float id to a string, and assert dtypes before joining.
 - Never guess: an unknown or ambiguous team gives `None` plus one `SdvplotWarning` (or raises with `strict=True`).
 - `"auto"` tries the id systems in `PRIORITY` order (`_resolve.py`); the first system with a candidate decides.
-- `nhl_id` is explicit-only (`EXPLICIT_ONLY`): NHL stats ids 1-28 collide with other teams' ESPN ids, so it is
-  never tried under `"auto"`.
+- `nhl_id`, `fox`, `cbs`, `sports247` and `on3` are explicit-only (`EXPLICIT_ONLY`): their numbers collide with other
+  teams' ESPN ids (NHL stats ids 1-28; Fox 25 is Ohio State, ESPN 25 California), so they are never tried under
+  `"auto"`. Yahoo's dotted ids cannot collide, so `yahoo` is in `PRIORITY`.
 - A season disambiguates a reused code through the alias ranges; use OAK, SD or STL for relocations. Season bounds are
   the league's own.
 

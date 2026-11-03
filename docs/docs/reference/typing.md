@@ -53,7 +53,7 @@ BinValue = Literal['count', 'weight']
 <div class="sdv-signature">
 
 ```python
-HeadshotIdSystem = Literal['espn', 'gsis', 'league']
+HeadshotIdSystem = Literal['espn', 'gsis', 'league', 'fox', 'yahoo', 'cbs', 'kenpom', 'ncaa', 'nba_stats', 'wnba_stats']
 ```
 
 </div>
@@ -63,7 +63,7 @@ HeadshotIdSystem = Literal['espn', 'gsis', 'league']
 <div class="sdv-signature">
 
 ```python
-IdSystem = Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']
+IdSystem = Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']
 ```
 
 </div>

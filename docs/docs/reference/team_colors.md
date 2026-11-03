@@ -15,7 +15,7 @@ team_colors(
     *,
     which: Literal['primary', 'secondary'] = 'primary',
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> Any
 ```
@@ -32,7 +32,7 @@ One "#hex" (or None) per team value, in the same container the values came in.
 | `teams` | `Any` | A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers. |
 | `which` | `Literal['primary', 'secondary']` | "primary" or "secondary". |
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 
 ## Returns

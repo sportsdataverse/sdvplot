@@ -26,13 +26,21 @@ IdSystem = Literal[
     "bref",
     "sportsipy",
     "fangraphs",
+    "yahoo",
+    "kenpom",
+    "torvik",
     "sdvplotr",
     "name",
     "nhl_id",
+    "fox",
+    "cbs",
+    "sports247",
+    "on3",
 ]
-# headshot_url()'s id_system: ESPN athlete ids (any ESPN league), nflverse gsis ids (nfl), or the league's own player
-# id (sdvplotR's id_type="league": nfl gsis, NBA / WNBA Stats PERSON_ID, MLBAM, NHL; _headshots.LEAGUE_HEADSHOT_URLS)
-HeadshotIdSystem = Literal["espn", "gsis", "league"]
+# headshot_url()'s id_system: ESPN athlete ids (any ESPN league), nflverse gsis ids (nfl), the league's own player
+# id (sdvplotR's id_type="league": nfl gsis, NBA / WNBA Stats PERSON_ID, MLBAM, NHL; _headshots.LEAGUE_HEADSHOT_URLS),
+# or another provider's player id, mapped to an ESPN athlete (_headshots.PLAYER_ALIAS_SOURCES)
+HeadshotIdSystem = Literal["espn", "gsis", "league", "fox", "yahoo", "cbs", "kenpom", "ncaa", "nba_stats", "wnba_stats"]
 # palette()'s color slot: _colors._COLUMNS
 Which = Literal["primary", "secondary"]
 # logo_url() and logo_image()'s mark: _marks.MARK_TYPES

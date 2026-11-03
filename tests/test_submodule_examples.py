@@ -82,6 +82,8 @@ SEEDED_PLAYERS = ("3139477", "3918298", "3916387")
 SEEDED_PLAYER_ROWS = (
     ("00-0033873", "3139477", "https://static.www.nfl.com/image/upload/f_auto,q_auto/league/wdckwtob1lybvkmxnf7p"),
 )
+# a row of nba_player_aliases (sdv-reference-data): LeBron James's Yahoo id, for headshot_url's provider example
+SEEDED_PLAYER_ALIASES = (("yahoo", "nba.p.3704", "1966"),)
 SEEDED_URLS = (
     "https://example.com/banner.png",
     "https://www.python.org/static/img/python-logo.png",
@@ -113,6 +115,12 @@ def seeded_cache(cache, monkeypatch):
     players.parent.mkdir(parents=True, exist_ok=True)
     pl.DataFrame(SEEDED_PLAYER_ROWS, schema=["gsis_id", "espn_id", "headshot"], orient="row").write_parquet(players)
     _cache._meta_path(players).write_text(json.dumps({"fetched_at": time.time()}))
+    aliases = cache / "sportsdataverse-data" / "nba_player_aliases.parquet"
+    aliases.parent.mkdir(parents=True, exist_ok=True)
+    pl.DataFrame(
+        SEEDED_PLAYER_ALIASES, schema=["source", "source_player_id", "athlete_id"], orient="row"
+    ).write_parquet(aliases)
+    _cache._meta_path(aliases).write_text(json.dumps({"fetched_at": time.time()}))
     for url in [*(headshot_url(p, SEEDED_LEAGUE) for p in SEEDED_PLAYERS), *SEEDED_URLS]:
         key = hashlib.sha256(url.encode()).hexdigest()
         path = seed_image(cache / "urlimages" / key[:2] / key, size=(150, 109))

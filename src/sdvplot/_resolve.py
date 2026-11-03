@@ -36,11 +36,16 @@ PRIORITY: tuple[str, ...] = (
     "bref",
     "sportsipy",
     "fangraphs",
+    "yahoo",  # Yahoo's dotted ids ("ncaaf.t.1", "nba.t.1") are no other system's
+    "kenpom",  # KenPom and Torvik team names (mbb; Torvik wbb too): the providers' own spellings, before "name"
+    "torvik",
     "sdvplotr",  # sdvplotR's clean_team_abbrs keys: after every id system, so it only fills gaps (R43)
     "name",
 )
-# Systems "auto" never tries, only an explicit id_system: NHL stats API ids 1-28 are other teams' ESPN ids (R49)
-EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id",)
+# Systems "auto" never tries, only an explicit id_system: their numbers are other teams' ESPN ids. NHL stats API ids
+# 1-28 (R49); Fox, CBS, 247Sports (team and institution ids) and On3 (org ids) ids, from sdv-reference-data's
+# team_aliases: Fox 25 is Ohio State, ESPN 25 California
+EXPLICIT_ONLY: tuple[str, ...] = ("nhl_id", "fox", "cbs", "sports247", "on3")
 # The index's internal id systems: never an id_system= and never read by resolve(). "mark" keys archive rows to teams;
 # "conference" holds sdvplotR's other keys of the conference rows; "competition" lists the soccer competitions each
 # club was seen in, one slug naming many clubs (suggest() skips both)
@@ -243,8 +248,9 @@ def resolve(values: Any, league: str, *, season: Any = None, id_system: IdSystem
 
     Args:
         values: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers in any supported id
-            system. NHL stats API ids overlap ESPN's, so "auto" never reads a number as one: pass
-            ``id_system="nhl_id"`` for them (NHL tri-codes such as "NJD" resolve under "auto").
+            system. NHL stats API, Fox, CBS, 247Sports and On3 ids overlap ESPN's, so "auto" never reads a number as
+            one: pass ``id_system="nhl_id"`` (or "fox", "cbs", "sports247", "on3") for them (NHL tri-codes such as
+            "NJD" and Yahoo ids such as "nba.t.1" resolve under "auto").
         league: The SDV league key, e.g. "nfl", "cfb", "ohl". Required: the same abbreviation means different teams in
             different leagues.
         season: One season for all values, or one per value. Picks the right team for a reused code; without one,

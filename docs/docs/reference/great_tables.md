@@ -181,7 +181,7 @@ add_logos(
     locations: Any = None,
     include_name: bool = False,
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -205,7 +205,7 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `include_name` | `bool` | Keep the cell's text after the logo. |
 | `season` | `Any` | One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for today's. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
@@ -257,7 +257,7 @@ add_wordmarks(
     height: Any = 30,
     locations: Any = None,
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -276,7 +276,7 @@ Show each cell's team as its wordmark in a great_tables table.
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
@@ -1887,7 +1887,7 @@ gt_merge_stack_team_color(
     font_size_bottom: float = 12,
     color: str = 'black',
     background: str | None = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -1913,7 +1913,7 @@ a light primary such as Missouri's gold stays readable on a white table and keep
 | `font_size_bottom` | `float` | The bottom line's font size in pixels. |
 | `color` | `str` | The top line's CSS color. |
 | `background` | `str \| None` | The cell background the bottom line is checked against, a hex color. ``None`` (the default) reads the table's background, so a theme such as ``gt_theme_midnight`` applied **before** this function is taken into account; a theme applied afterwards is not seen, so set ``background`` then. A table with no background set counts as white. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of ``team_col``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
 
 ### Returns
@@ -2371,7 +2371,7 @@ gt_sdv_cols_label(
     height: Any = 30,
     season: Any = None,
     mark_type: str = 'logo',
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] | Literal['espn', 'gsis', 'league'] | NoneType = None,
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] | Literal['espn', 'gsis', 'league', 'fox', 'yahoo', 'cbs', 'kenpom', 'ncaa', 'nba_stats', 'wnba_stats'] | NoneType = None,
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -2390,7 +2390,7 @@ Replace the labels of team-named columns (a ``KC`` column, a ``BUF`` column, ...
 | `height` | `Any` | The image height in pixels. |
 | `season` | `Any` | One season whose marks to show; None for today's. |
 | `mark_type` | `str` | "logo", "wordmark", or "headshot" (the column names are player ids). |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] \| Literal['espn', 'gsis', 'league'] \| NoneType` | The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis" or "league" as in ``headshot_url`` (None means "espn"). |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] \| Literal['espn', 'gsis', 'league', 'fox', 'yahoo', 'cbs', 'kenpom', 'ncaa', 'nba_stats', 'wnba_stats'] \| NoneType` | The id system of the column names: for logos and wordmarks one of ``resolve``'s (None means "auto"; NHL stats ids need "nhl_id"), for headshots "espn", "gsis", "league" or a provider as in ``headshot_url`` (None means "espn"). |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a column name does not resolve to a team. |
 
 ### Returns
@@ -2500,7 +2500,7 @@ gt_sdv_logos(
     locations: Any = None,
     include_name: bool = False,
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -2524,7 +2524,7 @@ unknown values warn once, now. They keep their text. The cell text is read as it
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `include_name` | `bool` | Keep the cell's text after the logo. |
 | `season` | `Any` | One season whose marks every cell shows (the ending year for the NHL, NBA, MBB and WBB); None for today's. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
@@ -2576,7 +2576,7 @@ gt_sdv_wordmarks(
     height: Any = 30,
     locations: Any = None,
     season: Any = None,
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
 ) -> great_tables.gt.GT
 ```
@@ -2595,7 +2595,7 @@ Show each cell's team as its wordmark in a great_tables table.
 | `height` | `Any` | The image height in pixels. |
 | `locations` | `Any` | Instead of the body of ``columns``: ``loc.body()``, ``loc.stub()`` or ``loc.row_groups()``, or a list of them (the locations great_tables' ``text_transform`` reaches). For marks in the column labels, use ``gt_sdv_cols_label``. |
 | `season` | `Any` | One season whose marks every cell shows; None for today's. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of the cell values, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a value does not resolve. |
 
 ### Returns
@@ -4913,7 +4913,7 @@ gt_theme_sdv_team(
     *,
     league: str,
     density: str = 'comfortable',
-    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id'] = 'auto',
+    id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     **tab_options: Any,
 ) -> great_tables.gt.GT
 ```
@@ -4934,7 +4934,7 @@ primary too light to read on white gives way to the SportsDataverse navy for the
 | `team` | `Any` | One team (an abbreviation, name or provider id); None for the SportsDataverse navy and cyan. |
 | `league` | `str` | The SDV league key, e.g. "nfl". |
 | `density` | `str` | "comfortable", "compact" or "social", as in ``gt_theme_sdv``. |
-| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'sdvplotr', 'name', 'nhl_id']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
+| `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of ``team``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `**tab_options` | `Any` | Passed to ``GT.tab_options`` last, so they override the theme. |
 
 ### Returns
