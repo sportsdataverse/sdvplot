@@ -845,3 +845,22 @@ def test_soccer_clubs_take_their_latest_domestic_league_competition_aliases_and_
         ("eng.1", 2026, 2026), ("eng.2", 2025, 2025), ("eng.fa", 2026, 2026), ("uefa.champions", 2026, 2026)
     ]  # fmt: skip
     assert "404" not in comp["team_id"].to_list()
+
+
+def test_provider_aliases_open_the_source_seasons_and_drop_overlaps():
+    p = pl.DataFrame(
+        [
+            ("wnba", "nba_api", "id", "1611661319", "15", "2002", "2002"),  # Utah, then Las Vegas under a new ESPN id
+            ("wnba", "nba_api", "id", "1611661319", "17", "2003", "2026"),
+            ("wnba", "nba_api", "tricode", "LVA", "17", "2018", "2026"),  # one team: no range
+            ("mbb", "ncaa", "org", "9", "1", "2010", "2015"),  # two teams in overlapping seasons: dropped
+            ("mbb", "ncaa", "org", "9", "2", "2015", "2027"),
+        ],
+        schema=["league", "id_system", "kind", "value", "team_id", "first_season", "last_season"],
+        orient="row",
+    )
+    got = bi.provider_aliases(p)
+    assert got.schema == _index.ALIAS_SCHEMA
+    assert sorted(got.select("value", "team_id", "valid_from", "valid_to").rows()) == [
+        ("1611661319", "15", None, 2002), ("1611661319", "17", 2003, None), ("LVA", "17", None, None)
+    ]  # fmt: skip

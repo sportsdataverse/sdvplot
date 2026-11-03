@@ -94,6 +94,7 @@ and never let a lock bump ride into an unrelated commit.
 | File | Regenerate | Check |
 | --- | --- | --- |
 | `src/sdvplot/data/*` | `uv run python tools/build_index.py` (after `tools/fetch_sources.py` for new sources) | `--check` |
+| `data-raw/provider_ids.csv` | `uv run python tools/fetch_sources.py --crosswalks-only` (network: the sportsdataverse-data NCAA and WNBA crosswalk releases), then rebuild the index | `--check` |
 | `data-raw/espn_colors.csv`, `data-raw/logo_colors.csv` | `uv run python tools/fetch_sources.py --colors-only` (network), then rebuild the index | `--check` |
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |

@@ -136,6 +136,27 @@ def test_nba_api_ids():
     assert sdvplot.resolve(1610612747, "nba", id_system="nba_api") == "13"
 
 
+def test_provider_crosswalk_ids():
+    # data-raw/provider_ids.csv, from the sportsdataverse-data crosswalk releases
+    counts = dict(
+        _index.alias_table()
+        .filter(pl.col("id_system").is_in(["ncaa", "nba_api"]))
+        .group_by(pl.concat_str("league", "id_system", separator="/"))
+        .len()
+        .iter_rows()
+    )
+    assert counts == {"cfb/ncaa": 3224, "mbb/ncaa": 6699, "wbb/ncaa": 6658, "ncaa_baseball/ncaa": 5255,
+                      "ncaa_softball/ncaa": 333, "nba/nba_api": 60, "wnba/nba_api": 34}  # fmt: skip
+    # stats.ncaa.org org ids: Duke (193) in both basketball leagues; LSU (365) under ESPN's baseball and softball ids
+    assert sdvplot.resolve([193, "193"], "mbb", id_system="ncaa") == ["150", "150"]
+    assert sdvplot.resolve(193, "wbb", id_system="ncaa") == "150"
+    assert sdvplot.resolve(365, "ncaa_baseball", id_system="ncaa") == "85"
+    assert sdvplot.resolve(365, "ncaa_softball", id_system="ncaa") == "497"
+    # WNBA Stats team ids and tricodes: the Aces' franchise id (Utah in 2002, under another ESPN id) and LVA
+    assert sdvplot.resolve([1611661319, "LVA"], "wnba", id_system="nba_api") == ["17", "17"]
+    assert sdvplot.resolve([1611661319, "LVA"], "wnba") == ["17", "17"]
+
+
 @pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
 def test_live_readme_logo_examples(tmp_path, monkeypatch):
     from sdvplot import _manifest
