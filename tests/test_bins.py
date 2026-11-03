@@ -350,7 +350,7 @@ def test_origin_shifts_the_lattice_so_a_centre_falls_on_it(opts):
     base = sdvplot.binner(**opts).bins(SMALL_X, SMALL_Y)
     moved = sdvplot.binner(**opts, origin=HOOP).bins([v + ox for v in SMALL_X], [v + oy for v in SMALL_Y])
     assert [c.rows for c in moved] == [c.rows for c in base]  # the points shifted with the lattice: the same cells
-    assert [(c.x, c.y) for c in moved] == pytest.approx([(c.x + ox, c.y + oy) for c in base])
+    assert [v for c in moved for v in (c.x, c.y)] == pytest.approx([v for c in base for v in (c.x + ox, c.y + oy)])
     assert [c.id for c in moved] == [f"{_js_str(c.x)},{_js_str(c.y)}" for c in moved]  # the absolute centre
     hit = sdvplot.binner(**opts, origin=HOOP).bins([ox], [oy])
     assert (hit[0].x, hit[0].y, hit[0].id) == (
