@@ -32,6 +32,10 @@ if TYPE_CHECKING:
 OUT = Path(__file__).resolve().parents[1] / "data-raw"
 UA = {"User-Agent": "sdvplot-build (+https://github.com/sportsdataverse/sdvplot)"}
 MANIFEST_URL = "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/manifest/marks.csv"
+# sdv-assets' soccer side manifest: every (competition, season, club) its ESPN soccer capture saw, with ESPN's name for
+# the competition; tools/build_index.py derives each club's domestic league and "competition" aliases from it
+SOCCER_COMPETITIONS_URL = "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/manifest/soccer_competitions.csv"
+SOCCER_COMPETITION_COLUMNS = ["competition", "season", "team_id", "competition_name"]
 NHL_TEAM_URL = "https://api.nhle.com/stats/rest/en/team"
 NHL_FRANCHISE_URL = "https://api.nhle.com/stats/rest/en/franchise"
 ESPN_HOSTS = ["site.web.api.espn.com", "site.api.espn.com"]
@@ -642,6 +646,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
     write("manifest_teams", archived, ["league", "team_id", "name", "program"])
     write("manifest_marks", manifest_mark_rows(manifest), MARK_COLUMNS)
     write("manifest_conferences", manifest_conference_rows(manifest), CONFERENCE_MARK_COLUMNS)
+    soccer = list(csv.DictReader(io.StringIO(_get(s, SOCCER_COMPETITIONS_URL).text)))
+    write("soccer_competitions", soccer, SOCCER_COMPETITION_COLUMNS)
 
     espn: list[dict] = []
     hosts = list(ESPN_HOSTS)  # R7: site.web.* may 403 from some networks; fall back to site.api.*

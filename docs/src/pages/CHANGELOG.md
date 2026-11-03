@@ -62,6 +62,20 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   The hockey-only conferences (Hockey East, NCHC, ECAC, CCHA, Atlantic Hockey America, WCHA, NEWHA, CHA) have no
   archived logo yet, so their teams carry the conference with no row. `tools/fetch_sources.py --groups-only`
   refreshes `data-raw/groups_latest.csv` alone.
+- Soccer clubs carry their domestic league: `teams("soccer")` stays one pool of ESPN club ids, and a club's
+  `conference_id` / `conference` are the league competition it was seen in in its latest season (ESPN's slug and
+  name, `"eng.1"` / `"English Premier League"`): 1,675 of 2,631 clubs. Cups, super cups, playoffs and the
+  confederations' and FIFA's competitions are told apart by slug and never count; a club in two leagues that season
+  gets none. The 384 teams of a World Cup or its qualifying (men's, women's, youth) are `program` `"national"`.
+  Every competition a club was seen in (214 slugs: the UCL, cups, `fifa.world`) is an alias of id system
+  `"competition"`, dated by that competition's season, which `resolve()` and `suggest()` never read. The source is
+  sdv-assets' `manifest/soccer_competitions.csv` (`data-raw/soccer_competitions.csv`).
+- More conference marks draw: the NHL's `Eastern` and `Western` (its Conference Final wordmarks, 2024 on, the only
+  official conference marks the NHL publishes), and 39 Division II / III football conferences from their own sites'
+  logos, Wayback-pinned (`CIAA`, `GLIAC`, `NESCAC`, `PSAC`, `Carolinas`, `Landmark`, `NACC`, ...), each joined to its
+  teams' `conference_id` (the Conference of New England has no football team). College baseball (`CNE`, `SIAC`) and
+  softball (`CIAA`, `CNE`, `SIAC`) reuse three of them. A conference or league row whose only mark is a wordmark
+  draws it for a logo request; a conference whose only logo is an on-dark one draws it on any background.
 - `headshot_url()` (and every headshot adapter) covers more leagues, as sdvplotR does: G League (`"nbagl"`; ESPN files
   its photos with the NBA's) and soccer by ESPN athlete id, and the PWHL, AHL, ECHL, OHL, WHL, QMJHL and USHL by
   their HockeyTech `player_id` with `id_system="league"` (`assets.leaguestat.com`). ESPN and leaguestat answer an

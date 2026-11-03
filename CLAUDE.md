@@ -161,7 +161,10 @@ keys, `conference_aliases`), id systems only the mark functions read, so `resolv
 The manifest `entity_id` is per-source, so it never equals a team id. Map through the `mark` id-system aliases (keys
 `source:entity_id`, built by `mark_aliases` in `tools/build_index.py`; a conference, league or division mark's key is
 `level:league:source:entity_id`, `_index.NON_TEAM` the levels) and never match raw ids. `select_mark` chooses
-by variant first, then season within each variant, then source rank.
+by variant first, then season within each variant, then source rank; a conference or league row with no logo takes
+its wordmark (the NHL's Conference Final marks), a team never does. Soccer's `"competition"` aliases (a club's every
+ESPN competition, `soccer_competitions` in `tools/build_index.py`) are, like "mark" and "conference", in
+`_resolve._MARKS_ONLY`: never read by `resolve()`.
 
 ## Cache
 

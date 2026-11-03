@@ -13,6 +13,7 @@ conference,cfb,espn,151,American Conference,https://a.espncdn.com/i/teamlogos/nc
 conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/17.png
 conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/17.png
 conference,cfb,espn,17,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
+conference,cfb,espn,177,United Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/uac.png
 conference,cfb,espn,179,Ohio Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ovc.png
 conference,cfb,espn,18,FBS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/18.png
 conference,cfb,espn,18,FBS Independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/18.png
@@ -62,10 +63,50 @@ conference,cfb,espn,8,Southeastern Conference,https://a.espncdn.com/i/teamlogos/
 conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/9.png
 conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/9.png
 conference,cfb,espn,9,Pac-12 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/pac_12.png
+conference,cfb,wayback,100,American Southwest,https://web.archive.org/web/20260929075954id_/https://ascsports.org/images/logos/site/site.png
+conference,cfb,wayback,102,CCIW,https://web.archive.org/web/20261025133216id_/https://cciw.org/images/logos/site/site.png
+conference,cfb,wayback,104,CIAA,https://web.archive.org/web/20260903103126id_/https://theciaa.com/images/logos/site/site.png
+conference,cfb,wayback,106,Empire 8,https://web.archive.org/web/20261011161643id_/https://empire8.com/images/logos/site/site.png
+conference,cfb,wayback,107,GLIAC,https://web.archive.org/web/20250822230428id_/https://gliac.org/images/logos/GLIAC.png
+conference,cfb,wayback,108,Great Lakes,https://web.archive.org/web/20261023054801id_/https://glvcsports.com/images/logos/site/site.png
+conference,cfb,wayback,110,Gulf South,https://web.archive.org/web/20261012114940id_/https://gscsports.org/images/logos/site/site.png
+conference,cfb,wayback,111,Heartland,https://web.archive.org/web/20261012193424id_/https://heartlandconf.org/images/logos/site/site.png
+conference,cfb,wayback,115,Liberty League,https://web.archive.org/web/20260608175724id_/https://libertyleagueathletics.com/images/logos/site/site.png
+conference,cfb,wayback,116,Lone Star,https://web.archive.org/web/20260910161920id_/https://lonestarconference.org/images/logos/site/site.png
+conference,cfb,wayback,117,Michigan,https://web.archive.org/web/20261006173319id_/https://miaa.org/images/logos/site/site.png
+conference,cfb,wayback,118,Mid America,https://web.archive.org/web/20261011090242id_/https://themiaa.com/images/logos/site/site.png
+conference,cfb,wayback,119,Middle Atlantic Conference,https://web.archive.org/web/20260921042618id_/https://gomacsports.com/images/logos/site/site.png
+conference,cfb,wayback,120,Midwest,https://web.archive.org/web/20261020123232id_/https://midwestconference.org/images/logos/site/site.png
+conference,cfb,wayback,121,Minnesota,https://web.archive.org/web/20261006090640id_/https://miacathletics.com/images/logos/site/site.png
+conference,cfb,wayback,122,NESCAC,https://web.archive.org/web/20260930112035id_/https://nescac.com/images/logos/site/site.png
+conference,cfb,wayback,123,Conference of New England,https://web.archive.org/web/20260914071853id_/https://cnesports.org/images/logos/site/site.png
+conference,cfb,wayback,124,New Jersey,https://web.archive.org/web/20260908050922id_/https://njacsports.com/images/logos/site/site.png
+conference,cfb,wayback,126,North Coast,https://web.archive.org/web/20260422122041id_/https://northcoast.org/images/logos/site/site.png
+conference,cfb,wayback,127,Northeast 10,https://web.archive.org/web/20260829190156id_/https://northeast10.org/images/logos/site/site.png
+conference,cfb,wayback,128,Northern Athletics Collegiate Conference,https://web.archive.org/web/20261023235035id_/https://dbukjj6eu5tsf.cloudfront.net/naccsports.org/images/responsive_2022/logo_main.svg
+conference,cfb,wayback,129,Northern Sun,https://web.archive.org/web/20260923113900id_/https://northernsun.org/images/logos/site/site.png
+conference,cfb,wayback,130,Northwest,https://web.archive.org/web/20260723021101id_/https://nwcsports.com/images/logos/site/site.png
+conference,cfb,wayback,131,Ohio,https://web.archive.org/web/20260922135440id_/https://dbukjj6eu5tsf.cloudfront.net/sidearm.sites/oac.org/images/responsive_2025/logo_main.svg
+conference,cfb,wayback,132,Old Dominion,https://web.archive.org/web/20260917083550id_/https://odaconline.com/images/logos/site/site.png
+conference,cfb,wayback,133,Pennsylvania State Athletic Conference,https://web.archive.org/web/20260922163212id_/https://psacsports.org/images/logos/site/site.png
+conference,cfb,wayback,134,Presidents',https://web.archive.org/web/20260922130003id_/https://pacathletics.org/images/logos/site/site.png
+conference,cfb,wayback,135,Rocky Mountain,https://web.archive.org/web/20260929061642id_/https://rmacsports.org/images/logos/site/site.png
+conference,cfb,wayback,136,SIAC,https://web.archive.org/web/20261010025051id_/https://thesiac.com/images/logos/site/site.png
+conference,cfb,wayback,138,So. Cal.,https://web.archive.org/web/20261026083152id_/https://dbukjj6eu5tsf.cloudfront.net/thesciac.org/images/responsive_2023/logo_main.svg
+conference,cfb,wayback,142,Upper Midwest,https://web.archive.org/web/20260918045106id_/https://umacathletics.com/images/logos/site/site.png
+conference,cfb,wayback,143,USA South,https://web.archive.org/web/20260801132010id_/https://usasouth.net/images/logos/USA-South.png
+conference,cfb,wayback,144,Mountain East Conference,https://web.archive.org/web/20261013020634id_/https://mountaineast.org/images/logos/site/site.png
+conference,cfb,wayback,145,Wisconsin,https://web.archive.org/web/20261016063747id_/https://wiacsports.com/images/logos/site/site.png
+conference,cfb,wayback,146,Great American Conference,https://web.archive.org/web/20261019150211id_/https://greatamericanconference.com/images/logos/site/site.png
+conference,cfb,wayback,160,Massachusetts State Collegiate Athletic Conference,https://web.archive.org/web/20260812051246id_/https://mascac.com/assets/Primary_Logo_-_.5x-9-.png
+conference,cfb,wayback,166,New England Women's and Men's Athletic Conference,https://web.archive.org/web/20261016161449id_/https://newmacsports.com/images/logos/site/site.png
+conference,cfb,wayback,178,Landmark Conference,https://web.archive.org/web/20260323122958id_/https://dbukjj6eu5tsf.cloudfront.net/landmarkconference.org/images/responsive_2021/main/landmark_on-dark.svg
+conference,cfb,wayback,187,Conference Carolinas,https://web.archive.org/web/20261005015639id_/https://conferencecarolinas.com/images/logos/site/site.png
 conference,mbb,espn,1,America East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/america_east.png
 conference,mbb,espn,10,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/coastal.png
 conference,mbb,espn,11,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
 conference,mbb,espn,12,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ivy.png
+conference,mbb,espn,13,Metro Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/metro.png
 conference,mbb,espn,14,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_american.png
 conference,mbb,espn,16,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/meac.png
 conference,mbb,espn,18,Missouri Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/missouri_valley.png
@@ -81,6 +122,7 @@ conference,mbb,espn,26,Southwestern Athletic Conference,https://a.espncdn.com/i/
 conference,mbb,espn,27,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sun_belt.png
 conference,mbb,espn,29,West Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/west_coast.png
 conference,mbb,espn,3,Atlantic 10 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_10.png
+conference,mbb,espn,30,United Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/uac.png
 conference,mbb,espn,4,Big East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_east.png
 conference,mbb,espn,44,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
 conference,mbb,espn,45,Horizon League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/horizon.png
@@ -116,10 +158,15 @@ conference,nfl,espn,NFC,NFC,https://a.espncdn.com/i/teamlogos/nfl/500-dark/nfc.p
 conference,nfl,espn,NFC,NFC,https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png
 conference,nfl,nflverse,AFC,AFC,https://github.com/nflverse/nflverse-pbp/raw/master/AFC.png
 conference,nfl,nflverse,NFC,NFC,https://github.com/nflverse/nflverse-pbp/raw/master/NFC.png
+conference,nhl,nhl,EAS,Eastern Conference,https://assets.nhle.com/logos/playoffs/png/ecf-20232024-wordmark-en.png
+conference,nhl,nhl,EAS,Eastern Conference,https://assets.nhle.com/logos/playoffs/png/ecf-wordmark-en.png
+conference,nhl,nhl,WES,Western Conference,https://assets.nhle.com/logos/playoffs/png/wcf-20232024-wordmark-en.png
+conference,nhl,nhl,WES,Western Conference,https://assets.nhle.com/logos/playoffs/png/wcf-wordmark-en.png
 conference,wbb,espn,1,America East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/america_east.png
 conference,wbb,espn,10,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/coastal.png
 conference,wbb,espn,11,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
 conference,wbb,espn,12,Ivy League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/ivy.png
+conference,wbb,espn,13,Metro Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/metro.png
 conference,wbb,espn,14,Mid-American Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mid_american.png
 conference,wbb,espn,16,Mid-Eastern Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/meac.png
 conference,wbb,espn,18,Missouri Valley Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/missouri_valley.png
@@ -135,6 +182,7 @@ conference,wbb,espn,26,Southwestern Athletic Conference,https://a.espncdn.com/i/
 conference,wbb,espn,27,Sun Belt Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/sun_belt.png
 conference,wbb,espn,29,West Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/west_coast.png
 conference,wbb,espn,3,Atlantic 10 Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/atlantic_10.png
+conference,wbb,espn,30,United Athletic Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/uac.png
 conference,wbb,espn,4,Big East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/big_east.png
 conference,wbb,espn,44,Mountain West Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/mountain_west.png
 conference,wbb,espn,45,Horizon League,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/horizon.png
@@ -221,6 +269,8 @@ division,nhl,nhl,90,PAC,https://assets.nhle.com/logos/exhib/svg/PAC_20222023_lig
 division,nhl,nhl,90,PAC,https://assets.nhle.com/logos/exhib/svg/PAC_dark.svg
 division,nhl,nhl,90,PAC,https://assets.nhle.com/logos/exhib/svg/PAC_light.svg
 league,aaf,aaf.com,aaf,Alliance of American Football,https://web.archive.org/web/2019id_/https://aaf.com/images/TeamLogos.png
+league,cfl,cfl,CFL,Canadian Football League,https://content.cfl.ca/logos/cfl-primary.svg
+league,cfl,cfl,CFL,Canadian Football League,https://content.cfl.ca/logos/lcf-primary.svg
 league,mlb,espn,MLB,MLB,https://a.espncdn.com/i/teamlogos/leagues/500-dark/mlb.png
 league,mlb,espn,MLB,MLB,https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png
 league,mlb,mlbstatic,1,MLB,https://www.mlbstatic.com/team-logos/league-on-dark/1.svg

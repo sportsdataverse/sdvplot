@@ -69,6 +69,11 @@ sdvplot.logo_url("NYY", "mlb", mark_type="wordmark")  # the on_light wordmark (.
 sdvplot.logo_url("NYY", "mlb", mark_type="wordmark", variant="dark")  # the on_dark wordmark (.svg)
 ```
 
+A conference or league row whose only archived mark is a wordmark draws it for a logo too: the NHL publishes no
+standalone conference logos, so `logo_url("Eastern", "nhl")` is its Eastern Conference Final wordmark (variant
+`"conference_final"`, 2024 on). The variant step's last fallback, any variant, also lets a conference whose only logo
+is an on-dark one (Conference Carolinas, the Landmark Conference, the NACC) draw on a light background.
+
 An unknown team gives `None` with the resolver's `SdvplotWarning` (or raises `UnresolvedTeamError` with
 `strict=True`). A known team with no mark of that type also gives `None`, and `logo_url()` warns about it. A variant
 that no mark in the archive has is a typo, not a missing mark: it raises `InputError` (a `ValueError`) whose message lists
