@@ -82,28 +82,49 @@ body:
         - not league-specific
         - aaf
         - ahl
+        - ajhl
+        - bchl
+        - cchl
+        - cebl
         - cfb
+        - cfl
+        - chl
         - cricket
+        - easl
         - echl
+        - f1
+        - fiba
+        - gojhl
+        - iihf
+        - kijhl
+        - lba
         - mbb
+        - mhl
         - milb
+        - mjhl
         - mlb
         - nba
         - nbagl
+        - nbl
         - ncaa_baseball
         - ncaa_mhockey
         - ncaa_softball
         - ncaa_whockey
         - nfl
         - nhl
+        - nojhl
         - ohl
+        - ojhl
         - phf
         - pwhl
         - qmjhl
+        - sjhl
         - soccer
+        - sphl
         - ufl
         - usfl
         - ushl
+        - vijhl
         - wbb
         - whl
         - wnba

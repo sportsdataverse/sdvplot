@@ -555,3 +555,27 @@ def test_espn_colors_never_ask_college_baseball_ids_in_another_sport():  # its i
     )
     assert [r["espn_league"] for r in fs.fetch_espn_colors(s, "h", [("ncaa_baseball", "102")])] == ["ncaa_baseball"]
     assert s.asked == ["baseball/college-baseball/teams/102"]
+
+
+def test_f1_teams_take_the_latest_jolpica_name_and_openf1_color_through_the_curated_map():
+    archived = [{"league": "f1", "team_id": i} for i in ("rb", "toro_rosso")] + [{"league": "nfl", "team_id": "1"}]
+    seasons = {
+        y: {"MRData": {"ConstructorTable": {"Constructors": [{"constructorId": i, "name": n} for i, n in cs]}}}
+        for y, cs in {2019: [("toro_rosso", "Toro Rosso")], 2024: [("rb", "RB")], 2025: [("rb", "RB F1 Team")]}.items()
+    }
+    drivers = [
+        {"meeting_key": 2, "session_key": 20, "team_name": "Racing Bulls", "team_colour": "6C98FF"},
+        {"meeting_key": 1, "session_key": 30, "team_name": "RB", "team_colour": "6692ff"},  # an earlier year
+        {"meeting_key": 1, "session_key": 31, "team_name": None, "team_colour": None},
+    ]
+    meetings = [{"meeting_key": 1, "year": 2024}, {"meeting_key": 2, "year": 2025}]
+    assert fs.f1_team_rows(archived, seasons, drivers, meetings) == [
+        {"team_id": "rb", "name": "RB F1 Team", "color": "6c98ff"},
+        {"team_id": "toro_rosso", "name": "Toro Rosso", "color": ""},  # before OpenF1: its logo's colors
+    ]
+    with pytest.raises(RuntimeError, match=r"no constructor_id in OPENF1_CONSTRUCTORS: \['Andretti'\]"):
+        fs.f1_team_rows(archived, seasons, [*drivers, {**drivers[0], "team_name": "Andretti"}], meetings)
+    with pytest.raises(RuntimeError, match=r"no Jolpica constructor for \['rb'\]"):
+        fs.f1_team_rows(archived, {2019: seasons[2019]}, drivers, meetings)
+    with pytest.raises(RuntimeError, match=r"meetings missing from /meetings: \[3\]"):  # it would sort as year 0
+        fs.f1_team_rows(archived, seasons, [*drivers, {**drivers[0], "meeting_key": 3}], meetings)

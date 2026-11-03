@@ -109,7 +109,7 @@ def test_the_keys_without_team_identities_are_the_ones_not_in_the_index():
     assert set(_surface.SURFACES) - _index._leagues(str(_index.data_dir())) == _surface.NO_TEAMS
 
 
-@pytest.mark.parametrize("league", ["atp", "nll", "epl", "wcf", "fivb", "iihf", "cfl", "little_league"])
+@pytest.mark.parametrize("league", ["atp", "nll", "epl", "wcf", "fivb", "fifa", "little_league"])
 def test_a_team_on_a_key_without_team_identities_is_refused(league):
     with pytest.raises(InputError, match=f"no team identities for '{league}'"):
         sdvplot.surface(league, "KC")
@@ -334,11 +334,15 @@ def test_the_soccer_pitch_is_drawn_at_105_by_68():
     assert 52.5 < xhi < 60  # FIFA's 120 x 90 maximum would put the goal line at 60
 
 
-def test_fiba_draws_and_refuses_a_team():
+def test_fiba_draws_a_28_m_court():
     _, xhi = sdvplot.surface("fiba").get_xlim()
     assert 14 < xhi < 20  # a 28 m court
-    with pytest.raises(InputError, match="no team identities for 'fiba'"):
-        sdvplot.surface("fiba", "ESP")
+
+
+@pytest.mark.real_index
+@pytest.mark.parametrize(("league", "team"), [("fiba", "16036"), ("fiba", "17483"), ("iihf", "79"), ("cfl", "79")])
+def test_the_national_team_and_cfl_keys_paint_a_team(league, team):  # USA men, USA women, USA hockey, BC Lions
+    assert sdvplot.surface(league, team) is not None
 
 
 def test_hairline_court_lines_survive_a_screen_resolution():

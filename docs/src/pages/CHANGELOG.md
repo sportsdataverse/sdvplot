@@ -52,6 +52,23 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- 21 new leagues in the index (49 in all), from the archive's 2026-11-03 capture: the junior and minor HockeyTech
+  leagues `sphl` (16 teams), `chl` (41), `bchl` (23), `ajhl` (17), `sjhl` (13), `ojhl` (28), `cchl` (13), `gojhl`
+  (45), `mhl` (13), `nojhl` (27), `vijhl` (12), `kijhl` (23) and `mjhl` (22), keyed by their HockeyTech team ids
+  (`id_system="hockeytech"`); Australia's `nbl` (10, ESPN ids); the national teams pooled by sport, `fiba` (30:
+  basketball's men's, women's and ESPN's ungendered FIBA list, `program` `mens` / `womens` / `national`) and `iihf`
+  (16, ice hockey, `program` `national`), both ESPN ids, so an abbreviation such as `AUS` that names a men's and a
+  women's team resolves to None with a warning and the ESPN id resolves; the `cfl` (9, ESPN ids 79-87, content.cfl.ca
+  marks); the `cebl` (15, CEBL team ids), the `easl` (12, DataCore team UUIDs) and Italy's `lba` (24, LBA club ids,
+  marks dated by season); and `f1` (17 constructors by Jolpica `constructor_id`, the key sdv-py's F1 family uses, named
+  as Jolpica's latest season with each, with formula1.com marks by season). `surface("cfl" | "fiba" | "iihf", team)`
+  now paints the team. The three college hockey teams that had no logo (Delaware women's, SUNY Morrisville,
+  Maryville (Mo)) now draw, and take their logos' colors instead of the placeholder.
+- A new `color_source`, `openf1`: the F1 constructors' `team_colour` from OpenF1's latest session (one color, so no
+  secondary); the 2019-2022 constructors OpenF1 predates (Racing Point, Renault, Toro Rosso) take their logo's.
+  `tools/fetch_sources.py --teams-only` refreshes the archive's snapshots, ESPN's teams lists and the new
+  `data-raw/f1_teams.csv` (Jolpica names, OpenF1 colors through a curated OpenF1 team name to `constructor_id` map)
+  without the CFBD key.
 - College baseball, softball and men's and women's hockey teams carry a `conference` and `conference_id`
   (`ncaa_baseball`, `ncaa_softball`, `ncaa_mhockey`, `ncaa_whockey`), from sdv-reference-data's ESPN-keyed groups:
   78%, 77%, 58% and 98% of each league's teams (most non-Division I programs and the defunct ones stay null). Each team
@@ -144,6 +161,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- Five college hockey teams (men's Augsburg, Concordia (MN), Stonehill; women's LIU, Union) take their school's ESPN
+  colors instead of their logo's. Which ESPN name an id with no color kept depended on how the build happened to order
+  its rows, so the exact-name match to the school's basketball entry could miss; the teams list's name now always
+  wins, so adding rows elsewhere no longer moves a team's colors.
 - With `embed=True`, the web adapters (Plotly, Altair, Bokeh, HoloViews, Folium, pygal) raised `DownloadError` on a
   headshot the CDN answers with a 404 (an ESPN or HockeyTech id it has no photo for). They now skip that point with one
   `SdvplotWarning`, as matplotlib and plotnine do; any other download error still raises.

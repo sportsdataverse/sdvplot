@@ -68,6 +68,74 @@ ahl,440,Abbotsford Canucks,pro
 ahl,444,Calgary Wranglers,pro
 ahl,445,Coachella Valley Firebirds,pro
 ahl,457,Hamilton Hammers,pro
+ajhl,1,Bonnyville Pontiacs,junior
+ajhl,11,Grande Prairie Storm,junior
+ajhl,12,Lloydminster Bobcats,junior
+ajhl,13,Okotoks Oilers,junior
+ajhl,14,Olds Grizzlys,junior
+ajhl,15,Sherwood Park Crusaders,junior
+ajhl,16,Spruce Grove Saints,junior
+ajhl,19,Whitecourt Wolverines,junior
+ajhl,2,Brooks Bandits,junior
+ajhl,20,Blackfalds Bulldogs,junior
+ajhl,27,Devon Xtreme,junior
+ajhl,3,Calgary Canucks,junior
+ajhl,5,Camrose Kodiaks,junior
+ajhl,6,Canmore Eagles,junior
+ajhl,7,Drayton Valley Thunder,junior
+ajhl,8,Drumheller Dragons,junior
+ajhl,9,Fort McMurray Oil Barons,junior
+bchl,10,Cowichan Valley Capitals,junior
+bchl,11,Surrey Eagles,junior
+bchl,12,Penticton Vees,junior
+bchl,13,Chilliwack Chiefs,junior
+bchl,14,Prince George Spruce Kings,junior
+bchl,15,Merritt Centennials,junior
+bchl,16,Alberni Valley Bulldogs,junior
+bchl,17,Langley Rivermen,junior
+bchl,18,Victoria Grizzlies,junior
+bchl,19,West Kelowna Warriors,junior
+bchl,20,Salmon Arm Silverbacks,junior
+bchl,21,Vernon Vipers,junior
+bchl,22,Trail Smoke Eaters,junior
+bchl,23,Nanaimo Clippers,junior
+bchl,35,Wenatchee Wild,junior
+bchl,39,Cranbrook Bucks,junior
+bchl,8,Powell River Kings,junior
+bchl,81,Brooks Bandits,junior
+bchl,82,Blackfalds Bulldogs,junior
+bchl,87,Okotoks Oilers,junior
+bchl,88,Sherwood Park Crusaders,junior
+bchl,89,Spruce Grove Saints,junior
+bchl,9,Coquitlam Express,junior
+cchl,1,Rockland Nationals,junior
+cchl,10,Ottawa Junior Senators,junior
+cchl,11,Kemptville 73's,junior
+cchl,12,Renfrew Wolves,junior
+cchl,179,Pembroke Royals,junior
+cchl,2,Nepean Raiders,junior
+cchl,3,Navan Grads,junior
+cchl,4,Hawkesbury Hawks,junior
+cchl,5,Cornwall Colts,junior
+cchl,6,Carleton Place Canadians,junior
+cchl,7,Brockville Braves,junior
+cchl,8,Smiths Falls Bears,junior
+cchl,9,Pembroke Lumber Kings,junior
+cebl,14,Niagara River Lions,pro
+cebl,15,Saskatchewan Rattlers,pro
+cebl,16,Vancouver Bandits,pro
+cebl,17,Calgary Surge,pro
+cebl,18,Edmonton Stingers,pro
+cebl,19,Brampton Honey Badgers,pro
+cebl,20,Ottawa BlackJacks,pro
+cebl,21,Montreal Alliance,pro
+cebl,22,Scarborough Shooting Stars,pro
+cebl,23,Newfoundland Growlers,pro
+cebl,24,Winnipeg Sea Bears,pro
+cebl,53,Guelph Nighthawks,pro
+cebl,54,Fraser Valley Bandits,pro
+cebl,55,Hamilton Honey Badgers,pro
+cebl,56,Saskatoon Mamba,pro
 cfb,101,Eureka Red Devils,football
 cfb,101442,Centenary (LA) Gentlemen,football
 cfb,101784,Erskine Flying Fleet,football
@@ -755,6 +823,56 @@ cfb,96,Kentucky Wildcats,football
 cfb,97,Louisville Cardinals,football
 cfb,98,Western Kentucky Hilltoppers,football
 cfb,99,LSU Tigers,football
+cfl,79,BC Lions,pro
+cfl,80,Calgary Stampeders,pro
+cfl,81,Edmonton Elks,pro
+cfl,82,Hamilton Tiger-Cats,pro
+cfl,83,Montreal Alouettes,pro
+cfl,84,Saskatchewan Roughriders,pro
+cfl,85,Toronto Argonauts,pro
+cfl,86,Winnipeg Blue Bombers,pro
+cfl,87,Ottawa Red Blacks,pro
+chl,1,Medicine Hat Tigers,pro
+chl,100,Everett Silvertips,pro
+chl,101,Chicoutimi Saguenéens,pro
+chl,12,Peterborough Petes,pro
+chl,13,Vancouver Giants,pro
+chl,14,Moncton Wildcats,pro
+chl,15,Québec Remparts,pro
+chl,2,Gatineau Olympiques,pro
+chl,27,Medicine Hat Tigers,pro
+chl,28,Vancouver Giants,pro
+chl,3,Guelph Storm,pro
+chl,30,Plymouth Whalers,pro
+chl,31,Lewiston MAINEiacs,pro
+chl,32,Kitchener Rangers,pro
+chl,33,Belleville Bulls,pro
+chl,34,Spokane Chiefs,pro
+chl,35,Gatineau Olympiques,pro
+chl,36,Seattle Thunderbirds,pro
+chl,38,London Knights,pro
+chl,4,Kelowna Rockets,pro
+chl,42,Windsor Spitfires,pro
+chl,43,Drummondville Voltigeurs,pro
+chl,44,Shawinigan Cataractes,pro
+chl,5,Rimouski Oceanic,pro
+chl,53,Brandon Wheat Kings,pro
+chl,54,Halifax Mooseheads,pro
+chl,56,Kootenay Ice,pro
+chl,6,Halifax Mooseheads,pro
+chl,62,Calgary Hitmen,pro
+chl,7,Ottawa 67's,pro
+chl,80,Owen Sound Attack,pro
+chl,81,Mississauga St. Michaels Majors,pro
+chl,82,Saint John Sea Dogs,pro
+chl,87,Edmonton Oil Kings,pro
+chl,88,Saskatoon Blades,pro
+chl,90,Portland Winterhawks,pro
+chl,91,Rouyn-Noranda Huskies,pro
+chl,92,Hamilton Bulldogs,pro
+chl,93,Kamloops Blazers,pro
+chl,96,Saginaw Spirit,pro
+chl,97,Moose Jaw Warriors,pro
 cricket,1,England,mens
 cricket,1060323,Khulna Tigers,mens
 cricket,11,United States Of America,mens
@@ -866,6 +984,18 @@ cricket,953843,Islamabad United,mens
 cricket,953845,Quetta Gladiators,mens
 cricket,953847,Lahore Qalandars,mens
 cricket,975,England Women,womens
+easl,0548e9a7-99e0-11f0-9c0a-a1d6bfd6d57a,Alvark Tokyo,pro
+easl,27492b3f-5ada-11ef-86eb-61fb7e764dd2,Hong Kong Eastern,pro
+easl,6c173781-a6bf-11f1-a95a-31326737faaf,Macau Hou Chon,pro
+easl,71f8b351-5acf-11ef-bb6d-61c6d18c4379,Busan KCC Egis,pro
+easl,86515908-b0f5-11ed-ac6b-c199a9dea184,Taipei Fubon Braves,pro
+easl,865db37a-b0f5-11ed-b344-c199a9dea184,Ryukyu Golden Kings,pro
+easl,992dc7e4-a6c0-11f1-a824-177f9ea87398,TSG Ghosthawks,pro
+easl,9f419ff5-a6be-11f1-a9d1-335289d35d91,Abra Weavers,pro
+easl,a6c6b0a0-a6c0-11f1-b85d-d328081ff026,Nagasaki Velca,pro
+easl,b9a6e682-a6bf-11f1-9adf-156b7f4d27a3,Goyang Sono Skygunners,pro
+easl,cbf7cf59-99df-11f0-a4c2-2d0f1dbbfaba,South Gobi Broncos,pro
+easl,f170040e-5ad9-11ef-b4d4-070129f618c6,Taoyuan Pauian Pilots,pro
 echl,1,Alaska Aces,pro
 echl,10,Atlanta Gladiators,pro
 echl,102,Savannah Ghost Pirates,pro
@@ -925,6 +1055,161 @@ echl,89,Newfoundland Growlers,pro
 echl,9,Fresno Falcons,pro
 echl,98,Iowa Heartlanders,pro
 echl,99,Trois-Rivières Lions,pro
+f1,alfa,Alfa Romeo,pro
+f1,alphatauri,AlphaTauri,pro
+f1,alpine,Alpine F1 Team,pro
+f1,aston_martin,Aston Martin,pro
+f1,audi,Audi,pro
+f1,cadillac,Cadillac F1 Team,pro
+f1,ferrari,Ferrari,pro
+f1,haas,Haas F1 Team,pro
+f1,mclaren,McLaren,pro
+f1,mercedes,Mercedes,pro
+f1,racing_point,Racing Point,pro
+f1,rb,RB F1 Team,pro
+f1,red_bull,Red Bull,pro
+f1,renault,Renault,pro
+f1,sauber,Sauber,pro
+f1,toro_rosso,Toro Rosso,pro
+f1,williams,Williams,pro
+fiba,104882,Australia,mens
+fiba,104956,France,womens
+fiba,104957,Türkiye,national
+fiba,104958,Canada,womens
+fiba,104959,Puerto Rico,womens
+fiba,106761,Belgium,womens
+fiba,107068,Hungary,national
+fiba,109331,Serbia,womens
+fiba,122706,Germany,womens
+fiba,122783,South Sudan,mens
+fiba,129555,Italy,national
+fiba,15095,Brazil,mens
+fiba,15097,Puerto Rico,mens
+fiba,16036,United States,mens
+fiba,17464,Spain,mens
+fiba,17467,Greece,mens
+fiba,17472,Australia,womens
+fiba,17475,Japan,womens
+fiba,17476,Nigeria,womens
+fiba,17478,China,womens
+fiba,17479,Czechia,national
+fiba,17480,South Korea,national
+fiba,17482,Spain,womens
+fiba,17483,United States,womens
+fiba,49402,Japan,mens
+fiba,65935,Canada,mens
+fiba,80321,Germany,mens
+fiba,83469,Mali,national
+fiba,87644,Serbia,mens
+fiba,95879,France,mens
+gojhl,1,Stoney Creek Generals,junior
+gojhl,10,Caledonia Corvairs,junior
+gojhl,11,Niagara Falls Canucks,junior
+gojhl,12,St. Catharines Falcons,junior
+gojhl,13,Hamilton Steel,junior
+gojhl,14,Port Colborne Sailors,junior
+gojhl,15,Pelham Panthers,junior
+gojhl,156,Woodstock Navy Vets,junior
+gojhl,16,Fort Erie Meteors,junior
+gojhl,17,London Nationals,junior
+gojhl,18,Komoka Kings,junior
+gojhl,19,LaSalle Vipers,junior
+gojhl,2,Brantford Titans,junior
+gojhl,20,Chatham Maroons,junior
+gojhl,21,Leamington Flyers,junior
+gojhl,22,St. Marys Lincolns,junior
+gojhl,23,Sarnia Legionnaires,junior
+gojhl,24,Strathroy Rockets,junior
+gojhl,25,Welland Canadians,junior
+gojhl,26,St. Thomas Stars,junior
+gojhl,3,Buffalo Regals,junior
+gojhl,31,Lockport Regals,junior
+gojhl,38,Ancaster Avalanche,junior
+gojhl,39,Guelph Hurricanes,junior
+gojhl,4,Ayr Centennials,junior
+gojhl,47,Lambton Shores Predators,junior
+gojhl,5,Elmira Sugar Kings,junior
+gojhl,52,Port Colborne Pirates,junior
+gojhl,55,Stoney Creek Warriors,junior
+gojhl,6,Waterloo Siskins,junior
+gojhl,64,Owen Sound Greys,junior
+gojhl,65,Wheatfield Jr. Blades,junior
+gojhl,7,Cambridge Redhawks,junior
+gojhl,70,Cambridge Winter Hawks,junior
+gojhl,71,Stratford Cullitons,junior
+gojhl,72,Brantford 99ers,junior
+gojhl,73,Buffalo Blades,junior
+gojhl,74,Brantford Golden Eagles,junior
+gojhl,75,Guelph Dominators,junior
+gojhl,76,Port Colborne Sailors,junior
+gojhl,77,Sarnia Blast,junior
+gojhl,78,Tecumseh Chiefs,junior
+gojhl,8,Stratford Warriors,junior
+gojhl,83,Petrolia Jets,junior
+gojhl,9,Listowel Cyclones,junior
+iihf,132244,FRANCE,national
+iihf,16,Canada,national
+iihf,21,CZECHIA,national
+iihf,22,Denmark,national
+iihf,25,Finland,national
+iihf,26,FRANCE,national
+iihf,28,Germany,national
+iihf,40,JAPAN,national
+iihf,45,Latvia,national
+iihf,47841,Italy,national
+iihf,48099,Germany,national
+iihf,48105,Italy,national
+iihf,65,Slovakia,national
+iihf,71,Sweden,national
+iihf,72,Switzerland,national
+iihf,79,United States,national
+kijhl,1,Columbia Valley Rockies,junior
+kijhl,10,Spokane Braves,junior
+kijhl,11,Kelowna Chiefs,junior
+kijhl,12,North Okanagan Knights,junior
+kijhl,13,Osoyoos Coyotes,junior
+kijhl,14,Princeton Posse,junior
+kijhl,15,Summerland Steam,junior
+kijhl,16,100 Mile House Wranglers,junior
+kijhl,17,Chase Heat,junior
+kijhl,18,Kamloops Storm,junior
+kijhl,19,Revelstoke Grizzlies,junior
+kijhl,2,Creston Valley Thunder Cats,junior
+kijhl,20,Sicamous Eagles,junior
+kijhl,3,Fernie Ghostriders,junior
+kijhl,4,Golden Rockets,junior
+kijhl,5,Kimberley Dynamiters,junior
+kijhl,6,Beaver Valley Nitehawks,junior
+kijhl,65,Quesnel River Rush,junior
+kijhl,66,Williams Lake Mustangs,junior
+kijhl,67,Merritt Centennials,junior
+kijhl,7,Castlegar Rebels,junior
+kijhl,8,Grand Forks Border Bruins,junior
+kijhl,9,Nelson Leafs,junior
+lba,100,Vanoli Basket Cremona,pro
+lba,102,Estra Pistoia,pro
+lba,104,Dolomiti Energia Trentino,pro
+lba,106,Pallacanestro Trieste,pro
+lba,107,Nutribullet Treviso Basket,pro
+lba,111,Bertram Derthona Tortona,pro
+lba,12,Acqua S.Bernardo Cantù,pro
+lba,211,Trapani Shark,pro
+lba,246,BC Roma,pro
+lba,247,Maxima Roma,pro
+lba,28,Armani Olimpia Milano,pro
+lba,37,Carpegna Prosciutto Pesaro,pro
+lba,42,Napoli Basketball,pro
+lba,44,UNA Hotels Reggio Emilia,pro
+lba,5,Fortitudo Kigili Bologna,pro
+lba,50,Longobardi Scafati Basket,pro
+lba,52,Banco di Sardegna Sassari,pro
+lba,57,APU Old Wild West Udine,pro
+lba,6,Virtus Costa Bologna,pro
+lba,60,Openjobmetis Varese,pro
+lba,61,Umana Reyer Venezia,pro
+lba,63,Tezenis Verona,pro
+lba,8,Germani Brescia,pro
+lba,82,Happy Casa Brindisi,pro
 mbb,103,Boston College Eagles,mens
 mbb,104,Boston University Terriers,mens
 mbb,107,Holy Cross Crusaders,mens
@@ -1291,6 +1576,19 @@ mbb,96,Kentucky Wildcats,mens
 mbb,97,Louisville Cardinals,mens
 mbb,98,Western Kentucky Hilltoppers,mens
 mbb,99,LSU Tigers,mens
+mhl,1,Amherst Ramblers,junior
+mhl,10,Summerside Western Capitals,junior
+mhl,11,Fredericton Red Wings,junior
+mhl,12,Grand Falls Rapids,junior
+mhl,2,Edmundston Blizzard,junior
+mhl,21,Chaleur Lightning,junior
+mhl,3,Truro Bearcats,junior
+mhl,4,Valley Wildcats,junior
+mhl,5,Yarmouth Mariners,junior
+mhl,6,West Kent Steamers,junior
+mhl,7,Pictou County Weeks Crushers,junior
+mhl,8,Campbellton Tigers,junior
+mhl,9,Miramichi Timberwolves,junior
 milb,102,Round Rock Express,aaa
 milb,103,Lake Elsinore Storm,single_a
 milb,104,Jackson Generals,aa
@@ -1577,6 +1875,28 @@ milb,633,DSL White Sox,rookie
 milb,634,DSL NYY Bombers,rookie
 milb,635,DSL NYY Yankees,rookie
 milb,6482,Ontario Tower Buzzers,single_a
+mjhl,1,Dauphin Kings,junior
+mjhl,10,Winkler Flyers,junior
+mjhl,11,Winnipeg Blues,junior
+mjhl,13,Estevan Bruins,junior
+mjhl,14,Flin Flon Bombers,junior
+mjhl,15,Weyburn Red Wings,junior
+mjhl,16,Yorkton Terriers,junior
+mjhl,2,Neepawa Titans,junior
+mjhl,23,Melville Millionaires,junior
+mjhl,3,Northern Manitoba Blizzard,junior
+mjhl,31,Minot Minotauros (NAHL),junior
+mjhl,34,Yorkton Terriers (SJHL),junior
+mjhl,35,Fort Frances Lakers (SIJHL),junior
+mjhl,4,Portage Terriers,junior
+mjhl,41,Winnipeg Monarchs,junior
+mjhl,42,Niverville Nighthawks,junior
+mjhl,43,Kam River Fighting Walleye,junior
+mjhl,5,Selkirk Steelers,junior
+mjhl,6,Steinbach Pistons,junior
+mjhl,7,Swan Valley Stampeders,junior
+mjhl,8,Virden Oil Capitals,junior
+mjhl,9,Waywayseecappo Wolverines,junior
 mlb,1,Baltimore Orioles,pro
 mlb,10,New York Yankees,pro
 mlb,11,Athletics,pro
@@ -1669,6 +1989,16 @@ nbagl,6,Laketown Squadron,pro
 nbagl,7,Noblesville Boom,pro
 nbagl,8,Grand Rapids Gold,pro
 nbagl,9,Greensboro Swarm,pro
+nbl,1,Adelaide 36ers,pro
+nbl,10,Tasmania JackJumpers,pro
+nbl,2,Brisbane Bullets,pro
+nbl,3,Cairns Taipans,pro
+nbl,4,Illawarra Hawks,pro
+nbl,5,Melbourne United,pro
+nbl,6,New Zealand Breakers,pro
+nbl,7,Perth Wildcats,pro
+nbl,8,South East Melbourne Phoenix,pro
+nbl,9,Sydney Kings,pro
 ncaa_baseball,100,Dartmouth Big Green,mens
 ncaa_baseball,101,Princeton Tigers,mens
 ncaa_baseball,102,Rutgers Scarlet Knights,mens
@@ -2101,6 +2431,7 @@ ncaa_mhockey,126809,SUNY Canton SUNY CANT,mens
 ncaa_mhockey,126810,Worcester State Lancers,mens
 ncaa_mhockey,126811,Southern Maine Huskies,mens
 ncaa_mhockey,126812,SUNY Cortland Red Dragons,mens
+ncaa_mhockey,126813,SUNY Morrisville Mustangs,mens
 ncaa_mhockey,126814,Rivier Raiders,mens
 ncaa_mhockey,126815,Framingham State Rams,mens
 ncaa_mhockey,127,Michigan State Spartans,mens
@@ -2110,6 +2441,7 @@ ncaa_mhockey,128554,Utica Pioneers,mens
 ncaa_mhockey,130,Michigan Wolverines,mens
 ncaa_mhockey,131,Wayne St. Falcons,mens
 ncaa_mhockey,132,Bemidji State Beavers,mens
+ncaa_mhockey,132633,Maryville (Mo) Saints,mens
 ncaa_mhockey,134,Minnesota Duluth Bulldogs,mens
 ncaa_mhockey,135,Minnesota Golden Gophers,mens
 ncaa_mhockey,155,North Dakota Fighting Hawks,mens
@@ -2653,6 +2985,7 @@ ncaa_whockey,315,Niagara Purple Eagles,womens
 ncaa_whockey,41,UConn Huskies,womens
 ncaa_whockey,43,Yale Bulldogs,womens
 ncaa_whockey,430,Post Eagles,womens
+ncaa_whockey,48,Delaware Blue Hens,womens
 nfl,1,Atlanta Falcons,pro
 nfl,10,Tennessee Titans,pro
 nfl,11,Indianapolis Colts,pro
@@ -2717,6 +3050,33 @@ nhl,6,Edmonton Oilers,pro
 nhl,7,Carolina Hurricanes,pro
 nhl,8,Los Angeles Kings,pro
 nhl,9,Dallas Stars,pro
+nojhl,1,Temiscaming Royals,junior
+nojhl,10,Timmins Rock,junior
+nojhl,11,North Bay Trappers,junior
+nojhl,12,Northern Michigan Black Bears,junior
+nojhl,13,Rayside Balfour Sabrecats,junior
+nojhl,14,Soo Indians,junior
+nojhl,15,Kirkland Lake Blue Devils,junior
+nojhl,16,Sudbury Cubs,junior
+nojhl,17,Kirkland Lake Gold Miners,junior
+nojhl,18,Espanola Rivermen,junior
+nojhl,19,Hearst Lumberjacks,junior
+nojhl,2,Sudbury Junior Wolves,junior
+nojhl,20,Sudbury Northern Wolves,junior
+nojhl,21,Soo Eagles,junior
+nojhl,22,Powassan Voodoos,junior
+nojhl,23,Elliot Lake Vikings,junior
+nojhl,24,Manitoulin Wild,junior
+nojhl,3,North Bay Skyhawks,junior
+nojhl,30,French River Rapids,junior
+nojhl,31,Soo Eagles,junior
+nojhl,32,Espanola Paper Kings,junior
+nojhl,4,Elliot Lake Bobcats,junior
+nojhl,5,Soo Thunderbirds,junior
+nojhl,6,Blind River Beavers,junior
+nojhl,7,Greater Sudbury Cubs,junior
+nojhl,8,Iroquois Falls Storm,junior
+nojhl,9,Manitoulin Islanders,junior
 ohl,1,Brantford Bulldogs,junior
 ohl,10,Kitchener Rangers,junior
 ohl,11,Owen Sound Attack,junior
@@ -2744,6 +3104,34 @@ ohl,6,Peterborough Petes,junior
 ohl,7,Barrie Colts,junior
 ohl,8,Erie Otters,junior
 ohl,9,Guelph Storm,junior
+ojhl,10,Aurora Tigers,junior
+ojhl,11,Caledon Admirals,junior
+ojhl,12,King Rebellion,junior
+ojhl,13,Burlington Cougars,junior
+ojhl,14,Cobourg Cougars,junior
+ojhl,15,Collingwood Blues,junior
+ojhl,16,Georgetown Raiders,junior
+ojhl,17,Toronto Warriors,junior
+ojhl,18,Lindsay Muskies,junior
+ojhl,19,Leamington Flyers,junior
+ojhl,2,Georgetown Raiders,junior
+ojhl,20,Markham Royals,junior
+ojhl,21,Milton Menace,junior
+ojhl,22,Mississauga Chargers,junior
+ojhl,23,North York Rangers,junior
+ojhl,24,Oakville Blades,junior
+ojhl,25,Pickering Panthers,junior
+ojhl,26,St. Michaels Buzzers,junior
+ojhl,27,Stouffville Spirit,junior
+ojhl,28,Newmarket Hurricanes,junior
+ojhl,29,Toronto Patriots,junior
+ojhl,30,Trenton Golden Hawks,junior
+ojhl,31,Wellington Dukes,junior
+ojhl,39,Niagara Falls Canucks,junior
+ojhl,4,Wellington Dukes,junior
+ojhl,5,Burlington Cougars,junior
+ojhl,6,Trenton Golden Hawks,junior
+ojhl,8,Buffalo Jr. Sabres,junior
 phf,124984,Metropolitan Riveters,pro
 phf,207478,Montreal Force,pro
 phf,61635,Buffalo Beauts,pro
@@ -2794,6 +3182,19 @@ qmjhl,66,"- Peterborough, Petes (OHL) -",junior
 qmjhl,7,"Charlottetown, Islanders",junior
 qmjhl,8,"Saint John, Sea Dogs",junior
 qmjhl,9,"Québec, Remparts",junior
+sjhl,10,La Ronge Ice Wolves,junior
+sjhl,11,Yorkton Terriers,junior
+sjhl,12,Nipawin Hawks,junior
+sjhl,13,Weyburn Red Wings,junior
+sjhl,14,Melfort Mustangs,junior
+sjhl,15,Notre Dame Hounds,junior
+sjhl,16,Humboldt Broncos,junior
+sjhl,17,Kindersley Klippers,junior
+sjhl,18,Battlefords North Stars,junior
+sjhl,19,Estevan Bruins,junior
+sjhl,68,Warman Wolverines,junior
+sjhl,8,Flin Flon Bombers,junior
+sjhl,9,Melville Millionaires,junior
 soccer,10,Huracán,
 soccer,10000,Deportivo Maldonado,
 soccer,10052,Villa San Carlos,
@@ -5425,6 +5826,22 @@ soccer,9973,Vila Nova,
 soccer,9983,Jong PSV,
 soccer,9987,GVVV,
 soccer,9999,Boston River,
+sphl,1,Peoria Rivermen,pro
+sphl,10,Macon Mayhem,pro
+sphl,11,Mississippi RiverKings,pro
+sphl,12,Columbus Cottonmouths,pro
+sphl,13,Louisiana IceGators,pro
+sphl,2,Fayetteville Marksmen,pro
+sphl,26,Vermilion County Bobcats,pro
+sphl,27,Athens Rock Lobsters,pro
+sphl,28,Pee Dee IceCats,pro
+sphl,3,Huntsville Havoc,pro
+sphl,4,Pensacola Ice Flyers,pro
+sphl,5,Evansville Thunderbolts,pro
+sphl,6,Knoxville Ice Bears,pro
+sphl,7,Roanoke Rail Yard Dawgs,pro
+sphl,8,Quad City Storm,pro
+sphl,9,Birmingham Bulls,pro
 ufl,112646,DC DEFENDERS,pro
 ufl,112647,Dallas Renegades,pro
 ufl,112651,St. Louis Battlehawks,pro
@@ -5462,6 +5879,18 @@ ushl,23,Waterloo Black Hawks,junior
 ushl,24,Youngstown Phantoms,junior
 ushl,8,Sioux City Musketeers,junior
 ushl,9,Central Illinois Flying Aces,junior
+vijhl,1,Oceanside Generals,junior
+vijhl,10,Westshore Stingers,junior
+vijhl,12,Lake Cowichan Kraken ,junior
+vijhl,14,Port Alberni Bombers,junior
+vijhl,2,Campbell River Storm,junior
+vijhl,3,Nanaimo Buccaneers,junior
+vijhl,4,Comox Valley Glacier Kings,junior
+vijhl,5,Victoria Cougars,junior
+vijhl,6,Peninsula Panthers,junior
+vijhl,7,Westshore Wolves,junior
+vijhl,8,Saanich Predators,junior
+vijhl,9,Kerry Park Islanders,junior
 wbb,103,Boston College Eagles,womens
 wbb,104,Boston University Terriers,womens
 wbb,107,Holy Cross Crusaders,womens

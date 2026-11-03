@@ -14,7 +14,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
 
 Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
-resolves team abbreviations, names and provider ids across 28 leagues and picks the right era's mark for a season. Colors
+resolves team abbreviations, names and provider ids across 49 leagues and picks the right era's mark for a season. Colors
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
 altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
@@ -106,10 +106,10 @@ ax.set(xlim=(0.5, 7.5), ylim=(-1, 1), xticks=x, yticks=[], title="2024 AFC playo
 Colors work in any library that takes a `{value: color}` mapping, for example seaborn:
 `sns.barplot(data=df, x="team", y="epa", hue="team", palette=sdvplot.palette("nfl", teams=df["team"]))`.
 
-`teams()` records where each team's colors come from in `color_source`: `nflverse` or `espn` when that source
-publishes them, `logo` when they are derived from the team's archived logo because no source does, and `fallback` for
-a placeholder that is not the team's colors (`cbbplotR` on the conference rows `teams(league, include_conferences=True)`
-adds).
+`teams()` records where each team's colors come from in `color_source`: `nflverse`, `espn` or `openf1` when that
+source publishes them, `logo` when they are derived from the team's archived logo because no source does, and
+`fallback` for a placeholder that is not the team's colors (`cbbplotR` on the conference rows
+`teams(league, include_conferences=True)` adds).
 
 From the [gallery](https://sdvplot.sportsdataverse.org/docs/gallery), each drawn by sdvplot from the logo archive:
 

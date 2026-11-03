@@ -78,8 +78,8 @@ SURFACES: dict[str, tuple[str, str]] = {
 }
 # The keys that are no SDV team league: a team is refused (as in sdvplotR and sdvplot-js)
 NO_TEAMS = frozenset({
-    "cfl", "nfhs_football", "fiba", "nfhs_basketball", "little_league", "pony", "nfhs_baseball", "iihf", "nwhl",
-    "fifa", "epl", "mls", "nwsl", "ncaa_soccer", "nll", "pll", "world_lacrosse", "ncaa_mlacrosse", "ncaa_wlacrosse",
+    "nfhs_football", "nfhs_basketball", "little_league", "pony", "nfhs_baseball", "nwhl", "fifa", "epl", "mls", "nwsl",
+    "ncaa_soccer", "nll", "pll", "world_lacrosse", "ncaa_mlacrosse", "ncaa_wlacrosse",
     "usa_mlacrosse", "usa_wlacrosse", "atp", "wta", "itf", "ita", "usta", "ncaa_tennis", "fivb", "usa_volleyball",
     "ncaa_volleyball", "wcf", "curling_canada",
 })  # fmt: skip
@@ -237,10 +237,10 @@ def surface(
 
     Args:
         league: The SDV surface key: a team league ("nfl", "nba", "nhl", "pwhl", "cfb", "mlb", "ncaa_softball",
-            "soccer" (a 105 x 68 m pitch, the frame pitch_coords() returns), ...) or a surface without team identities
-            ("fiba", "fifa", "epl", "cfl", "iihf", "little_league", the lacrosse "nll", "pll", "ncaa_mlacrosse", the
-            tennis "atp", "wta", "ncaa_tennis", the volleyball "fivb", "ncaa_volleyball", the curling "wcf",
-            "curling_canada", ...). Every sportyR surface has a key; an unknown one lists them.
+            "cfl", the national teams' "fiba" and "iihf", "soccer" (a 105 x 68 m pitch, the frame pitch_coords()
+            returns), ...) or a surface without team identities ("fifa", "epl", "little_league", the lacrosse "nll",
+            "pll", "ncaa_mlacrosse", the tennis "atp", "wta", "ncaa_tennis", the volleyball "fivb", "ncaa_volleyball",
+            the curling "wcf", "curling_canada", ...). Every sportyR surface has a key; an unknown one lists them.
         team: A team to color the surface by (end zones, lane and apron, center line and boards; baseball, softball and
             soccer stay in their regulation colors, so the team shows through ``center_logo``); None for the plain
             surface. Only for a key that is an SDV team league.

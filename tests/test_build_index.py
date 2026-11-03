@@ -799,6 +799,21 @@ def test_curated_rows_check_their_conference_ids_and_agree_across_lines(tmp_path
     assert teams.filter(pl.col("team_id") == "AFC")["conference_id"].item() == "nfl:afc-west"
 
 
+def test_f1_constructors_take_jolpica_names_and_openf1_colors_before_their_logos(tmp_path):
+    raw = _raw(tmp_path)
+    _add(raw, "manifest_teams.csv", "f1,red_bull,Red Bull Racing,pro")
+    _add(raw, "manifest_teams.csv", "f1,renault,Renault,pro")
+    (raw / "f1_teams.csv").write_text("team_id,name,color\nred_bull,Red Bull,4781D7\nrenault,Renault,\n", newline="")
+    (raw / "logo_colors.csv").write_text(LOGO_COLORS + "f1,red_bull,111111,222222,s\nf1,renault,f5d000,,s\n")
+    teams, aliases, _ = bi.build(raw)
+    got = {r[0]: r[1:] for r in teams.filter(pl.col("league") == "f1").select(
+        "team_id", "name", "color_source", "color_primary", "color_secondary").rows()}  # fmt: skip
+    assert got["red_bull"] == ("Red Bull", "openf1", "#4781d7", None)  # one color, never the logo's secondary
+    assert got["renault"] == ("Renault", "logo", "#f5d000", None)  # OpenF1 starts in 2023
+    names = aliases.filter((pl.col("league") == "f1") & (pl.col("id_system") == "name"))
+    assert {"Red Bull", "Red Bull Racing"} <= set(names["value"])
+
+
 def test_soccer_clubs_take_their_latest_domestic_league_competition_aliases_and_national_teams(tmp_path):  # plan (h)
     raw = _raw(tmp_path)
     for line in ("soccer,359,Arsenal,", "soccer,19973,Arsenal,", "soccer,660,United States,", "soccer,9,Twin FC,"):
