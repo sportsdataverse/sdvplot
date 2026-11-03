@@ -6,6 +6,7 @@ Usage:
         --sr-manifest /mnt/sdv_repos/sdv-assets-private/manifest/sr_team_seasons.csv \
         --ncaa-xwalk /mnt/sdv_repos/ncaa-mfb-football-raw/mfb/xwalk/espn_team_id.json
     uv run python tools/fetch_sources.py --colors-only   # espn_colors.csv and logo_colors.csv alone
+    uv run python tools/fetch_sources.py --groups-only   # groups_latest.csv alone
 """
 
 from __future__ import annotations
@@ -67,9 +68,22 @@ ESPN_LEAGUES = [
     ("ncaa_mhockey", "hockey", "mens-college-hockey"),
     ("ncaa_whockey", "hockey", "womens-college-hockey"),
 ]
-# ncaa_baseball / ncaa_softball are left out: their team_group_seasons parquets key teams with
-# team_id_source == "ncaa_org" (0 ESPN rows). Add them once an ncaa_org -> ESPN id mapping exists.
-GROUP_LEAGUES = ["nfl", "nba", "wnba", "mlb", "nhl", "cfb", "mbb", "wbb"]
+# The college baseball and softball releases carry ESPN-keyed rows (team_id_source "espn") through sdv-reference-data's
+# NCAA -> ESPN crosswalks; college hockey's conference ids are the reference data's group ids (USCHO-derived)
+GROUP_LEAGUES = [
+    "nfl",
+    "nba",
+    "wnba",
+    "mlb",
+    "nhl",
+    "cfb",
+    "mbb",
+    "wbb",
+    "ncaa_baseball",
+    "ncaa_softball",
+    "ncaa_mhockey",
+    "ncaa_whockey",
+]
 MILB_SPORT_IDS = [11, 12, 13, 14, 16]
 # Leagues whose teams list abbreviations differ from the ones ESPN's per-team endpoint, scores and standings use
 # (college baseball: NCST in the list, NCSU everywhere else): espn_abbrs.csv keeps the per-team ones
@@ -591,6 +605,11 @@ def main() -> None:
         action="store_true",
         help="refresh only espn_colors.csv and logo_colors.csv, from the committed ESPN team snapshots (no CFBD key)",
     )
+    p.add_argument(
+        "--groups-only",
+        action="store_true",
+        help="refresh only groups_latest.csv, from the sportsdataverse-data {league}_groups releases",
+    )
     args = p.parse_args()
     stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
     try:
@@ -606,6 +625,9 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
 
     s = requests.Session()
     s.headers.update(UA)
+    if args.groups_only:
+        fetch_groups(s, write)
+        return
 
     text = _get(s, MANIFEST_URL, timeout=120).text
     manifest = list(csv.DictReader(io.StringIO(text)))
@@ -715,7 +737,20 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         ["sport_id", "mlbstats_id", "abbreviation", "team_code", "file_code", "team_name", "name"],
     )
     write("mlbstats_history", mlbstats_history_rows(fetch_mlbstats_seasons(direct, season)), MLB_HISTORY_COLUMNS)
+    fetch_groups(s, write)
 
+    if args.ncaa_xwalk:
+        xwalk = json.loads(args.ncaa_xwalk.read_text(encoding="utf-8"))
+        write("ncaa_cfb_xwalk", ncaa_rows(xwalk), ["league", "ncaa_id", "team_id"])
+    if args.sr_manifest:
+        with open(args.sr_manifest, newline="", encoding="utf-8") as f:
+            sr = list(csv.DictReader(f))
+        write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
+
+
+def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str]], None]) -> None:
+    """groups_latest.csv: each ESPN-keyed team's latest conference in sdv-reference-data's {league}_groups release, for
+    the GROUP_LEAGUES (``--groups-only`` refreshes just this one)."""
     import polars as pl
 
     groups: list[dict] = []
@@ -749,14 +784,6 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
                 }
             )
     write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
-
-    if args.ncaa_xwalk:
-        xwalk = json.loads(args.ncaa_xwalk.read_text(encoding="utf-8"))
-        write("ncaa_cfb_xwalk", ncaa_rows(xwalk), ["league", "ncaa_id", "team_id"])
-    if args.sr_manifest:
-        with open(args.sr_manifest, newline="", encoding="utf-8") as f:
-            sr = list(csv.DictReader(f))
-        write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
 
 
 if __name__ == "__main__":
