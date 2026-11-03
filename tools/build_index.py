@@ -21,6 +21,9 @@ from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
 from sdvplot._resolve import PRIORITY  # noqa: E402  (the R50 tri-code fallback follows resolve()'s order)
 
+# The 13 junior and minor HockeyTech leagues the archive added in 2026-11 (sdv-py's sportsdataverse.hockeytech keys)
+HOCKEYTECH_JUNIOR_MINOR = ["sphl", "chl", "bchl", "ajhl", "sjhl", "ojhl", "cchl", "gojhl", "mhl", "nojhl", "vijhl",
+                           "kijhl", "mjhl"]  # fmt: skip
 # A colorblind-safe qualitative palette for teams no source gives colors for (flagged color_source="fallback")
 FALLBACK = [
     "#4e79a7",
@@ -113,7 +116,9 @@ def espn_school_colors(raw: Path, listed: pl.DataFrame) -> pl.DataFrame:
         .with_columns(
             *_espn_colors("ep"), _norm(pl.col("display_name")).alias("_name"), _norm(pl.col("location")).alias("_loc")
         )
-        .sort("espn_league", "espn_id", pl.col("ep_primary").is_null())  # an entry with colors first
+        # an entry with colors first, then the teams list's (stable: which name a colorless id keeps never depends on
+        # how the rows happen to be ordered)
+        .sort("espn_league", "espn_id", pl.col("ep_primary").is_null(), maintain_order=True)
         .unique(["espn_league", "espn_id"], keep="first", maintain_order=True)
     )
     own = entries.select(
@@ -162,9 +167,24 @@ def logo_colors(raw: Path) -> pl.DataFrame:
     )
 
 
+def f1_teams(raw: Path) -> pl.DataFrame:
+    """F1 constructors' Jolpica names and OpenF1 colors (data-raw/f1_teams.csv, tools/fetch_sources.py f1_team_rows),
+    as (league, team_id, f1_name, of1_primary, of1_secondary): OpenF1 gives one color, so no secondary."""
+    cols = ["league", "team_id", "f1_name", "of1_primary", "of1_secondary"]
+    if not (raw / "f1_teams.csv").exists():
+        return pl.DataFrame(schema=dict.fromkeys(cols, pl.String))
+    return _csv(raw, "f1_teams.csv").select(
+        pl.lit("f1").alias("league"),
+        "team_id",
+        pl.col("name").alias("f1_name"),
+        _hex("color").alias("of1_primary"),
+        pl.lit(None, pl.String).alias("of1_secondary"),
+    )
+
+
 # Color sources by precedence, as (color_source, column prefix): the first with a primary gives both colors, so one
 # source's secondary never sits beside another's primary
-COLOR_SOURCES = [("nflverse", "nflv"), ("espn", "espn"), ("espn", "ep"), ("logo", "logo")]
+COLOR_SOURCES = [("nflverse", "nflv"), ("espn", "espn"), ("espn", "ep"), ("openf1", "of1"), ("logo", "logo")]
 
 
 def _first_source(value: Callable[[str, str], pl.Expr]) -> pl.Expr:
@@ -222,12 +242,14 @@ def build_teams(raw: Path) -> pl.DataFrame:
         .join(nflv, on=["league", "team_id"], how="left")
         .join(groups, on=["league", "team_id"], how="left")
         .join(espn_school_colors(raw, all_espn), on=["league", "team_id"], how="left")
+        .join(f1_teams(raw), on=["league", "team_id"], how="left")
         .join(logo_colors(raw), on=["league", "team_id"], how="left")
         .join(current_extra_abbrs(raw), on=["league", "team_id"], how="left")
     )
     assert not t.select("league", "team_id").is_duplicated().any(), "a source repeats a (league, team_id)"
     t = t.with_columns(
         pl.coalesce("nflv_abbr", "abbr", "extra_abbr").alias("abbr"),
+        pl.coalesce("f1_name", "name").alias("name"),
         _first_source(lambda name, _: pl.lit(name)).fill_null("fallback").alias("color_source"),
         _first_source(lambda _, p: pl.col(f"{p}_primary")).alias("color_primary"),
         _first_source(lambda _, p: pl.col(f"{p}_secondary")).alias("color_secondary"),
@@ -592,11 +614,12 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
         _alias(espn, pl.col("league"), "espn_abbr", "abbreviation"),
         *[_alias(espn, pl.col("league"), "name", c) for c in ("display_name", "short_display_name", "location")],
         _alias(_csv(raw, "manifest_teams.csv"), pl.col("league"), "name", "name"),
+        _alias(f1_teams(raw), "f1", "name", "f1_name"),
     ]
     if (raw / "espn_abbrs.csv").exists():
         parts.append(espn_extra_aliases(_csv(raw, "espn_abbrs.csv"), espn))
     by_league = {
-        "hockeytech": ["pwhl", "ahl", "echl", "ohl", "whl", "qmjhl", "ushl"],
+        "hockeytech": ["pwhl", "ahl", "echl", "ohl", "whl", "qmjhl", "ushl", *HOCKEYTECH_JUNIOR_MINOR],
         "mlbstats": ["milb"],
         "pff": ["aaf"],
         "cricinfo": ["cricket"],

@@ -7,6 +7,7 @@ Usage:
         --ncaa-xwalk /mnt/sdv_repos/ncaa-mfb-football-raw/mfb/xwalk/espn_team_id.json
     uv run python tools/fetch_sources.py --colors-only   # espn_colors.csv and logo_colors.csv alone
     uv run python tools/fetch_sources.py --groups-only   # groups_latest.csv alone
+    uv run python tools/fetch_sources.py --teams-only    # the archive's and ESPN's teams and f1_teams.csv alone
 """
 
 from __future__ import annotations
@@ -46,6 +47,11 @@ IDENTITY_SOURCES = {
     "fox",
     "cricinfo",
     "shiftstats",
+    "cfl",  # content.cfl.ca marks keyed by the teams' ESPN ids
+    "cebl",  # CEBL team_id
+    "datacore",  # the EASL's DataCore teamId
+    "legabasket",  # LBA club_id
+    "formula1.com",  # F1 constructors by Jolpica constructor_id
 }
 NFLVERSE_TEAMS_URL = "https://github.com/nflverse/nflverse-data/releases/download/teams/teams_colors_logos.csv"
 GROUPS_URL = (
@@ -67,6 +73,15 @@ ESPN_LEAGUES = [
     ("ncaa_softball", "baseball", "college-softball"),
     ("ncaa_mhockey", "hockey", "mens-college-hockey"),
     ("ncaa_whockey", "hockey", "womens-college-hockey"),
+    ("cfl", "football", "cfl"),
+    ("nbl", "basketball", "nbl"),
+    # national teams, pooled by sport: an id two lists share is one team, its first list's row kept (the Olympic lists
+    # name each team's gender; ESPN's fiba list repeats them and names none)
+    ("fiba", "basketball", "mens-olympics-basketball"),
+    ("fiba", "basketball", "womens-olympics-basketball"),
+    ("fiba", "basketball", "fiba"),
+    ("iihf", "hockey", "olympics-mens-ice-hockey"),
+    ("iihf", "hockey", "olympics-womens-ice-hockey"),
 ]
 # The college baseball and softball releases carry ESPN-keyed rows (team_id_source "espn") through sdv-reference-data's
 # NCAA -> ESPN crosswalks; college hockey's conference ids are the reference data's group ids (USCHO-derived)
@@ -138,7 +153,7 @@ ESPN_TEAM_COLUMNS = [
 # The per-team endpoint of the archive's ESPN-keyed teams the teams list gives no color (espn_colors.csv): the list
 # leagues, plus soccer (one id space; any league slug answers for any club) and the defunct XFL. ESPN's cricket team
 # endpoints answer 400 for every league, so cricket has none.
-ESPN_COLOR_SLUGS = {league: (sport, el) for league, sport, el in ESPN_LEAGUES} | {
+ESPN_COLOR_SLUGS = {league: (sport, el) for league, sport, el in reversed(ESPN_LEAGUES)} | {  # a league's first
     "soccer": ("soccer", "all"),
     "xfl": ("football", "xfl"),
 }
@@ -151,6 +166,30 @@ ESPN_COLLEGE = ["cfb", "mbb", "wbb", "ncaa_baseball", "ncaa_softball", "ncaa_mho
 ESPN_SCHOOL_IDS = ["cfb", "mbb", "wbb", "ncaa_mhockey", "ncaa_whockey"]
 ESPN_COLOR_COLUMNS = ["league", "team_id", "espn_league", "display_name", "location", "color", "alternate_color"]
 LOGO_COLOR_COLUMNS = ["league", "team_id", "primary", "secondary", "sha256"]
+# F1 (f1_teams.csv): constructors by Jolpica's constructor_id (sdv-py's F1 key), named as Jolpica's latest season with
+# each, colored by OpenF1's team_colour from its latest session. OpenF1 names teams, so the crosswalk is curated: an
+# OpenF1 team name it lacks fails the fetch (never match by name). OpenF1 starts in 2023, so the 2019-2022-only
+# constructors (racing_point, renault, toro_rosso) take their logo's colors.
+JOLPICA_CONSTRUCTORS_URL = "https://api.jolpi.ca/ergast/f1/{year}/constructors.json?limit=100"
+OPENF1_URL = "https://api.openf1.org/v1/{table}"
+OPENF1_CONSTRUCTORS = {
+    "Alfa Romeo": "alfa",
+    "AlphaTauri": "alphatauri",
+    "Alpine": "alpine",
+    "Aston Martin": "aston_martin",
+    "Audi": "audi",
+    "Cadillac": "cadillac",
+    "Ferrari": "ferrari",
+    "Haas F1 Team": "haas",
+    "Kick Sauber": "sauber",
+    "McLaren": "mclaren",
+    "Mercedes": "mercedes",
+    "RB": "rb",
+    "Racing Bulls": "rb",
+    "Red Bull Racing": "red_bull",
+    "Williams": "williams",
+}
+F1_COLUMNS = ["team_id", "name", "color"]
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -606,6 +645,12 @@ def main() -> None:
         help="refresh only espn_colors.csv and logo_colors.csv, from the committed ESPN team snapshots (no CFBD key)",
     )
     p.add_argument(
+        "--teams-only",
+        action="store_true",
+        help="refresh only the archive's snapshots (manifest_*.csv), ESPN's teams lists (espn_teams.csv) and "
+        "f1_teams.csv (Jolpica, OpenF1): no CFBD key",
+    )
+    p.add_argument(
         "--groups-only",
         action="store_true",
         help="refresh only groups_latest.csv, from the sportsdataverse-data {league}_groups releases",
@@ -656,10 +701,14 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         r.raise_for_status()
         got = espn_rows(league, r.json())
         if not got:
-            raise RuntimeError(f"espn: no teams for {league}")
+            raise RuntimeError(f"espn: no teams for {league} ({el})")
         espn += got
+    espn = list({(t["league"], t["team_id"]): t for t in reversed(espn)}.values())  # a repeated id: its first row
     print(f"ESPN host used: {hosts[0]}")
     write("espn_teams", espn, ESPN_TEAM_COLUMNS)
+    write("f1_teams", fetch_f1_teams(s, manifest), F1_COLUMNS)
+    if args.teams_only:
+        return
     unlisted = fetch_espn_unlisted_teams(s, hosts[0], espn, archived)
     write("espn_unlisted_teams", unlisted, ESPN_TEAM_COLUMNS)
     abbrs = fetch_espn_team_abbrs(s, hosts[0], espn) + fetch_espn_season_abbrs(s, hosts[0]) + fetch_espn_core_abbrs(s)
@@ -746,6 +795,45 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         with open(args.sr_manifest, newline="", encoding="utf-8") as f:
             sr = list(csv.DictReader(f))
         write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
+
+
+def f1_team_rows(
+    archived: list[dict], seasons: dict[int, dict], drivers: list[dict], meetings: list[dict]
+) -> list[dict]:
+    """f1_teams.csv: each archived F1 constructor's name in the latest Jolpica season (``seasons``: year -> its
+    constructors.json payload) that lists it, and its OpenF1 team_colour from the latest session (``drivers``, the
+    OpenF1 drivers table; ``meetings`` date each session) of a team OPENF1_CONSTRUCTORS maps to it."""
+    names: dict[str, str] = {}
+    for year in sorted(seasons):
+        for c in seasons[year]["MRData"]["ConstructorTable"]["Constructors"]:
+            names[c["constructorId"]] = c["name"]
+    ids = sorted(r["team_id"] for r in archived if r["league"] == "f1")
+    missing = [i for i in ids if i not in names]
+    if missing:
+        raise RuntimeError(f"f1: no Jolpica constructor for {missing}")
+    unknown = sorted({d["team_name"] for d in drivers if d.get("team_name")} - set(OPENF1_CONSTRUCTORS))
+    if unknown:
+        raise RuntimeError(f"f1: OpenF1 teams with no constructor_id in OPENF1_CONSTRUCTORS: {unknown}")
+    year = {m["meeting_key"]: m["year"] for m in meetings}
+    color: dict[str, tuple] = {}
+    for d in drivers:
+        if not d.get("team_name") or not _hex6(d.get("team_colour")):
+            continue
+        cid, when = OPENF1_CONSTRUCTORS[d["team_name"]], (year.get(d["meeting_key"], 0), d["session_key"])
+        if cid not in color or when > color[cid][0]:
+            color[cid] = (when, _hex6(d["team_colour"]))
+    return [{"team_id": i, "name": names[i], "color": color[i][1] if i in color else ""} for i in ids]
+
+
+def fetch_f1_teams(s: requests.Session, manifest: list[dict]) -> list[dict]:
+    """f1_team_rows over the Jolpica seasons from the archive's first F1 mark season to this year."""
+    first = min(int(r["valid_from"]) for r in manifest if r["league"] == "f1" and r["valid_from"])
+    seasons = {}
+    for year in range(first, dt.date.today().year + 1):
+        seasons[year] = _get(s, JOLPICA_CONSTRUCTORS_URL.format(year=year)).json()
+        time.sleep(0.5)  # Jolpica's burst limit is 4 requests a second
+    drivers, meetings = (_get(s, OPENF1_URL.format(table=t), timeout=120).json() for t in ("drivers", "meetings"))
+    return f1_team_rows(manifest_team_rows(manifest), seasons, drivers, meetings)
 
 
 def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str]], None]) -> None:

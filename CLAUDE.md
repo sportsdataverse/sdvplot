@@ -146,8 +146,9 @@ VS Code terminal matches the CI cron's. On Windows, run renders with `PYTHONIOEN
 
 Each index row carries a `color_source`, by precedence: `nflverse` (nflverse's team table, the NFL), `espn` (ESPN's
 teams lists, else `data-raw/espn_colors.csv`, its per-team endpoint, including a college team's school colors from
-another ESPN sport), `logo` (the two dominant colors of the team's archived logo, `data-raw/logo_colors.csv`) and
-`fallback` (a placeholder from a fixed palette). One source gives both colors (`COLOR_SOURCES` in
+another ESPN sport), `openf1` (OpenF1's `team_colour` for the F1 constructors, `data-raw/f1_teams.csv`), `logo` (the
+two dominant colors of the team's archived logo, `data-raw/logo_colors.csv`) and `fallback` (a placeholder from a
+fixed palette). One source gives both colors (`COLOR_SOURCES` in
 `tools/build_index.py`); ESPN's stand-in colors (black alone, black with its stock red) count as none.
 `docs/docs/concepts/colors.md` documents the rules. The conference and league rows (`program` "conference" / "league",
 sdvplotR's `include_conferences`; `conference_rows` in `tools/build_index.py` from the hand-kept

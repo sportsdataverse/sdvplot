@@ -761,6 +761,61 @@ cfb,96,UK,Kentucky Wildcats,Kentucky,Kentucky,Wildcats,0033a0,ffffff
 cfb,97,LOU,Louisville Cardinals,Louisville,Louisville,Cardinals,c9001f,ffffff
 cfb,98,WKU,Western Kentucky Hilltoppers,Western KY,Western Kentucky,Hilltoppers,e13a3e,ffffff
 cfb,99,LSU,LSU Tigers,LSU,LSU,Tigers,461d76,fdd023
+cfl,79,BCL,BC Lions,Lions,BC,Lions,,
+cfl,80,CSP,Calgary Stampeders,Stampeders,Calgary,Stampeders,,
+cfl,81,EES,Edmonton Elks,Elks,Edmonton,Elks,,
+cfl,82,HTC,Hamilton Tiger-Cats,Tiger-Cats,Hamilton,Tiger-Cats,,
+cfl,83,MTA,Montreal Alouettes,Alouettes,Montreal,Alouettes,,
+cfl,84,SRR,Saskatchewan Roughriders,Roughriders,Saskatchewan,Roughriders,,
+cfl,85,TAT,Toronto Argonauts,Argonauts,Toronto,Argonauts,,
+cfl,86,WBB,Winnipeg Blue Bombers,Blue Bombers,Winnipeg,Blue Bombers,,
+cfl,87,ORB,Ottawa Red Blacks,Red Blacks,Ottawa,Red Blacks,,
+fiba,104882,AUS,Australia,Australia,Australia,Australia,dabf00,213a36
+fiba,104956,FRA,France,France,France,France,052789,FF0800
+fiba,104957,TUR,Türkiye,Türkiye,Türkiye,Türkiye,,
+fiba,104958,CAN,Canada,Canada,Canada,Canada,FF0000,000000
+fiba,104959,PUR,Puerto Rico,Puerto Rico,Puerto Rico,Puerto Rico,0537e4,C60000
+fiba,106761,BEL,Belgium,Belgium,Belgium,Belgium,DE2918,000000
+fiba,107068,HUN,Hungary,Hungary,Hungary,Hungary,,
+fiba,109331,SRB,Serbia,Serbia,Serbia,Serbia,C6363C,0C4076
+fiba,122706,GER,Germany,Germany,Germany,Germany,dd0000,000000
+fiba,122783,SSD,South Sudan,South Sudan,South Sudan,South Sudan,da131a,1146b0
+fiba,129555,ITA,Italy,Italy,Italy,Italy,0064AA,E30521
+fiba,15095,BRA,Brazil,Brazil,Brazil,Brazil,009C3B,002776
+fiba,15097,PUR,Puerto Rico,Puerto Rico,Puerto Rico,Puerto Rico,0537e4,C60000
+fiba,16036,USA,United States,United States,United States,United States,3C3B6E,C60000
+fiba,17464,ESP,Spain,Spain,Spain,Spain,AA151B,F1BF00
+fiba,17467,GRE,Greece,Greece,Greece,Greece,295da8,ffffff
+fiba,17472,AUS,Australia,Australia,Australia,Australia,00843D,FFCD00
+fiba,17475,JPN,Japan,Japan,Japan,Japan,BC002D,000000
+fiba,17476,NGA,Nigeria,Nigeria,Nigeria,Nigeria,000000,C60000
+fiba,17478,CHN,China,China,China,China,ea2300,b6b6b6
+fiba,17479,CZE,Czechia,Czechia,Czechia,Czechia,,
+fiba,17480,KOR,South Korea,South Korea,South Korea,South Korea,,
+fiba,17482,ESP,Spain,Spain,Spain,Spain,AA151B,F1BF00
+fiba,17483,USA,United States,United States,United States,United States,3C3B6E,C60000
+fiba,49402,JPN,Japan,Japan,Japan,Japan,BC002D,000000
+fiba,65935,CAN,Canada,Canada,Canada,Canada,ed174b,c60000
+fiba,80321,GER,Germany,Germany,Germany,Germany,DD0000,000000
+fiba,83469,MLI,Mali,Mali,Mali,Mali,,
+fiba,87644,SRB,Serbia,Serbia,Serbia,Serbia,C6363C,0C4076
+fiba,95879,FRA,France,France,France,France,052789,FF0800
+iihf,132244,FRA,FRANCE,FRANCE,FRANCE,FRANCE,,
+iihf,16,CAN,Canada,Canada,Canada,Canada,,
+iihf,21,CZE,CZECHIA,CZECHIA,CZECHIA,CZECHIA,,
+iihf,22,DEN,Denmark,Denmark,Denmark,Denmark,,
+iihf,25,FIN,Finland,Finland,Finland,Finland,,
+iihf,26,FRA,FRANCE,FRANCE,FRANCE,FRANCE,,
+iihf,28,GER,Germany,Germany,Germany,Germany,,
+iihf,40,JPN,JAPAN,JAPAN,JAPAN,JAPAN,,
+iihf,45,LAT,Latvia,Latvia,Latvia,Latvia,,
+iihf,47841,ITA,Italy,Italy,Italy,Italy,,
+iihf,48099,GER,Germany,Germany,Germany,Germany,,
+iihf,48105,ITA,Italy,Italy,Italy,Italy,,
+iihf,65,SVK,Slovakia,Slovakia,Slovakia,Slovakia,,
+iihf,71,SWE,Sweden,Sweden,Sweden,Sweden,,
+iihf,72,SUI,Switzerland,Switzerland,Switzerland,Switzerland,,
+iihf,79,USA,United States,United States,United States,United States,,
 mbb,103,BC,Boston College Eagles,Boston College,Boston College,Eagles,8c2232,dbcca6
 mbb,104,BU,Boston University Terriers,Boston U,Boston University,Terriers,cc0000,ffffff
 mbb,107,HC,Holy Cross Crusaders,Holy Cross,Holy Cross,Crusaders,582c83,ffffff
@@ -1217,6 +1272,16 @@ nbagl,6,LAK,Laketown Squadron,Squadron,Laketown,Squadron,002A5C,b4975a
 nbagl,7,NOB,Noblesville Boom,Boom,Noblesville,Boom,002D62,FDBB30
 nbagl,8,GRD,Grand Rapids Gold,Gold,Grand Rapids,Gold,C8102E,1D428A
 nbagl,9,GBO,Greensboro Swarm,Swarm,Greensboro,Swarm,007BBC,1D1160
+nbl,1,ADL,Adelaide 36ers,36ers,Adelaide,36ers,ed302e,25387c
+nbl,10,TAS,Tasmania JackJumpers,JackJumpers,Tasmania,JackJumpers,008b45,faaf3c
+nbl,2,BRI,Brisbane Bullets,Bullets,Brisbane,Bullets,1f4fa2,f9b71a
+nbl,3,CNS,Cairns Taipans,Taipans,Cairns,Taipans,f69138,000000
+nbl,4,HWK,Illawarra Hawks,Hawks,Illawarra,Hawks,ce202f,000000
+nbl,5,MEL,Melbourne United,United,Melbourne,United,4370b7,000000
+nbl,6,NZL,New Zealand Breakers,Breakers,New Zealand,Breakers,e33c95,33aee3
+nbl,7,PER,Perth Wildcats,Wildcats,Perth,Wildcats,ec1c23,f1f2f3
+nbl,8,PNX,South East Melbourne Phoenix,Phoenix,South East Melbourne,Phoenix,69bf29,f1f2f3
+nbl,9,SYD,Sydney Kings,Kings,Sydney,Kings,552583,FDB927
 ncaa_baseball,100,DART,Dartmouth Big Green,Dartmouth,Dartmouth,Big Green,005730,
 ncaa_baseball,101,PRIN,Princeton Tigers,Princeton,Princeton,Tigers,FF9408,
 ncaa_baseball,102,RUTG,Rutgers Scarlet Knights,Rutgers,Rutgers,Scarlet Knights,000000,

@@ -305,16 +305,15 @@ def test_womens_college_hockey_ids_espn_game_data_uses():  # ESPN scoreboards us
     assert sdvplot.resolve(["48", "DEL", "Delaware Blue Hens"], "ncaa_whockey") == ["48"] * 3
     delaware = sdvplot.teams("ncaa_whockey").filter(pl.col("team_id") == "48").row(0, named=True)
     assert (delaware["name"], delaware["abbr"]) == ("Delaware Blue Hens", "DEL")
-    marks = _index.alias_table().filter(
-        (pl.col("league") == "ncaa_whockey") & (pl.col("id_system") == "mark") & (pl.col("team_id") == "48")
-    )
-    assert marks.height == 0  # the archive has no Delaware mark, and none is made up
+    assert sdvplot.logo_url("48", "ncaa_whockey").endswith(".png")  # ESPN's ncaa/500/48.png, captured 2026-11
 
 
 def test_mens_college_hockey_ids_espn_game_data_uses():  # SUNY Morrisville and Maryville play listed teams
     assert sdvplot.resolve(["126813", "132633"], "ncaa_mhockey") == ["126813", "132633"]
     assert sdvplot.resolve("Maryville (Mo) Saints", "ncaa_mhockey") == "132633"
-    assert sdvplot.resolve("SUNY Morrisville Mustangs", "ncaa_mhockey") == "126813"  # ESPN-listed, not archived
+    assert sdvplot.resolve("SUNY Morrisville Mustangs", "ncaa_mhockey") == "126813"
+    for team in ("126813", "132633"):  # NCAA.com SVGs (morrisville-st, maryville-mo), captured 2026-11
+        assert sdvplot.logo_url(team, "ncaa_mhockey").endswith(".svg")
 
 
 # Team colors by source, measured on the October 2026 snapshots: (published, i.e. nflverse or ESPN; logo-derived) per
@@ -325,12 +324,17 @@ COLOR_FLOORS = {
     "ncaa_mhockey": (53, 55), "ncaa_softball": (358, 57), "ncaa_whockey": (30, 18), "nfl": (32, 0), "nhl": (32, 0),
     "ohl": (0, 27), "phf": (0, 8), "pwhl": (0, 12), "qmjhl": (0, 30), "soccer": (2125, 506), "ufl": (11, 0),
     "usfl": (0, 9), "ushl": (0, 17), "wbb": (354, 10), "whl": (0, 23), "wnba": (15, 0), "xfl": (7, 4),
+    # the leagues of the 2026-11-03 capture (published: ESPN or OpenF1)
+    "ajhl": (0, 17), "bchl": (0, 23), "cchl": (0, 13), "cebl": (0, 15), "cfl": (0, 9), "chl": (0, 41), "easl": (0, 12),
+    "f1": (14, 3), "fiba": (24, 6), "gojhl": (0, 45), "iihf": (0, 16), "kijhl": (0, 23), "lba": (0, 24), "mhl": (0, 13),
+    "mjhl": (0, 22), "nbl": (10, 0), "nojhl": (0, 27), "ojhl": (0, 28), "sjhl": (0, 13), "sphl": (0, 16),
+    "vijhl": (0, 12),
 }  # fmt: skip
 
 
 def test_colors_are_hex_and_a_secondary_is_a_second_color():
     t = sdvplot.teams()
-    assert set(t["color_source"]) == {"nflverse", "espn", "logo", "fallback"}
+    assert set(t["color_source"]) == {"nflverse", "espn", "openf1", "logo"}  # every team: a source has colors
     assert t["color_primary"].str.contains(r"^#[0-9a-f]{6}$").all()
     assert t["color_secondary"].drop_nulls().str.contains(r"^#[0-9a-f]{6}$").all()
     assert t.filter(pl.col("color_secondary") == pl.col("color_primary")).height == 0
@@ -340,14 +344,15 @@ def test_colors_are_hex_and_a_secondary_is_a_second_color():
 def test_color_coverage_per_league(league):
     published, logo = COLOR_FLOORS[league]
     source = sdvplot.teams(league)["color_source"]
-    assert source.is_in(["nflverse", "espn"]).sum() >= published
+    assert source.is_in(["nflverse", "espn", "openf1"]).sum() >= published
     assert (source != "fallback").sum() >= published + logo
 
 
 def test_a_fallback_color_only_where_no_source_has_one():
-    # two scoreboard-only teams: no archived logo, and ESPN gives their ids no color in any sport
+    # every team has a source: SUNY Morrisville and Maryville (Mo), scoreboard-only until the 2026-11 capture, now
+    # have NCAA.com logos
     fallback = sdvplot.teams().filter(pl.col("color_source") == "fallback")
-    assert fallback.select("league", "team_id").rows() == [("ncaa_mhockey", "126813"), ("ncaa_mhockey", "132633")]
+    assert fallback.select("league", "team_id").rows() == []
 
 
 @pytest.mark.parametrize(
@@ -518,6 +523,7 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     assert set(everything["color_source"]) == {
         "nflverse",
         "espn",
+        "openf1",
         "logo",
         "cbbplotR",
         "fallback",
@@ -646,3 +652,33 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     assert sdvplot.logo_url("Southeastern Conference", "cfb") == sdvplot.logo_url("SEC", "cfb")
     assert sdvplot.logo_url("B10", "mbb") == sdvplot.logo_url("Big Ten", "mbb")
     assert sdvplot.logo_url("Mid-American Conference", "cfb") == sdvplot.logo_url("MAC", "cfb", id_system="team_id")
+
+
+NEW_LEAGUES_2026_11 = {  # league: teams, from the archive's 2026-11-03 capture
+    "sphl": 16, "chl": 41, "bchl": 23, "ajhl": 17, "sjhl": 13, "ojhl": 28, "cchl": 13, "gojhl": 45, "mhl": 13,
+    "nojhl": 27, "vijhl": 12, "kijhl": 23, "mjhl": 22, "nbl": 10, "fiba": 30, "iihf": 16, "cfl": 9, "cebl": 15,
+    "easl": 12, "lba": 24, "f1": 17,
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("league", sorted(NEW_LEAGUES_2026_11))
+def test_the_2026_11_leagues_draw_every_team(league):
+    t = sdvplot.teams(league)
+    assert t.height >= NEW_LEAGUES_2026_11[league]
+    assert all(sdvplot.logo_url(team, league) for team in t["team_id"])
+
+
+def test_national_teams_resolve_by_espn_id_and_never_by_a_shared_code():
+    assert sdvplot.logo_url("16036", "fiba") and sdvplot.logo_url("17483", "fiba")  # USA men, USA women
+    assert set(sdvplot.teams("fiba")["program"]) == {"mens", "womens", "national"}
+    assert set(sdvplot.teams("iihf")["program"]) == {"national"}
+    with pytest.warns(sdvplot.SdvplotWarning):
+        assert sdvplot.resolve("AUS", "fiba") is None  # the men's 104882 and the women's 17472
+    assert sdvplot.resolve(["79", "BCL"], "cfl") == ["79", "79"]  # BC Lions: ESPN id and abbreviation
+
+
+def test_f1_constructors_by_jolpica_id_with_marks_by_season():
+    assert sdvplot.logo_url("ferrari", "f1", season=2025) and sdvplot.logo_url("red_bull", "f1", season=2019)
+    assert sdvplot.logo_url("audi", "f1", season=2026)
+    assert sdvplot.resolve("RB F1 Team", "f1") == "rb"
+    assert sdvplot.team_colors("f1", "mclaren") == "#f47600"  # OpenF1's team_colour

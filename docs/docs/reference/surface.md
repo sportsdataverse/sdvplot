@@ -28,7 +28,7 @@ Draw the league's playing surface with sportypy, in a team's colors.
 
 | Name | Type | Description |
 |---|---|---|
-| `league` | `str` | The SDV surface key: a team league ("nfl", "nba", "nhl", "pwhl", "cfb", "mlb", "ncaa_softball", "soccer" (a 105 x 68 m pitch, the frame pitch_coords() returns), ...) or a surface without team identities ("fiba", "fifa", "epl", "cfl", "iihf", "little_league", the lacrosse "nll", "pll", "ncaa_mlacrosse", the tennis "atp", "wta", "ncaa_tennis", the volleyball "fivb", "ncaa_volleyball", the curling "wcf", "curling_canada", ...). Every sportyR surface has a key; an unknown one lists them. |
+| `league` | `str` | The SDV surface key: a team league ("nfl", "nba", "nhl", "pwhl", "cfb", "mlb", "ncaa_softball", "cfl", the national teams' "fiba" and "iihf", "soccer" (a 105 x 68 m pitch, the frame pitch_coords() returns), ...) or a surface without team identities ("fifa", "epl", "little_league", the lacrosse "nll", "pll", "ncaa_mlacrosse", the tennis "atp", "wta", "ncaa_tennis", the volleyball "fivb", "ncaa_volleyball", the curling "wcf", "curling_canada", ...). Every sportyR surface has a key; an unknown one lists them. |
 | `team` | `Any` | A team to color the surface by (end zones, lane and apron, center line and boards; baseball, softball and soccer stay in their regulation colors, so the team shows through ``center_logo``); None for the plain surface. Only for a key that is an SDV team league. |
 | `season` | `Any` | The season, for teams whose colors changed. |
 | `ax` | `Any` | The matplotlib Axes to draw on; None makes a new figure. |
@@ -72,14 +72,14 @@ The 59 keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, th
 | `usfl` | football | `sportypy.surfaces.football.NFLField` | yes |
 | `xfl` | football | `sportypy.surfaces.football.NFLField` | yes |
 | `cfb` | football | `sportypy.surfaces.football.NCAAField` | yes |
-| `cfl` | football | `sportypy.surfaces.football.CFLField` | no |
+| `cfl` | football | `sportypy.surfaces.football.CFLField` | yes |
 | `nfhs_football` | football | `sportypy.surfaces.football.NFHSField` | no |
 | `nba` | basketball | `sportypy.surfaces.basketball.NBACourt` | yes |
 | `nbagl` | basketball | `sportypy.surfaces.basketball.NBAGLeagueCourt` | yes |
 | `wnba` | basketball | `sportypy.surfaces.basketball.WNBACourt` | yes |
 | `mbb` | basketball | `sportypy.surfaces.basketball.NCAACourt` | yes |
 | `wbb` | basketball | `sportypy.surfaces.basketball.NCAACourt` | yes |
-| `fiba` | basketball | `sportypy.surfaces.basketball.FIBACourt` | no |
+| `fiba` | basketball | `sportypy.surfaces.basketball.FIBACourt` | yes |
 | `nfhs_basketball` | basketball | `sportypy.surfaces.basketball.NFHSCourt` | no |
 | `mlb` | baseball | `sportypy.surfaces.baseball.MLBField` | yes |
 | `milb` | baseball | `sportypy.surfaces.baseball.MiLBField` | yes |
@@ -97,7 +97,7 @@ The 59 keys `league` takes, in `sdvplot._surface.SURFACES`' order: the sport, th
 | `qmjhl` | hockey | `sportypy.surfaces.hockey.QMJHLRink` | yes |
 | `ushl` | hockey | `sportypy.surfaces.hockey.USHLRink` | yes |
 | `phf` | hockey | `sportypy.surfaces.hockey.PHFRink` | yes |
-| `iihf` | hockey | `sportypy.surfaces.hockey.IIHFRink` | no |
+| `iihf` | hockey | `sportypy.surfaces.hockey.IIHFRink` | yes |
 | `nwhl` | hockey | `sportypy.surfaces.hockey.NWHLRink` | no |
 | `ncaa_mhockey` | hockey | `sportypy.surfaces.hockey.NCAARink` | yes |
 | `ncaa_whockey` | hockey | `sportypy.surfaces.hockey.NCAARink` | yes |
