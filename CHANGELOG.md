@@ -55,25 +55,26 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   (16, ice hockey, `program` `national`), both ESPN ids, so an abbreviation such as `AUS` that names a men's and a
   women's team resolves to None with a warning and the ESPN id resolves; the `cfl` (9, ESPN ids 79-87, content.cfl.ca
   marks); the `cebl` (15, CEBL team ids), the `easl` (12, DataCore team UUIDs) and Italy's `lba` (24, LBA club ids,
-  marks dated by season); and `f1` (17 constructors by Jolpica `constructor_id`, the key sdv-py's F1 family uses, named
-  as Jolpica's latest season with each, with formula1.com marks by season). `surface("cfl" | "fiba" | "iihf", team)`
-  now paints the team. The three college hockey teams that had no logo (Delaware women's, SUNY Morrisville,
+  marks dated by season); and `f1` (31 constructors, 2002-2026, by Jolpica `constructor_id`, the key sdv-py's F1 family
+  uses, named as Jolpica's latest season with each, with formula1.com marks by season and Wikimedia Commons' for the
+  2002-2015 constructors formula1.com never archived: Toyota, Honda, Super Aguri, BMW Sauber, Brawn, HRT, Caterham,
+  ...). `surface("cfl" | "fiba" | "iihf", team)` now paints the team. The three college hockey teams that had no logo (Delaware women's, SUNY Morrisville,
   Maryville (Mo)) now draw, and take their logos' colors instead of the placeholder.
 - A new `color_source`, `openf1`: the F1 constructors' `team_colour` from OpenF1's latest session (one color, so no
-  secondary); the 2019-2022 constructors OpenF1 predates (Racing Point, Renault, Toro Rosso) take their logo's.
+  secondary); the 2002-2022 constructors OpenF1 predates (Racing Point, Renault, Toyota, ...) take their logo's.
   `tools/fetch_sources.py --teams-only` refreshes the archive's snapshots, ESPN's teams lists and the new
   `data-raw/f1_teams.csv` (Jolpica names, OpenF1 colors through a curated OpenF1 team name to `constructor_id` map)
   without the CFBD key.
 - College baseball, softball and men's and women's hockey teams carry a `conference` and `conference_id`
   (`ncaa_baseball`, `ncaa_softball`, `ncaa_mhockey`, `ncaa_whockey`), from sdv-reference-data's ESPN-keyed groups:
   78%, 77%, 58% and 98% of each league's teams (most non-Division I programs and the defunct ones stay null). Each team
-  carries its latest released season's conference: softball's release ends with the 2025 season, so a school that
-  changed conference on July 1, 2025 shows its 2025 conference until sdv-reference-data adds 2026.
-  `teams(league, include_conferences=True)` adds their conference rows where the archive has the conference's logo
-  (the basketball conference logos ESPN shares across sports): 30 baseball, 31 softball and the men's hockey Big Ten.
-  The hockey-only conferences (Hockey East, NCHC, ECAC, CCHA, Atlantic Hockey America, WCHA, NEWHA, CHA) have no
-  archived logo yet, so their teams carry the conference with no row. `tools/fetch_sources.py --groups-only`
-  refreshes `data-raw/groups_latest.csv` alone.
+  carries its latest released season's conference: 2026 for baseball and softball (so softball's July 2025
+  realignment shows), 2026-27 for hockey.
+  `teams(league, include_conferences=True)` adds their conference rows where the archive has the conference's logo:
+  the basketball conference logos ESPN shares across sports (30 baseball, 31 softball and the men's hockey Big Ten)
+  and the hockey-only conferences' own sites' logos, Wayback-pinned (men's `AHA`, `CCHA`, `CHA`, `ECAC`,
+  `Hockey East`, `NCHC`, `WCHA`; women's `AHA`, `ECAC`, `Hockey East`, `NEWHA`, `WCHA`), so every college hockey team
+  with a conference joins a row. `tools/fetch_sources.py --groups-only` refreshes `data-raw/groups_latest.csv` alone.
 - Soccer clubs carry their domestic league: `teams("soccer")` stays one pool of ESPN club ids, and a club's
   `conference_id` / `conference` are the league competition it was seen in in its latest season (ESPN's slug and
   name, `"eng.1"` / `"English Premier League"`): 1,675 of 2,631 clubs. Cups, super cups, playoffs and the
@@ -83,10 +84,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   `"competition"`, dated by that competition's season, which `resolve()` and `suggest()` never read. The source is
   sdv-assets' `manifest/soccer_competitions.csv` (`data-raw/soccer_competitions.csv`).
 - More conference marks draw: the NHL's `Eastern` and `Western` (its Conference Final wordmarks, 2024 on, the only
-  official conference marks the NHL publishes), and 39 Division II / III football conferences from their own sites'
-  logos, Wayback-pinned (`CIAA`, `GLIAC`, `NESCAC`, `PSAC`, `Carolinas`, `Landmark`, `NACC`, ...), each joined to its
-  teams' `conference_id` (the Conference of New England has no football team). College baseball (`CNE`, `SIAC`) and
-  softball (`CIAA`, `CNE`, `SIAC`) reuse three of them. A conference or league row whose only mark is a wordmark
+  official conference marks the NHL publishes), and 44 Division II / III football conferences from their own sites'
+  logos, Wayback-pinned (`CIAA`, `GLIAC`, `NESCAC`, `PSAC`, `Carolinas`, `Landmark`, `NACC`, `Centennial`,
+  `American Rivers`, `SAA`, `SCAC`, `G-MAC`, ...), each joined to its teams' `conference_id` (the Conference of New
+  England has no football team). College baseball (`CNE`, `SIAC`, `SCAC`) and softball (`CIAA`, `CNE`, `SIAC`, `SAA`,
+  `SCAC`) reuse five of them. The `cfl` gains its league row, `CFL` (content.cfl.ca's mark). A conference or league row whose only mark is a wordmark
   draws it for a logo request; a conference whose only logo is an on-dark one draws it on any background.
 - `headshot_url()` (and every headshot adapter) covers more leagues, as sdvplotR does: G League (`"nbagl"`; ESPN files
   its photos with the NBA's) and soccer by ESPN athlete id, and the 20 HockeyTech leagues by their HockeyTech

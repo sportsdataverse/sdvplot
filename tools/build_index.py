@@ -16,7 +16,13 @@ import polars as pl
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools")]
-from fetch_sources import ESPN_COLLEGE, ESPN_PLACEHOLDER, ESPN_SCHOOL_IDS, IDENTITY_SOURCES  # noqa: E402
+from fetch_sources import (  # noqa: E402
+    ESPN_COLLEGE,
+    ESPN_PLACEHOLDER,
+    ESPN_SCHOOL_IDS,
+    IDENTITY_SOURCES,
+    LEAGUE_IDENTITY_SOURCES,
+)
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
 from sdvplot._resolve import PRIORITY  # noqa: E402  (the R50 tri-code fallback follows resolve()'s order)
@@ -537,7 +543,7 @@ def mark_aliases(
     src, lg = pl.col("source"), pl.col("league")
     identity = (
         src.is_in(sorted(IDENTITY_SOURCES)) & ((src != "espn") | pl.col("entity_id").str.contains(r"^\d+$"))
-    ) | ((src == "mlbstatic") & (lg == "milb"))
+    ) | src.replace_strict(LEAGUE_IDENTITY_SOURCES, default=None).eq_missing(lg)
     system = (
         pl.when(identity)
         .then(pl.lit(None, pl.String))

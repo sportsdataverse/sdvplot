@@ -1438,6 +1438,10 @@ f1,formula1.com,aston_martin,Aston Martin,2025,2025
 f1,formula1.com,aston_martin,Aston Martin,2026,2026
 f1,formula1.com,audi,Audi,2026,2026
 f1,formula1.com,cadillac,Cadillac F1 Team,2026,2026
+f1,formula1.com,ferrari,Ferrari,2015,2015
+f1,formula1.com,ferrari,Ferrari,2016,2016
+f1,formula1.com,ferrari,Ferrari,2017,2017
+f1,formula1.com,ferrari,Ferrari,2018,2018
 f1,formula1.com,ferrari,Ferrari,2019,2019
 f1,formula1.com,ferrari,Ferrari,2020,2020
 f1,formula1.com,ferrari,Ferrari,2021,2021
@@ -1446,6 +1450,13 @@ f1,formula1.com,ferrari,Ferrari,2023,2023
 f1,formula1.com,ferrari,Ferrari,2024,2024
 f1,formula1.com,ferrari,Ferrari,2025,2025
 f1,formula1.com,ferrari,Ferrari,2026,2026
+f1,formula1.com,force_india,Force India,2015,2015
+f1,formula1.com,force_india,Force India,2016,2016
+f1,formula1.com,force_india,Force India,2017,2017
+f1,formula1.com,force_india,Force India,2018,2018
+f1,formula1.com,haas,Haas F1 Team,2016,2016
+f1,formula1.com,haas,Haas F1 Team,2017,2017
+f1,formula1.com,haas,Haas F1 Team,2018,2018
 f1,formula1.com,haas,Haas F1 Team,2019,2019
 f1,formula1.com,haas,Haas F1 Team,2020,2020
 f1,formula1.com,haas,Haas F1 Team,2021,2021
@@ -1454,6 +1465,12 @@ f1,formula1.com,haas,Haas F1 Team,2023,2023
 f1,formula1.com,haas,Haas F1 Team,2024,2024
 f1,formula1.com,haas,Haas F1 Team,2025,2025
 f1,formula1.com,haas,Haas F1 Team,2026,2026
+f1,formula1.com,lotus_f1,Lotus F1,2015,2015
+f1,formula1.com,manor,Manor Marussia,2016,2016
+f1,formula1.com,mclaren,McLaren,2015,2015
+f1,formula1.com,mclaren,McLaren,2016,2016
+f1,formula1.com,mclaren,McLaren,2017,2017
+f1,formula1.com,mclaren,McLaren,2018,2018
 f1,formula1.com,mclaren,McLaren,2019,2019
 f1,formula1.com,mclaren,McLaren,2020,2020
 f1,formula1.com,mclaren,McLaren,2021,2021
@@ -1462,6 +1479,10 @@ f1,formula1.com,mclaren,McLaren,2023,2023
 f1,formula1.com,mclaren,McLaren,2024,2024
 f1,formula1.com,mclaren,McLaren,2025,2025
 f1,formula1.com,mclaren,McLaren,2026,2026
+f1,formula1.com,mercedes,Mercedes,2015,2015
+f1,formula1.com,mercedes,Mercedes,2016,2016
+f1,formula1.com,mercedes,Mercedes,2017,2017
+f1,formula1.com,mercedes,Mercedes,2018,2018
 f1,formula1.com,mercedes,Mercedes,2019,2019
 f1,formula1.com,mercedes,Mercedes,2020,2020
 f1,formula1.com,mercedes,Mercedes,2021,2021
@@ -1475,6 +1496,10 @@ f1,formula1.com,racing_point,Racing Point,2020,2020
 f1,formula1.com,rb,RB F1 Team,2024,2024
 f1,formula1.com,rb,RB F1 Team,2025,2025
 f1,formula1.com,rb,RB F1 Team,2026,2026
+f1,formula1.com,red_bull,Red Bull,2015,2015
+f1,formula1.com,red_bull,Red Bull,2016,2016
+f1,formula1.com,red_bull,Red Bull,2017,2017
+f1,formula1.com,red_bull,Red Bull,2018,2018
 f1,formula1.com,red_bull,Red Bull,2019,2019
 f1,formula1.com,red_bull,Red Bull,2020,2020
 f1,formula1.com,red_bull,Red Bull,2021,2021
@@ -1483,11 +1508,26 @@ f1,formula1.com,red_bull,Red Bull,2023,2023
 f1,formula1.com,red_bull,Red Bull,2024,2024
 f1,formula1.com,red_bull,Red Bull,2025,2025
 f1,formula1.com,red_bull,Red Bull,2026,2026
+f1,formula1.com,renault,Renault,2016,2016
+f1,formula1.com,renault,Renault,2017,2017
+f1,formula1.com,renault,Renault,2018,2018
 f1,formula1.com,renault,Renault,2019,2019
 f1,formula1.com,renault,Renault,2020,2020
+f1,formula1.com,sauber,Sauber,2015,2015
+f1,formula1.com,sauber,Sauber,2016,2016
+f1,formula1.com,sauber,Sauber,2017,2017
+f1,formula1.com,sauber,Sauber,2018,2018
 f1,formula1.com,sauber,Sauber,2024,2024
 f1,formula1.com,sauber,Sauber,2025,2025
+f1,formula1.com,toro_rosso,Toro Rosso,2015,2015
+f1,formula1.com,toro_rosso,Toro Rosso,2016,2016
+f1,formula1.com,toro_rosso,Toro Rosso,2017,2017
+f1,formula1.com,toro_rosso,Toro Rosso,2018,2018
 f1,formula1.com,toro_rosso,Toro Rosso,2019,2019
+f1,formula1.com,williams,Williams,2015,2015
+f1,formula1.com,williams,Williams,2016,2016
+f1,formula1.com,williams,Williams,2017,2017
+f1,formula1.com,williams,Williams,2018,2018
 f1,formula1.com,williams,Williams,2019,2019
 f1,formula1.com,williams,Williams,2020,2020
 f1,formula1.com,williams,Williams,2021,2021
@@ -1496,6 +1536,22 @@ f1,formula1.com,williams,Williams,2023,2023
 f1,formula1.com,williams,Williams,2024,2024
 f1,formula1.com,williams,Williams,2025,2025
 f1,formula1.com,williams,Williams,2026,2026
+f1,wikimedia-commons,bmw_sauber,BMW Sauber,2006,2009
+f1,wikimedia-commons,brawn,Brawn,2009,2009
+f1,wikimedia-commons,caterham,Caterham,2012,2013
+f1,wikimedia-commons,caterham,Caterham,2014,2014
+f1,wikimedia-commons,honda,Honda,2006,2008
+f1,wikimedia-commons,hrt,HRT,2010,2010
+f1,wikimedia-commons,lotus_racing,Lotus,2010,2010
+f1,wikimedia-commons,manor,Manor Marussia,2015,2015
+f1,wikimedia-commons,mercedes,Mercedes,2010,2011
+f1,wikimedia-commons,mercedes,Mercedes,2012,2014
+f1,wikimedia-commons,mf1,MF1,2006,2006
+f1,wikimedia-commons,spyker_mf1,Spyker MF1,2006,2006
+f1,wikimedia-commons,super_aguri,Super Aguri,2006,2008
+f1,wikimedia-commons,toyota,Toyota,2002,2009
+f1,wikimedia-commons,virgin,Virgin,2010,2010
+f1,wikimedia-commons,williams,Williams,2014,2014
 fiba,espn,104882,Australia,,
 fiba,espn,104956,France,,
 fiba,espn,104957,Türkiye,,

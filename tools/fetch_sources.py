@@ -57,6 +57,9 @@ IDENTITY_SOURCES = {
     "legabasket",  # LBA club_id
     "formula1.com",  # F1 constructors by Jolpica constructor_id
 }
+# sources whose entity_id is the canonical team id in one league only: mlbstatic (MLB Stats ids; mlb's teams are ESPN
+# ids) and wikimedia-commons (the 2002-2015 F1 constructor logos, by Jolpica constructor_id)
+LEAGUE_IDENTITY_SOURCES = {"mlbstatic": "milb", "wikimedia-commons": "f1"}
 NFLVERSE_TEAMS_URL = "https://github.com/nflverse/nflverse-data/releases/download/teams/teams_colors_logos.csv"
 GROUPS_URL = (
     "https://github.com/sportsdataverse/sportsdataverse-data/releases/download/{league}_groups/{league}_{table}.parquet"
@@ -529,7 +532,7 @@ def _name_rank(r: dict) -> tuple:
 def manifest_team_rows(rows: list[dict]) -> list[dict]:
     latest: dict[tuple[str, str], dict] = {}
     for r in rows:
-        identity = r["source"] in IDENTITY_SOURCES or (r["source"] == "mlbstatic" and r["league"] == "milb")
+        identity = r["source"] in IDENTITY_SOURCES or LEAGUE_IDENTITY_SOURCES.get(r["source"]) == r["league"]
         if r["source"] == "espn" and not r["entity_id"].isdigit():
             identity = False  # abbreviation-keyed historic logo rows: marks only, not teams
         if not _is_team_row(r) or not identity:
