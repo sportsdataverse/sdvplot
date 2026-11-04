@@ -311,7 +311,8 @@ plt.show()
 attacking toward +x, +y on the shooter's left. That is mplsoccer's `impect` pitch, so the points go straight on it.
 ESPN records every shot as if its team attacked the same way; `flip` turns the away team's shots half a turn so the
 two sides attack opposite ends, each wing still on its own side. Events with no location come back null. Goals are the
-scorer's logo. The Premier League's final day of 2025-26, Manchester City against Aston Villa (ESPN ids 382 and 362):
+scorer's logo. ESPN types a penalty `Penalty - Scored` or `Penalty - Missed`, so the filter matches `penalty` too.
+The Premier League's final day of 2025-26, Manchester City against Aston Villa (ESPN ids 382 and 362):
 
 ```python
 from mplsoccer import Pitch
@@ -319,7 +320,7 @@ from mplsoccer import Pitch
 EVENT, HOME, AWAY = 740970, "382", "362"
 plays = soccer.espn_soccer_game_plays("eng.1", EVENT, cid=EVENT)
 shots = sdvplot.pitch_coords(
-    plays.filter(pl.col("type_text").str.contains("(?i)shot|goal") & (pl.col("type_text") != "Assists Shot"))
+    plays.filter(pl.col("type_text").str.contains("(?i)shot|goal|penalty") & (pl.col("type_text") != "Assists Shot"))
     .with_columns(team=pl.col("team_$ref").str.extract(r"/teams/(\d+)"))
     .with_columns(away=pl.col("team") != HOME),
     provider="espn",
@@ -357,7 +358,8 @@ plt.show()
 The same function reads every major provider's frame: Opta and Wyscout (0-100, not to scale), StatsBomb (120 x 80),
 UEFA and Impect, and the tracking providers given the venue's size. Here is StatsBomb's free open data for the 2018
 World Cup final (France 4-2 Croatia, match 8658) on sdvplot's own pitch, `surface("soccer")`, which is the same
-105 x 68 m frame. StatsBomb open data is free for non-commercial use; credit it as below.
+105 x 68 m frame. StatsBomb open data is free for non-commercial use; credit it as below. The map marks five goals for
+a 4-2 final: Mandzukic's own goal is an `Own Goal Against` event, not a `Shot`.
 
 ```python
 import requests
