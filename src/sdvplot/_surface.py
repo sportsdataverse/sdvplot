@@ -294,7 +294,8 @@ def surface(
     if team is not None and league in NO_TEAMS:
         raise InputError(f"no team identities for {league!r}: draw the plain surface with team=None")
     if league == "soccer":  # the regulation pitch pitch_coords() converts to; the caller's pitch_updates win
-        sportypy_kwargs["pitch_updates"] = {**SOCCER_PITCH, **sportypy_kwargs.get("pitch_updates", {})}
+        # pitch_updates=None means absent, as sdvplotR's pitch_updates = NULL does
+        sportypy_kwargs["pitch_updates"] = {**SOCCER_PITCH, **(sportypy_kwargs.get("pitch_updates") or {})}
     if sport == "football" and not _has_font(_NUMBER_FONT):
         # sportypy numbers football fields in Clarendon-Regular, which it does not ship: matplotlib then logs "findfont:
         # Font family 'Clarendon-Regular' not found" for every number it measures and draws its default font anyway.
