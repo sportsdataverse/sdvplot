@@ -327,6 +327,11 @@ def test_soccer_defaults_to_a_105_by_68_pitch_and_pitch_updates_win(monkeypatch)
     assert seen["pitch_updates"] == {"pitch_length": 105, "pitch_width": 68}
     sdvplot.surface("soccer", pitch_updates={"pitch_length": 110})
     assert seen["pitch_updates"] == {"pitch_length": 110, "pitch_width": 68}
+    seen.clear()
+    sdvplot.surface("soccer", pitch_updates=None)  # sdvplotR's pitch_updates = NULL: the defaults, not a TypeError
+    assert seen["pitch_updates"] == {"pitch_length": 105, "pitch_width": 68}
+    with pytest.raises(TypeError):  # only None means absent; another non-mapping still fails
+        sdvplot.surface("soccer", pitch_updates=[])
 
 
 def test_the_soccer_pitch_is_drawn_at_105_by_68():

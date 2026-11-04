@@ -29,7 +29,8 @@ LEAGUES = {"ahl": "AHL", "echl": "ECHL", "ohl": "OHL", "whl": "WHL", "qmjhl": "Q
 `season=2026` asks HockeyTech for a season by its name, and for some leagues the first match is an all-star or
 prospects event rather than the regular season. Pin each league's 2025-26 regular-season id instead (listed in the
 league's own season feed). The standings prefix clinched teams with a marker (`x - Providence Bruins`); strip it and
-the names resolve, which also gives each team's HockeyTech id.
+the names resolve, which also gives each team's HockeyTech id. A league's table can also carry an exhibition opponent
+from another league (`- Sudbury, Wolves (OHL) -` in the QMJHL's); drop it.
 
 ```python
 SEASON_IDS = {"ahl": 90, "echl": 73, "ohl": 83, "whl": 289, "qmjhl": 211, "ushl": 88}  # 2025-26 regular seasons
@@ -37,6 +38,7 @@ SEASON_IDS = {"ahl": 90, "echl": 73, "ohl": 83, "whl": 289, "qmjhl": 211, "ushl"
 
 def load_standings(league):
     raw = getattr(sdv, f"{league}_standings")(season_id=SEASON_IDS[league])
+    raw = raw.filter(~pl.col("team").str.starts_with("- "))  # an out-of-league exhibition opponent
     table = raw.select(
         pl.lit(league).alias("league"),
         pl.col("team").str.replace(r"^\w+ - ", "").alias("team"),

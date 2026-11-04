@@ -218,6 +218,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- `surface("soccer", pitch_updates=None)` draws the 105 x 68 m defaults, as sdvplotR's `pitch_updates = NULL` does,
+  instead of raising `TypeError` (#100).
+- The ESPN soccer shot map recipe keeps penalties (`Penalty - Scored` / `Penalty - Missed`), and the StatsBomb recipe
+  says why it marks five goals for a 4-2 final: the own goal is its own event type (#101). The HockeyTech tutorial
+  drops the out-of-league exhibition opponent the QMJHL's 2025-26 table carries, so every team resolves (#118).
 - A team's `conference` value now draws its conference's logo: conference and league rows with a mark get
   "conference" aliases for their full name and for every conference name their league's teams carry under their
   `conference_id` (`logo_url("Hockey East Association", "ncaa_mhockey")`, `"Big Ten Conference"` in college
