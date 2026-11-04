@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_sdv_13_0_0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 520.0px;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+
+&lt;/head&gt;
+&lt;body&gt;
+
+
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_sdv_13_0_0&quot; &gt;&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;script&gt;
+
+
+            var map_sdv_13_0_0 = L.map(
+                &quot;map_sdv_13_0_0&quot;,
+                {
+                    center: [36.5, -98.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 4,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+
+
+
+
+            var tile_layer_sdv_13_0_1 = L.tileLayer(
+                &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 18,
+  &quot;maxNativeZoom&quot;: 18,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;Tiles \u0026copy; Esri \u0026mdash; Esri, HERE, Garmin, \u0026copy; OpenStreetMap contributors&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+
+
+            tile_layer_sdv_13_0_1.addTo(map_sdv_13_0_0);
+
+
+            var feature_group_sdv_13_0_2 = L.featureGroup(
+                {
+}
+            );
+
+
+            var marker_sdv_13_0_3 = L.marker(
+                [32.2288054, -110.9488677],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_4 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/574ac129f2698119840f053877acf3b1adac70550cad23fd25131bca9851db36.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_3.bindTooltip(
+                `&lt;div&gt;
+                     Arizona Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_3.setIcon(icon_sdv_13_0_4);
+
+
+            var marker_sdv_13_0_5 = L.marker(
+                [33.4264471, -111.9325005],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_6 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ec/ec7d7d875ad15454aca3b852c85a96ea4678a5e00fb51699da8280904d15d9e0.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_5.bindTooltip(
+                `&lt;div&gt;
+                     Arizona State Sun Devils
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_5.setIcon(icon_sdv_13_0_6);
+
+
+            var marker_sdv_13_0_7 = L.marker(
+                [31.5582015, -97.1156702],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_8 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/73/73c92a75bf6e75e4a354510fccb6463783526b4b32569781890a0cb11a5cd140.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_7.bindTooltip(
+                `&lt;div&gt;
+                     Baylor Bears
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_7.setIcon(icon_sdv_13_0_8);
+
+
+            var marker_sdv_13_0_9 = L.marker(
+                [40.2575347, -111.6545247],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_10 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/33/339721ae35cc53cb1a535d0a31564272c4d6d6f672df4dc6f882dd136ab042d4.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_9.bindTooltip(
+                `&lt;div&gt;
+                     BYU Cougars
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_9.setIcon(icon_sdv_13_0_10);
+
+
+            var marker_sdv_13_0_11 = L.marker(
+                [39.1312495, -84.5161913],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_12 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c057c9a471f23e9ab30fee238816c453725a677275b195818bef4b1dc7bd280.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_11.bindTooltip(
+                `&lt;div&gt;
+                     Cincinnati Bearcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_11.setIcon(icon_sdv_13_0_12);
+
+
+            var marker_sdv_13_0_13 = L.marker(
+                [40.0094746, -105.266905],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_14 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/97/97db6d846462e2fd8a17950e5e0a4e3c37eafdd1b2b1eac585fa9b26481ccc59.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_13.bindTooltip(
+                `&lt;div&gt;
+                     Colorado Buffaloes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_13.setIcon(icon_sdv_13_0_14);
+
+
+            var marker_sdv_13_0_15 = L.marker(
+                [29.7219885, -95.3491623],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_16 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/65/6579900f39561293aab5578e712f5db364842189ecc1578b6937afc78633491f.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_15.bindTooltip(
+                `&lt;div&gt;
+                     Houston Cougars
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_15.setIcon(icon_sdv_13_0_16);
+
+
+            var marker_sdv_13_0_17 = L.marker(
+                [42.0139977, -93.6357716],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_18 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/6b/6b0186c7ef2036530bec07db5b6dd3a5216215a1b1f11481443b4d6c1ed4752d.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_17.bindTooltip(
+                `&lt;div&gt;
+                     Iowa State Cyclones
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_17.setIcon(icon_sdv_13_0_18);
+
+
+            var marker_sdv_13_0_19 = L.marker(
+                [38.9629418, -95.2463686],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_20 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3d/3db6a708ca641833345552c3f103a9c903225fe11b05f16bbf5e062fe97d92da.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_19.bindTooltip(
+                `&lt;div&gt;
+                     Kansas Jayhawks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_19.setIcon(icon_sdv_13_0_20);
+
+
+            var marker_sdv_13_0_21 = L.marker(
+                [39.2020096, -96.5938395],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_22 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f0b0317294dcd5f195bb9900c4218665ee72b6a445bd973cbbca5d3ed775e61.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_21.bindTooltip(
+                `&lt;div&gt;
+                     Kansas State Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_21.setIcon(icon_sdv_13_0_22);
+
+
+            var marker_sdv_13_0_23 = L.marker(
+                [36.125673, -97.066513],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_24 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd8f2516593b6d4fa16b68d2037e9b686d8be1fb6a22a3737099c5783d94778a.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_23.bindTooltip(
+                `&lt;div&gt;
+                     Oklahoma State Cowboys
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_23.setIcon(icon_sdv_13_0_24);
+
+
+            var marker_sdv_13_0_25 = L.marker(
+                [32.7096604, -97.3680835],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_26 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/7b/7b873725193a163188db22fb5c0aa15f6d6abbf6f4f19e414431ad2694f0a768.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_25.bindTooltip(
+                `&lt;div&gt;
+                     TCU Horned Frogs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_25.setIcon(icon_sdv_13_0_26);
+
+
+            var marker_sdv_13_0_27 = L.marker(
+                [33.5910518, -101.8728824],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_28 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0f/0f60e3a4f3c52fc902c2d05ac41d52b13878e907f5acd57558fcc6cc2163d029.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_27.bindTooltip(
+                `&lt;div&gt;
+                     Texas Tech Red Raiders
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_27.setIcon(icon_sdv_13_0_28);
+
+
+            var marker_sdv_13_0_29 = L.marker(
+                [28.6079765, -81.1927233],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_30 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d484d9bb117085111a9576aea0a4c66b7b6c98092f47b4c4446b458f17bee856.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_29.bindTooltip(
+                `&lt;div&gt;
+                     UCF Knights
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_29.setIcon(icon_sdv_13_0_30);
+
+
+            var marker_sdv_13_0_31 = L.marker(
+                [40.7599724, -111.8488255],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_32 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/fb/fbe1e75fdc1b44a88175633052d872450dfdfbbaa310ad55be58e12f8914f40f.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_31.bindTooltip(
+                `&lt;div&gt;
+                     Utah Utes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_31.setIcon(icon_sdv_13_0_32);
+
+
+            var marker_sdv_13_0_33 = L.marker(
+                [39.6502744, -79.9551873],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_13_0_2);
+
+
+        var icon_sdv_13_0_34 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/df/df50d2c4ba5e2b7cd6eed29c66a9273b1d71377b5ba5b7a5ad9d651b62c4311d.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_13_0_33.bindTooltip(
+                `&lt;div&gt;
+                     West Virginia Mountaineers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_13_0_33.setIcon(icon_sdv_13_0_34);
+
+
+            feature_group_sdv_13_0_2.addTo(map_sdv_13_0_0);
+
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
