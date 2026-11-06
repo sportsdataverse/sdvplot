@@ -121,6 +121,7 @@ Generated files are never hand-edited. Change the source, regenerate, and commit
 | `docs/static/img/sdvplot-logo.png` (the hex logo), `sdvplot-logo-readme.png` (its README copy), `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network) | the script asserts the logo's size |
 | `docs/src/pages/CHANGELOG.md` | the `sync-docs-changelog` pre-commit hook (`tools/sync_changelog.py`) copies `CHANGELOG.md` under front matter | `uv run pre-commit run --all-files` |
 | `data-raw/sdvplotr_*.csv` (sdvplotR export) | `R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index afterwards |
+| `data-raw/cfbplotr_names.csv` (cfbplotR export) | `R_ENVIRON_USER=/dev/null Rscript tools/export_cfbplotr.R [path/to/cfbplotR]` | rebuild the index afterwards |
 
 After a `CHANGELOG.md` edit, doctoc can rewrite its TOC after the hook has copied it: run the hooks again until they
 pass, or `test_docs_changelog_mirrors_the_root_changelog` fails.

@@ -1,0 +1,3 @@
+cfbplotR commit data-raw/cfbplotr_names.csv (its data/team_name_mapping.rda and data/logo_ref.rda) was exported from
+(tools/export_cfbplotr.R):
+bbe7483a9c2947802efa91b71f8bad33ebdae68e
