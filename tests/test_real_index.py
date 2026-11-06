@@ -645,10 +645,11 @@ def test_every_conference_and_league_row_draws_a_mark():
 def test_sdvplotr_conference_keys_reach_their_rows_for_marks_only():
     # sdvplotR's abbr_mapping keys whose canon is a conference or league row: 367 (cfb 116, mbb 125, wbb 120, nfl 6),
     # less each row's own key and its case variants, and none names two rows of a league; plus each marked row's full
-    # name and the conference names its league's teams carry (conference_name_aliases)
+    # name and the conference names its league's teams carry (conference_name_aliases), and the curated keys
+    # (data-raw/curated/conference_aliases.csv: cfb's "Big South")
     ca = _index.alias_table().filter(pl.col("id_system") == "conference")
     assert ca.group_by("league").len().sort("league").rows() == [
-        ("aaf", 1), ("cfb", 155), ("cfl", 1), ("mbb", 94), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 36),
+        ("aaf", 1), ("cfb", 156), ("cfl", 1), ("mbb", 94), ("mlb", 3), ("nba", 3), ("ncaa_baseball", 36),
         ("ncaa_mhockey", 10), ("ncaa_softball", 39), ("ncaa_whockey", 7), ("nfl", 3), ("nhl", 11), ("wbb", 89),
         ("wnba", 3),
     ]  # fmt: skip
@@ -773,3 +774,30 @@ def test_soccer_clubs_carry_their_domestic_league_and_competitions():
     with pytest.warns(sdvplot.SdvplotWarning, match="'eng.1'"):
         assert sdvplot.resolve("eng.1", "soccer") is None
     assert sdvplot.suggest("eng.1", "soccer") == []
+
+
+def test_cfbplotr_spellings_and_the_settled_names_resolve():
+    # cfbplotR's team_name_mapping (data-raw/cfbplotr_names.csv) and own_name_wins: "Charlotte" is the 49ers, not
+    # Faith NC's Charlotte Saints (location "Charlotte"); a key another team holds is never taken
+    cfb = {
+        "Charlotte": "2429", "CHARLOTTE": "2429", "UT San Antonio": "2636", "NC St.": "152",
+        "North Carolina State": "152", "Presbyterian College": "2506", "St Francis (PA)": "2598", "VA TECH": "259",
+        "Miami": "2390",
+    }  # fmt: skip
+    assert dict(zip(cfb, sdvplot.resolve(list(cfb), "cfb"), strict=True)) == cfb
+    assert sdvplot.resolve("Charlotte", "cfb", id_system="name") == "2429"
+    # "Big South" is the OVC row (the Big South-OVC Football Association) for cfb marks only; mbb keeps its own row
+    assert resolve_marks(["Big South", "Big South-OVC"], "cfb") == ["OVC", "OVC"]
+    assert resolve_marks("Big South", "mbb") == "Big South"
+    with pytest.warns(sdvplot.SdvplotWarning):
+        assert sdvplot.resolve("Big South", "cfb") is None
+
+
+def test_cfb_teams_carry_their_ncaa_division():
+    t = sdvplot.teams("cfb")
+    counts = dict(t.group_by("division").len().iter_rows())
+    assert set(counts) == {"FBS", "FCS", "DII", "DIII", None} and counts["FBS"] >= 130 and counts["FCS"] >= 120
+    div = dict(t.select("team_id", "division").iter_rows())
+    assert (div["333"], div["2429"], div["2506"], div["3253"]) == ("FBS", "FBS", "FCS", None)
+    assert set(sdvplot.teams("nfl")["division"]) == {None}
+    assert set(sdvplot.teams("mbb")["division"].drop_nulls()) == {"DI"}

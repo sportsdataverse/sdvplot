@@ -33,6 +33,7 @@ SOURCE_RANK: dict[str, int] = {
     "wayback": 4,
     "aaf.com": 5,
     "aaf-strip-crop": 6,
+    "cfbplotr-legacy": 7,  # cfbplotR's college wordmarks (sdv-assets' sportslogos.net exception): after every source
 }
 
 
