@@ -47,13 +47,15 @@ jobs:
       - name: Upload coverage to Codecov
         # one job is enough: py3.13 runs the full suite, image comparisons included
         if: matrix.python == '3.13'
+        # fail_ci_if_error stops the uploader on a failed signature or checksum check (it would otherwise run the
+        # downloaded binary); continue-on-error keeps a Codecov outage from failing the tests
+        continue-on-error: true
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
         with:
           # the org CODECOV_TOKEN; a fork's pull request gets an empty one, which Codecov accepts for forks
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
-          # a Codecov outage must not fail the tests
-          fail_ci_if_error: false
+          fail_ci_if_error: true
       - name: Upload image comparisons (baseline, result, diff) when they fail
         if: failure()
         uses: actions/upload-artifact@v7
