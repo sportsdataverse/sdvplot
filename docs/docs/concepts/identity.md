@@ -86,10 +86,12 @@ The index holds aliases from these id systems. With the default `id_system="auto
 | 20 | `name` | team names, short names and locations, and cfbplotR's `team_name_mapping` spellings |
 
 `sdvplotr` sits after every id system, so it only fills gaps. `name` comes last. A name that `name` or `cfbd` gives
-several teams goes to the one team whose own name (`name` or `short_name`) it is, so another team's location never
-shadows it: `"Charlotte"` is the 49ers, not the Charlotte Saints (Faith NC, located in Charlotte). One that is several
-teams' own name (`"Bethany"`), or no team's (`"New York"`), stays ambiguous. cfbplotR's spellings (the `ARK STATE`,
-`VA TECH` feed forms, `NC St.`, `UT San Antonio`) only fill gaps: one the index already has, for any team, adds nothing.
+several teams, none of them for a season range, goes to the one team whose own name (`name` or `short_name`) it is, so
+another team's location never shadows it: `"Charlotte"` is the 49ers, not the Charlotte Saints (Faith NC, located in
+Charlotte). One that is several teams' own name (`"Bethany"`), or no team's (`"New York"`), stays ambiguous. A
+season-dated alias keeps its range: in a season it covers that also has another team's own-name alias, the value stays
+ambiguous. cfbplotR's spellings (the `ARK STATE`, `VA TECH` feed forms, `NC St.`, `UT San Antonio`) only fill gaps:
+one the index already has, for any team, adds nothing, and one cfbplotR's rows give two teams or no team adds nothing.
 
 Pass `id_system=` to use a single system instead, for example `resolve(values, "mlb", id_system="fangraphs")`. An
 `id_system` or `league` sdvplot does not know raises `InputError` (a `ValueError`), as does a `season` that is not a
