@@ -683,14 +683,15 @@ def cfbplotr_aliases(raw: Path, teams: pl.DataFrame, a: pl.DataFrame) -> pl.Data
             _key("alternate").alias("_key"),
             _key("school").alias("_school"),
         )
+        .with_row_index("_row")
     )
     a = a.filter(pl.col("league").is_in(["cfb", "mbb"]))
-    cols = ["league", "alternate", "_key", "team_id", "_rank"]
+    cols = ["_row", "league", "alternate", "_key", "team_id", "_rank"]
     by_id = c.join(teams.select("league", pl.col("team_id").alias("espn_id")), on=["league", "espn_id"], how="semi")
     by_name = c.join(_first_system(a).rename({"_key": "_school"}), on=["league", "_school"])
     t = pl.concat([by_id.with_columns(pl.col("espn_id").alias("team_id"), _rank=0).select(cols),
                    by_name.with_columns(_rank=1).select(cols)])  # fmt: skip
-    t = t.filter(pl.col("_rank") == pl.col("_rank").min().over("league", "_key"))
+    t = t.filter(pl.col("_rank") == pl.col("_rank").min().over("_row"))  # each row its best match, then the key
     one = t.group_by("league", "_key").agg(pl.col("alternate").min(), pl.col("team_id").unique().sort())
     two = one.filter(pl.col("team_id").list.len() > 1)
     one = one.filter(pl.col("team_id").list.len() == 1).with_columns(pl.col("team_id").list.first())

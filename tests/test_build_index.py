@@ -914,6 +914,8 @@ def test_cfbplotr_spellings_fill_gaps_and_never_take_a_held_key(tmp_path, capsys
         "Hokies,Virginia Tech,P5,259\n"  # held by another team: never taken
         "UTSA Roadrunners,UTSA,hoopR,2636\n"  # a basketball-only school: league mbb
         "Big South,Big South,Conference,\n"  # a conference: not a team alias
+        "VT/ASU,Virginia Tech,P5,259\n"  # two schools, one by its ESPN id and one by its name: neither wins
+        "VT/ASU,Adams State,DII,\n"
         "Nowhere St.,Nowhere State,DIII,\n",  # no team
         encoding="utf-8",
     )
@@ -931,7 +933,8 @@ def test_cfbplotr_spellings_fill_gaps_and_never_take_a_held_key(tmp_path, capsys
         ("cfb", "name", "VA TECH", "259"),
         ("mbb", "name", "UTSA Roadrunners", "2636"),
     ]
-    assert "cfb 'Hokies': cfbplotR 259, held by 7" in capsys.readouterr().out
+    printed = capsys.readouterr().out
+    assert "cfb 'Hokies': cfbplotR 259, held by 7" in printed and "1 cfbplotR gives two teams" in printed
 
 
 def test_division_comes_from_the_groups_subdivision(tmp_path):
