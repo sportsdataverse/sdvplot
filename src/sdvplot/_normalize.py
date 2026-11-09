@@ -12,8 +12,19 @@ from sdvplot import _index
 from sdvplot._errors import InputError
 
 _FLOAT_ID = re.compile(r"-?\d+\.0+")
-# typographic punctuation providers write inconsistently (sdvplotR fold_accents): curly apostrophes, en/em dashes
-_PUNCT = str.maketrans({"\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-"})
+# typographic punctuation providers write inconsistently (sdvplotR fold_accents): curly apostrophes, en/em dashes; and
+# the Latin letters NFKD leaves whole, which providers also write plain (HB Koge, sdvplotR#70):
+# o-slash, ae, oe, d-stroke, eth, l-stroke, thorn, dotless i. Sharp s needs no entry: casefold() makes it "ss"
+_FOLD = str.maketrans(
+    {"\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-"}
+    | dict.fromkeys("\u00f8\u00d8", "o")
+    | dict.fromkeys("\u00e6\u00c6", "ae")
+    | dict.fromkeys("\u0153\u0152", "oe")
+    | dict.fromkeys("\u0111\u0110\u00f0\u00d0", "d")
+    | dict.fromkeys("\u0142\u0141", "l")
+    | dict.fromkeys("\u00fe\u00de", "th")
+    | {"\u0131": "i"}
+)
 
 
 def _is_na(value: Any) -> bool:
@@ -21,8 +32,8 @@ def _is_na(value: Any) -> bool:
 
 
 def norm_value(value: Any) -> str | None:
-    """A team value as a comparison key: trimmed, accents and typographic punctuation folded, case-folded,
-    integral numbers without a decimal point."""
+    """A team value as a comparison key: trimmed, accents, the letters ø æ œ đ ð ł þ ı and typographic punctuation
+    folded, case-folded, integral numbers without a decimal point."""
     if _is_na(value):
         return None
     if isinstance(value, bool):
@@ -36,7 +47,8 @@ def norm_value(value: Any) -> str | None:
         return str(int(f)) if f.is_integer() else str(f)
     s = str(value).strip()
     if not s.isascii():  # "San José State" == "San Jose State": decompose, then drop the combining accents
-        s = "".join(c for c in unicodedata.normalize("NFKD", s.translate(_PUNCT)) if not unicodedata.combining(c))
+        # fold after NFKD, so a letter under an accent (ǿ, ǣ) folds too
+        s = "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c)).translate(_FOLD)
     s = s.casefold()
     if _FLOAT_ID.fullmatch(s):  # "13.0": an id that went through a float before it became text
         s = s.split(".")[0]

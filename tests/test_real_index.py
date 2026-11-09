@@ -805,3 +805,13 @@ def test_cfb_teams_carry_their_ncaa_division():
     assert (div["333"], div["2429"], div["2506"], div["3253"]) == ("FBS", "FBS", "FCS", None)
     assert set(sdvplot.teams("nfl")["division"]) == {None}
     assert set(sdvplot.teams("mbb")["division"].drop_nulls()) == {"DI"}
+
+
+def test_plain_spellings_of_latin_letters_resolve():  # sdvplotR#70: the index holds "HB Køge", providers write "Koge"
+    assert sdvplot.resolve(["HB Koge", "HB Køge", "Brondby IF", "F.C. Kobenhavn"], "soccer") == [
+        "21127",
+        "21127",
+        "575",
+        "909",
+    ]
+    assert sdvplot.resolve("Sherbrooke, Phoenix", "qmjhl") == sdvplot.resolve("Sherbrooke, Phœnix", "qmjhl") == "60"

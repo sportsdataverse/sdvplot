@@ -190,6 +190,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- Team values fold the Latin letters that have no accent to drop: `ø` to `o`, `æ` to `ae`, `œ` to `oe`, `đ` and `ð`
+  to `d`, `ł` to `l`, `þ` to `th` and the dotless `ı` to `i`, upper and lower case, so `resolve("HB Koge", "soccer")`
+  finds HB Køge, as `"Brondby IF"`, `"F.C. Kobenhavn"` and `"Sherbrooke, Phoenix"` (qmjhl) find theirs (sdvplotR#70).
+  `ß` already folded to `ss`. No value that resolved before resolves differently.
 - The team index takes the rest of the archive's 2026-11-03 capture: 50 more soccer clubs (Liga MX Femenil and
   Women's FA Cup sides, Copa del Rey, India's I-League 2 and friendlies; 16 renamed to ESPN's current names), ESPN's
   current names for three women's basketball teams (Central Arkansas Sugar Bears, East Tennessee State Buccaneers,
