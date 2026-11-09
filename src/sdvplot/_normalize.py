@@ -13,7 +13,7 @@ from sdvplot._errors import InputError
 
 _FLOAT_ID = re.compile(r"-?\d+\.0+")
 # typographic punctuation providers write inconsistently (sdvplotR fold_accents): curly apostrophes, en/em dashes; and
-# the Latin letters NFKD leaves whole, which providers also write plain (HB Koge, sdvplotR#70):
+# eight Latin letters NFKD leaves whole, which providers also write plain (HB Koge, sdvplotR#70):
 # o-slash, ae, oe, d-stroke, eth, l-stroke, thorn, dotless i. Sharp s needs no entry: casefold() makes it "ss"
 _FOLD = str.maketrans(
     {"\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-"}

@@ -54,7 +54,7 @@ sdvplot.resolve(["KC", "kc", "Kansas City Chiefs", 12, "12.0"], "nfl")  # ['12',
 ```
 
 Values are compared in one normal form: trimmed, case-folded, with accents and typographic punctuation folded, so
-`"San José State"` matches `"San Jose State"`. The Latin letters with no accent to drop fold too: `ø` to `o`, `æ` to
+`"San José State"` matches `"San Jose State"`. Eight Latin letters with no accent to drop fold too: `ø` to `o`, `æ` to
 `ae`, `œ` to `oe`, `đ` and `ð` to `d`, `ł` to `l`, `þ` to `th` and `ı` to `i` (`ß` is `ss`), so `"Køge"` matches
 `"Koge"` and `"Łódź"` matches `"Lodz"`. Integral numbers lose their decimal point, so `12`, `"12"`, `12.0` and
 `"12.0"` are the same value.
