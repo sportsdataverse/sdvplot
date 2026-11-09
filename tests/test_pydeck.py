@@ -374,6 +374,26 @@ def test_an_unknown_sport_or_league_is_an_input_error():
         sdeck.surface_layer("hockey", "xyz")
 
 
+@pytest.mark.parametrize("missing", ["sportypy", "sportypy.surfaces.lacrosse"])
+def test_a_missing_sportypy_or_sportypy_surface_gives_the_install_hint(monkeypatch, missing):
+    def gone(name, *a, **k):  # no sportypy, or one before 1.2 (no lacrosse module): offline, whatever is installed
+        raise ModuleNotFoundError(f"No module named {missing!r}", name=missing)
+
+    monkeypatch.setattr(sdeck.importlib, "import_module", gone)
+    with pytest.raises(sdvplot.OptionalDependencyError, match=r"surface_layer\(\) needs sportypy 1\.2\.5 or newer"):
+        sdeck.surface_layer("lacrosse", "nll")
+
+
+def test_a_library_sportypy_imports_raises_its_own_error_through_surface_layer(monkeypatch):
+    def gone(name, *a, **k):
+        raise ModuleNotFoundError("No module named 'scipy'", name="scipy")
+
+    monkeypatch.setattr(sdeck.importlib, "import_module", gone)
+    with pytest.raises(ModuleNotFoundError, match="scipy") as info:
+        sdeck.surface_layer("hockey", "nhl")
+    assert not isinstance(info.value, sdvplot.OptionalDependencyError)
+
+
 def test_deck_fits_an_orthographic_view_to_a_surface_and_draws_the_marks_in_its_frame(shared_manifest):  # noqa: F811
     pytest.importorskip("sportypy")
     rink = sdeck.surface_layer("hockey", "nhl")
