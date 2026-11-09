@@ -881,6 +881,8 @@ def test_a_teams_own_name_wins_over_another_teams_location():
         ("cfb", "2429", "Charlotte 49ers", "Charlotte"), ("cfb", "3253", "Charlotte Saints", "Faith NC"),
         ("cfb", "1", "Bethany Bison", "Bethany"), ("cfb", "2", "Bethany Swedes", "Bethany"),
         ("ncaa_softball", "1285", "Wofford Terriers", "Wofford"), ("ncaa_softball", "620", "Wofford Terriers", None),
+        ("ncaa_baseball", "1", "San José State Spartans", "San José St"),  # one school, spelled two ways
+        ("ncaa_baseball", "2", "SAN JOSE STATE SPARTANS", None),
     ])  # fmt: skip
     a = _aliases([
         ("cfb", "name", "Charlotte", "2429"), ("cfb", "name", "Charlotte", "3253"),  # 3253's location
@@ -889,6 +891,7 @@ def test_a_teams_own_name_wins_over_another_teams_location():
         ("cfb", "espn_abbr", "CLT", "2429"), ("cfb", "espn_abbr", "CLT", "3253"),  # not a name system: untouched
         ("cfb", "name", "Bethany", "1"), ("cfb", "name", "Bethany", "2"),  # both teams' own name: stays ambiguous
         ("ncaa_softball", "name", "Wofford", "1285"), ("ncaa_softball", "name", "Wofford", "620"),  # one school
+        ("ncaa_baseball", "name", "San Jose St", "1"), ("ncaa_baseball", "name", "San Jose St", "2"),  # still one
     ])  # fmt: skip
     out = bi.own_name_wins(a, teams)
     gone = a.join(out, on=list(_index.ALIAS_SCHEMA), how="anti", nulls_equal=True)

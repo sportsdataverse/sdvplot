@@ -628,7 +628,7 @@ def own_name_wins(a: pl.DataFrame, teams: pl.DataFrame) -> pl.DataFrame:
         [teams.select("league", "team_id", _key(c).alias("_key")) for c in ("name", "short_name")]
     ).drop_nulls()
     owner = cands.join(own.unique(), on=["league", "team_id", "_key"], how="semi").filter(pl.len().over(k) == 1)
-    full = teams.select("league", "team_id", "name")
+    full = teams.select("league", "team_id", _key("name").alias("name"))  # "WOFFORD TERRIERS" is Wofford Terriers
     losers = (
         cands.join(owner.select(*k, pl.col("team_id").alias("_owner")), on=k)
         .filter(pl.col("team_id") != pl.col("_owner"))
