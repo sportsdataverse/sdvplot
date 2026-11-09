@@ -1,4 +1,16 @@
 level,league,source,entity_id,entity_name,url
+conference,cfb,cfbplotr-legacy,1,Atlantic Coast Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/atlantic_coast_conference_logo_primary_20054308.png
+conference,cfb,cfbplotr-legacy,12,Conference USA,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/conference_usa_logo_primary_2013_sportslogosnet-9872.png
+conference,cfb,cfbplotr-legacy,15,Mid-American Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/mid-american_conference_logo_secondary_20087173.png
+conference,cfb,cfbplotr-legacy,151,American Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/american_athletic_conference_logo_wordmark_2017_sportslogosnet-5829.png
+conference,cfb,cfbplotr-legacy,17,Mountain West Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/mountain_west_conference_logo_wordmark_2011_sportslogosnet-7585.png
+conference,cfb,cfbplotr-legacy,24,Mid-Eastern Athletic Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/mid-eastern_athletic_conference_logo_primary_2018_sportslogosnet-3191.png
+conference,cfb,cfbplotr-legacy,31,Southwestern Athletic Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/southwestern_athletic_conferene_logo_alternate_2001_sportslogosnet-7105.png
+conference,cfb,cfbplotr-legacy,37,Sun Belt Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/sun_belt_conference_logo_wordmark_2020_sportslogosnet-7484.png
+conference,cfb,cfbplotr-legacy,4,Big 12 Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/big_12_conference_logo_alternate_20185871.png
+conference,cfb,cfbplotr-legacy,5,Big Ten Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/big_ten_conference_logo_secondary_20115565.png
+conference,cfb,cfbplotr-legacy,8,Southeastern Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/southeastern_conference_logo_wordmark_20088299.png
+conference,cfb,cfbplotr-legacy,9,Pac-12 Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/pacific-12_conference_logo_wordmark_20117485.png
 conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500-dark/1.png
 conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/1.png
 conference,cfb,espn,1,Atlantic Coast Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/acc.png
@@ -107,6 +119,10 @@ conference,cfb,wayback,165,Great Midwest Athletic Conference,https://web.archive
 conference,cfb,wayback,166,New England Women's and Men's Athletic Conference,https://web.archive.org/web/20261016161449id_/https://newmacsports.com/images/logos/site/site.png
 conference,cfb,wayback,178,Landmark Conference,https://web.archive.org/web/20260323122958id_/https://dbukjj6eu5tsf.cloudfront.net/landmarkconference.org/images/responsive_2021/main/landmark_on-dark.svg
 conference,cfb,wayback,187,Conference Carolinas,https://web.archive.org/web/20261005015639id_/https://conferencecarolinas.com/images/logos/site/site.png
+conference,mbb,cfbplotr-legacy,29,West Coast Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/west_coast_conference_logo_primary_2019_sportslogosnet-5117.png
+conference,mbb,cfbplotr-legacy,3,Atlantic 10 Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/atlantic_10_conference_logo_primary_20145324.png
+conference,mbb,cfbplotr-legacy,4,Big East Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/big_east_conference_logo_primary_20051240.png
+conference,mbb,cfbplotr-legacy,46,Atlantic Sun Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/3092_atlantic_sun_conference-primary-2016.png
 conference,mbb,espn,1,America East Conference,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/america_east.png
 conference,mbb,espn,10,Coastal Athletic Association,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/coastal.png
 conference,mbb,espn,11,Conference USA,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/conference_usa.png
@@ -149,6 +165,7 @@ conference,nba,espn,East,East,https://a.espncdn.com/i/teamlogos/nba/500-dark/eas
 conference,nba,espn,East,East,https://a.espncdn.com/i/teamlogos/nba/500/east.png
 conference,nba,espn,West,West,https://a.espncdn.com/i/teamlogos/nba/500-dark/west.png
 conference,nba,espn,West,West,https://a.espncdn.com/i/teamlogos/nba/500/west.png
+conference,ncaa,cfbplotr-legacy,wac,Western Athletic Conference,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/western_athletic_conference_logo_secondary_2014_sportslogosnet-1157.png
 conference,ncaa,espn,caa,caa,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/caa.png
 conference,ncaa,espn,colonial,colonial,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/colonial.png
 conference,ncaa,espn,fbs_independents,fbs_independents,https://a.espncdn.com/i/teamlogos/ncaa_conf/500/fbs_independents.png
@@ -294,6 +311,7 @@ league,mlb,mlbstatic,1,MLB,https://www.mlbstatic.com/team-logos/league-on-dark/1
 league,mlb,mlbstatic,1,MLB,https://www.mlbstatic.com/team-logos/league-on-light/1.svg
 league,nba,espn,NBA,NBA,https://a.espncdn.com/i/teamlogos/leagues/500-dark/nba.png
 league,nba,espn,NBA,NBA,https://a.espncdn.com/i/teamlogos/leagues/500/nba.png
+league,ncaa,cfbplotr-legacy,NCAA,NCAA,https://raw.githubusercontent.com/sportsdataverse/cfbplotR/bbe7483a9c2947802efa91b71f8bad33ebdae68e/data-raw/wordmarks/national_collegiate_athletic_association_logo_secondary_2021_sportslogosnet-4441.png
 league,ncaa,espn,NCAA,NCAA,https://a.espncdn.com/i/espn/misc_logos/500-dark/ncaa.png
 league,ncaa,espn,NCAA,NCAA,https://a.espncdn.com/i/espn/misc_logos/500/ncaa.png
 league,ncaa,espn,NCAA baseball,NCAA baseball,https://a.espncdn.com/i/espn/misc_logos/500/ncaa_baseball.png

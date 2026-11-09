@@ -63,6 +63,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   by their ESPN ids, and its conference and league marks, filed under ESPN's keys, to the rows the curated ESPN lines
   name; the source names no team and adds none (`MARKS_ONLY_SOURCES` in `tools/fetch_sources.py`), and ranks after
   every other source.
+- College football wordmarks: the index now carries the 362 `cfbplotr-legacy` marks the 2026-11-09 sdv-assets
+  capture archived (`data-raw/manifest_marks.csv`, `manifest_conferences.csv`; index `e04c50e5682e`), so
+  `marks(..., mark_type="wordmark")` and `logo_url(..., mark_type="wordmark")` find a wordmark for most FBS and FCS
+  teams, and the conferences cfbplotR drew get its marks after ESPN's.
 
 - Fox, Yahoo, CBS, 247Sports, On3, KenPom and Torvik team ids in the index, from sdv-reference-data's
   `{league}_team_aliases` tables in the sportsdataverse-data `{league}_groups` releases (NFL, college football, NBA,
