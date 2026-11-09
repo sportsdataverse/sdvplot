@@ -1,19 +1,26 @@
 # **sdvplot** <a href='https://sdvplot.sportsdataverse.org/'><img src='https://raw.githubusercontent.com/sportsdataverse/sdvplot/main/docs/static/img/sdvplot-logo-readme.png' align="right" width="25%" min-width="120px" alt="sdvplot hex logo" /></a>
 
+Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive.
+
+<!-- badges: start -->
 [![PyPI](https://img.shields.io/pypi/v/sdvplot?label=sdvplot&logo=python&style=for-the-badge)](https://pypi.org/project/sdvplot/)
 [![Python](https://img.shields.io/pypi/pyversions/sdvplot?logo=python&logoColor=white&style=for-the-badge)](https://pypi.org/project/sdvplot/)
-[![npm](https://img.shields.io/npm/v/@sportsdataverse/sdvplot?label=sdvplot-js&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@sportsdataverse/sdvplot)
 [![Downloads](https://img.shields.io/pypi/dm/sdvplot?style=for-the-badge)](https://pypistats.org/packages/sdvplot)
 [![Total downloads](https://img.shields.io/pepy/dt/sdvplot?style=for-the-badge)](https://pepy.tech/projects/sdvplot)
-[![tests](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/tests.yml?branch=main&label=tests&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/tests.yml)
-[![quality](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/quality.yml?branch=main&label=quality&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/quality.yml)
+[![npm (sdvplot-js)](https://img.shields.io/npm/v/@sportsdataverse/sdvplot?label=sdvplot-js&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@sportsdataverse/sdvplot)
+[![Dev version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsportsdataverse%2Fsdvplot%2Fmain%2Fpyproject.toml&query=%24.project.version&label=dev&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/)
+[![tests](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/tests.yml?branch=main&label=tests&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/tests.yml?query=branch%3Amain)
+[![quality](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/quality.yml?branch=main&label=quality&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/quality.yml?query=branch%3Amain)
+[![drift](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/drift.yml?branch=main&label=drift&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/drift.yml?query=branch%3Amain)
 [![docs](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/docs-deploy.yml?branch=main&label=docs&logo=github&style=for-the-badge)](https://sdvplot.sportsdataverse.org)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg?style=for-the-badge&logo=github)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![License](https://img.shields.io/pypi/l/sdvplot?style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)
 [![Contributors](https://img.shields.io/github/contributors/sportsdataverse/sdvplot?style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/graphs/contributors)
-[![Twitter Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
+[![GitHub stars](https://img.shields.io/github/stars/sportsdataverse/sdvplot?logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot)
+[![X Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
+<!-- badges: end -->
 
-Team logos, wordmarks, headshots and colors for Python plots and tables, from the SportsDataverse logo archive. It
+sdvplot
 resolves team abbreviations, names and provider ids across 49 leagues and picks the right era's mark for a season. Colors
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
@@ -181,17 +188,6 @@ The [changelog](https://github.com/sportsdataverse/sdvplot/blob/main/CHANGELOG.m
 - `SDVPLOT_CACHE_TTL`: cache lifetime in days (default 7).
 - `SDVPLOT_LIVE_TESTS=1`: enable the network tests.
 
-<!-- cheatsheet-section -->
-## **Cheat sheet**
-
-A printable four-page reference for **sdvplot**: team identity and colours, the nine plotting adapters, the
-great_tables toolkit, surfaces and coordinates, in four colour themes, light and dark.
-
-📄 **[Download the sdvplot cheat sheet (PDF)](https://sportsdataverse.org/cheatsheets/sdvplot.pdf)**
-
-Browse the other SportsDataverse cheat sheets at
-**[sportsdataverse.org/cheatsheets](https://sportsdataverse.org/cheatsheets)**.
-
 ## **Logos, trademarks and data**
 
 Team names, logos, wordmarks and player headshots are trademarks or copyrighted works of their respective leagues,
@@ -220,10 +216,10 @@ See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 
 ## **Follow the [SportsDataverse](https://x.com/SportsDataverse) on X and star this repo**
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
-[![GitHub stars](https://img.shields.io/github/stars/sportsdataverse/sdvplot.svg?color=eee&logo=github&style=for-the-badge&label=Star%20sdvplot&maxAge=2592000)](https://github.com/sportsdataverse/sdvplot/stargazers/)
+[![X Follow](https://img.shields.io/twitter/follow/SportsDataverse?color=blue&label=%40SportsDataverse&logo=x&style=for-the-badge)](https://x.com/SportsDataverse)
+[![GitHub stars](https://img.shields.io/github/stars/sportsdataverse/sdvplot.svg?color=eee&logo=github&style=for-the-badge&label=Star%20sdvplot&maxAge=2592000)](https://github.com/sportsdataverse/sdvplot)
 
-<a href="https://github.com/sportsdataverse/sdvplot/stargazers">
+<a href="https://github.com/sportsdataverse/sdvplot">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history-dark.svg">
     <img alt="Star history of sportsdataverse/sdvplot" src="https://raw.githubusercontent.com/sportsdataverse/sdvplot/star-history/star-history.png" width="600">
@@ -235,6 +231,21 @@ See the full ecosystem at [sportsdataverse.org](https://sportsdataverse.org/).
 - [Saiem Gilani](https://x.com/saiemgilani)
   <a href="https://x.com/saiemgilani" target="blank"><img src="https://img.shields.io/twitter/follow/saiemgilani?color=blue&label=%40saiemgilani&logo=x&style=for-the-badge" alt="@saiemgilani" /></a>
   <a href="https://github.com/saiemgilani" target="blank"><img src="https://img.shields.io/github/followers/saiemgilani?color=eee&logo=Github&style=for-the-badge" alt="@saiemgilani" /></a>
+
+<!-- cheatsheet-section -->
+## **Cheat sheet**
+
+A printable four-page reference for **sdvplot**: team identity and colours, the nine plotting adapters, the
+great_tables toolkit, surfaces and coordinates, in four colour themes, light and dark.
+
+📄 **[Download the sdvplot cheat sheet (PDF)](https://sportsdataverse.org/cheatsheets/sdvplot.pdf)**
+
+Browse the other SportsDataverse cheat sheets at
+**[sportsdataverse.org/cheatsheets](https://sportsdataverse.org/cheatsheets)**.
+
+## **Code of Conduct**
+
+Please note that the sdvplot project is released with a [Contributor Code of Conduct](https://github.com/sportsdataverse/sdvplot/blob/main/CODE_OF_CONDUCT.md). By contributing to this project, you agree to abide by its terms.
 
 ## **Citations**
 
@@ -250,3 +261,7 @@ BibTeX Citation
   year = {2026}
 }
 ```
+
+## **License**
+
+This package is released under the [MIT License](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE).
