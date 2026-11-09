@@ -563,7 +563,7 @@ def surface_layer(
     Raises:
         InputError: (a ValueError) If sportypy has no surface for ``sport``, no ``league`` for it, or ``tolerance`` is
             negative.
-        OptionalDependencyError: If sportypy 1.2 or newer (the surfaces extra) is not installed.
+        OptionalDependencyError: If sportypy 1.2.5 or newer (the surfaces extra) is not installed.
 
     Example:
         ::
