@@ -566,7 +566,9 @@ def test_conference_rows_are_sdvplotrs_opt_in_and_never_teams():
     ca = _index.alias_table().join(conf.select("league", "team_id"), on=["league", "team_id"], how="semi")
     assert set(ca["id_system"]) == {"mark", "conference"}
     marks = ca.filter(pl.col("id_system") == "mark")
-    assert marks.height == 251 and marks.select("league", "team_id").unique().height == conf.height  # MLB: 2 sources
+    assert (
+        marks.height == 283 and marks.select("league", "team_id").unique().height == conf.height
+    )  # MLB: 2; +32 cfbplotr
     with pytest.warns(sdvplot.SdvplotWarning, match="'SEC'"):
         assert sdvplot.resolve("SEC", "cfb") is None
     assert sdvplot.resolve("MAC", "cfb") == "2359" and "SEC" not in sdvplot.palette("cfb")
@@ -608,8 +610,10 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     key = dict(keys.rows())
     assert len(key) == 247
     # ESPN files one conference logo under each league with its own group id; the row names its own league's
-    assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == (["conference:cfb:espn:8"], ["conference:mbb:espn:23"], ["conference:wbb:espn:23"])  # fmt: skip
-    assert key["cfb/WAC"] == key["mbb/WAC"] == ["conference:ncaa:espn:wac"]  # filed once, under "ncaa"
+    assert (key["cfb/SEC"], key["mbb/SEC"], key["wbb/SEC"]) == (["conference:cfb:cfbplotr-legacy:8", "conference:cfb:espn:8"], ["conference:mbb:espn:23"], ["conference:wbb:espn:23"])  # fmt: skip
+    assert (
+        key["cfb/WAC"] == key["mbb/WAC"] == ["conference:ncaa:cfbplotr-legacy:wac", "conference:ncaa:espn:wac"]
+    )  # filed once, under "ncaa"
     assert (key["nfl/AFC"], key["nfl/NFL"]) == (
         ["conference:nfl:espn:AFC"],
         ["league:nfl:espn:NFL"],
@@ -618,7 +622,7 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     assert key["nhl/NHL"] == ["league:nhl:espn:NHL", "league:nhl:nhl:99"]
     assert key["nba/East"] == ["conference:nba:espn:East"] and key["wnba/East"] == ["conference:wnba:espn:East"]
     assert key["nhl/Metropolitan"] == ["division:nhl:nhl:88"]
-    assert key["ncaa_softball/NCAA"] == key["cfb/NCAA"] == ["league:ncaa:espn:NCAA"]
+    assert key["ncaa_softball/NCAA"] == key["cfb/NCAA"] == ["league:ncaa:cfbplotr-legacy:NCAA", "league:ncaa:espn:NCAA"]
     assert ca["value"].str.contains(r"^(conference|league|division):[a-z_]+:[a-z.-]+:").all()  # cfbplotr-legacy too
     # the 2024 All-Star Game's captains' teams (the NHL files them as division marks 7801-7804) are dated 2024
     dated = ca.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
