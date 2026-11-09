@@ -265,7 +265,19 @@ def test_matches_sdvplotr_on_a_grid_of_every_provider():
     keys = ["provider", "pitch_length", "pitch_width"]
     # Non-vacuity: a regenerated oracle that dropped a provider group or the ESPN (0, 0) row would otherwise pass.
     assert theirs.height == 3515
-    assert theirs.select(keys).unique().height == 11
+    assert set(theirs.select(keys).unique().rows()) == {
+        ("espn", None, None),
+        ("impect", None, None),
+        ("metrica", 105.0, 68.0),
+        ("opta", None, None),
+        ("secondspectrum", 100.0, 64.0),
+        ("skillcorner", 105.0, 68.0),
+        ("statsbomb", None, None),
+        ("tracab", 100.0, 64.0),
+        ("tracab", 105.0, 68.0),
+        ("uefa", None, None),
+        ("wyscout", None, None),
+    }
     assert theirs.filter(pl.col("provider") == "espn")["pitch_x"].null_count() >= 1
     for (provider, length, width), group in theirs.group_by(keys, maintain_order=True):
         sizes = {} if length is None else {"pitch_length": length, "pitch_width": width}
