@@ -25,8 +25,8 @@ lf <- function(path, lines) {
 }
 lf(file.path("data-raw", "cfbplotr_names.csv"), capture.output(write.csv(d, row.names = FALSE, na = "")))
 message("data-raw/cfbplotr_names.csv: ", nrow(d), " rows")
-commit <- system2("git", c("-C", src, "rev-parse", "HEAD"), stdout = TRUE)
-dirty <- length(system2("git", c("-C", src, "status", "--porcelain", "--", "data"), stdout = TRUE)) > 0
+commit <- system2("git", c("-C", shQuote(src), "rev-parse", "HEAD"), stdout = TRUE)
+dirty <- length(system2("git", c("-C", shQuote(src), "status", "--porcelain", "--", "data"), stdout = TRUE)) > 0
 lf(file.path("data-raw", "cfbplotr_commit.txt"), c(
   "cfbplotR commit data-raw/cfbplotr_names.csv (its data/team_name_mapping.rda and data/logo_ref.rda) was exported from",
   "(tools/export_cfbplotr.R):",

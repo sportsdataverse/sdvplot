@@ -41,8 +41,8 @@ write(lh[order(lh$sport, lh$key, lh$season_from, lh$variant, method = "radix"), 
 lr <- e$logo_ref[e$logo_ref$type == "team", c("sport", "espn_team_id", "team_abbr", "color1", "color2", "color_source")]
 write(lr[order(lr$sport, as.integer(lr$espn_team_id), method = "radix"), ],
       file.path("tests", "fixtures", "sdvplotr_team_colors.csv"))
-commit <- system2("git", c("-C", src, "rev-parse", "HEAD"), stdout = TRUE)
-dirty <- length(system2("git", c("-C", src, "status", "--porcelain", "--", "R", "data-raw"), stdout = TRUE)) > 0
+commit <- system2("git", c("-C", shQuote(src), "rev-parse", "HEAD"), stdout = TRUE)
+dirty <- length(system2("git", c("-C", shQuote(src), "status", "--porcelain", "--", "R", "data-raw"), stdout = TRUE)) > 0
 lf(file.path("data-raw", "sdvplotr_commit.txt"), c(
   "sdvplotR commit the data-raw/sdvplotr_*.csv snapshots and the tests/fixtures/sdvplotr_logo_history.csv and",
   "sdvplotr_team_colors.csv fixtures were exported from",
