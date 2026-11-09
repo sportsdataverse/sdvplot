@@ -1,6 +1,6 @@
 {
   "about": "Shared fixture of sdvplot-js ./deckgl and sdvplot (Python) sdvplot.pydeck: both build these layer props from these rows. Never hand-edit; regenerate with sdvplot-js tools/oracle/deckgl.ts and copy the bytes into both repos.",
-  "generated_by": "sdvplot-js tools/oracle/deckgl.ts, sdvplot index 1c025b69f8cf",
+  "generated_by": "sdvplot-js tools/oracle/deckgl.ts, sdvplot index e04c50e5682e",
   "warnings": [],
   "inputs": {
     "nhl_shots": {
