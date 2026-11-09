@@ -12,6 +12,7 @@ Team logos, wordmarks, headshots and colors for Python plots and tables, from th
 [![tests](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/tests.yml?branch=main&label=tests&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/tests.yml?query=branch%3Amain)
 [![quality](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/quality.yml?branch=main&label=quality&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/quality.yml?query=branch%3Amain)
 [![drift](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/drift.yml?branch=main&label=drift&logo=github&style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/actions/workflows/drift.yml?query=branch%3Amain)
+[![Codecov](https://img.shields.io/codecov/c/github/sportsdataverse/sdvplot?logo=codecov&style=for-the-badge)](https://app.codecov.io/gh/sportsdataverse/sdvplot)
 [![docs](https://img.shields.io/github/actions/workflow/status/sportsdataverse/sdvplot/docs-deploy.yml?branch=main&label=docs&logo=github&style=for-the-badge)](https://sdvplot.sportsdataverse.org)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg?style=for-the-badge&logo=github)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://github.com/sportsdataverse/sdvplot/blob/main/LICENSE)

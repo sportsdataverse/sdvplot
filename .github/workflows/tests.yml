@@ -43,7 +43,17 @@ jobs:
           SDVPLOT_RENDER_TESTS: "1"   # ubuntu-latest ships Chrome: a render test that cannot render fails
         # The image baselines are rendered with the newest matplotlib, which py3.13 resolves. py3.10 resolves an older
         # matplotlib (3.10.x) whose image-edge antialiasing differs, so only the py3.13 job compares images.
-        run: uv run --frozen pytest -q --maxfail=10 --cov=sdvplot --cov-branch --cov-report=term-missing:skip-covered ${{ matrix.python == '3.13' && '--mpl --mpl-results-path=mpl-results' || '' }}
+        run: uv run --frozen pytest -q --maxfail=10 --cov=sdvplot --cov-branch --cov-report=term-missing:skip-covered --cov-report=xml ${{ matrix.python == '3.13' && '--mpl --mpl-results-path=mpl-results' || '' }}
+      - name: Upload coverage to Codecov
+        # one job is enough: py3.13 runs the full suite, image comparisons included
+        if: matrix.python == '3.13'
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
+        with:
+          # the org CODECOV_TOKEN; a fork's pull request gets an empty one, which Codecov accepts for forks
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          # a Codecov outage must not fail the tests
+          fail_ci_if_error: false
       - name: Upload image comparisons (baseline, result, diff) when they fail
         if: failure()
         uses: actions/upload-artifact@v7
