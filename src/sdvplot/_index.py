@@ -31,6 +31,7 @@ def _team_schema() -> dict[str, pl.DataType]:
         "color_primary": pl.String(),
         "color_secondary": pl.String(),
         "color_source": pl.String(),
+        "division": pl.String(),  # last: sdvplotR and sdvplot-js select the columns they know by name
     }
 
 
@@ -185,11 +186,15 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,
-        ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary`` and ``color_source``:
-        "nflverse", "espn" or "openf1" (published colors), "logo" (derived from the team's archived logo, where no
-        source publishes any), "cbbplotR" (a conference row's) or "fallback" (a placeholder). In ``soccer``, one pool
-        of ESPN club ids, ``conference_id`` and ``conference`` are a club's domestic league (ESPN's slug and name:
-        "eng.1", "English Premier League"), null for a national team (``program`` "national").
+        ``program``, ``conference_id``, ``conference``, ``color_primary``, ``color_secondary``, ``color_source``
+        ("nflverse", "espn" or "openf1": published colors; "logo": derived from the team's archived logo, where no
+        source publishes any; "cbbplotR": a conference row's; "fallback": a placeholder) and ``division``. In
+        ``soccer``, one pool of ESPN club ids, ``conference_id`` and ``conference`` are a club's domestic league (ESPN's
+        slug and name: "eng.1", "English Premier League"), null for a national team (``program`` "national").
+        ``division`` is a college team's NCAA division in its latest season in ESPN's groups: "FBS", "FCS", "DII" or
+        "DIII" in ``cfb``, "DI", "DII" or "DIII" in the other college leagues; null for a team with no NCAA division
+        there (NAIA, a dropped program), a pro team and a conference or league row. cfbplotR's P5/G5 split is a
+        conference grouping that changes (now the Power Four), so it is not a column: take it from ``conference_id``.
 
     Raises:
         InputError: (a ValueError) If ``league`` is given and is not a known league key.
@@ -200,7 +205,7 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
             import polars as pl
             import sdvplot
 
-            sdvplot.teams("nfl").shape   # (32, 12)
+            sdvplot.teams("nfl").shape   # (32, 13)
             sdvplot.teams("cfb", include_conferences=True).filter(pl.col("program") == "conference")["abbr"]
 
     See Also:

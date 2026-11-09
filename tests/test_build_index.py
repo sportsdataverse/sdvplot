@@ -864,3 +864,123 @@ def test_provider_aliases_open_the_source_seasons_and_drop_overlaps():
     assert sorted(got.select("value", "team_id", "valid_from", "valid_to").rows()) == [
         ("1611661319", "15", None, 2002), ("1611661319", "17", 2003, None), ("LVA", "17", None, None)
     ]  # fmt: skip
+
+
+def _aliases(rows):
+    return pl.DataFrame(
+        [(*r, None, None) if len(r) == 4 else r for r in rows], schema=_index.ALIAS_SCHEMA, orient="row"
+    )
+
+
+def _teams(rows):
+    return _text(rows, ["league", "team_id", "name", "short_name"])
+
+
+def test_a_teams_own_name_wins_over_another_teams_location():
+    teams = _teams([
+        ("cfb", "2429", "Charlotte 49ers", "Charlotte"), ("cfb", "3253", "Charlotte Saints", "Faith NC"),
+        ("cfb", "1", "Bethany Bison", "Bethany"), ("cfb", "2", "Bethany Swedes", "Bethany"),
+        ("ncaa_softball", "1285", "Wofford Terriers", "Wofford"), ("ncaa_softball", "620", "Wofford Terriers", None),
+        ("ncaa_baseball", "1", "San José State Spartans", "San José St"),  # one school, spelled two ways
+        ("ncaa_baseball", "2", "SAN JOSE STATE SPARTANS", None),
+    ])  # fmt: skip
+    a = _aliases([
+        ("cfb", "name", "Charlotte", "2429"), ("cfb", "name", "Charlotte", "3253"),  # 3253's location
+        ("cfb", "cfbd", "Charlotte", "2429"), ("cfb", "cfbd", "Charlotte", "3253"),  # CFBD's school for both
+        ("cfb", "name", "Charlotte", "3253", 1990, 1995),  # dated: never competes, kept
+        ("cfb", "espn_abbr", "CLT", "2429"), ("cfb", "espn_abbr", "CLT", "3253"),  # not a name system: untouched
+        ("cfb", "name", "Bethany", "1"), ("cfb", "name", "Bethany", "2"),  # both teams' own name: stays ambiguous
+        ("ncaa_softball", "name", "Wofford", "1285"), ("ncaa_softball", "name", "Wofford", "620"),  # one school
+        ("ncaa_baseball", "name", "San Jose St", "1"), ("ncaa_baseball", "name", "San Jose St", "2"),  # still one
+    ])  # fmt: skip
+    out = bi.own_name_wins(a, teams)
+    gone = a.join(out, on=list(_index.ALIAS_SCHEMA), how="anti", nulls_equal=True)
+    assert sorted(gone.select("id_system", "value", "team_id").rows()) == [
+        ("cfbd", "Charlotte", "3253"),
+        ("name", "Charlotte", "3253"),
+    ]
+    assert out.height == a.height - 2
+
+
+def test_cfbplotr_spellings_fill_gaps_and_never_take_a_held_key(tmp_path, capsys):
+    raw = tmp_path / "data-raw"
+    raw.mkdir()
+    (raw / "cfbplotr_names.csv").write_text(
+        "alternate,school,type,espn_id\n"
+        "VA TECH,Virginia Tech,P5,259\n"  # by the ESPN id in cfbplotR's logo URL
+        "Adams St.,Adams State,DII,\n"  # no ESPN logo: the team the school's name resolves to
+        "Virginia Tech,Virginia Tech,P5,259\n"  # a key the index already has for that team: nothing new
+        "LIU,LIU,FCS,112358\n"  # 112358 is no index team; the school's name resolves to 2341, which holds LIU
+        "Hokies,Virginia Tech,P5,259\n"  # held by another team: never taken
+        "UTSA Roadrunners,UTSA,hoopR,2636\n"  # a basketball-only school: league mbb
+        "Big South,Big South,Conference,\n"  # a conference: not a team alias
+        "VT/ASU,Virginia Tech,P5,259\n"  # two schools, one by its ESPN id and one by its name: neither wins
+        "VT/ASU,Adams State,DII,\n"
+        "Old Dom.,Old Dominion,FCS,\n"  # a name two teams held: resolve() reads today's holder, so does the build
+        "Nowhere St.,Nowhere State,DIII,\n",  # no team
+        encoding="utf-8",
+    )
+    teams = _text(
+        [("cfb", "259"), ("cfb", "2341"), ("cfb", "99"), ("cfb", "7"), ("cfb", "5"), ("cfb", "6"), ("mbb", "2636")],
+        ["league", "team_id"],
+    )
+    a = _aliases([
+        ("cfb", "name", "Virginia Tech", "259"), ("cfb", "name", "Adams State", "99"), ("cfb", "cfbd", "LIU", "2341"),
+        ("cfb", "name", "Hokies", "7"),
+        ("cfb", "name", "Old Dominion", "5", 1990, 2000), ("cfb", "name", "Old Dominion", "6", 2001, 2025),
+    ])  # fmt: skip
+    out = bi.cfbplotr_aliases(raw, teams, a)
+    assert out.schema == pl.Schema(_index.ALIAS_SCHEMA)
+    assert sorted(out.select("league", "id_system", "value", "team_id").rows()) == [
+        ("cfb", "name", "Adams St.", "99"),
+        ("cfb", "name", "Old Dom.", "6"),
+        ("cfb", "name", "VA TECH", "259"),
+        ("mbb", "name", "UTSA Roadrunners", "2636"),
+    ]
+    printed = capsys.readouterr().out
+    assert "cfb 'Hokies': cfbplotR 259, held by 7" in printed and "1 cfbplotR gives two teams" in printed
+
+
+def test_division_comes_from_the_groups_subdivision(tmp_path):
+    raw = _raw(tmp_path)
+    assert bi.groups_latest(raw)["division"].to_list() == [None]  # a file from before the column
+    (raw / "groups_latest.csv").write_text(
+        "league,team_id,season,conference_id,conference,subdivision_id\nnfl,13,2026,nfl:afc-west,AFC West,\n"
+        "cfb,1,2026,cfb:sec,SEC,cfb:fbs\ncfb,2,2026,cfb:ovc,OVC,cfb:fcs\ncfb,3,2025,cfb:gliac,GLIAC,cfb:d2\n"
+        "mbb,4,2026,mbb:sec,SEC,mbb:d1\ncfb,5,2026,cfb:x,X,cfb:naia\n",
+        encoding="utf-8",
+    )
+    assert bi.groups_latest(raw)["division"].to_list() == [None, "FBS", "FCS", "DII", "DI", None]
+    teams, _, _ = bi.build(raw)
+    assert teams.columns[-1] == "division" and teams["division"].is_null().all()  # the fixture's teams: none in cfb
+
+
+def test_a_marks_only_source_keys_team_and_conference_marks_by_espn_ids(tmp_path):
+    # cfbplotr-legacy (fetch_sources.MARKS_ONLY_SOURCES): a team wordmark keyed by the ESPN id maps to the team, and a
+    # conference mark filed under ESPN's key follows the curated ESPN line to the AFC row
+    raw = _raw(tmp_path)
+    with (raw / "manifest_marks.csv").open("a", encoding="utf-8", newline="") as f:
+        f.write("nfl,cfbplotr-legacy,13,Raiders wordmark,,\nnfl,cfbplotr-legacy,404,No such team,,\n")
+    with (raw / "manifest_conferences.csv").open("a", encoding="utf-8", newline="") as f:
+        f.write("conference,nfl,cfbplotr-legacy,AFC,AFC,https://example.org/afc.png\n")
+    (raw / "curated" / "conference_aliases.csv").write_text(
+        "league,value,team_id,reason\nnfl,The AFC,AFC,a test key\n", encoding="utf-8"
+    )
+    teams, aliases, _ = bi.build(raw)
+    assert set(teams["team_id"]) == {"13", "7", "AFC", "NFL"}  # the source adds no team (manifest_teams names them)
+    mark = aliases.filter(pl.col("id_system") == "mark").select("value", "team_id").rows()
+    assert ("cfbplotr-legacy:13", "13") in mark and not any(v == "cfbplotr-legacy:404" for v, _ in mark)
+    assert ("conference:nfl:cfbplotr-legacy:AFC", "AFC") in mark
+    conf = aliases.filter(pl.col("id_system") == "conference").select("value", "team_id").rows()
+    assert ("The AFC", "AFC") in conf
+    (raw / "curated" / "conference_aliases.csv").write_text(
+        "league,value,team_id,reason\nnfl,American Football Conference,AFC,already the row's name\n", encoding="utf-8"
+    )
+    with pytest.raises(AssertionError, match="keys a row already answers to"):
+        bi.build(raw)
+    (raw / "curated" / "conference_aliases.csv").write_text(
+        "league,value,team_id,reason\nnfl,The AFC,AFC,a test key\nnfl,THE AFC,NFL,the same key for another row\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="a key naming several rows"):
+        bi.build(raw)

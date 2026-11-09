@@ -253,9 +253,9 @@ def fixture_index(request, tmp_path, monkeypatch):
         return
     data = tmp_path / "index"
     data.mkdir()
-    pl.DataFrame(TEAMS, schema=list(_index.TEAM_SCHEMA), orient="row").cast(_index.TEAM_SCHEMA).write_parquet(
-        data / "teams.parquet"
-    )
+    # the rows give the first 12 columns; division (the 13th) is null for every fixture team
+    teams = pl.DataFrame(TEAMS, schema=list(_index.TEAM_SCHEMA)[:12], orient="row").with_columns(division=pl.lit(None))
+    teams.cast(_index.TEAM_SCHEMA).write_parquet(data / "teams.parquet")
     pl.DataFrame(ALIASES, schema=list(_index.ALIAS_SCHEMA), orient="row").cast(_index.ALIAS_SCHEMA).write_parquet(
         data / "aliases.parquet"
     )

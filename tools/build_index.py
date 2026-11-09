@@ -22,10 +22,11 @@ from fetch_sources import (  # noqa: E402
     ESPN_SCHOOL_IDS,
     IDENTITY_SOURCES,
     LEAGUE_IDENTITY_SOURCES,
+    MARKS_ONLY_SOURCES,
 )
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
-from sdvplot._resolve import PRIORITY  # noqa: E402  (the R50 tri-code fallback follows resolve()'s order)
+from sdvplot._resolve import _MARKS_ONLY, EXPLICIT_ONLY, PRIORITY, _match  # noqa: E402  (R50, cfbplotR: as resolve())
 
 # The 13 junior and minor HockeyTech leagues the archive added in 2026-11 (sdv-py's sportsdataverse.hockeytech keys)
 HOCKEYTECH_JUNIOR_MINOR = ["sphl", "chl", "bchl", "ajhl", "sjhl", "ojhl", "cchl", "gojhl", "mhl", "nojhl", "vijhl",
@@ -244,6 +245,21 @@ def soccer_leagues(sc: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+# A college team's NCAA division, from its latest season's ESPN subdivision in data-raw/groups_latest.csv (the slug's
+# last part: cfb:fbs, mbb:d1). P5/G5 is not one: it is a conference grouping that changes (the Power Four since 2024),
+# so readers take it from conference_id
+DIVISIONS = {"fbs": "FBS", "fcs": "FCS", "d1": "DI", "d2": "DII", "d3": "DIII"}
+
+
+def groups_latest(raw: Path) -> pl.DataFrame:
+    """data-raw/groups_latest.csv as (league, team_id, conference_id, conference, division); a file from before its
+    subdivision_id column gives no division."""
+    g = _csv(raw, "groups_latest.csv")
+    sub = pl.col("subdivision_id") if "subdivision_id" in g.columns else pl.lit(None, pl.String)
+    division = sub.str.extract(r":([a-z0-9]+)$", 1).replace_strict(DIVISIONS, default=None, return_dtype=pl.String)
+    return g.select("league", "team_id", "conference_id", "conference", division.alias("division"))
+
+
 def build_teams(raw: Path) -> pl.DataFrame:
     all_espn, unlisted, _ = espn_teams(raw)
     base = _csv(raw, "manifest_teams.csv")
@@ -287,9 +303,7 @@ def build_teams(raw: Path) -> pl.DataFrame:
     unmatched = sorted(set(nfl["team_abbr"]) - set(nflv["nflv_abbr"]))
     assert nflv.height == nfl.height and not unmatched, f"current nflverse teams with no ESPN team: {unmatched}"
     sc = soccer_competitions(raw)
-    groups = pl.concat(
-        [_csv(raw, "groups_latest.csv").select("league", "team_id", "conference_id", "conference"), soccer_leagues(sc)]
-    )
+    groups = pl.concat([groups_latest(raw), soccer_leagues(sc)], how="diagonal")
     national = sc.filter("_national").select("league", "team_id", pl.lit("national").alias("_national")).unique()
     base = base.join(national, on=["league", "team_id"], how="left").with_columns(
         pl.coalesce("_national", "program").alias("program")
@@ -388,6 +402,7 @@ def conference_rows(raw: Path, teams: pl.DataFrame) -> pl.DataFrame:
         primary.alias("color_primary"),
         pl.when(secondary != primary).then(secondary).alias("color_secondary"),
         pl.when(primary.is_not_null()).then(pl.col("color_source")).otherwise(pl.lit("fallback")).alias("color_source"),
+        pl.lit(None, pl.String).alias("division"),
     )
     assert set(out["program"]) <= {"conference", "league"}, f"unknown program in {path.name}: {set(out['program'])}"
     unknown = out.join(teams.select("league").unique(), on="league", how="anti")["league"].to_list()
@@ -415,6 +430,12 @@ def conference_mark_aliases(raw: Path, conf: pl.DataFrame) -> pl.DataFrame:
     m = _csv(raw, path.name).select(*MARK_KEY[:1], pl.col("league").alias("mark_league"), *MARK_KEY[2:]).unique()
     missing = lines.join(m, on=MARK_KEY, how="anti").select("league", "team_id", *MARK_KEY)
     assert missing.height == 0, f"marks the archive has no copy of: {missing.rows()}"
+    # a marks-only source (fetch_sources.MARKS_ONLY_SOURCES: cfbplotR's wordmarks) files its conference and league
+    # marks under ESPN's keys, so each follows every curated ESPN line with its level, league and entity_id
+    twins = m.filter(pl.col("source").is_in(sorted(MARKS_ONLY_SOURCES))).join(
+        lines.filter(pl.col("source") == "espn").drop("source"), on=["level", "mark_league", "entity_id"]
+    )
+    lines = pl.concat([lines, twins.select(lines.columns)])
     return (
         lines.select(
             "league",
@@ -474,6 +495,27 @@ def conference_name_aliases(conf: pl.DataFrame, teams: pl.DataFrame, marked: pl.
         .filter(pl.col("team_id").n_unique().over("league", key) == 1)
     )
     return _alias(m, pl.col("league"), "conference", "name").unique().cast(ALIAS_SCHEMA)
+
+
+def curated_conference_aliases(raw: Path, conf: pl.DataFrame, held: pl.DataFrame) -> pl.DataFrame:
+    """The hand-kept "conference" keys no source gives (data-raw/curated/conference_aliases.csv, each with its reason:
+    cfbplotR's "Big South", the football league that merged into the OVC row's Big South-OVC Football Association).
+    Each names a conference or league row, and none is a key a row already answers to (its own key or one of ``held``,
+    the "conference" aliases built from the sources)."""
+    path = raw / "curated" / "conference_aliases.csv"
+    if conf.is_empty() or not path.exists():
+        return pl.DataFrame(schema=ALIAS_SCHEMA)
+    c = _csv(raw, "curated/conference_aliases.csv")
+    stray = c.join(conf, on=["league", "team_id"], how="anti")
+    assert stray.height == 0, f"{path.name} names a row the index lacks: {stray.rows()}"
+    keys = pl.concat(
+        [conf.select("league", _key("team_id").alias("_key")), held.select("league", _key().alias("_key"))]
+    )
+    dup = c.with_columns(_key().alias("_key")).join(keys, on=["league", "_key"], how="semi")
+    assert dup.height == 0, f"{path.name}: keys a row already answers to: {dup.rows()}"
+    split = c.filter(pl.col("team_id").n_unique().over("league", _key()) > 1)
+    assert split.height == 0, f"{path.name}: a key naming several rows: {split.rows()}"
+    return _alias(c, pl.col("league"), "conference", "value").cast(ALIAS_SCHEMA)
 
 
 def _alias(df: pl.DataFrame, league: pl.Expr | str, system: str, value: str, team_id: str = "team_id") -> pl.DataFrame:
@@ -562,6 +604,122 @@ def sdvplotr_aliases(
     return _alias(out, pl.col("league"), "sdvplotr", "value")  # date_reused_codes dates a key another team held
 
 
+def _key(col: str = "value") -> pl.Expr:
+    return pl.col(col).map_elements(norm_value, return_dtype=pl.String)
+
+
+# The name-like id systems: a key one of them gives several different teams is settled by own_name_wins
+NAME_SYSTEMS = ("name", "cfbd")
+
+
+def own_name_wins(a: pl.DataFrame, teams: pl.DataFrame) -> pl.DataFrame:
+    """A name a name-like system (NAME_SYSTEMS) gives several teams of a league goes to the one team whose own name it
+    is (its index ``name`` or ``short_name``): another team's location, or a source's spelling for another team, never
+    shadows it. ESPN's location and CFBD's school "Charlotte" for 3253 Charlotte Saints (Faith NC) leave "Charlotte" to
+    2429 Charlotte 49ers; "Troy" goes to 2653 Troy Trojans, not 3237 Troy Vikings (Hudson Valley). Only undated aliases
+    compete, so a season-dated name keeps its range. A key that is several teams' own name (the two Bethanys), or no
+    team's ("New York": the Giants and the Jets), stays ambiguous, and so does one whose teams share a name (two ESPN
+    ids for one school: softball's Wofford Terriers)."""
+    k = ["league", "id_system", "_key"]
+    undated = pl.col("id_system").is_in(NAME_SYSTEMS) & pl.col("valid_from").is_null() & pl.col("valid_to").is_null()
+    names = a.filter(undated).with_columns(_key().alias("_key"))
+    cands = names.select(*k, "team_id").unique().filter(pl.col("team_id").n_unique().over(k) > 1)
+    own = pl.concat(
+        [teams.select("league", "team_id", _key(c).alias("_key")) for c in ("name", "short_name")]
+    ).drop_nulls()
+    owner = cands.join(own.unique(), on=["league", "team_id", "_key"], how="semi").filter(pl.len().over(k) == 1)
+    full = teams.select("league", "team_id", _key("name").alias("name"))  # "WOFFORD TERRIERS" is Wofford Terriers
+    losers = (
+        cands.join(owner.select(*k, pl.col("team_id").alias("_owner")), on=k)
+        .filter(pl.col("team_id") != pl.col("_owner"))
+        .join(full, on=["league", "team_id"], how="left")
+        .join(
+            full.select("league", pl.col("team_id").alias("_owner"), pl.col("name").alias("_owner_name")),
+            on=["league", "_owner"],
+            how="left",
+        )
+        .filter(pl.col("name").ne_missing(pl.col("_owner_name")).all().over(k))
+    )
+    for r in owner.join(losers.select(k).unique(), on=k, how="semi").sort(k).iter_rows(named=True):
+        print(f"own name: {r['league']}/{r['id_system']} {r['_key']!r} -> {r['team_id']}")
+    kept = names.join(losers.select(*k, "team_id"), on=[*k, "team_id"], how="anti").drop("_key")
+    return pl.concat([a.filter(~undated), kept])
+
+
+def _resolved_keys(a: pl.DataFrame, keys: pl.DataFrame) -> pl.DataFrame:
+    """(league, _key, team_id) for each of ``keys`` (league, _key) that resolve() would answer with one team without a
+    season: its own _match on ``a``, so the league's latest season decides first (a name an earlier team held goes to
+    today's holder), then the first PRIORITY system that names the key."""
+    out = []
+    for (league,), g in a.filter(~pl.col("id_system").is_in(_MARKS_ONLY)).group_by("league"):
+        latest = g.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+        table: dict[str, dict[str, list[tuple[str, int | None, int | None]]]] = {}
+        for s, v, tid, lo, hi in (
+            g.filter(pl.col("id_system").is_in(PRIORITY))
+            .select("id_system", _key(), "team_id", "valid_from", "valid_to")
+            .iter_rows()
+        ):
+            table.setdefault(s, {}).setdefault(v, []).append((tid, lo, hi))
+        for k in keys.filter(pl.col("league") == league)["_key"].drop_nulls().unique():
+            hit = _match(k, None, PRIORITY, table, latest)
+            if isinstance(hit, str):
+                out.append((league, k, hit))
+    return pl.DataFrame(out, schema={"league": pl.String, "_key": pl.String, "team_id": pl.String}, orient="row")
+
+
+CFBPLOTR = "cfbplotr_names.csv"
+
+
+def cfbplotr_aliases(raw: Path, teams: pl.DataFrame, a: pl.DataFrame) -> pl.DataFrame:
+    """cfbplotR's team_name_mapping (data-raw/cfbplotr_names.csv from tools/export_cfbplotr.R; the commit is in
+    data-raw/cfbplotr_commit.txt): every spelling its clean_school_names() knew, as a "name" alias of the team its
+    school means. That team is the ESPN id of the school's ESPN logo in cfbplotR's logo_ref where the index has it
+    (league mbb for logo_ref's basketball-only "hoopR" schools, cfb for the rest), else the team the school's own name
+    resolves to (_resolved_keys), else none. A spelling no team gets, a conference's (cfbplotr_conference_aliases) and
+    one cfbplotR gives two teams add nothing, and neither does one ``a`` (every alias built before) already knows in
+    any id system resolve() reads: an imported name never takes a key from the team that holds it. The build prints the
+    held keys that name another team."""
+    if not (raw / CFBPLOTR).exists():
+        return pl.DataFrame(schema=ALIAS_SCHEMA)
+    c = (
+        _csv(raw, CFBPLOTR)
+        .filter(pl.col("type").ne_missing("Conference"))
+        .with_columns(
+            pl.when(pl.col("type") == "hoopR").then(pl.lit("mbb")).otherwise(pl.lit("cfb")).alias("league"),
+            _key("alternate").alias("_key"),
+            _key("school").alias("_school"),
+        )
+        .with_row_index("_row")
+    )
+    a = a.filter(pl.col("league").is_in(["cfb", "mbb"]))
+    cols = ["_row", "league", "alternate", "_key", "team_id", "_rank"]
+    by_id = c.join(teams.select("league", pl.col("team_id").alias("espn_id")), on=["league", "espn_id"], how="semi")
+    by_name = c.join(
+        _resolved_keys(a, c.select("league", _key=pl.col("_school"))).rename({"_key": "_school"}),
+        on=["league", "_school"],
+    )
+    t = pl.concat([by_id.with_columns(pl.col("espn_id").alias("team_id"), _rank=0).select(cols),
+                   by_name.with_columns(_rank=1).select(cols)])  # fmt: skip
+    t = t.filter(pl.col("_rank") == pl.col("_rank").min().over("_row"))  # each row its best match, then the key
+    one = t.group_by("league", "_key").agg(pl.col("alternate").min(), pl.col("team_id").unique().sort())
+    two = one.filter(pl.col("team_id").list.len() > 1)
+    one = one.filter(pl.col("team_id").list.len() == 1).with_columns(pl.col("team_id").list.first())
+    held = a.filter(pl.col("id_system").is_in([*PRIORITY, *EXPLICIT_ONLY])).select(
+        "league", _key().alias("_key"), pl.col("team_id").alias("_held")
+    )
+    clash = one.join(held.unique(), on=["league", "_key"]).filter(pl.col("_held") != pl.col("team_id"))
+    new = one.join(held, on=["league", "_key"], how="anti")
+    print(
+        f"cfbplotr aliases: {new.height} added of {c.height} spellings; {one.height - new.height} already known, "
+        f"{clash.select('league', '_key').n_unique()} of them another team's; {two.height} cfbplotR gives two teams; "
+        f"{c.join(t, on=['league', '_key'], how='anti').height} with no team"
+    )
+    held_by = clash.group_by("league", "alternate", "team_id").agg(pl.col("_held").sort())
+    for r in held_by.sort("league", "alternate").iter_rows(named=True):
+        print(f"  {r['league']} {r['alternate']!r}: cfbplotR {r['team_id']}, held by {', '.join(r['_held'])}")
+    return _alias(new, pl.col("league"), "name", "alternate").cast(ALIAS_SCHEMA)
+
+
 def mark_aliases(
     marks: pl.DataFrame, teams: pl.DataFrame, aliases: pl.DataFrame, nhl: pl.DataFrame, espn: pl.DataFrame
 ) -> pl.DataFrame:
@@ -570,7 +728,8 @@ def mark_aliases(
     number of teams the key maps to; team_id and the season range (R36) are set only when n == 1."""
     src, lg = pl.col("source"), pl.col("league")
     identity = (
-        src.is_in(sorted(IDENTITY_SOURCES)) & ((src != "espn") | pl.col("entity_id").str.contains(r"^\d+$"))
+        src.is_in(sorted(IDENTITY_SOURCES | MARKS_ONLY_SOURCES))
+        & ((src != "espn") | pl.col("entity_id").str.contains(r"^\d+$"))
     ) | src.replace_strict(LEAGUE_IDENTITY_SOURCES, default=None).eq_missing(lg)
     system = (
         pl.when(identity)
@@ -795,12 +954,14 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
         .drop_nulls(["value", "team_id"])
         .join(known, on=["league", "team_id"], how="semi")
     )
+    a = own_name_wins(a, teams)  # first: sdvplotr_aliases drops a key the name system gives several teams
     if (raw / "sdvplotr_abbr_mapping.csv").exists():  # last: its keys go through the aliases above
         conf_keys = conf.select(pl.col("league").alias("sport"), pl.col("team_id").alias("canon"))
         sdvr = sdvplotr_aliases(
             _csv(raw, "sdvplotr_abbr_mapping.csv"), _csv(raw, "sdvplotr_historical.csv"), a, conf_keys
         )
         a = pl.concat([a, sdvr.cast(ALIAS_SCHEMA)])
+    a = pl.concat([a, cfbplotr_aliases(raw, teams, a)])  # after every other source: it only fills gaps
     a = date_reused_codes(a)
     mk = mark_aliases(_csv(raw, "manifest_marks.csv"), known, a, _csv(raw, "nhl_teams.csv"), espn)
     _report_marks(mk)
@@ -997,7 +1158,8 @@ def build(raw: Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     sdvplotr = conference_aliases(raw, conf)
     key = pl.col("value").map_elements(norm_value, return_dtype=pl.String).alias("_key")
     named = named.with_columns(key).join(sdvplotr.with_columns(key), on=["league", "_key"], how="anti").drop("_key")
-    aliases = pl.concat([aliases, marked, sdvplotr, named])  # sdvplotR's spelling of a name wins
+    curated = curated_conference_aliases(raw, conf, pl.concat([sdvplotr, named]))
+    aliases = pl.concat([aliases, marked, sdvplotr, named, curated])  # sdvplotR's spelling of a name wins
     aliases = aliases.sort("league", "id_system", "value", "team_id", "valid_from", "valid_to", nulls_last=True)
     teams = pl.concat([teams, conf])
     return teams, aliases, stamp(teams, aliases)

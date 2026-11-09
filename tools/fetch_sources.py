@@ -61,6 +61,11 @@ IDENTITY_SOURCES = {
     "legabasket",  # LBA club_id
     "formula1.com",  # F1 constructors by Jolpica constructor_id
 }
+# sources whose entity_id is a team's ESPN id but which name no team and add none: tools/build_index.py keys their marks
+# to the team (mark_aliases) and follows their conference marks' ESPN keys (conference_mark_aliases), while
+# manifest_team_rows and espn_color_targets leave them out, so a team's name and colors never come from them.
+# cfbplotr-legacy: the college wordmarks cfbplotR served, which sdv-assets keeps as an owner-approved exception
+MARKS_ONLY_SOURCES = {"cfbplotr-legacy"}
 # sources whose entity_id is the canonical team id in one league only: mlbstatic (MLB Stats ids; mlb's teams are ESPN
 # ids) and wikimedia-commons (the 2002-2015 F1 constructor logos, by Jolpica constructor_id)
 LEAGUE_IDENTITY_SOURCES = {"mlbstatic": "milb", "wikimedia-commons": "f1"}
@@ -889,8 +894,9 @@ def fetch_f1_teams(s: requests.Session, manifest: list[dict]) -> list[dict]:
 
 
 def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str]], None]) -> None:
-    """groups_latest.csv: each ESPN-keyed team's latest conference in sdv-reference-data's {league}_groups release, for
-    the GROUP_LEAGUES (``--groups-only`` refreshes just this one)."""
+    """groups_latest.csv: each ESPN-keyed team's latest conference, and that season's subdivision (cfb's cfb:fbs,
+    cfb:fcs, cfb:d2, cfb:d3: build_index.py's ``division``), in sdv-reference-data's {league}_groups release, for the
+    GROUP_LEAGUES (``--groups-only`` refreshes just this one)."""
     import polars as pl
 
     groups: list[dict] = []
@@ -921,9 +927,10 @@ def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str
                     "season": r["season"],
                     "conference_id": r["conference_id"],
                     "conference": r["name"],
+                    "subdivision_id": r.get("subdivision_id"),
                 }
             )
-    write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference"])
+    write("groups_latest", groups, ["league", "team_id", "season", "conference_id", "conference", "subdivision_id"])
 
 
 def provider_id_rows(league: str, id_system: str, kind: str, df: pl.DataFrame) -> list[dict]:

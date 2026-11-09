@@ -98,4 +98,4 @@ lines <- do.call(rbind, lapply(c("mean", "median"), function(ref) {
 }))
 write(lines[order(lines$ref, lines$shot_zone_basic, method = "radix"), ], "ggpath_ref_lines.csv")
 message("ggplot2 ", packageVersion("ggplot2"), ", ggpath ", packageVersion("ggpath"), ", sdvplotR ",
-        system2("git", c("-C", src, "rev-parse", "--short", "HEAD"), stdout = TRUE))
+        system2("git", c("-C", shQuote(src), "rev-parse", "--short", "HEAD"), stdout = TRUE))

@@ -52,6 +52,23 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- cfbplotR's `team_name_mapping` spellings resolve: `resolve("VA TECH", "cfb")`, `"NC St."`, `"North Carolina
+  State"`, `"UT San Antonio"`, `"Presbyterian College"`, `"St Francis (PA)"`. `tools/export_cfbplotr.R` exports the
+  mapping with logo_ref's type and ESPN id into `data-raw/cfbplotr_names.csv` (commit in `data-raw/cfbplotr_commit.txt`),
+  and the build adds each spelling the index lacks as a `"name"` alias of the team cfbplotR meant, when that is one
+  team (80 spellings). One the index already has, for any team, adds nothing, and so does one whose cfbplotR rows
+  name two teams or no team the index has: `resolve()` still gives `None` for it. The logo functions take cfbplotR's
+  `"Big South"` for cfb's OVC row, the Big South-OVC Football Association (`data-raw/curated/conference_aliases.csv`,
+  hand-kept conference keys).
+- A `division` column in the team index: a college team's NCAA division in its latest season in ESPN's groups
+  (`"FBS"`, `"FCS"`, `"DII"`, `"DIII"` in `cfb`; `"DI"`, `"DII"`, `"DIII"` elsewhere), from the `subdivision_id` that
+  `tools/fetch_sources.py --groups-only` now keeps in `data-raw/groups_latest.csv`. It is the last column, so readers
+  that select the columns they know are unaffected.
+- The build keys manifest marks of `cfbplotr-legacy` (sdv-assets' archive of cfbplotR's college wordmarks) to teams
+  by their ESPN ids, and its conference and league marks, filed under ESPN's keys, to the rows the curated ESPN lines
+  name; the source names no team and adds none (`MARKS_ONLY_SOURCES` in `tools/fetch_sources.py`), and ranks after
+  every other source.
+
 - Fox, Yahoo, CBS, 247Sports, On3, KenPom and Torvik team ids in the index, from sdv-reference-data's
   `{league}_team_aliases` tables in the sportsdataverse-data `{league}_groups` releases (NFL, college football, NBA,
   WNBA, men's and women's college basketball, MLB, NHL), snapshotted by `tools/fetch_sources.py --crosswalks-only`
@@ -223,6 +240,11 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- `resolve("Charlotte", "cfb")` is the Charlotte 49ers (2429) instead of ambiguous with the Charlotte Saints (3253,
+  Faith NC, located in Charlotte), and `"Troy"` under `id_system="name"` or `"cfbd"` is the Troy Trojans: a name the
+  `name` or `cfbd` system gives several teams without a season range goes to the one team whose own name it is. A
+  season-dated alias keeps its range, so in a season it covers that also has another team's own-name alias the value
+  stays ambiguous. No value that resolved before changes its answer.
 - `surface("soccer", pitch_updates=None)` draws the 105 x 68 m defaults, as sdvplotR's `pitch_updates = NULL` does,
   instead of raising `TypeError` (#100).
 - The ESPN soccer shot map recipe keeps penalties (`Penalty - Scored` / `Penalty - Missed`), and the StatsBomb recipe

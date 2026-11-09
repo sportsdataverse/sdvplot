@@ -18,8 +18,15 @@ Every team in sdvplot has one canonical key: **`(league, team_id)`**.
 ```python
 import sdvplot
 
-sdvplot.teams("nfl").shape  # (32, 12)
+sdvplot.teams("nfl").shape  # (32, 13)
 ```
+
+A college team's `division` is its NCAA division in its latest season in ESPN's groups: `"FBS"`, `"FCS"`, `"DII"` or
+`"DIII"` in `cfb` (`teams("cfb").filter(pl.col("division") == "FCS")`), `"DI"`, `"DII"` or `"DIII"` in the other
+college leagues, and null for a team with no NCAA division there (NAIA, a dropped program) and for pro teams. cfbplotR's
+P5/G5 split is not a column: it is a grouping of conferences that changes (the Power Five became the Power Four in
+2024), so take it from `conference_id` (the Power Four today: `cfb:acc`, `cfb:big-ten`, `cfb:big-12`, `cfb:sec`)
+for the seasons you mean.
 
 Conferences are opt-in (sdvplotR's `include_conferences`): `teams("cfb", include_conferences=True)` adds the league's
 conference rows (and the league's own: the AFC, NFC and NFL; MLB, `AL` and `NL`; the NBA and WNBA with `East` and
@@ -76,9 +83,15 @@ The index holds aliases from these id systems. With the default `id_system="auto
 | 17 | `kenpom` | KenPom team names (men's college basketball) |
 | 18 | `torvik` | Torvik (Barttorvik) team names (men's and women's college basketball) |
 | 19 | `sdvplotr` | sdvplotR's `clean_team_abbrs` keys |
-| 20 | `name` | team names, short names and locations |
+| 20 | `name` | team names, short names and locations, and cfbplotR's `team_name_mapping` spellings |
 
-`sdvplotr` sits after every id system, so it only fills gaps. `name` comes last.
+`sdvplotr` sits after every id system, so it only fills gaps. `name` comes last. A name that `name` or `cfbd` gives
+several teams, none of them for a season range, goes to the one team whose own name (`name` or `short_name`) it is, so
+another team's location never shadows it: `"Charlotte"` is the 49ers, not the Charlotte Saints (Faith NC, located in
+Charlotte). One that is several teams' own name (`"Bethany"`), or no team's (`"New York"`), stays ambiguous. A
+season-dated alias keeps its range: in a season it covers that also has another team's own-name alias, the value stays
+ambiguous. cfbplotR's spellings (the `ARK STATE`, `VA TECH` feed forms, `NC St.`, `UT San Antonio`) only fill gaps:
+one the index already has, for any team, adds nothing, and one cfbplotR's rows give two teams or no team adds nothing.
 
 Pass `id_system=` to use a single system instead, for example `resolve(values, "mlb", id_system="fangraphs")`. An
 `id_system` or `league` sdvplot does not know raises `InputError` (a `ValueError`), as does a `season` that is not a

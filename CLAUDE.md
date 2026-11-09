@@ -64,7 +64,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `typing.py` | `sdvplot.typing`, the public re-export of those aliases for user annotations (the `numpy.typing` precedent) |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
-`home_figures.py`, `hex_logo.py`, `sync_changelog.py`), the R exports (`export_sdvplotr.R`, `export_parity_extras.R`) and the commit-msg
+`home_figures.py`, `hex_logo.py`, `sync_changelog.py`), the R exports (`export_sdvplotr.R`, `export_cfbplotr.R`, `export_parity_extras.R`) and the commit-msg
 hook (`hooks/check_commit_msg.py`). `docs/` is the Docusaurus site; outside its pages, `docs/COMPATIBILITY.md` is the
 gallery compatibility matrix (kept true by `tests/test_compat_matrix.py`) and `docs/PARITY.md` /
 `docs/PARITY_TABLES.md` map sdvplotR's exports. `data-raw/` is the committed input to the index. `examples/` holds the
@@ -102,6 +102,7 @@ and never let a lock bump ride into an unrelated commit.
 | `docs/static/img/sdvplot-logo.png` (the hex, 1036 x 1200), its README copy `sdvplot-logo-readme.png`, `docs/static/img/favicon.ico` | `uv run python tools/hex_logo.py` (network: the eight logos; starfield and Russo One in `tools/brand/`) | the script asserts the size |
 | `docs/src/pages/CHANGELOG.md` | `CHANGELOG.md` under front matter: `tools/sync_changelog.py` (the `sync-docs-changelog` pre-commit hook) | `tests/test_repo_files.py` |
 | `data-raw/sdvplotr_*.csv` | `R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index |
+| `data-raw/cfbplotr_names.csv`, `data-raw/cfbplotr_commit.txt` | `R_ENVIRON_USER=/dev/null Rscript tools/export_cfbplotr.R [path/to/cfbplotR]` | rebuild the index |
 
 Regenerate after changing any source, including a public function's docstring or `__all__`; stale generated files
 fail the drift gates. doctoc rewrites a TOC after the changelog hook copies `CHANGELOG.md`: run the hooks until they
