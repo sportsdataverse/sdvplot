@@ -110,7 +110,7 @@ sdvplot.suggest("Arsenal", "soccer")
 <div class="sdv-output">
 
 ```text
-2,631 clubs in the soccer index
+2,681 clubs in the soccer index
 [None, None, '20232']
 2 value(s) did not resolve to a soccer team: 'Arsenal' (ambiguous: 19973 Arsenal or 359 Arsenal), 'Liverpool' (ambiguous: 19971 Liverpool or 364 Liverpool or 5492 Liverpool); pass season= for a code reused across eras, or id_system= for the id system of the values. Use sdvplot.suggest() for candidates, or strict=True to raise.
 ```

@@ -85,13 +85,13 @@ sdvplot.teams("nfl").head()
 
 <div class="sdv-output">
 
-| league | team_id | abbr | name               | short_name | location     | program | conference_id | conference                   | color_primary | color_secondary | color_source |
-|--------|---------|------|--------------------|------------|--------------|---------|---------------|------------------------------|---------------|-----------------|--------------|
-| nfl    | 1       | ATL  | Atlanta Falcons    | Falcons    | Atlanta      | pro     | nfl:nfc       | National Football Conference | #a71930       | #000000         | nflverse     |
-| nfl    | 10      | TEN  | Tennessee Titans   | Titans     | Tennessee    | pro     | nfl:afc       | American Football Conference | #4495d2       | #d50a0a         | nflverse     |
-| nfl    | 11      | IND  | Indianapolis Colts | Colts      | Indianapolis | pro     | nfl:afc       | American Football Conference | #002c5f       | #a5acaf         | nflverse     |
-| nfl    | 12      | KC   | Kansas City Chiefs | Chiefs     | Kansas City  | pro     | nfl:afc       | American Football Conference | #e31837       | #ffb612         | nflverse     |
-| nfl    | 13      | LV   | Las Vegas Raiders  | Raiders    | Las Vegas    | pro     | nfl:afc       | American Football Conference | #000000       | #a5acaf         | nflverse     |
+| league | team_id | abbr | name               | short_name | location     | program | conference_id | conference                   | color_primary | color_secondary | color_source | division |
+|--------|---------|------|--------------------|------------|--------------|---------|---------------|------------------------------|---------------|-----------------|--------------|----------|
+| nfl    | 1       | ATL  | Atlanta Falcons    | Falcons    | Atlanta      | pro     | nfl:nfc       | National Football Conference | #a71930       | #000000         | nflverse     | null     |
+| nfl    | 10      | TEN  | Tennessee Titans   | Titans     | Tennessee    | pro     | nfl:afc       | American Football Conference | #4495d2       | #d50a0a         | nflverse     | null     |
+| nfl    | 11      | IND  | Indianapolis Colts | Colts      | Indianapolis | pro     | nfl:afc       | American Football Conference | #002c5f       | #a5acaf         | nflverse     | null     |
+| nfl    | 12      | KC   | Kansas City Chiefs | Chiefs     | Kansas City  | pro     | nfl:afc       | American Football Conference | #e31837       | #ffb612         | nflverse     | null     |
+| nfl    | 13      | LV   | Las Vegas Raiders  | Raiders    | Las Vegas    | pro     | nfl:afc       | American Football Conference | #000000       | #a5acaf         | nflverse     | null     |
 
 </div>
 
@@ -138,9 +138,9 @@ sdvplot.versions()
 <div class="sdv-output">
 
 ```text
-{'sdvplot': '0.1.1',
- 'index': '0aeef853ec2b',
- 'manifest_last_modified': 'Thu, 01 Oct 2026 07:44:07 GMT'}
+{'sdvplot': '0.3.0',
+ 'index': 'e04c50e5682e',
+ 'manifest_last_modified': 'Mon, 09 Nov 2026 05:29:06 GMT'}
 ```
 
 </div>

@@ -101,7 +101,7 @@ d1.select("d1_rank", "team_id", "short_name", "conference", "adj_o", "adj_d", "a
 <div class="sdv-output">
 
 ```text
-362 value(s) did not resolve to a mbb team: '148' (unknown), '2269' (unknown), '2732' (unknown), '144' (unknow ...
+334 value(s) did not resolve to a mbb team: '2269' (unknown), '2732' (unknown), '144' (unknown), '2551' (unkno ...
 ```
 
 | d1_rank | team_id | short_name | conference                | adj_o      | adj_d     | adj_em    | adj_tempo |
