@@ -916,20 +916,24 @@ def test_cfbplotr_spellings_fill_gaps_and_never_take_a_held_key(tmp_path, capsys
         "Big South,Big South,Conference,\n"  # a conference: not a team alias
         "VT/ASU,Virginia Tech,P5,259\n"  # two schools, one by its ESPN id and one by its name: neither wins
         "VT/ASU,Adams State,DII,\n"
+        "Old Dom.,Old Dominion,FCS,\n"  # a name two teams held: resolve() reads today's holder, so does the build
         "Nowhere St.,Nowhere State,DIII,\n",  # no team
         encoding="utf-8",
     )
     teams = _text(
-        [("cfb", "259"), ("cfb", "2341"), ("cfb", "99"), ("cfb", "7"), ("mbb", "2636")], ["league", "team_id"]
+        [("cfb", "259"), ("cfb", "2341"), ("cfb", "99"), ("cfb", "7"), ("cfb", "5"), ("cfb", "6"), ("mbb", "2636")],
+        ["league", "team_id"],
     )
     a = _aliases([
         ("cfb", "name", "Virginia Tech", "259"), ("cfb", "name", "Adams State", "99"), ("cfb", "cfbd", "LIU", "2341"),
         ("cfb", "name", "Hokies", "7"),
+        ("cfb", "name", "Old Dominion", "5", 1990, 2000), ("cfb", "name", "Old Dominion", "6", 2001, 2025),
     ])  # fmt: skip
     out = bi.cfbplotr_aliases(raw, teams, a)
     assert out.schema == pl.Schema(_index.ALIAS_SCHEMA)
     assert sorted(out.select("league", "id_system", "value", "team_id").rows()) == [
         ("cfb", "name", "Adams St.", "99"),
+        ("cfb", "name", "Old Dom.", "6"),
         ("cfb", "name", "VA TECH", "259"),
         ("mbb", "name", "UTSA Roadrunners", "2636"),
     ]

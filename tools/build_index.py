@@ -26,7 +26,7 @@ from fetch_sources import (  # noqa: E402
 )
 from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
-from sdvplot._resolve import EXPLICIT_ONLY, PRIORITY  # noqa: E402  (R50 and cfbplotR follow resolve()'s order)
+from sdvplot._resolve import _MARKS_ONLY, EXPLICIT_ONLY, PRIORITY, _match  # noqa: E402  (R50, cfbplotR: as resolve())
 
 # The 13 junior and minor HockeyTech leagues the archive added in 2026-11 (sdv-py's sportsdataverse.hockeytech keys)
 HOCKEYTECH_JUNIOR_MINOR = ["sphl", "chl", "bchl", "ajhl", "sjhl", "ojhl", "cchl", "gojhl", "mhl", "nojhl", "vijhl",
@@ -646,19 +646,25 @@ def own_name_wins(a: pl.DataFrame, teams: pl.DataFrame) -> pl.DataFrame:
     return pl.concat([a.filter(~undated), kept])
 
 
-def _first_system(a: pl.DataFrame) -> pl.DataFrame:
-    """(league, _key, team_id): what resolve() would answer for a key without a season, where it answers one team: the
-    first PRIORITY system that names the key, when it names one team."""
-    rank = pl.DataFrame({"id_system": list(PRIORITY), "_rank": range(len(PRIORITY))})
-    return (
-        a.join(rank, on="id_system")
-        .select("league", _key().alias("_key"), "team_id", "_rank")
-        .filter(pl.col("_rank") == pl.col("_rank").min().over("league", "_key"))
-        .group_by("league", "_key")
-        .agg(pl.col("team_id").unique())
-        .filter(pl.col("team_id").list.len() == 1)
-        .with_columns(pl.col("team_id").list.first())
-    )
+def _resolved_keys(a: pl.DataFrame, keys: pl.DataFrame) -> pl.DataFrame:
+    """(league, _key, team_id) for each of ``keys`` (league, _key) that resolve() would answer with one team without a
+    season: its own _match on ``a``, so the league's latest season decides first (a name an earlier team held goes to
+    today's holder), then the first PRIORITY system that names the key."""
+    out = []
+    for (league,), g in a.filter(~pl.col("id_system").is_in(_MARKS_ONLY)).group_by("league"):
+        latest = g.select(pl.max_horizontal(pl.col("valid_from").max(), pl.col("valid_to").max())).item()
+        table: dict[str, dict[str, list[tuple[str, int | None, int | None]]]] = {}
+        for s, v, tid, lo, hi in (
+            g.filter(pl.col("id_system").is_in(PRIORITY))
+            .select("id_system", _key(), "team_id", "valid_from", "valid_to")
+            .iter_rows()
+        ):
+            table.setdefault(s, {}).setdefault(v, []).append((tid, lo, hi))
+        for k in keys.filter(pl.col("league") == league)["_key"].drop_nulls().unique():
+            hit = _match(k, None, PRIORITY, table, latest)
+            if isinstance(hit, str):
+                out.append((league, k, hit))
+    return pl.DataFrame(out, schema={"league": pl.String, "_key": pl.String, "team_id": pl.String}, orient="row")
 
 
 CFBPLOTR = "cfbplotr_names.csv"
@@ -669,7 +675,7 @@ def cfbplotr_aliases(raw: Path, teams: pl.DataFrame, a: pl.DataFrame) -> pl.Data
     data-raw/cfbplotr_commit.txt): every spelling its clean_school_names() knew, as a "name" alias of the team its
     school means. That team is the ESPN id of the school's ESPN logo in cfbplotR's logo_ref where the index has it
     (league mbb for logo_ref's basketball-only "hoopR" schools, cfb for the rest), else the team the school's own name
-    resolves to (_first_system), else none. A spelling no team gets, a conference's (cfbplotr_conference_aliases) and
+    resolves to (_resolved_keys), else none. A spelling no team gets, a conference's (cfbplotr_conference_aliases) and
     one cfbplotR gives two teams add nothing, and neither does one ``a`` (every alias built before) already knows in
     any id system resolve() reads: an imported name never takes a key from the team that holds it. The build prints the
     held keys that name another team."""
@@ -688,7 +694,10 @@ def cfbplotr_aliases(raw: Path, teams: pl.DataFrame, a: pl.DataFrame) -> pl.Data
     a = a.filter(pl.col("league").is_in(["cfb", "mbb"]))
     cols = ["_row", "league", "alternate", "_key", "team_id", "_rank"]
     by_id = c.join(teams.select("league", pl.col("team_id").alias("espn_id")), on=["league", "espn_id"], how="semi")
-    by_name = c.join(_first_system(a).rename({"_key": "_school"}), on=["league", "_school"])
+    by_name = c.join(
+        _resolved_keys(a, c.select("league", _key=pl.col("_school"))).rename({"_key": "_school"}),
+        on=["league", "_school"],
+    )
     t = pl.concat([by_id.with_columns(pl.col("espn_id").alias("team_id"), _rank=0).select(cols),
                    by_name.with_columns(_rank=1).select(cols)])  # fmt: skip
     t = t.filter(pl.col("_rank") == pl.col("_rank").min().over("_row"))  # each row its best match, then the key
