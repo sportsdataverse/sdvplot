@@ -619,7 +619,7 @@ def test_conference_mark_aliases_name_the_manifests_own_rows():
     assert key["nba/East"] == ["conference:nba:espn:East"] and key["wnba/East"] == ["conference:wnba:espn:East"]
     assert key["nhl/Metropolitan"] == ["division:nhl:nhl:88"]
     assert key["ncaa_softball/NCAA"] == key["cfb/NCAA"] == ["league:ncaa:espn:NCAA"]
-    assert ca["value"].str.contains(r"^(conference|league|division):[a-z_]+:[a-z.]+:").all()
+    assert ca["value"].str.contains(r"^(conference|league|division):[a-z_]+:[a-z.-]+:").all()  # cfbplotr-legacy too
     # the 2024 All-Star Game's captains' teams (the NHL files them as division marks 7801-7804) are dated 2024
     dated = ca.filter(pl.col("valid_from").is_not_null() | pl.col("valid_to").is_not_null())
     assert sorted(dated.select("team_id", "valid_from", "valid_to").rows()) == [
