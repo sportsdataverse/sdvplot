@@ -513,6 +513,8 @@ def curated_conference_aliases(raw: Path, conf: pl.DataFrame, held: pl.DataFrame
     )
     dup = c.with_columns(_key().alias("_key")).join(keys, on=["league", "_key"], how="semi")
     assert dup.height == 0, f"{path.name}: keys a row already answers to: {dup.rows()}"
+    split = c.filter(pl.col("team_id").n_unique().over("league", _key()) > 1)
+    assert split.height == 0, f"{path.name}: a key naming several rows: {split.rows()}"
     return _alias(c, pl.col("league"), "conference", "value").cast(ALIAS_SCHEMA)
 
 

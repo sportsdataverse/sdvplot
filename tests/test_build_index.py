@@ -968,3 +968,9 @@ def test_a_marks_only_source_keys_team_and_conference_marks_by_espn_ids(tmp_path
     )
     with pytest.raises(AssertionError, match="keys a row already answers to"):
         bi.build(raw)
+    (raw / "curated" / "conference_aliases.csv").write_text(
+        "league,value,team_id,reason\nnfl,The AFC,AFC,a test key\nnfl,THE AFC,NFL,the same key for another row\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="a key naming several rows"):
+        bi.build(raw)
