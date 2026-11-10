@@ -1,0 +1,3139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_sdv_11_0_0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 560.0px;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+
+&lt;/head&gt;
+&lt;body&gt;
+
+
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_sdv_11_0_0&quot; &gt;&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;script&gt;
+
+
+            var map_sdv_11_0_0 = L.map(
+                &quot;map_sdv_11_0_0&quot;,
+                {
+                    center: [37.5, -92.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 4,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+
+
+
+
+            var tile_layer_sdv_11_0_1 = L.tileLayer(
+                &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 16,
+  &quot;maxNativeZoom&quot;: 16,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;Tiles \u0026copy; Esri \u0026mdash; Esri, DeLorme, NAVTEQ&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+
+
+            tile_layer_sdv_11_0_1.addTo(map_sdv_11_0_0);
+
+
+            var feature_group_sdv_11_0_2 = L.featureGroup(
+                {
+}
+            );
+
+
+            var circle_marker_sdv_11_0_3 = L.circleMarker(
+                [33.2082752, -87.5503836],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_3.bindTooltip(
+                `&lt;div&gt;
+                     Alabama: Bryant-Denny Stadium, 101,821 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_4 = L.circleMarker(
+                [36.0680662, -94.1789534],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_4.bindTooltip(
+                `&lt;div&gt;
+                     Arkansas: Razorback Stadium, 80,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_5 = L.circleMarker(
+                [32.6025532, -85.4897479],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_5.bindTooltip(
+                `&lt;div&gt;
+                     Auburn: Jordan-Hare Stadium, 87,451 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_6 = L.circleMarker(
+                [29.6499357, -82.3485788],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_6.bindTooltip(
+                `&lt;div&gt;
+                     Florida: Ben Hill Griffin Stadium, 88,548 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_7 = L.circleMarker(
+                [33.9498197, -83.3733813],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_7.bindTooltip(
+                `&lt;div&gt;
+                     Georgia: Sanford Stadium, 92,746 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_8 = L.circleMarker(
+                [38.0220905, -84.5053408],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_8.bindTooltip(
+                `&lt;div&gt;
+                     Kentucky: Kroger Field, 61,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_9 = L.circleMarker(
+                [30.412035, -91.1838163],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_9.bindTooltip(
+                `&lt;div&gt;
+                     LSU: Tiger Stadium (LA), 102,321 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_10 = L.circleMarker(
+                [33.4563403, -88.7933652],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_10.bindTooltip(
+                `&lt;div&gt;
+                     Mississippi State: Davis Wade Stadium, 61,337 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_11 = L.circleMarker(
+                [38.9358491, -92.3332009],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_11.bindTooltip(
+                `&lt;div&gt;
+                     Missouri: Memorial Stadium, 71,168 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_12 = L.circleMarker(
+                [35.2058537, -97.4423145],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_12.bindTooltip(
+                `&lt;div&gt;
+                     Oklahoma: Memorial Stadium (Norman, OK), 86,112 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_13 = L.circleMarker(
+                [34.3619837, -89.5342076],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_13.bindTooltip(
+                `&lt;div&gt;
+                     Ole Miss: Vaught-Hemingway Stadium, 64,038 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_14 = L.circleMarker(
+                [33.9730239, -81.0191726],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_14.bindTooltip(
+                `&lt;div&gt;
+                     South Carolina: Williams-Brice Stadium, 80,250 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_15 = L.circleMarker(
+                [35.9550131, -83.9250128],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_15.bindTooltip(
+                `&lt;div&gt;
+                     Tennessee: Neyland Stadium, 102,455 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_16 = L.circleMarker(
+                [30.2836813, -97.7325345],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_16.bindTooltip(
+                `&lt;div&gt;
+                     Texas: DKR-Texas Memorial Stadium, 100,119 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_17 = L.circleMarker(
+                [30.6098891, -96.3403828],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_17.bindTooltip(
+                `&lt;div&gt;
+                     Texas A&amp;M: Kyle Field, 102,733 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_18 = L.circleMarker(
+                [36.1440455, -86.8088942],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#012d74&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#012d74&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_2);
+
+
+            circle_marker_sdv_11_0_18.bindTooltip(
+                `&lt;div&gt;
+                     Vanderbilt: FirstBank Stadium, 40,351 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            feature_group_sdv_11_0_2.addTo(map_sdv_11_0_0);
+
+
+            var feature_group_sdv_11_0_19 = L.featureGroup(
+                {
+}
+            );
+
+
+            var circle_marker_sdv_11_0_20 = L.circleMarker(
+                [40.0993268, -88.2359569],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_20.bindTooltip(
+                `&lt;div&gt;
+                     Illinois: Memorial Stadium (Champaign, IL), 60,670 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_21 = L.circleMarker(
+                [39.1808959, -86.5256217],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_21.bindTooltip(
+                `&lt;div&gt;
+                     Indiana: Memorial Stadium (Bloomington, IN), 52,656 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_22 = L.circleMarker(
+                [41.6586045, -91.5510829],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_22.bindTooltip(
+                `&lt;div&gt;
+                     Iowa: Kinnick Stadium, 69,250 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_23 = L.circleMarker(
+                [38.9903332, -76.9473792],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_23.bindTooltip(
+                `&lt;div&gt;
+                     Maryland: SECU Stadium, 51,802 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_24 = L.circleMarker(
+                [42.2658365, -83.7486956],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_24.bindTooltip(
+                `&lt;div&gt;
+                     Michigan: Michigan Stadium, 107,601 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_25 = L.circleMarker(
+                [42.7281474, -84.4848526],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_25.bindTooltip(
+                `&lt;div&gt;
+                     Michigan State: Spartan Stadium, 75,005 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_26 = L.circleMarker(
+                [44.976525, -93.2245462],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_26.bindTooltip(
+                `&lt;div&gt;
+                     Minnesota: Huntington Bank Stadium, 50,850 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_27 = L.circleMarker(
+                [40.820682, -96.705594],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_27.bindTooltip(
+                `&lt;div&gt;
+                     Nebraska: Memorial Stadium (Lincoln, NE), 85,458 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_28 = L.circleMarker(
+                [42.058246, -87.670876],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_28.bindTooltip(
+                `&lt;div&gt;
+                     Northwestern: Lanny and Sharon Martin Stadium, 12,023 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_29 = L.circleMarker(
+                [40.0016447, -83.0197266],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_29.bindTooltip(
+                `&lt;div&gt;
+                     Ohio State: Ohio Stadium, 102,780 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_30 = L.circleMarker(
+                [44.0582712, -123.0684883],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_30.bindTooltip(
+                `&lt;div&gt;
+                     Oregon: Autzen Stadium, 54,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_31 = L.circleMarker(
+                [40.8121958, -77.8561023],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_31.bindTooltip(
+                `&lt;div&gt;
+                     Penn State: Beaver Stadium, 106,572 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_32 = L.circleMarker(
+                [40.4352253, -86.9186843],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_32.bindTooltip(
+                `&lt;div&gt;
+                     Purdue: Ross-Ade Stadium, 57,282 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_33 = L.circleMarker(
+                [40.513611, -74.465278],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_33.bindTooltip(
+                `&lt;div&gt;
+                     Rutgers: SHI Stadium, 52,454 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_34 = L.circleMarker(
+                [34.1613284, -118.1676462],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_34.bindTooltip(
+                `&lt;div&gt;
+                     UCLA: Rose Bowl, 88,565 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_35 = L.circleMarker(
+                [34.014167, -118.287778],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_35.bindTooltip(
+                `&lt;div&gt;
+                     USC: Los Angeles Memorial Coliseum, 77,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_36 = L.circleMarker(
+                [47.6503235, -122.3015746],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_36.bindTooltip(
+                `&lt;div&gt;
+                     Washington: Husky Stadium, 70,138 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_37 = L.circleMarker(
+                [43.06994, -89.4126943],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#0082cb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#0082cb&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_19);
+
+
+            circle_marker_sdv_11_0_37.bindTooltip(
+                `&lt;div&gt;
+                     Wisconsin: Camp Randall Stadium, 80,321 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            feature_group_sdv_11_0_19.addTo(map_sdv_11_0_0);
+
+
+            var feature_group_sdv_11_0_38 = L.featureGroup(
+                {
+}
+            );
+
+
+            var circle_marker_sdv_11_0_39 = L.circleMarker(
+                [32.2288054, -110.9488677],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_39.bindTooltip(
+                `&lt;div&gt;
+                     Arizona: Arizona Stadium, 50,782 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_40 = L.circleMarker(
+                [33.4264471, -111.9325005],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_40.bindTooltip(
+                `&lt;div&gt;
+                     Arizona State: Mountain America Stadium, 65,870 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_41 = L.circleMarker(
+                [31.5582015, -97.1156702],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_41.bindTooltip(
+                `&lt;div&gt;
+                     Baylor: McLane Stadium, 45,140 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_42 = L.circleMarker(
+                [40.2575347, -111.6545247],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_42.bindTooltip(
+                `&lt;div&gt;
+                     BYU: LaVell Edwards Stadium, 63,470 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_43 = L.circleMarker(
+                [39.1312495, -84.5161913],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_43.bindTooltip(
+                `&lt;div&gt;
+                     Cincinnati: Nippert Stadium, 40,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_44 = L.circleMarker(
+                [40.0094746, -105.266905],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_44.bindTooltip(
+                `&lt;div&gt;
+                     Colorado: Folsom Field, 50,183 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_45 = L.circleMarker(
+                [29.7219885, -95.3491623],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_45.bindTooltip(
+                `&lt;div&gt;
+                     Houston: TDECU Stadium, 40,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_46 = L.circleMarker(
+                [42.0139977, -93.6357716],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_46.bindTooltip(
+                `&lt;div&gt;
+                     Iowa State: Jack Trice Stadium, 61,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_47 = L.circleMarker(
+                [38.9629418, -95.2463686],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_47.bindTooltip(
+                `&lt;div&gt;
+                     Kansas: Memorial Stadium, 47,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_48 = L.circleMarker(
+                [39.2020096, -96.5938395],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_48.bindTooltip(
+                `&lt;div&gt;
+                     Kansas State: Bill Snyder Family Stadium, 50,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_49 = L.circleMarker(
+                [36.125673, -97.066513],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_49.bindTooltip(
+                `&lt;div&gt;
+                     Oklahoma State: Boone Pickens Stadium, 55,509 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_50 = L.circleMarker(
+                [32.7096604, -97.3680835],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_50.bindTooltip(
+                `&lt;div&gt;
+                     TCU: Amon G. Carter Stadium, 46,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_51 = L.circleMarker(
+                [33.5910518, -101.8728824],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_51.bindTooltip(
+                `&lt;div&gt;
+                     Texas Tech: Jones AT&amp;T Stadium, 60,454 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_52 = L.circleMarker(
+                [28.6079765, -81.1927233],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_52.bindTooltip(
+                `&lt;div&gt;
+                     UCF: FBC Mortgage Stadium, 44,206 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_53 = L.circleMarker(
+                [40.7599724, -111.8488255],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_53.bindTooltip(
+                `&lt;div&gt;
+                     Utah: Rice-Eccles Stadium, 51,444 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_54 = L.circleMarker(
+                [39.6502744, -79.9551873],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fa4238&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#fa4238&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_38);
+
+
+            circle_marker_sdv_11_0_54.bindTooltip(
+                `&lt;div&gt;
+                     West Virginia: Milan Puskar Stadium, 60,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            feature_group_sdv_11_0_38.addTo(map_sdv_11_0_0);
+
+
+            var feature_group_sdv_11_0_55 = L.featureGroup(
+                {
+}
+            );
+
+
+            var circle_marker_sdv_11_0_56 = L.circleMarker(
+                [42.335104, -71.1664413],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_56.bindTooltip(
+                `&lt;div&gt;
+                     Boston College: Alumni Stadium (Chestnut Hill, MA), 44,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_57 = L.circleMarker(
+                [37.8710434, -122.2507729],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_57.bindTooltip(
+                `&lt;div&gt;
+                     California: California Memorial Stadium, 62,467 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_58 = L.circleMarker(
+                [34.6787737, -82.8432428],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_58.bindTooltip(
+                `&lt;div&gt;
+                     Clemson: Memorial Stadium (Clemson, SC), 81,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_59 = L.circleMarker(
+                [35.9953688, -78.9417564],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_59.bindTooltip(
+                `&lt;div&gt;
+                     Duke: Wallace Wade Stadium, 40,004 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_60 = L.circleMarker(
+                [30.4381692, -84.3044032],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_60.bindTooltip(
+                `&lt;div&gt;
+                     Florida State: Doak Campbell Stadium, 67,277 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_61 = L.circleMarker(
+                [33.7724449, -84.3928054],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_61.bindTooltip(
+                `&lt;div&gt;
+                     Georgia Tech: Bobby Dodd Stadium, 55,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_62 = L.circleMarker(
+                [38.2057621, -85.7588141],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_62.bindTooltip(
+                `&lt;div&gt;
+                     Louisville: L&amp;N Federal Credit Union Stadium, 60,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_63 = L.circleMarker(
+                [25.9579665, -80.2388604],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_63.bindTooltip(
+                `&lt;div&gt;
+                     Miami: Hard Rock Stadium, 64,767 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_64 = L.circleMarker(
+                [35.8008001, -78.7195655],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_64.bindTooltip(
+                `&lt;div&gt;
+                     NC State: Carter-Finley Stadium, 58,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_65 = L.circleMarker(
+                [35.9069294, -79.0478889],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_65.bindTooltip(
+                `&lt;div&gt;
+                     North Carolina: Kenan Stadium, 50,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_66 = L.circleMarker(
+                [40.4467648, -80.0157603],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_66.bindTooltip(
+                `&lt;div&gt;
+                     Pittsburgh: Acrisure Stadium, 68,400 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_67 = L.circleMarker(
+                [32.8377223, -96.7827859],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_67.bindTooltip(
+                `&lt;div&gt;
+                     SMU: Gerald J. Ford Stadium, 32,000 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_68 = L.circleMarker(
+                [37.4345556, -122.1611271],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_68.bindTooltip(
+                `&lt;div&gt;
+                     Stanford: Stanford Stadium, 50,424 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_69 = L.circleMarker(
+                [43.0362269, -76.1363161],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_69.bindTooltip(
+                `&lt;div&gt;
+                     Syracuse: JMA Wireless Dome, 49,057 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_70 = L.circleMarker(
+                [38.0311801, -78.5137897],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_70.bindTooltip(
+                `&lt;div&gt;
+                     Virginia: Scott Stadium, 61,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_71 = L.circleMarker(
+                [37.2199873, -80.4180643],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_71.bindTooltip(
+                `&lt;div&gt;
+                     Virginia Tech: Lane Stadium, 65,632 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            var circle_marker_sdv_11_0_72 = L.circleMarker(
+                [36.1305507, -80.2545851],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#003ca6&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: false, &quot;fillColor&quot;: &quot;#003ca6&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 16, &quot;stroke&quot;: true, &quot;weight&quot;: 4}
+            ).addTo(feature_group_sdv_11_0_55);
+
+
+            circle_marker_sdv_11_0_72.bindTooltip(
+                `&lt;div&gt;
+                     Wake Forest: Allegacy Federal Credit Union Stadium, 31,500 seats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+            feature_group_sdv_11_0_55.addTo(map_sdv_11_0_0);
+
+
+            var feature_group_sdv_11_0_73 = L.featureGroup(
+                {
+}
+            );
+
+
+            var marker_sdv_11_0_74 = L.marker(
+                [33.2082752, -87.5503836],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_75 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bb/bb55649cd4257a7d13b58db3f6cc85af8672b43f6eb215b6e729c7916ba5e4b8.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_74.bindTooltip(
+                `&lt;div&gt;
+                     Alabama Crimson Tide
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_74.setIcon(icon_sdv_11_0_75);
+
+
+            var marker_sdv_11_0_76 = L.marker(
+                [32.2288054, -110.9488677],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_77 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f0/f01db22fd85d00eaf8f9b5952bc8e7c0b458beae33753c312cb54c5515f7c967.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_76.bindTooltip(
+                `&lt;div&gt;
+                     Arizona Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_76.setIcon(icon_sdv_11_0_77);
+
+
+            var marker_sdv_11_0_78 = L.marker(
+                [33.4264471, -111.9325005],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_79 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/12/12740d7f76563f339392d50d215e173925114d2ad48d576263165f3b31052998.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_78.bindTooltip(
+                `&lt;div&gt;
+                     Arizona State Sun Devils
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_78.setIcon(icon_sdv_11_0_79);
+
+
+            var marker_sdv_11_0_80 = L.marker(
+                [36.0680662, -94.1789534],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_81 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/16/16e44ba49923991c70b824707a4c541327834a308472ca471f0001805a6a8d91.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_80.bindTooltip(
+                `&lt;div&gt;
+                     Arkansas Razorbacks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_80.setIcon(icon_sdv_11_0_81);
+
+
+            var marker_sdv_11_0_82 = L.marker(
+                [32.6025532, -85.4897479],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_83 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/80/80b9ba2db8d91211dc4f1a57ea855d34f6ef1796795e60d5545f91a49af8bf39.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_82.bindTooltip(
+                `&lt;div&gt;
+                     Auburn Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_82.setIcon(icon_sdv_11_0_83);
+
+
+            var marker_sdv_11_0_84 = L.marker(
+                [31.5582015, -97.1156702],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_85 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/03/0346c816dfe728010a42fc416ddb48ceb052126fd0675bbb8fc30a6df5fe8e8c.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_84.bindTooltip(
+                `&lt;div&gt;
+                     Baylor Bears
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_84.setIcon(icon_sdv_11_0_85);
+
+
+            var marker_sdv_11_0_86 = L.marker(
+                [42.335104, -71.1664413],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_87 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/fa/fa59bb32e732327db77cef6c70e32db5f0faf0d1b35a02abc482d1bc187c6036.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_86.bindTooltip(
+                `&lt;div&gt;
+                     Boston College Eagles
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_86.setIcon(icon_sdv_11_0_87);
+
+
+            var marker_sdv_11_0_88 = L.marker(
+                [40.2575347, -111.6545247],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_89 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/4c/4c49b759151574b979556fb10f1e245ec8cb03b4b3b80d4d352b5f909293976d.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_88.bindTooltip(
+                `&lt;div&gt;
+                     BYU Cougars
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_88.setIcon(icon_sdv_11_0_89);
+
+
+            var marker_sdv_11_0_90 = L.marker(
+                [37.8710434, -122.2507729],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_91 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e7/e77c7a116c09151929c126691922a76de34689b273f0cf8748097fcbbde087a5.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_90.bindTooltip(
+                `&lt;div&gt;
+                     California Golden Bears
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_90.setIcon(icon_sdv_11_0_91);
+
+
+            var marker_sdv_11_0_92 = L.marker(
+                [39.1312495, -84.5161913],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_93 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2f/2fd50a6f605fb9c0976541ceea04a6dca78de56fed0ea0186473da9fc39c651c.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_92.bindTooltip(
+                `&lt;div&gt;
+                     Cincinnati Bearcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_92.setIcon(icon_sdv_11_0_93);
+
+
+            var marker_sdv_11_0_94 = L.marker(
+                [34.6787737, -82.8432428],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_95 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/20/20abd84754733106d0b91337456ab631597c159620f9fa3db259da526d5b656d.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_94.bindTooltip(
+                `&lt;div&gt;
+                     Clemson Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_94.setIcon(icon_sdv_11_0_95);
+
+
+            var marker_sdv_11_0_96 = L.marker(
+                [40.0094746, -105.266905],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_97 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/69/69f6e383b017d6494ff7e0456e90211ca41e4c746aa0532cf762256651aaf192.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_96.bindTooltip(
+                `&lt;div&gt;
+                     Colorado Buffaloes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_96.setIcon(icon_sdv_11_0_97);
+
+
+            var marker_sdv_11_0_98 = L.marker(
+                [35.9953688, -78.9417564],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_99 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/5b/5b614bdf00364d325be332b63dafb5f95d25e0f59e63a3e152faa43124c57112.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_98.bindTooltip(
+                `&lt;div&gt;
+                     Duke Blue Devils
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_98.setIcon(icon_sdv_11_0_99);
+
+
+            var marker_sdv_11_0_100 = L.marker(
+                [29.6499357, -82.3485788],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_101 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2e/2e70460ca7c02a03d238ec4d9dce163a22401bfaa9842cbbf2f1ac1a991d6d50.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_100.bindTooltip(
+                `&lt;div&gt;
+                     Florida Gators
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_100.setIcon(icon_sdv_11_0_101);
+
+
+            var marker_sdv_11_0_102 = L.marker(
+                [30.4381692, -84.3044032],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_103 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/2b/2b8ccabe8c063ef5f2fbd4c21b489179d94782ca4ea6c14dd3e5d1728afa61a3.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_102.bindTooltip(
+                `&lt;div&gt;
+                     Florida State Seminoles
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_102.setIcon(icon_sdv_11_0_103);
+
+
+            var marker_sdv_11_0_104 = L.marker(
+                [33.9498197, -83.3733813],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_105 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/fa/fa5c7fb14d5ffa38eaddfeb80161835e60a3d496b57db5e0ebda5e6475226d8a.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_104.bindTooltip(
+                `&lt;div&gt;
+                     Georgia Bulldogs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_104.setIcon(icon_sdv_11_0_105);
+
+
+            var marker_sdv_11_0_106 = L.marker(
+                [33.7724449, -84.3928054],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_107 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c5/c50e6dcbe550c656e79729b1dc4d348a2deeb66dec33a331f9df4cb23885ce99.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_106.bindTooltip(
+                `&lt;div&gt;
+                     Georgia Tech Yellow Jackets
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_106.setIcon(icon_sdv_11_0_107);
+
+
+            var marker_sdv_11_0_108 = L.marker(
+                [29.7219885, -95.3491623],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_109 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d8/d8984a3cc57ea50d3002bb08515942af2be523c4fa404a670515da041261980d.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_108.bindTooltip(
+                `&lt;div&gt;
+                     Houston Cougars
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_108.setIcon(icon_sdv_11_0_109);
+
+
+            var marker_sdv_11_0_110 = L.marker(
+                [40.0993268, -88.2359569],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_111 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/62/62c3b65a1ab3e8cad05832d76dd7b3fb695c8220c07f0fe5aa44ef12abcda56c.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_110.bindTooltip(
+                `&lt;div&gt;
+                     Illinois Fighting Illini
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_110.setIcon(icon_sdv_11_0_111);
+
+
+            var marker_sdv_11_0_112 = L.marker(
+                [39.1808959, -86.5256217],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_113 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0d/0dfc3e06f6e158d96df2b9729de6b1cd6a5a5756ec365cd0b998aa6ecb45aa66.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_112.bindTooltip(
+                `&lt;div&gt;
+                     Indiana Hoosiers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_112.setIcon(icon_sdv_11_0_113);
+
+
+            var marker_sdv_11_0_114 = L.marker(
+                [41.6586045, -91.5510829],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_115 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/86/865b23c1e68385b0c0f2bbdd69a662382db1e9aa66310d3af5110b246b2ec472.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_114.bindTooltip(
+                `&lt;div&gt;
+                     Iowa Hawkeyes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_114.setIcon(icon_sdv_11_0_115);
+
+
+            var marker_sdv_11_0_116 = L.marker(
+                [42.0139977, -93.6357716],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_117 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8b490fe0621ea18538cf38e2b9c462beff54b26ee4707c54d024547e82e7cd63.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_116.bindTooltip(
+                `&lt;div&gt;
+                     Iowa State Cyclones
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_116.setIcon(icon_sdv_11_0_117);
+
+
+            var marker_sdv_11_0_118 = L.marker(
+                [38.9629418, -95.2463686],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_119 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e1/e1daa000b25e45917bfaa93464b8725980c8e3c1a859f1fb51174e9d37aee08b.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_118.bindTooltip(
+                `&lt;div&gt;
+                     Kansas Jayhawks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_118.setIcon(icon_sdv_11_0_119);
+
+
+            var marker_sdv_11_0_120 = L.marker(
+                [39.2020096, -96.5938395],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_121 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/93/93f3e366a88ec89bfa8ed8d1cc2ce16cfdc17a736bcd1831b908241296b11e39.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_120.bindTooltip(
+                `&lt;div&gt;
+                     Kansas State Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_120.setIcon(icon_sdv_11_0_121);
+
+
+            var marker_sdv_11_0_122 = L.marker(
+                [38.0220905, -84.5053408],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_123 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/6f/6f5dec8dea23de372677085b6ecc0d8f49420e3d0a0a5336e7165c94160f5015.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_122.bindTooltip(
+                `&lt;div&gt;
+                     Kentucky Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_122.setIcon(icon_sdv_11_0_123);
+
+
+            var marker_sdv_11_0_124 = L.marker(
+                [38.2057621, -85.7588141],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_125 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/7c/7c5e06bfb990c80176ef56e171bfb2de264355db54c592462d5f8a02404412e8.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_124.bindTooltip(
+                `&lt;div&gt;
+                     Louisville Cardinals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_124.setIcon(icon_sdv_11_0_125);
+
+
+            var marker_sdv_11_0_126 = L.marker(
+                [30.412035, -91.1838163],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_127 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d0/d02e29a9f8824740d848b4a83c574b1c1942ba1cdee61b3ee08611634cc86b46.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_126.bindTooltip(
+                `&lt;div&gt;
+                     LSU Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_126.setIcon(icon_sdv_11_0_127);
+
+
+            var marker_sdv_11_0_128 = L.marker(
+                [38.9903332, -76.9473792],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_129 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/9b/9b1951d140a87972ecf1e0564c190db1755f46997c4393813281194e62c83d45.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_128.bindTooltip(
+                `&lt;div&gt;
+                     Maryland Terrapins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_128.setIcon(icon_sdv_11_0_129);
+
+
+            var marker_sdv_11_0_130 = L.marker(
+                [25.9579665, -80.2388604],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_131 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/55/55800e4867c87bf38281043628d2c0dfadd0bf44632b27a9ab20af27a9a728fb.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_130.bindTooltip(
+                `&lt;div&gt;
+                     Miami Hurricanes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_130.setIcon(icon_sdv_11_0_131);
+
+
+            var marker_sdv_11_0_132 = L.marker(
+                [42.2658365, -83.7486956],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_133 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/91/910dbf467c9b442f1b493280bbc027ba5a1f91e2ce314fae099d637aade7d42b.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_132.bindTooltip(
+                `&lt;div&gt;
+                     Michigan Wolverines
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_132.setIcon(icon_sdv_11_0_133);
+
+
+            var marker_sdv_11_0_134 = L.marker(
+                [42.7281474, -84.4848526],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_135 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/9e/9e3005c55a99e3bfc69da7df2d7a66b4851c9710e33c2f328ed471bf37638474.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_134.bindTooltip(
+                `&lt;div&gt;
+                     Michigan State Spartans
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_134.setIcon(icon_sdv_11_0_135);
+
+
+            var marker_sdv_11_0_136 = L.marker(
+                [44.976525, -93.2245462],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_137 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/cb/cb58131490de1f8724f1d53224aa7383671514e3a84df1d136c6f3e4429c302d.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_136.bindTooltip(
+                `&lt;div&gt;
+                     Minnesota Golden Gophers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_136.setIcon(icon_sdv_11_0_137);
+
+
+            var marker_sdv_11_0_138 = L.marker(
+                [33.4563403, -88.7933652],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_139 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/18/1854b6d52609c4db7daacc59ce122017c3eabd2e70b9c66deeec297183d4d46b.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_138.bindTooltip(
+                `&lt;div&gt;
+                     Mississippi State Bulldogs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_138.setIcon(icon_sdv_11_0_139);
+
+
+            var marker_sdv_11_0_140 = L.marker(
+                [38.9358491, -92.3332009],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_141 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bb/bb4a26eac90ad2ca3557f18180dc0f1cbdf88ba013c15c3293071701a3f43b53.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_140.bindTooltip(
+                `&lt;div&gt;
+                     Missouri Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_140.setIcon(icon_sdv_11_0_141);
+
+
+            var marker_sdv_11_0_142 = L.marker(
+                [35.8008001, -78.7195655],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_143 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ee/ee51da26e5cdf389cc787c58478f10bb03503832e35f862b4f208d273819d8ec.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_142.bindTooltip(
+                `&lt;div&gt;
+                     NC State Wolfpack
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_142.setIcon(icon_sdv_11_0_143);
+
+
+            var marker_sdv_11_0_144 = L.marker(
+                [40.820682, -96.705594],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_145 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c0/c09e5b394cfa5be2f2369c5e63210a12e25943b904d077c6469714ca9f8285e2.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_144.bindTooltip(
+                `&lt;div&gt;
+                     Nebraska Cornhuskers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_144.setIcon(icon_sdv_11_0_145);
+
+
+            var marker_sdv_11_0_146 = L.marker(
+                [35.9069294, -79.0478889],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_147 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c5/c51339a92ebf5e7dbdbcb6c32dc2cc63f9e2f3dc0e5d47f60fd59fa22ceb32ec.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_146.bindTooltip(
+                `&lt;div&gt;
+                     North Carolina Tar Heels
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_146.setIcon(icon_sdv_11_0_147);
+
+
+            var marker_sdv_11_0_148 = L.marker(
+                [42.058246, -87.670876],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_149 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d447850b4a4d514fb7692fec4cda3e4fe7268c9d664b53e93f0f8fd476b1e6d3.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_148.bindTooltip(
+                `&lt;div&gt;
+                     Northwestern Wildcats
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_148.setIcon(icon_sdv_11_0_149);
+
+
+            var marker_sdv_11_0_150 = L.marker(
+                [40.0016447, -83.0197266],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_151 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/6d/6dbe512c1b9b4e8c0ebcfcb4b3620b6229a05619e8bf70b3051a8e6c4964240d.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_150.bindTooltip(
+                `&lt;div&gt;
+                     Ohio State Buckeyes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_150.setIcon(icon_sdv_11_0_151);
+
+
+            var marker_sdv_11_0_152 = L.marker(
+                [35.2058537, -97.4423145],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_153 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/19/19f8f9a3254b9c85ffacf42de7b4d00e1186fbb0b55effdabe9c6d0a3f487ddf.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_152.bindTooltip(
+                `&lt;div&gt;
+                     Oklahoma Sooners
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_152.setIcon(icon_sdv_11_0_153);
+
+
+            var marker_sdv_11_0_154 = L.marker(
+                [36.125673, -97.066513],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_155 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3d/3d5ebde2aa002198a95ef2449a139270278cffd31419060b755616b7614697d1.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_154.bindTooltip(
+                `&lt;div&gt;
+                     Oklahoma State Cowboys
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_154.setIcon(icon_sdv_11_0_155);
+
+
+            var marker_sdv_11_0_156 = L.marker(
+                [34.3619837, -89.5342076],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_157 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/61/61988dd6fb46c4c5dad612e7ef14eeee56b63ada3a0758b30ccf418213ecd826.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_156.bindTooltip(
+                `&lt;div&gt;
+                     Ole Miss Rebels
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_156.setIcon(icon_sdv_11_0_157);
+
+
+            var marker_sdv_11_0_158 = L.marker(
+                [44.0582712, -123.0684883],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_159 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57dca8a00b01bebcfb1e0c7ceafe0b046e175c47ec7225713b3930e7fcb7cd05.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_158.bindTooltip(
+                `&lt;div&gt;
+                     Oregon Ducks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_158.setIcon(icon_sdv_11_0_159);
+
+
+            var marker_sdv_11_0_160 = L.marker(
+                [40.8121958, -77.8561023],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_161 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0e/0efa003a56ec95d664b71d799fabe5e927d2ddd23cea90d5bab42df971abd080.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_160.bindTooltip(
+                `&lt;div&gt;
+                     Penn State Nittany Lions
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_160.setIcon(icon_sdv_11_0_161);
+
+
+            var marker_sdv_11_0_162 = L.marker(
+                [40.4467648, -80.0157603],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_163 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c2/c283722b1c9f4b47b7361d7d959422225de4ad4682b0eadcd66f707c015506f3.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_162.bindTooltip(
+                `&lt;div&gt;
+                     Pittsburgh Panthers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_162.setIcon(icon_sdv_11_0_163);
+
+
+            var marker_sdv_11_0_164 = L.marker(
+                [40.4352253, -86.9186843],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_165 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/42/4278337c6eb6dc808cbb8ff5e8fa0cb068db59aa75def6324a27f773201455cc.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_164.bindTooltip(
+                `&lt;div&gt;
+                     Purdue Boilermakers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_164.setIcon(icon_sdv_11_0_165);
+
+
+            var marker_sdv_11_0_166 = L.marker(
+                [40.513611, -74.465278],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_167 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/5e/5e75a7a68f9a6403f950f7ddf9c656698fcebcaa5fa16f0890135f2098c18686.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_166.bindTooltip(
+                `&lt;div&gt;
+                     Rutgers Scarlet Knights
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_166.setIcon(icon_sdv_11_0_167);
+
+
+            var marker_sdv_11_0_168 = L.marker(
+                [32.8377223, -96.7827859],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_169 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1dbe095805cd1636fc5aac2918eedf81b4dad43329a8c1e665616ee1d79840a7.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_168.bindTooltip(
+                `&lt;div&gt;
+                     SMU Mustangs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_168.setIcon(icon_sdv_11_0_169);
+
+
+            var marker_sdv_11_0_170 = L.marker(
+                [33.9730239, -81.0191726],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_171 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/c9/c9e93c5450038047b77651cc3713964b83147bfd8df1a96d299f1e190aad002c.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_170.bindTooltip(
+                `&lt;div&gt;
+                     South Carolina Gamecocks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_170.setIcon(icon_sdv_11_0_171);
+
+
+            var marker_sdv_11_0_172 = L.marker(
+                [37.4345556, -122.1611271],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_173 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a2/a25c3474889c6c9d966245814fdd29c51dd79b02ae9e7780965cf52aad1ee22b.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_172.bindTooltip(
+                `&lt;div&gt;
+                     Stanford Cardinal
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_172.setIcon(icon_sdv_11_0_173);
+
+
+            var marker_sdv_11_0_174 = L.marker(
+                [43.0362269, -76.1363161],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_175 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/cc/cc978bd06e84d85870429294fd9a2f4908ec9c43635bd83ef3eee94387cfd100.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_174.bindTooltip(
+                `&lt;div&gt;
+                     Syracuse Orange
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_174.setIcon(icon_sdv_11_0_175);
+
+
+            var marker_sdv_11_0_176 = L.marker(
+                [32.7096604, -97.3680835],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_177 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/86/864561cb4ebf372171438c038fcf52eac3342a2c1d751e605901e144c70afda0.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_176.bindTooltip(
+                `&lt;div&gt;
+                     TCU Horned Frogs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_176.setIcon(icon_sdv_11_0_177);
+
+
+            var marker_sdv_11_0_178 = L.marker(
+                [35.9550131, -83.9250128],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_179 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1e/1ef03aa847164f52dee3c8bfea023e3b75915231c01250889a549ae08b2ec9b8.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_178.bindTooltip(
+                `&lt;div&gt;
+                     Tennessee Volunteers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_178.setIcon(icon_sdv_11_0_179);
+
+
+            var marker_sdv_11_0_180 = L.marker(
+                [30.2836813, -97.7325345],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_181 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/12/12d69bb78c3443bdbcc5a7659f288840a7a3862d70043eda3d8868a229eb7696.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_180.bindTooltip(
+                `&lt;div&gt;
+                     Texas Longhorns
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_180.setIcon(icon_sdv_11_0_181);
+
+
+            var marker_sdv_11_0_182 = L.marker(
+                [30.6098891, -96.3403828],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_183 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0d/0da7ac07d04adcd38707b88a4198e988b830ed49a0ab6c9378cfb4cfb980aa08.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_182.bindTooltip(
+                `&lt;div&gt;
+                     Texas A&amp;M Aggies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_182.setIcon(icon_sdv_11_0_183);
+
+
+            var marker_sdv_11_0_184 = L.marker(
+                [33.5910518, -101.8728824],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_185 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/be/be16f2f868f97ef01961fe3332252aa767be3a860438b9f0da054bf7205b66e4.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_184.bindTooltip(
+                `&lt;div&gt;
+                     Texas Tech Red Raiders
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_184.setIcon(icon_sdv_11_0_185);
+
+
+            var marker_sdv_11_0_186 = L.marker(
+                [28.6079765, -81.1927233],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_187 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/4f/4fdf8855a3d5842e5cb897277f93cad7422774b42d6d426e019591a0c596bf2c.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_186.bindTooltip(
+                `&lt;div&gt;
+                     UCF Knights
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_186.setIcon(icon_sdv_11_0_187);
+
+
+            var marker_sdv_11_0_188 = L.marker(
+                [34.1613284, -118.1676462],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_189 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/51/5145c6eb67719f52cdf51c92ef6b30486c9a585ca129624d6c7837e369321a23.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_188.bindTooltip(
+                `&lt;div&gt;
+                     UCLA Bruins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_188.setIcon(icon_sdv_11_0_189);
+
+
+            var marker_sdv_11_0_190 = L.marker(
+                [34.014167, -118.287778],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_191 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ab/abd4a69d1efca7bd1c944acf8a5a77b5bce41602da970e9779f0bf6079489c1a.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_190.bindTooltip(
+                `&lt;div&gt;
+                     USC Trojans
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_190.setIcon(icon_sdv_11_0_191);
+
+
+            var marker_sdv_11_0_192 = L.marker(
+                [40.7599724, -111.8488255],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_193 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/54/54d1837e37240cb37dcbea2b2dfd518bdf8531344e5f5397ff02a1d2111b5b43.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_192.bindTooltip(
+                `&lt;div&gt;
+                     Utah Utes
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_192.setIcon(icon_sdv_11_0_193);
+
+
+            var marker_sdv_11_0_194 = L.marker(
+                [36.1440455, -86.8088942],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_195 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/cd/cdb3df344d224cae8b03a9f23f6e15424267095644cc211e0e0278c6e53986c4.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_194.bindTooltip(
+                `&lt;div&gt;
+                     Vanderbilt Commodores
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_194.setIcon(icon_sdv_11_0_195);
+
+
+            var marker_sdv_11_0_196 = L.marker(
+                [38.0311801, -78.5137897],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_197 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d3/d35c8362ad7a6f03b32e30bc0745cb481da320da96010c7327f3c78359ac9fe5.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_196.bindTooltip(
+                `&lt;div&gt;
+                     Virginia Cavaliers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_196.setIcon(icon_sdv_11_0_197);
+
+
+            var marker_sdv_11_0_198 = L.marker(
+                [37.2199873, -80.4180643],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_199 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/56/56dbddcf5acd291817b559a31b6d8aabc91fe1ef1d27f47a527d353dc706cd7a.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_198.bindTooltip(
+                `&lt;div&gt;
+                     Virginia Tech Hokies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_198.setIcon(icon_sdv_11_0_199);
+
+
+            var marker_sdv_11_0_200 = L.marker(
+                [36.1305507, -80.2545851],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_201 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e3/e307401dc8adf24492175e57a95f242b8943fe0fb3121ca84757095e6825d17a.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_200.bindTooltip(
+                `&lt;div&gt;
+                     Wake Forest Demon Deacons
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_200.setIcon(icon_sdv_11_0_201);
+
+
+            var marker_sdv_11_0_202 = L.marker(
+                [47.6503235, -122.3015746],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_203 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d1/d1b99c2ea2a3336916b6906c38470338b07bd1e66c09c4433080b0d7017709b2.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_202.bindTooltip(
+                `&lt;div&gt;
+                     Washington Huskies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_202.setIcon(icon_sdv_11_0_203);
+
+
+            var marker_sdv_11_0_204 = L.marker(
+                [39.6502744, -79.9551873],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_205 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/5d/5d80b2a5a79d7c5b8dfbb270f0140bd7353b87b6fcd8dc43a60ccff9a72baa29.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_204.bindTooltip(
+                `&lt;div&gt;
+                     West Virginia Mountaineers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_204.setIcon(icon_sdv_11_0_205);
+
+
+            var marker_sdv_11_0_206 = L.marker(
+                [43.06994, -89.4126943],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_11_0_73);
+
+
+        var icon_sdv_11_0_207 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/36/36a5c3e0fae73171c91f10ceb170ea820f4f46c4899ee8a66e900a60b597ee98.png&quot;,
+  &quot;iconSize&quot;: [22, 22],
+  &quot;iconAnchor&quot;: [11, 11],
+});
+
+
+            marker_sdv_11_0_206.bindTooltip(
+                `&lt;div&gt;
+                     Wisconsin Badgers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_11_0_206.setIcon(icon_sdv_11_0_207);
+
+
+            feature_group_sdv_11_0_73.addTo(map_sdv_11_0_0);
+
+
+            var layer_control_sdv_11_0_208_layers = {
+                base_layers : {
+                    &quot;esriworldgraycanvas&quot; : tile_layer_sdv_11_0_1,
+                },
+                overlays :  {
+                    &quot;SEC&quot; : feature_group_sdv_11_0_2,
+                    &quot;Big Ten&quot; : feature_group_sdv_11_0_19,
+                    &quot;Big 12&quot; : feature_group_sdv_11_0_38,
+                    &quot;ACC&quot; : feature_group_sdv_11_0_55,
+                    &quot;sdvplot logos&quot; : feature_group_sdv_11_0_73,
+                },
+            };
+            let layer_control_sdv_11_0_208 = L.control.layers(
+                layer_control_sdv_11_0_208_layers.base_layers,
+                layer_control_sdv_11_0_208_layers.overlays,
+                {
+  &quot;position&quot;: &quot;topright&quot;,
+  &quot;collapsed&quot;: false,
+  &quot;autoZIndex&quot;: true,
+}
+            ).addTo(map_sdv_11_0_0);
+
+
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
