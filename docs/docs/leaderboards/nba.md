@@ -76,7 +76,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Season to date:** the 2026-27 season through October 25.
+**Season to date:** the 2026-27 season through November 8.
 
 </div>
 
@@ -120,13 +120,13 @@ ratings.head()
 
 <div class="sdv-output">
 
-| team | w | l | l10 | ortg       | drtg       | pct | net       | abbr | name          | conference         |
-|------|---|---|-----|------------|------------|-----|-----------|------|---------------|--------------------|
-| 22   | 2 | 0 | 2   | 121.609883 | 97.963517  | 1.0 | 23.646366 | POR  | Trail Blazers | Western Conference |
-| 16   | 3 | 0 | 3   | 116.16     | 93.76      | 1.0 | 22.4      | MIN  | Timberwolves  | Western Conference |
-| 13   | 3 | 0 | 3   | 122.809262 | 110.336446 | 1.0 | 12.472816 | LAL  | Lakers        | Western Conference |
-| 8    | 3 | 0 | 3   | 114.782721 | 102.49612  | 1.0 | 12.286601 | DET  | Pistons       | Eastern Conference |
-| 29   | 3 | 0 | 3   | 116.506755 | 105.410874 | 1.0 | 11.095881 | MEM  | Grizzlies     | Western Conference |
+| team | w | l | l10 | ortg       | drtg       | pct      | net       | abbr | name    | conference         |
+|------|---|---|-----|------------|------------|----------|-----------|------|---------|--------------------|
+| 13   | 9 | 2 | 8   | 118.830306 | 111.564023 | 0.818182 | 7.266283  | LAL  | Lakers  | Western Conference |
+| 20   | 9 | 2 | 8   | 108.281159 | 105.265958 | 0.818182 | 3.0152    | PHI  | 76ers   | Eastern Conference |
+| 2    | 8 | 2 | 8   | 115.508236 | 104.760948 | 0.8      | 10.747288 | BOS  | Celtics | Eastern Conference |
+| 24   | 8 | 2 | 8   | 114.590995 | 104.622353 | 0.8      | 9.968642  | SA   | Spurs   | Western Conference |
+| 25   | 8 | 2 | 8   | 109.969812 | 102.128827 | 0.8      | 7.840985  | OKC  | Thunder | Western Conference |
 
 </div>
 

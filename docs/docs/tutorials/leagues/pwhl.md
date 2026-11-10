@@ -41,7 +41,7 @@ sdvplot.resolve(teams["team_id"], "pwhl").to_list()
 <div class="sdv-output">
 
 ```text
-12 value(s) did not resolve to a pwhl team: 'BOS' (unknown), 'MIN' (unknown), 'MTL' (unknown), 'NY' (unknown), 'OTT' (unknown), 'DET' (unknown), 'HAM' (unknown), 'VEG' (unknown), 'SJ' (unknown), 'SEA' (unknown), 'TOR' (unknown), 'VAN' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
+12 value(s) did not resolve to a pwhl team: 'BOS' (unknown), 'MIN' (unknown), 'MTL' (unknown), 'NY' (unknown), 'OTT' (unknown), 'DET' (unknown), 'HAM' (unknown), 'VGS' (unknown), 'SJ' (unknown), 'SEA' (unknown), 'TOR' (unknown), 'VAN' (unknown). Use sdvplot.suggest() for candidates, or strict=True to raise.
 ```
 
 ```text

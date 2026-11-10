@@ -75,7 +75,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Playoffs:** the final 2026 regular season; the playoffs are under way.
+**Offseason:** the final 2026 regular season.
 
 </div>
 
