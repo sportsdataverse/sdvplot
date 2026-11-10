@@ -705,7 +705,7 @@ def test_live_every_conference_row_has_an_archived_logo(tmp_path, monkeypatch):
     _manifest._read.cache_clear()
     conf = sdvplot.teams(include_conferences=True).filter(pl.col("program").is_in(_index.NON_TEAM))
     urls = [sdvplot.logo_url(tid, lg, strict=True) for lg, tid in conf.select("league", "team_id").rows()]
-    assert len(urls) == 118 and all(u and u.startswith(_manifest.MANIFEST_URL.rsplit("/", 2)[0]) for u in urls)
+    assert len(urls) == 247 and all(u and u.startswith(_manifest.MANIFEST_URL.rsplit("/", 2)[0]) for u in urls)
     sec = sdvplot.marks("SEC", "cfb")  # the dark variant beside the listed file
     assert set(sec["variant"]) == {"default", "dark"} and sec["level"].to_list() == ["conference"] * sec.height
     assert sdvplot.logo_url("SEC", "cfb", variant="dark") != sdvplot.logo_url("SEC", "cfb")
