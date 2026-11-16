@@ -432,8 +432,14 @@ if euroleague is not None:
 <div class="sdv-output">
 
 ```text
-Skipped: needs sportsdataverse 0.2.0b1 or newer: pip install -U --pre "sportsdataverse>=0.2.0b1"
+| player        | action               | coord_x | coord_y | court_x | court_y |
+|---------------|----------------------|---------|---------|---------|---------|
+| JONES, KAI    | Two Pointer          | -12     | -6      | -12.485 | -0.12   |
+| LARKIN, SHANE | Missed Three Pointer | 414     | 602     | -6.405  | 4.14    |
+| OSMANI, ERCAN | Two Pointer          | -307    | 0       | -12.425 | -3.07   |
 ```
+
+![png](surfaces-and-shot-charts_files/surfaces-and-shot-charts_23_1.png)
 
 </div>
 
