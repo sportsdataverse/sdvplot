@@ -105,15 +105,15 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 10.
+**Season to date:** the 2026 season through week 11.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 7 | 2 | 7-2    |
-| 2006    | Akron     | Mid-American  | 1 | 8 | 1-8    |
-| 333     | Alabama   | SEC           | 7 | 2 | 7-2    |
-| 2026    | App State | Sun Belt      | 5 | 4 | 5-4    |
-| 12      | Arizona   | Big 12        | 7 | 2 | 7-2    |
+| 2005    | Air Force | Mountain West | 8 | 2 | 8-2    |
+| 2006    | Akron     | Mid-American  | 1 | 9 | 1-9    |
+| 333     | Alabama   | SEC           | 8 | 2 | 8-2    |
+| 2026    | App State | Sun Belt      | 6 | 4 | 6-4    |
+| 12      | Arizona   | Big 12        | 7 | 3 | 7-3    |
 
 </div>
 
@@ -171,13 +171,13 @@ top25.head()
 
 <div class="sdv-output">
 
-| rank | team_id | school     | conference       | record | off      | dfn       | net      |
-|------|---------|------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame | FBS Independents | 8-1    | 0.238394 | -0.145524 | 0.383918 |
-| 2    | 99      | LSU        | SEC              | 6-3    | 0.187327 | -0.136684 | 0.324011 |
-| 3    | 61      | Georgia    | SEC              | 8-1    | 0.182103 | -0.135555 | 0.317658 |
-| 4    | 2390    | Miami      | ACC              | 8-1    | 0.313606 | 0.00248   | 0.311126 |
-| 5    | 333     | Alabama    | SEC              | 7-2    | 0.218271 | -0.0814   | 0.299671 |
+| rank | team_id | school      | conference       | record | off      | dfn       | net      |
+|------|---------|-------------|------------------|--------|----------|-----------|----------|
+| 1    | 87      | Notre Dame  | FBS Independents | 9-1    | 0.252071 | -0.174043 | 0.426114 |
+| 2    | 61      | Georgia     | SEC              | 9-1    | 0.224789 | -0.148096 | 0.372884 |
+| 3    | 154     | Wake Forest | ACC              | 9-1    | 0.251641 | -0.099534 | 0.351175 |
+| 4    | 2390    | Miami       | ACC              | 9-1    | 0.342872 | 0.013422  | 0.32945  |
+| 5    | 99      | LSU         | SEC              | 6-4    | 0.187237 | -0.118844 | 0.306081 |
 
 </div>
 

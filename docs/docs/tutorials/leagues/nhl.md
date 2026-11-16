@@ -55,7 +55,7 @@ pbp.height, team_box.height, standings.height
 <div class="sdv-output">
 
 ```text
-(441052, 2788, 32)
+(443569, 2788, 32)
 ```
 
 </div>
@@ -279,7 +279,7 @@ plt.show()
 <div class="sdv-output">
 
 ```text
-7,885 goals on 8,867 expected: the model runs 12% high
+7,885 goals on 8,035 expected: the model runs 2% high
 ```
 
 ![png](nhl_files/nhl_14_1.png)
