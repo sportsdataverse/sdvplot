@@ -87,7 +87,7 @@ display(Markdown(status))
 
 <div class="sdv-output">
 
-**Updated 2026-11-09:** the 2026-27 season, 15-19 games in per team (282 games played). Early-season tables move a lot from week to week.
+**Updated 2026-11-24:** the 2026-27 season, 20-26 games in per team (377 games played). Early-season tables move a lot from week to week.
 
 </div>
 

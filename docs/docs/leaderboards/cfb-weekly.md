@@ -105,15 +105,15 @@ fbs.sort("school").head()
 
 <div class="sdv-output">
 
-**Season to date:** the 2026 season through week 10.
+**Season to date:** the 2026 season through week 12.
 
 | team_id | school    | conference    | w | l | record |
 |---------|-----------|---------------|---|---|--------|
-| 2005    | Air Force | Mountain West | 7 | 2 | 7-2    |
-| 2006    | Akron     | Mid-American  | 1 | 8 | 1-8    |
-| 333     | Alabama   | SEC           | 7 | 2 | 7-2    |
-| 2026    | App State | Sun Belt      | 5 | 4 | 5-4    |
-| 12      | Arizona   | Big 12        | 7 | 2 | 7-2    |
+| 2005    | Air Force | Mountain West | 9 | 2 | 9-2    |
+| 2006    | Akron     | Mid-American  | 2 | 9 | 2-9    |
+| 333     | Alabama   | SEC           | 9 | 2 | 9-2    |
+| 2026    | App State | Sun Belt      | 7 | 4 | 7-4    |
+| 12      | Arizona   | Big 12        | 8 | 3 | 8-3    |
 
 </div>
 
@@ -171,13 +171,13 @@ top25.head()
 
 <div class="sdv-output">
 
-| rank | team_id | school     | conference       | record | off      | dfn       | net      |
-|------|---------|------------|------------------|--------|----------|-----------|----------|
-| 1    | 87      | Notre Dame | FBS Independents | 8-1    | 0.238394 | -0.145524 | 0.383918 |
-| 2    | 99      | LSU        | SEC              | 6-3    | 0.187327 | -0.136684 | 0.324011 |
-| 3    | 61      | Georgia    | SEC              | 8-1    | 0.182103 | -0.135555 | 0.317658 |
-| 4    | 2390    | Miami      | ACC              | 8-1    | 0.313606 | 0.00248   | 0.311126 |
-| 5    | 333     | Alabama    | SEC              | 7-2    | 0.218271 | -0.0814   | 0.299671 |
+| rank | team_id | school      | conference       | record | off      | dfn       | net      |
+|------|---------|-------------|------------------|--------|----------|-----------|----------|
+| 1    | 87      | Notre Dame  | FBS Independents | 10-1   | 0.237496 | -0.191236 | 0.428731 |
+| 2    | 154     | Wake Forest | ACC              | 10-1   | 0.2819   | -0.097774 | 0.379674 |
+| 3    | 61      | Georgia     | SEC              | 10-1   | 0.218575 | -0.147937 | 0.366512 |
+| 4    | 254     | Utah        | Big 12           | 11-0   | 0.230228 | -0.078097 | 0.308325 |
+| 5    | 2390    | Miami       | ACC              | 10-1   | 0.310648 | 0.006304  | 0.304345 |
 
 </div>
 
