@@ -280,3 +280,48 @@ def test_the_roster_cache_directory_is_one_clear_cache_empties():
     from sdvplot import _cache
 
     assert "cfbfastR-data" in _cache.CACHE_SUBDIRS
+
+
+def test_a_roster_downloads_through_the_cache_and_a_missing_season_is_empty(cache, monkeypatch):
+    import datetime
+    import io
+
+    from sdvplot import _cache
+    from tests.conftest import FakeResponse, FakeSession
+
+    buf = io.BytesIO()
+    pl.DataFrame(
+        {
+            "athlete_id": ["3926231", "1", "2"],
+            "first_name": ["Britain", None, "Zaccario"],
+            "last_name": ["Covey", "X", ""],
+            "team": ["Utah", "Utah", None],
+            "headshot_url": ["https://a.espncdn.com/u.png", None, None],
+        }
+    ).write_parquet(buf)
+    monkeypatch.setattr(_cache, "SESSION", FakeSession(FakeResponse(200, buf.getvalue()), FakeResponse(404)))
+    # a row with no first name is skipped; an empty last name is kept ("Zaccario "), as in the parquet files
+    assert _headshots._roster("cfb", 2021) == (
+        (2021, "3926231", "Britain Covey", "Utah", "https://a.espncdn.com/u.png"),
+        (2021, "2", "Zaccario ", None, None),
+    )
+    assert _headshots._roster("cfb", 2030) == ()  # not published yet: 404, no rows, no raise
+    assert _headshots._latest_roster_season(datetime.date(2026, 8, 14)) == 2025
+    assert _headshots._latest_roster_season(datetime.date(2026, 8, 15)) == 2026
+    assert [_headshots._as_int(v) for v in (2021, 2021.7, " 2021 ", "x", None, True, float("nan"))] == [
+        2021,
+        2021,
+        2021,
+        None,
+        None,
+        None,
+        None,
+    ]
+
+
+def test_without_the_latest_season_published_the_season_before_is_read(monkeypatch):
+    rows = ((2025, "7", "Bo Nix", "Oregon", None),)
+    monkeypatch.setattr(_headshots, "_roster", lambda league, season: rows if season == 2025 else ())
+    monkeypatch.setattr(_headshots, "_latest_roster_season", lambda: 2026)
+    out = sdvplot.add_athlete_id(pl.DataFrame({"name": ["bo nix"]}), "name")
+    assert out["athlete_id"].to_list() == ["7"]
