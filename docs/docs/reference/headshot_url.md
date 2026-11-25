@@ -1,7 +1,7 @@
 ---
 title: headshot_url
 sidebar_label: headshot_url
-sidebar_position: 9
+sidebar_position: 12
 ---
 
 # headshot_url
@@ -26,8 +26,8 @@ A headshot URL for one player.
 | Name | Type | Description |
 |---|---|---|
 | `player_id` | `Any` | One player id: an ESPN athlete id, an nflverse gsis id, or the league's own player id. |
-| `league` | `str` | The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb, wbb, nbagl and soccer; "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, nhl and the 20 HockeyTech leagues (pwhl, ahl, echl, ohl, whl, qmjhl, ushl, sphl, chl, bchl, ajhl, sjhl, ojhl, cchl, gojhl, mhl, nojhl, vijhl, kijhl, mjhl). ESPN files G League (nbagl) photos with the NBA's, so a G League player's ESPN id is the one ESPN uses for him in the NBA. ESPN has photos for only part of the G League and soccer rosters. F1 drivers have none: formula1.com keys its photos by its own driver reference (``MAXVER01``), not a driver number or Jolpica ``driver_id``. |
-| `id_system` | `Literal['espn', 'gsis', 'league', 'fox', 'yahoo', 'cbs', 'kenpom', 'ncaa', 'nba_stats', 'wnba_stats']` | "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot), another provider's player id mapped to its ESPN athlete through sdv-reference-data's ``{league}_player_aliases`` ("fox", "yahoo" and "cbs" for nfl and cfb, "ncaa" for cfb, mbb and wbb, "fox" and "yahoo" for nba, wnba, mbb and wbb, "kenpom" for mbb, "nba_stats" for nba, "wnba_stats" for wnba), or "league" (the league's own player id, sdvplotR's ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM id, an NHL API id, or the ``player_id`` of a HockeyTech feed (the 20 HockeyTech leagues above) on ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown NBA, WNBA, MLB or NHL id gets the CDN's silhouette image; an unknown ESPN or HockeyTech id is a 404, which the adapters treat as any missing image. |
+| `league` | `str` | The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb, wbb, nbagl and soccer; "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, milb, nhl, f1 and the 20 HockeyTech leagues (pwhl, ahl, echl, ohl, whl, qmjhl, ushl, sphl, chl, bchl, ajhl, sjhl, ojhl, cchl, gojhl, mhl, nojhl, vijhl, kijhl, mjhl). ESPN files G League (nbagl) photos with the NBA's, so a G League player's ESPN id is the one ESPN uses for him in the NBA. ESPN has photos for only part of the G League and soccer rosters. F1 drivers go by their Jolpica ``driver_id`` (``"max_verstappen"``), to the Wikimedia Commons photo Wikidata gives the driver, when its license is free (CC BY, CC BY-SA, CC0 or public domain); the license and author to credit are in ``sdvplot/data/f1_headshots.csv``, and a driver without a free photo gives None. |
+| `id_system` | `Literal['espn', 'gsis', 'league', 'fox', 'yahoo', 'cbs', 'kenpom', 'ncaa', 'nba_stats', 'wnba_stats']` | "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table, preferring nflverse's own headshot), another provider's player id mapped to its ESPN athlete through sdv-reference-data's ``{league}_player_aliases`` ("fox", "yahoo" and "cbs" for nfl and cfb, "ncaa" for cfb, mbb and wbb, "fox" and "yahoo" for nba, wnba, mbb and wbb, "kenpom" for mbb, "nba_stats" for nba, "wnba_stats" for wnba), or "league" (the league's own player id, sdvplotR's ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM id (MLB and MiLB), an NHL API id, an F1 driver's Jolpica ``driver_id``, or the ``player_id`` of a HockeyTech feed (the 20 HockeyTech leagues above) on ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An unknown NBA, WNBA, MLB, MiLB or NHL id gets the CDN's silhouette image; an unknown ESPN or HockeyTech id is a 404, which the adapters treat as any missing image. |
 
 ## Returns
 
@@ -52,6 +52,7 @@ sdvplot.headshot_url(2544, "nba", id_system="league")   # LeBron James by his NB
 sdvplot.headshot_url(52, "pwhl", id_system="league")   # a PWHL player by her HockeyTech player_id
 # 'https://assets.leaguestat.com/pwhl/240x240/52.jpg'
 sdvplot.headshot_url("nba.p.3704", "nba", id_system="yahoo")   # LeBron James by his Yahoo id
+sdvplot.headshot_url("max_verstappen", "f1", id_system="league")   # a Commons photo (credit: the csv)
 ```
 
 ## See also

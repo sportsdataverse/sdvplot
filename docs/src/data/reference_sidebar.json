@@ -10,7 +10,10 @@
     "items": [
       "reference/resolve",
       "reference/suggest",
-      "reference/teams"
+      "reference/teams",
+      "reference/aliases",
+      "reference/clean_names",
+      "reference/team_factor"
     ]
   },
   {
@@ -28,7 +31,8 @@
       "reference/logo_url",
       "reference/logo_image",
       "reference/marks",
-      "reference/headshot_url"
+      "reference/headshot_url",
+      "reference/add_athlete_id"
     ]
   },
   {

@@ -22,7 +22,7 @@ Team logos, wordmarks, headshots and colors for Python plots and tables, from th
 <!-- badges: end -->
 
 sdvplot
-resolves team abbreviations, names and provider ids across 49 leagues and picks the right era's mark for a season. Colors
+resolves team abbreviations, names and provider ids across 70 leagues and picks the right era's mark for a season. Colors
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
 altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
@@ -118,6 +118,12 @@ Colors work in any library that takes a `{value: color}` mapping, for example se
 source publishes them, `logo` when they are derived from the team's archived logo because no source does, and
 `fallback` for a placeholder that is not the team's colors (`cbbplotR` on the conference rows
 `teams(league, include_conferences=True)` adds).
+
+cfbplotR's helpers, as sdvplotR has them: `clean_names()` cleans team names to one display name,
+`teams("cfb", division="P5")` lists a division (FBS, FCS, DI-DIII, or the P4, P5 and G5 tiers), `aliases()` is
+every name and id the index resolves, `team_factor()` orders teams by abbreviation as a categorical, `alt_colors=`
+swaps teams to their other color in `palette()`, `team_colors()` and the plotnine scales, and `add_athlete_id()` adds
+ESPN athlete ids to a frame of college football player names, from cfbfastR-data's rosters.
 
 From the [gallery](https://sdvplot.sportsdataverse.org/docs/gallery), each drawn by sdvplot from the logo archive:
 

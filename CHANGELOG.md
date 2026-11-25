@@ -47,6 +47,30 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Current team marks in the NBA, WNBA, NFL, MLB and college basketball carry the season their logo was introduced,
+  from Sports Reference's logo history: `marks("TOR", "nba")` shows the current logo from 2021, the Bucks' from 2016.
+  `tools/fetch_sources.py --sr-manifest` now also writes `data-raw/sr_logo_runs.csv`, the latest logo run of each
+  Sports Reference code (seasons only; the private images and checksums never leave sdv-assets-private), and the
+  build dates each team's open-ended mark keys with it, starting after any relocation mark (the Raiders' current
+  mark from 2020, after Oakland's 1995-2019). A season before that window still draws the current logo when no
+  other mark covers it. `data-raw/curated/mark_ranges.csv` still wins over these dates.
+- F1 driver headshots: `headshot_url("max_verstappen", "f1", id_system="league")` and every headshot helper take a
+  driver's Jolpica `driver_id` (sdv-py's F1 key). The photo is the one Wikidata gives the driver, on Wikimedia Commons,
+  kept only under a free license (CC BY, CC BY-SA, CC0 or public domain). `src/sdvplot/data/f1_headshots.csv` carries
+  each photo's license and the attribution its license requires, so credit them where the image is shown. A driver
+  without a free photo gives `None`. `tools/fetch_sources.py --f1-headshots-only` refreshes the table, sequentially and
+  only through URLs robots.txt allows. formula1.com's own photos are not used: their terms do not allow reuse.
+- MiLB headshots by MLBAM id: `headshot_url(701564, "milb", id_system="league")`, on mlbstatic's minor-league photo path.
+  An unknown id gets mlbstatic's silhouette, as for MLB.
+- The cfbplotR-era functions of sdvplotR 0.3.0: `clean_names()` (`sdv_clean_names()`: one display name per team
+  value, cfbplotR's `clean_school_names()` / `clean_team_abbrs()`), `aliases()` (`sdv_aliases()`, cfbplotR's
+  `team_name_mapping`), `teams(league, division=)` (FBS, FCS, DI, DII, DIII, P4, P5, G5 and Conference, cfbplotR's
+  division lists), `team_factor()` (`sdv_team_factor()`, cfbplotR's `cfb_team_factor()`: an ordered categorical by
+  abbreviation), `alt_colors=` on `palette()`, `team_colors()` and `sdvplot.plotnine.scale_color_sdv()` /
+  `scale_fill_sdv()`, and `add_athlete_id()` (`sdv_add_athlete_id()`, cfbplotR's `add_athlete_id_col()`: ESPN
+  athlete ids for college football player names from cfbfastR-data's rosters). Each is checked against sdvplotR's
+  own output on the bundled index (`tests/test_cfbplotr_parity.py`, fixtures from
+  `tools/export_cfbplotr_parity.R`).
 - cfbplotR's `team_name_mapping` spellings resolve: `resolve("VA TECH", "cfb")`, `"NC St."`, `"North Carolina
   State"`, `"UT San Antonio"`, `"Presbyterian College"`, `"St Francis (PA)"`. `tools/export_cfbplotr.R` exports the
   mapping with logo_ref's type and ESPN id into `data-raw/cfbplotr_names.csv` (commit in `data-raw/cfbplotr_commit.txt`),
@@ -190,10 +214,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- The team index grows from 49 to 70 leagues: the archive's 2026-11-25 capture adds 848 teams, each with its logo
+  and colors measured from it, in 21 international basketball and European hockey leagues: `euroleague`, `acb`,
+  `feb`, `bbl`, `dbbl`, `bnxt`, `aba`, `ibba`, `kzs`, `lkl`, `dbl`, `vtb`, `bleague`, `kbl`, `wjbl`, `nbl_au`,
+  `wnbl`, `shl`, `ha`, `elh` and `magnus` (`fetch_sources.py --teams-only`, then `--colors-only`). Each team
+  resolves by the id its sdv-py family uses and by name.
 - The team index takes sdv-reference-data's 2026-11-25 `{league}_team_aliases` (`fetch_sources.py
   --crosswalks-only`): 238 new Fox, Yahoo and Torvik team ids for college football (now back to 2004) and men's and
   women's college basketball, most of them Yahoo's, and season windows that split many existing ids into one alias
-  row per window (2,070 more alias rows in all). The teams, their colors and their marks are unchanged.
+  row per window (2,070 more alias rows in all). The existing teams, their colors and their marks are unchanged.
 - The team index takes the rest of the archive's 2026-11-03 capture: 50 more soccer clubs (Liga MX Femenil and
   Women's FA Cup sides, Copa del Rey, India's I-League 2 and friendlies; 16 renamed to ESPN's current names), ESPN's
   current names for three women's basketball teams (Central Arkansas Sugar Bears, East Tennessee State Buccaneers,
@@ -244,6 +273,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- The `tables` extra declares `faicons`. `sdvplot.great_tables` imports it, and great_tables 1.2.0 no longer depends
+  on it, so a fresh `pip install "sdvplot[tables]"` failed on import.
 - Team values fold eight Latin letters that have no accent to drop: `ø` to `o`, `æ` to `ae`, `œ` to `oe`, `đ` and `ð`
   to `d`, `ł` to `l`, `þ` to `th` and the dotless `ı` to `i`, in either case, so `resolve("HB Koge", "soccer")` finds
   HB Køge, as `"Brondby IF"`, `"F.C. Kobenhavn"` and `"Sherbrooke, Phoenix"` (qmjhl) find theirs (sdvplotR#70).

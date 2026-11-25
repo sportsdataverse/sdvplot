@@ -36,6 +36,10 @@ PUBLIC = {
     "squarebin",
     "cell_points",
     "bin_ids",
+    "aliases",
+    "clean_names",
+    "team_factor",
+    "add_athlete_id",
     "SdvplotWarning",
     "SdvplotDeprecationWarning",
     "SdvplotError",
@@ -72,6 +76,10 @@ UNKNOWN_LEAGUE = [
     lambda: sdvplot.suggest("LV", "xfl"),
     lambda: sdvplot.marks("LV", "xfl"),
     lambda: sdvplot.logo_url("LV", "xfl"),
+    lambda: sdvplot.aliases("xfl"),
+    lambda: sdvplot.teams("xfl", division="FBS"),
+    lambda: sdvplot.clean_names("LV", "xfl"),
+    lambda: sdvplot.team_factor(["LV"], "xfl"),
 ]
 
 
@@ -234,6 +242,10 @@ POSITIONAL = {
     sdvplot.surface: ["league", "team"],
     sdvplot.court_coords: ["data"],
     sdvplot.pitch_coords: ["data"],
+    sdvplot.aliases: ["league"],
+    sdvplot.clean_names: ["values", "league"],
+    sdvplot.team_factor: ["teams", "league"],
+    sdvplot.add_athlete_id: ["df", "name_col"],
 }
 
 
@@ -360,6 +372,8 @@ TEAM_RESOLVERS = {  # the call, and what it returns for a team that does not res
     "palette": (lambda **kw: sdvplot.palette("nfl", ["LV"], **kw), {}),
     "logo_url": (lambda **kw: sdvplot.logo_url("LV", "nfl", **kw), None),
     "logo_image": (lambda **kw: sdvplot.logo_image("LV", "nfl", **kw), None),
+    "clean_names": (lambda **kw: sdvplot.clean_names(["LV"], "nfl", keep_non_matches=False, **kw), [None]),
+    "team_factor": (lambda **kw: sdvplot.team_factor(["LV"], "nfl", **kw).to_list(), [None]),
 }
 
 

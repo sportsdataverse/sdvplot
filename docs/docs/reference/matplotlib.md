@@ -1,7 +1,7 @@
 ---
 title: sdvplot.matplotlib
 sidebar_label: sdvplot.matplotlib
-sidebar_position: 17
+sidebar_position: 21
 ---
 
 # sdvplot.matplotlib

@@ -1,7 +1,7 @@
 ---
 title: palette
 sidebar_label: palette
-sidebar_position: 4
+sidebar_position: 7
 ---
 
 # palette
@@ -17,6 +17,7 @@ palette(
     season: Any = None,
     id_system: Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3'] = 'auto',
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> dict[Any, str]
 ```
 
@@ -38,6 +39,7 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 | `season` | `Any` | One season, or one per team, for values reused across eras. |
 | `id_system` | `Literal['auto', 'team_id', 'espn', 'espn_abbr', 'nhl', 'nflverse', 'mlbstats', 'nba_api', 'hockeytech', 'ncaa', 'pff', 'cricinfo', 'cfbd', 'bref', 'sportsipy', 'fangraphs', 'yahoo', 'kenpom', 'torvik', 'sdvplotr', 'name', 'nhl_id', 'fox', 'cbs', 'sports247', 'on3']` | The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need "nhl_id". |
 | `strict` | `bool` | Raise UnresolvedTeamError instead of warning when a team does not resolve. |
+| `alt_colors` | `Any` | Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary one with ``which="secondary"``. A team with no other color keeps its own. cfbplotR's and sdvplotR's ``alt_colors``. |
 
 ## Returns
 
@@ -55,6 +57,7 @@ the caller's own values, so they match a seaborn ``hue`` column or a Plotly colo
 import sdvplot
 
 sdvplot.palette("nfl", teams=["KC", "SF"])   # {'KC': '#e31837', 'SF': '#aa0000'}
+sdvplot.palette("cfb", teams=["Alabama", "Utah"], alt_colors="Utah")   # Utah in its secondary color
 ```
 
 ## See also

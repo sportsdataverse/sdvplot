@@ -1,17 +1,22 @@
 """Player headshot URLs: ESPN athlete ids directly, nflverse gsis ids through nflverse's player table, the leagues'
-own player ids (NBA / WNBA Stats, MLBAM, NHL, HockeyTech) on their CDNs, and other providers' player ids through
-sdv-reference-data's player_aliases."""
+own player ids (NBA / WNBA Stats, MLBAM for MLB and MiLB, NHL, HockeyTech) on their CDNs, F1 drivers' Jolpica ids
+through the bundled Wikimedia Commons table, and other providers' player ids through sdv-reference-data's
+player_aliases."""
 
 from __future__ import annotations
 
+import csv
+import datetime
 import functools
 import io
+import math
+from importlib import resources
 from typing import TYPE_CHECKING, Any
 
 from sdvplot._cache import MEMORY_CACHES, fetch_cached, safe_url
-from sdvplot._errors import InputError, warn
+from sdvplot._errors import InputError, OfflineError, UnsafeDownloadError, warn
 from sdvplot._normalize import norm_value
-from sdvplot._types import HeadshotIdSystem
+from sdvplot._types import HeadshotIdSystem, IdSystem
 
 if TYPE_CHECKING:
     import polars as pl
@@ -71,9 +76,18 @@ LEAGUE_HEADSHOT_URLS = {
         "w_213,q_auto:best/v1/people/{}/headshot/67/current.png"
     ),
     "nhl": "https://assets.nhle.com/mugs/nhl/latest/{}.png",
+    # MiLB players are MLBAM people too; the milb path has their minor-league photos (mlb's 67 path is a silhouette)
+    "milb": (
+        "https://img.mlbstatic.com/mlb-photos/image/upload/w_213,d_people:generic:headshot:silo:current.png,"
+        "q_auto:best,f_auto/v1/people/{}/headshot/milb/current"
+    ),
     **{lg: HOCKEYTECH_HEADSHOT_URL.format(client=c) for lg, c in HOCKEYTECH_CLIENTS.items()},
 }
-LEAGUE_ID_LEAGUES = ("nfl", *LEAGUE_HEADSHOT_URLS)  # the leagues id_system="league" accepts
+# F1 drivers by Jolpica driver_id (sdv-py's F1 key): each one's Wikidata image on Wikimedia Commons, kept only under a
+# free license, with its license and attribution (credit them where the image is shown). tools/fetch_sources.py
+# --f1-headshots-only writes the table; a driver with no free image is not in it (None).
+F1_HEADSHOTS = "f1_headshots.csv"
+LEAGUE_ID_LEAGUES = ("nfl", *LEAGUE_HEADSHOT_URLS, "f1")  # the leagues id_system="league" accepts
 NFLVERSE_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.parquet"
 PLAYER_COLUMNS = ["gsis_id", "espn_id", "headshot"]
 # Other providers' player ids, mapped to ESPN athlete ids by sdv-reference-data's {league}_player_aliases (its
@@ -93,6 +107,12 @@ PLAYER_ALIASES_URL = (
 )
 PLAYER_ALIAS_COLUMNS = ["source", "source_player_id", "athlete_id"]
 PROVIDER_ID_SYSTEMS = tuple(dict.fromkeys(s for v in PLAYER_ALIAS_SOURCES.values() for s in v))
+
+
+@functools.cache
+def _f1_headshots() -> dict[str, str]:
+    text = resources.files("sdvplot").joinpath("data", F1_HEADSHOTS).read_text(encoding="utf-8")
+    return {r["driver_id"]: r["url"] for r in csv.DictReader(io.StringIO(text)) if safe_url(r["url"])}
 
 
 @functools.lru_cache(maxsize=1)  # keyed by mtime so a refreshed table is read again; only the current file matters
@@ -138,6 +158,12 @@ def _espn(player_id: str, league: str) -> str | None:
     return f"https://a.espncdn.com/combiner/i?img=/i/headshots/{slug}/players/full/{player_id}.png"
 
 
+def _league(player_id: str, league: str) -> str | None:
+    if league == "f1":
+        return _f1_headshots().get(player_id)
+    return LEAGUE_HEADSHOT_URLS[league].format(player_id) if _is_valid_espn_id(player_id) else None  # digits, as R's
+
+
 def _transform_nfl_headshot(url: str) -> str:
     """Transform an NFL.com headshot URL.
 
@@ -155,22 +181,24 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     Args:
         player_id: One player id: an ESPN athlete id, an nflverse gsis id, or the league's own player id.
         league: The SDV league key. "espn" ids work for nfl, nba, wnba, mlb, nhl, cfb, mbb, wbb, nbagl and soccer;
-            "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, nhl and the 20 HockeyTech leagues
+            "gsis" is NFL only; "league" works for nfl, nba, wnba, mlb, milb, nhl, f1 and the 20 HockeyTech leagues
             (pwhl, ahl, echl, ohl, whl, qmjhl, ushl, sphl, chl, bchl, ajhl, sjhl, ojhl, cchl, gojhl, mhl, nojhl, vijhl,
             kijhl, mjhl). ESPN files G League (nbagl) photos with the NBA's, so a G League player's ESPN id is the one
             ESPN uses for him in the NBA. ESPN has photos for only part of the G League and soccer rosters. F1 drivers
-            have none: formula1.com keys its photos by its own driver reference (``MAXVER01``), not a driver number or
-            Jolpica ``driver_id``.
+            go by their Jolpica ``driver_id`` (``"max_verstappen"``), to the Wikimedia Commons photo Wikidata gives
+            the driver, when its license is free (CC BY, CC BY-SA, CC0 or public domain); the license and author to
+            credit are in ``sdvplot/data/f1_headshots.csv``, and a driver without a free photo gives None.
         id_system: "espn" (ESPN athlete id, any ESPN league), "gsis" (mapped to ESPN through nflverse's player table,
             preferring nflverse's own headshot), another provider's player id mapped to its ESPN athlete through
             sdv-reference-data's ``{league}_player_aliases`` ("fox", "yahoo" and "cbs" for nfl and cfb, "ncaa" for
             cfb, mbb and wbb, "fox" and "yahoo" for nba, wnba, mbb and wbb, "kenpom" for mbb, "nba_stats" for nba,
             "wnba_stats" for wnba), or "league" (the league's own player id, sdvplotR's
             ``id_type = "league"``: an NBA or WNBA Stats ``PERSON_ID`` as nba_api / hoopR / wehoop return it, an MLBAM
-            id, an NHL API id, or the ``player_id`` of a HockeyTech feed (the 20 HockeyTech leagues above) on
-            ``assets.leaguestat.com``, on the league's CDN; for the NFL it is the gsis id, the same as "gsis"). An
-            unknown NBA, WNBA, MLB or NHL id gets the CDN's silhouette image; an unknown ESPN or HockeyTech id is a
-            404, which the adapters treat as any missing image.
+            id (MLB and MiLB), an NHL API id, an F1 driver's Jolpica ``driver_id``, or the ``player_id`` of a
+            HockeyTech feed (the 20 HockeyTech leagues above) on ``assets.leaguestat.com``, on the league's CDN; for
+            the NFL it is the gsis id, the same as "gsis"). An unknown NBA, WNBA, MLB, MiLB or NHL id gets the CDN's
+            silhouette image; an unknown ESPN or HockeyTech id is a 404, which the adapters treat as any missing
+            image.
 
     Returns:
         str | None: The image URL, or None when the id is missing, malformed, or not in the player table.
@@ -198,6 +226,7 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
             sdvplot.headshot_url(52, "pwhl", id_system="league")   # a PWHL player by her HockeyTech player_id
             # 'https://assets.leaguestat.com/pwhl/240x240/52.jpg'
             sdvplot.headshot_url("nba.p.3704", "nba", id_system="yahoo")   # LeBron James by his Yahoo id
+            sdvplot.headshot_url("max_verstappen", "f1", id_system="league")   # a Commons photo (credit: the csv)
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -205,7 +234,7 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     """
     # check the arguments first, so a null id never hides a bad league or id_system
     if id_system == "espn" and league not in ESPN_HEADSHOT_LEAGUES:
-        hint = " (use the league's own player ids with id_system='league')" if league in LEAGUE_HEADSHOT_URLS else ""
+        hint = " (use the league's own player ids with id_system='league')" if league in LEAGUE_ID_LEAGUES else ""
         raise InputError(f"no ESPN headshots for league {league!r}; supported: {sorted(ESPN_HEADSHOT_LEAGUES)}{hint}")
     if id_system == "league":
         if league not in LEAGUE_ID_LEAGUES:
@@ -230,7 +259,7 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     if id_system == "espn":
         return _espn(pid, league)
     if id_system == "league":
-        return LEAGUE_HEADSHOT_URLS[league].format(pid) if _is_valid_espn_id(pid) else None  # digits, as R's grepl
+        return _league(pid, league)
     if id_system != "gsis":
         path = fetch_cached(
             PLAYER_ALIASES_URL.format(league=league),
@@ -253,3 +282,215 @@ def headshot_url(player_id: Any, league: str, *, id_system: HeadshotIdSystem = "
     if espn_id:
         return _espn(espn_id, "nfl")
     return None
+
+
+# College football rosters (ESPN athlete ids), cfbfastR-data's yearly files: what sdvplotR's sdv_add_athlete_id()
+# reads (as .rds; the parquet files hold the same rows). 2009 on, as sdvplotR and cfbplotR
+ROSTER_URL = (
+    "https://raw.githubusercontent.com/sportsdataverse/cfbfastR-data/main/rosters/parquet/cfb_rosters_{season}.parquet"
+)
+ROSTER_COLUMNS = ["athlete_id", "first_name", "last_name", "team", "headshot_url"]
+ROSTER_LEAGUES = ("cfb",)
+ROSTER_FIRST_SEASON = 2009
+RosterRow = tuple[int, str, str, "str | None", "str | None"]  # season, athlete_id, name, team, headshot_url
+
+
+def _latest_roster_season(today: datetime.date | None = None) -> int:
+    """The latest season with rosters: it starts on August 15, as cfbplotR's most_recent_cfb_season()."""
+    today = today or datetime.date.today()
+    return today.year if (today.month, today.day) >= (8, 15) else today.year - 1
+
+
+@functools.lru_cache(maxsize=32)  # keyed by mtime, as _players
+def _roster_rows(path: str, mtime: float, season: int) -> tuple[RosterRow, ...]:
+    from sdvplot._resolve import _id_str
+
+    r = pl.read_parquet(path, columns=ROSTER_COLUMNS)
+    out = []
+    for aid, first, last, team, url in r.iter_rows():
+        athlete = _id_str(aid)  # never "123.0", should a release write the ids as floats
+        if athlete is None or first is None or last is None:  # an incomplete name matches no one (never "None Smith")
+            continue
+        out.append((season, athlete, f"{first} {last}", team, url))  # a missing URL stays missing, as sdvplotR's NA
+    return tuple(out)
+
+
+MEMORY_CACHES.append(_roster_rows.cache_clear)
+
+
+def _roster(league: str, season: int) -> tuple[RosterRow, ...]:
+    """One season's roster rows; none offline or on a failed read (a season not published yet answers 404)."""
+    try:
+        path = fetch_cached(
+            ROSTER_URL.format(season=season),
+            f"cfbfastR-data/{league}_rosters_{season}.parquet",
+            validate=lambda body: pl.read_parquet(io.BytesIO(body), columns=ROSTER_COLUMNS),
+        )
+    except (OfflineError, UnsafeDownloadError):  # DownloadError (an HTTP status) is one; a timeout or size cap
+        return ()
+    return _roster_rows(str(path), path.stat().st_mtime, season)
+
+
+def _as_int(value: Any) -> int | None:
+    """R's as.integer(): a number or numeric text truncated to an int, anything else None."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        f = float(value.strip()) if isinstance(value, str) else float(value)
+    except (TypeError, ValueError):
+        return None
+    return int(f) if math.isfinite(f) else None
+
+
+def _rosters(league: str, df_seasons: list[int | None]) -> tuple[list[RosterRow], bool]:
+    """The roster rows for ``df_seasons`` (a season column's values), and whether they are by season: without a season
+    with rosters (or a column), the latest season's, or the season before's when the latest is not published yet."""
+    latest = _latest_roster_season()
+    seasons = sorted({s for s in df_seasons if s is not None and ROSTER_FIRST_SEASON <= s <= latest}, reverse=True)
+    by_season = bool(seasons)
+    if by_season:
+        rosters = [r for s in seasons for r in _roster(league, s)]
+    else:
+        seasons = [latest]
+        rosters = list(_roster(league, latest))
+        if not rosters:
+            seasons = [latest - 1]
+            rosters = list(_roster(league, latest - 1))
+    if not rosters:
+        warn(f"could not read the {league!r} rosters for {seasons}, so every athlete_id is null")
+    return rosters, by_season
+
+
+def add_athlete_id(
+    df: Any,
+    name_col: str,
+    *,
+    team_col: str | None = None,
+    season_col: str | None = None,
+    league: str = "cfb",
+    headshot_urls: bool = False,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> Any:
+    """Add each player's ESPN athlete id to a data frame of player names, matched to published rosters.
+
+    The id is the one the headshot helpers (``headshot_url``, ``add_headshots``) read. sdvplotR's
+    ``sdv_add_athlete_id()``, cfbplotR's ``add_athlete_id_col()``. The rosters are cfbfastR-data's college football
+    rosters, 2009 on, downloaded when first needed and cached. Like cfbplotR's, the match is experimental: check the
+    ids.
+
+    Names match ignoring case, accents and surrounding spaces. Teams match through ``resolve``, so any name or id it
+    reads for the roster's team works; a team it cannot resolve matches by name. A name that matches more than one
+    athlete is left null (cfbplotR returns a row for each), so the result has a row per row of ``df``: pass
+    ``team_col`` and ``season_col`` to tell players with one name apart. Without a season column the latest season's
+    rosters are read, or the season before when the latest is not published yet. Offline, or when a roster cannot be
+    read, the call warns and the ids it could not find are null; it does not raise.
+
+    Args:
+        df: A pandas or polars DataFrame (any narwhals-supported eager frame).
+        name_col: The column with player names.
+        team_col: The column with each player's team, or None: then a "team" or "school" column of ``df``, if any.
+        season_col: The column with each row's season, or None: then a "season" column of ``df``, if any. Seasons
+            outside the rosters' (2009 to the latest) match no one.
+        league: A league with rosters: "cfb".
+        headshot_urls: Also add each player's headshot URL (the roster's ESPN headshot).
+        id_system: The id system of ``team_col``'s values, as in ``resolve`` ("auto" tries each in order). The rosters'
+            own team names always resolve under "auto".
+        strict: Raise UnresolvedTeamError when a team in ``team_col`` does not resolve, instead of matching it by name.
+
+    Returns:
+        DataFrame: ``df`` (same library) with an ``athlete_id`` String column, null where no single athlete matched,
+        and with ``headshot_urls=True`` a ``headshot_url`` column.
+
+    Raises:
+        InputError: (a ValueError) If ``league`` is not a known league key or ``id_system`` is unknown.
+        ValueError: If ``league`` has no rosters, ``df`` already has an ``athlete_id`` column, or a column named is not
+            in ``df``.
+        TypeError: If ``df`` is not a data frame.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team in ``team_col`` does not resolve.
+
+    Example:
+        ::
+
+            import polars as pl
+            import sdvplot
+
+            x = pl.DataFrame({"player_name": ["Britain Covey", "JT Daniels"], "team": ["Utah", "Georgia"],
+                              "season": [2021, 2021]})
+            sdvplot.add_athlete_id(x, "player_name", headshot_urls=True)   # needs the network once
+
+    See Also:
+        sdvplotR sdv_add_athlete_id(): https://sdvplotR.sportsdataverse.org/reference/sdv_add_athlete_id.html ;
+        sdvplot.headshot_url: the headshot behind an id
+    """
+    import narwhals as nw
+
+    from sdvplot import _index
+    from sdvplot._resolve import _report, _resolve_ids
+
+    _index.check_league(league)
+    if league not in ROSTER_LEAGUES:
+        raise ValueError(f"sdvplot has rosters for {list(ROSTER_LEAGUES)} only, not {league!r}")
+    try:
+        frame = nw.from_native(df, eager_only=True)
+    except TypeError as e:
+        raise TypeError(f"df must be a pandas or polars DataFrame, got {type(df).__name__}") from e
+    if "athlete_id" in frame.columns:
+        raise ValueError("df already has an athlete_id column")
+    team_col = team_col or next((c for c in ("team", "school") if c in frame.columns), None)
+    season_col = season_col or ("season" if "season" in frame.columns else None)
+    for arg, col in (
+        ("name_col", name_col),
+        ("team_col", team_col),
+        ("season_col", season_col),
+    ):
+        if col is not None and col not in frame.columns:
+            raise ValueError(f"{arg} must name a column of df, got {col!r}")
+
+    df_seasons = [_as_int(s) for s in frame[season_col].to_list()] if season_col else []
+    rosters, by_season = _rosters(league, df_seasons)
+    if not by_season:
+        season_col = None  # no season with rosters: the latest's, as sdvplotR
+
+    def team_keys(values: list[Any], system: str = "auto", must: bool = False) -> list[str]:
+        ids, unresolved = _resolve_ids(values, league, [None] * len(values), system)
+        if must and unresolved:
+            _report(unresolved, league, True)
+        return [i if i is not None else f"name:{norm_value(v)}" for v, i in zip(values, ids, strict=True)]
+
+    names = frame[name_col].to_list()
+    teams = frame[team_col].to_list() if team_col else [None] * len(names)
+    key_df: list[Any] = [norm_value(n) for n in names]
+    key_ro: list[Any] = [norm_value(r[2]) for r in rosters]
+    if team_col:
+        key_df = list(zip(key_df, team_keys(teams, id_system, strict), strict=True))
+        key_ro = list(zip(key_ro, team_keys([r[3] for r in rosters]), strict=True))
+    if season_col:
+        key_df = list(zip(key_df, df_seasons, strict=True))
+        key_ro = [(k, r[0]) for k, r in zip(key_ro, rosters, strict=True)]
+    first: dict[Any, int] = {}
+    athletes: dict[Any, set[str]] = {}
+    for j, (k, r) in enumerate(zip(key_ro, rosters, strict=True)):
+        first.setdefault(k, j)
+        athletes.setdefault(k, set()).add(r[1])
+    ids: list[str | None] = []
+    urls: list[str | None] = []
+    n_ambiguous = 0
+    for n, k, t in zip(names, key_df, teams, strict=True):
+        # a row with no name, or no team when teams are matched, matches no one and is not counted as ambiguous
+        skip = norm_value(n) is None or (team_col is not None and norm_value(t) is None)  # NaN, pd.NA, "" too
+        ambiguous = not skip and len(athletes.get(k, ())) > 1
+        n_ambiguous += ambiguous
+        hit = None if skip or ambiguous else first.get(k)
+        ids.append(None if hit is None else rosters[hit][1])
+        urls.append(None if hit is None else rosters[hit][4])
+    if n_ambiguous:
+        warn(
+            f"{n_ambiguous} row(s) matched more than one athlete, so their athlete_id is null; pass team_col and "
+            "season_col to tell them apart"
+        )
+    backend = nw.get_native_namespace(frame)
+    new = [nw.new_series("athlete_id", ids, nw.String(), backend=backend)]
+    if headshot_urls:
+        new.append(nw.new_series("headshot_url", urls, nw.String(), backend=backend))
+    return frame.with_columns(*new).to_native()

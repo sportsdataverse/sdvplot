@@ -15,7 +15,7 @@ from sdvplot._team_palette import team_palette
 
 PATH = Path(__file__).parent / "fixtures" / "deckgl_shared.json"
 SHA256 = (
-    "6a1dc608ed818de6f7957d200322f0cf73155bf876444699af5dcf1b37ed1429"  # pinned in sdvplot-js's deckgl-shared.test.ts
+    "117b596f58c2d77ec51367734919ac75469b51b9bca269c09a03a73d83452ef6"  # pinned in sdvplot-js's deckgl-shared.test.ts
 )
 CASES = json.loads(PATH.read_text(encoding="utf-8"))["palettes"]
 

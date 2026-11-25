@@ -24,14 +24,20 @@ A contributor reference, not a docs-site page. The table ports live in [`PARITY_
 | X5 | ggpath `geom_mean_lines()`, `geom_median_lines()` | `sdvplot.plotnine.geom_mean_lines()`, `geom_median_lines()` | ported (below) |
 | X6 | ggpath `element_path()`, `element_raster()` | recipe | not ported: `axis_logos` covers team marks |
 | X7 | `team_reference()` | recipe | not ported: `teams(include_conferences=)` and `logo_url()` / `marks()` hold the same data |
-| X8 | `sdv_team_factor()` | recipe | not ported: three lines over `resolve()` |
+| X8 | `sdv_team_factor()` | `sdvplot.team_factor(teams, league, *, season=None, id_system="auto", strict=False)` | ported (below) |
 | X9 | mean/median lines on matplotlib | recipe | not ported: `ax.axvline` is one line |
 | X10 | `geom_sdv_logos()` / `geom_sdv_wordmarks()` / `geom_sdv_headshots()` aesthetics `colour`, `angle`, `hjust`, `vjust`, `width` | `sdvplot.plotnine.geom_sdv_*` | not ported (below): documented divergence, port on demand |
 | X11 | `scale_color_sdv()` / `scale_fill_sdv()` `alpha`, `values`; `scale_colour_sdv()` | `sdvplot.plotnine.scale_color_sdv(alpha=)`, `scale_fill_sdv(alpha=)`, `scale_colour_sdv` | ported (below); `values` is plotnine's own `scale_color_manual(values=)` |
 | X12 | `scale_x_sdv_headshots()`, `scale_y_sdv_headshots()`, `element_sdv_headshot()` | `axis_logos(target, axis, *, league, mark_type="headshot", height=0.1, id_system="auto")` on matplotlib, plotnine, Plotly and Altair | ported (below) |
 | X13 | `include_conferences` (conference and league rows and marks) | `sdvplot.teams(league, include_conferences=True)`; `logo_url("SEC", "cfb")` and every mark helper | ported (below): rows AND marks; the 92 rows with cbbplotR colors, each with its archived primary mark (dark where the archive has one) |
-| X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | `headshot_url(..., id_system="league")` and every headshot helper | ported (below); the default id system still differs (`espn` for every league; R's NFL default is gsis) |
+| X14 | league-id headshots (`id_type = "league"`: NBA, WNBA, MLB and NHL CDNs) | `headshot_url(..., id_system="league")` and every headshot helper | ported (below); Python also takes MiLB (MLBAM ids) and F1 (Jolpica driver ids, Commons photos), which R lacks; the default id system still differs (`espn` for every league; R's NFL default is gsis) |
 | X15 | `sdv_pitch_coords()` | `sdvplot.pitch_coords(data, *, provider, x=None, y=None, flip=None, pitch_length=None, pitch_width=None)` | ported (below) |
+| X16 | `sdv_clean_names()` (cfbplotR `clean_school_names()`, `clean_team_abbrs()`) | `sdvplot.clean_names(values, league, *, column="location", keep_non_matches=True, season=None, id_system="auto", strict=False)` | ported (below) |
+| X17 | `sdv_aliases()` (cfbplotR `team_name_mapping`) | `sdvplot.aliases(league=None)` | ported (below) |
+| X18 | `sdv_teams(division =)` (cfbplotR's division lists) | `sdvplot.teams(league, division=...)` | ported (below) |
+| X19 | `scale_color_sdv()` / `scale_fill_sdv()` `alt_colors` | `alt_colors=` on `palette()`, `team_colors()`, `sdvplot.plotnine.scale_color_sdv()` / `scale_fill_sdv()` | ported (below) |
+| X20 | `sdv_add_athlete_id()` (cfbplotR `add_athlete_id_col()`) | `sdvplot.add_athlete_id(df, name_col, *, team_col=None, season_col=None, league="cfb", headshot_urls=False)` | ported (below) |
+| X21 | `sdv_ggpreview()` (cfbplotR `ggpreview()`) | none | not ported: a ggplot2 device preview; matplotlib's `fig.savefig()` and plotnine's `ggsave()` do it |
 
 ## Ported
 
@@ -127,6 +133,31 @@ ggplot2, where they are position aesthetics, `x0`/`y0` go through each panel's p
 scale averages the logs, and values outside the scale's limits become missing (so `na_rm=True` leaves them out, and
 `na_rm=False` draws no line). Unlike ggplot2 they do not train the scale, so a reference value outside the plotted
 data's range is not brought into view.
+
+**X8, X16-X20: the cfbplotR-era functions.** sdvplotR 0.3.0 folded cfbplotR in (sdvplotR#105); these are its
+additions, each checked against sdvplotR's own output on the same index version by `tests/test_cfbplotr_parity.py`
+(fixtures from `tools/export_cfbplotr_parity.R`, which runs sdvplotR with its bundled snapshot; the tests skip, naming
+the script, once the bundled index is rebuilt and until the fixtures are exported again):
+
+- `team_factor` (X8): the factor's values and levels on NFL, college football and NBA vectors (with a duplicate, a
+  miss and a missing value). The levels are the values as given, ordered by abbreviation then value in codepoint order
+  (R's `order(method = "radix")`). It returns an ordered pandas categorical for a pandas Series (index kept), else a
+  polars `Enum` Series.
+- `clean_names` (X16): 30 sampled aliases per id system in cfb, nfl, mbb and nba plus misses (an unknown, an ambiguous
+  "Miami", accents, spaces, `"12.0"`), every `column`, both `keep_non_matches`, and numbers in (13, 4e6, 1.5, NA):
+  4,385 answers equal. sdvplot adds `strict` (raise on a value that does not resolve), as every resolving function
+  has.
+- `aliases` (X17): per league, the row count and an md5 of the sorted, tab-joined rows equal sdvplotR's, all 49 leagues.
+- `teams(division=)` (X18): every division and two pairs in each of the seven college leagues (4,515 rows); the
+  same errors (no league, an unknown division, a tier outside cfb, an index with no divisions) and the same warning
+  when a tier's conference id is gone from the index.
+- `alt_colors` (X19): the colors sdvplotR's scales give (`get_team_colors()`) with and without `alt_colors`, both
+  slots, in cfb, nfl and mbb. sdvplot puts it on `team_colors()` and `palette()` too, so every adapter can use it.
+- `add_athlete_id` (X20): 14 real players (unique, ambiguous, no team, a blank team, an unknown name, a team alias,
+  a missing name) with team and season, with season only and with neither, matched to the roster rows sdvplotR read,
+  plus a live run against cfbfastR-data (`SDVPLOT_LIVE_TESTS=1`). sdvplot reads the rosters' parquet files (the same
+  rows as the `.rds` files R reads) through its download cache; an offline or failed read is one `SdvplotWarning`
+  and null ids, as R's warning and `NA`s.
 
 ## Team index
 
@@ -226,18 +257,6 @@ draws all 180). A named mark the archive lacks fails the build, as R's `stopifno
 are manifest level `"division"`, a non-team mark level (`_index.NON_TEAM`); their rows' `program` is `"conference"`.
 A new key never meets a team code: the division rows are `Atlantic`, `Metropolitan`, `Central` and `Pacific`, not
 the manifest's `ATL` / `MET` / `CEN` / `PAC` (NHL `ATL` is the Atlanta Thrashers' code).
-
-**X8 `sdv_team_factor`.** Canonical abbreviations as a categorical whose levels are the sorted known teams; values
-that are not teams become missing (with one `SdvplotWarning` from `resolve`):
-
-```python
-import pandas as pd
-import sdvplot
-
-abbr = dict(sdvplot.teams("nfl").select("team_id", "abbr").iter_rows())
-cleaned = [abbr.get(i) for i in sdvplot.resolve(values, "nfl")]
-team = pd.Categorical(cleaned, categories=sorted({a for a in cleaned if a}))
-```
 
 **X9 matplotlib mean/median lines.** ggpath's look on an Axes:
 

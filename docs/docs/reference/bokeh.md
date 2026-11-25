@@ -1,7 +1,7 @@
 ---
 title: sdvplot.bokeh
 sidebar_label: sdvplot.bokeh
-sidebar_position: 21
+sidebar_position: 25
 ---
 
 # sdvplot.bokeh

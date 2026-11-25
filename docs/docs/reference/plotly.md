@@ -1,7 +1,7 @@
 ---
 title: sdvplot.plotly
 sidebar_label: sdvplot.plotly
-sidebar_position: 19
+sidebar_position: 23
 ---
 
 # sdvplot.plotly

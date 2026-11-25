@@ -974,6 +974,7 @@ def _scale(
     id_system: IdSystem = "auto",
     strict: bool = False,
     alpha: float | None = None,
+    alt_colors: Any = None,
 ) -> Any:
     _column(which)  # "primary" / "secondary", else ValueError now rather than when the plot is drawn
     # sdvplotR applies scales::alpha() to the team colors only (not na.value): "#rrggbb" -> "#rrggbbaa"
@@ -985,7 +986,9 @@ def _scale(
 
         def map(self, x: Any, limits: Any = None) -> Any:
             values = [v for v in (limits if limits is not None else self.final_limits) if v is not None]
-            colors = team_colors(league, values, which=which, season=season, id_system=id_system, strict=strict)
+            colors = team_colors(
+                league, values, which=which, season=season, id_system=id_system, strict=strict, alt_colors=alt_colors
+            )
             self._values = {v: c + suffix for v, c in zip(values, colors, strict=True) if c is not None}
             self.palette = lambda n: [self._values.get(v, na_value) for v in values]
             return [self._values.get(v, na_value) for v in x]
@@ -1002,6 +1005,7 @@ def scale_color_sdv(
     strict: bool = False,
     na_value: str = "grey",
     alpha: float | None = None,
+    alt_colors: Any = None,
     **kwargs: Any,
 ) -> Any:
     """A discrete color scale that maps each team value (any id system) to its team color.
@@ -1017,6 +1021,9 @@ def scale_color_sdv(
         na_value: The color of values that are not teams; drawn as given, ``alpha`` does not fade it.
         alpha: An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None``
             (the default) leaves them opaque.
+        alt_colors: Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary
+            one with ``which="secondary"``. A team with no other color keeps its own (cfbplotR's and sdvplotR's
+            ``alt_colors``).
         **kwargs: Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...).
 
     Returns:
@@ -1042,7 +1049,7 @@ def scale_color_sdv(
         sdvplotR scale_color_sdv(): https://sdvplotR.sportsdataverse.org/ ;
         sdvplot.plotnine.scale_fill_sdv: the fill scale
     """
-    return _scale(scale_color_manual, league, which, season, na_value, kwargs, id_system, strict, alpha)
+    return _scale(scale_color_manual, league, which, season, na_value, kwargs, id_system, strict, alpha, alt_colors)
 
 
 scale_colour_sdv = scale_color_sdv  # the British spelling, as sdvplotR and plotnine both ship
@@ -1057,6 +1064,7 @@ def scale_fill_sdv(
     strict: bool = False,
     na_value: str = "grey",
     alpha: float | None = None,
+    alt_colors: Any = None,
     **kwargs: Any,
 ) -> Any:
     """A discrete fill scale that maps each team value (any id system) to its team color.
@@ -1072,6 +1080,9 @@ def scale_fill_sdv(
         na_value: The color of values that are not teams; drawn as given, ``alpha`` does not fade it.
         alpha: An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None``
             (the default) leaves them opaque.
+        alt_colors: Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary
+            one with ``which="secondary"``. A team with no other color keeps its own (cfbplotR's and sdvplotR's
+            ``alt_colors``).
         **kwargs: Passed to plotnine's ``scale_fill_manual``.
 
     Returns:
@@ -1097,7 +1108,7 @@ def scale_fill_sdv(
         sdvplotR scale_fill_sdv(): https://sdvplotR.sportsdataverse.org/ ;
         sdvplot.plotnine.scale_color_sdv: the color scale
     """
-    return _scale(scale_fill_manual, league, which, season, na_value, kwargs, id_system, strict, alpha)
+    return _scale(scale_fill_manual, league, which, season, na_value, kwargs, id_system, strict, alpha, alt_colors)
 
 
 def add_bins(

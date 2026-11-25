@@ -30,13 +30,13 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 
 | Module | Owns |
 | --- | --- |
-| `_resolve.py` | `resolve`, `suggest`, the `PRIORITY` id-system order and `EXPLICIT_ONLY` |
-| `_index.py`, `_normalize.py` | the bundled team index (`teams()`), value/season normalization |
+| `_resolve.py` | `resolve`, `suggest`, the `PRIORITY` id-system order and `EXPLICIT_ONLY`; `clean_names` and `team_factor` (built on the resolver) |
+| `_index.py`, `_normalize.py` | the bundled team index (`teams()`, its `division=` filter, `aliases()`), value/season normalization |
 | `_lazy.py` | `pl`, a stand-in for polars that imports it on first use. Core modules take `pl` from it (`import polars as pl` only under `TYPE_CHECKING`) and import PIL and requests inside the functions that need them, so `import sdvplot` loads none of the three; `tests/test_import_time.py` fails if a module-level import brings one back |
 | `_colors.py` | `palette`, `team_colors` |
 | `_marks.py`, `_manifest.py` | `marks`, `logo_url`, `select_mark`; the cached logo manifest |
 | `_images.py` | `logo_image` (PIL; SVG needs `[svg]`) and the decoded-image cache |
-| `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse, league ids on the leagues' CDNs incl. HockeyTech) |
+| `_headshots.py` | `headshot_url` (ESPN athlete ids, NFL gsis through nflverse, league ids on the leagues' CDNs incl. HockeyTech); `add_athlete_id` (cfbfastR-data rosters) |
 | `_cache.py` | the download cache, `clear_cache`, `key_lock`, and `MEMORY_CACHES`: every in-memory cache of what the cache holds (parsed manifest, decoded images) registers its clear there, so `clear_cache()` frees it |
 | `_dispatch.py` | `add_logos`, `add_wordmarks`, `add_headshots`, `axis_logos` and the adapter registry (`register_adapter`) |
 | `testing.py` | `check_adapter_contract` and `check_table_adapter_contract`, the shared adapter harnesses |
@@ -64,7 +64,7 @@ guide differs from `CONTRIBUTING.md` or the tests under `tests/`, those win.
 | `typing.py` | `sdvplot.typing`, the public re-export of those aliases for user annotations (the `numpy.typing` precedent) |
 
 `tools/` holds the generators (`build_index.py`, `fetch_sources.py`, `gen_docs.py`, `render_notebooks.py`,
-`home_figures.py`, `hex_logo.py`, `sync_changelog.py`), the R exports (`export_sdvplotr.R`, `export_cfbplotr.R`, `export_parity_extras.R`) and the commit-msg
+`home_figures.py`, `hex_logo.py`, `sync_changelog.py`), the R exports (`export_sdvplotr.R`, `export_cfbplotr.R`, `export_parity_extras.R`, `export_cfbplotr_parity.R`) and the commit-msg
 hook (`hooks/check_commit_msg.py`). `docs/` is the Docusaurus site; outside its pages, `docs/COMPATIBILITY.md` is the
 gallery compatibility matrix (kept true by `tests/test_compat_matrix.py`) and `docs/PARITY.md` /
 `docs/PARITY_TABLES.md` map sdvplotR's exports. `data-raw/` is the committed input to the index. `examples/` holds the
@@ -96,6 +96,7 @@ and never let a lock bump ride into an unrelated commit.
 | `src/sdvplot/data/*` | `uv run python tools/build_index.py` (after `tools/fetch_sources.py` for new sources) | `--check` |
 | `data-raw/provider_ids.csv` | `uv run python tools/fetch_sources.py --crosswalks-only` (network: the sportsdataverse-data NCAA and WNBA crosswalk releases and the `{league}_groups` `team_aliases`), then rebuild the index | `--check` |
 | `data-raw/espn_colors.csv`, `data-raw/logo_colors.csv` | `uv run python tools/fetch_sources.py --colors-only` (network), then rebuild the index | `--check` |
+| `src/sdvplot/data/f1_headshots.csv` | `uv run python tools/fetch_sources.py --f1-headshots-only` (network: Jolpica, Wikipedia, Wikidata, Commons; slow and sequential) | `tests/test_headshots_league.py` |
 | `docs/docs/reference/**`, `docs/src/data/reference_sidebar.json`, `docs/src/data/home.json` | `uv run python tools/gen_docs.py` | `--check` |
 | `docs/docs/{tutorials,cookbooks,recipes,leaderboards}/**` (pages, figures, `_category_.json`), `docs/docs/gallery.md`, `docs/static/outputs/**`, `docs/static/img/gallery/**`, `docs/src/data/gallery/*.json`, `docs/static/notebooks/**` | `uv run python tools/render_notebooks.py` (network; `--only leagues/nfl`; `--gallery-only` after a merge) | `tests/test_notebooks.py` (copies, metadata, gallery) |
 | `docs/static/img/home/*.png`, `docs/src/data/home_figures.json` | `uv run python tools/home_figures.py` (network) | `tests/test_home_figures.py` |
@@ -103,6 +104,7 @@ and never let a lock bump ride into an unrelated commit.
 | `docs/src/pages/CHANGELOG.md` | `CHANGELOG.md` under front matter: `tools/sync_changelog.py` (the `sync-docs-changelog` pre-commit hook) | `tests/test_repo_files.py` |
 | `data-raw/sdvplotr_*.csv` | `R_ENVIRON_USER=/dev/null Rscript tools/export_sdvplotr.R [path/to/sdvplotR]` | rebuild the index |
 | `data-raw/cfbplotr_names.csv`, `data-raw/cfbplotr_commit.txt` | `R_ENVIRON_USER=/dev/null Rscript tools/export_cfbplotr.R [path/to/cfbplotR]` | rebuild the index |
+| `tests/fixtures/sdvplotr_{cfbplotr_meta,divisions,aliases_digest,clean_names,team_factor,alt_colors,athlete_ids,athlete_rosters}.csv` | `R_ENVIRON_USER=/dev/null Rscript tools/export_cfbplotr_parity.R [path/to/sdvplotR]` (network for the rosters), after the index and sdvplotR's snapshot are rebuilt at one version | `tests/test_cfbplotr_parity.py` (skips while the versions differ) |
 
 Regenerate after changing any source, including a public function's docstring or `__all__`; stale generated files
 fail the drift gates. doctoc rewrites a TOC after the changelog hook copies `CHANGELOG.md`: run the hooks until they
