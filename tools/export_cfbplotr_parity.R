@@ -20,9 +20,14 @@ suppressMessages(pkgload::load_all(src, export_all = TRUE, quiet = TRUE))
 
 write <- function(d, name) {
   path <- file.path(fixtures, name)
-  con <- file(path, "wb") # binary: LF line endings on Windows too (the repo's text files are LF)
+  chr <- vapply(d, is.character, TRUE)
+  d[chr] <- lapply(d[chr], enc2utf8)
+  lines <- utils::capture.output(write.csv(d, row.names = FALSE, na = ""))
+  con <- file(path, "wb") # bytes, not text: UTF-8 in any locale, LF line endings on Windows too
   on.exit(close(con))
-  write.csv(d, con, row.names = FALSE, na = "", fileEncoding = "UTF-8")
+  writeBin(charToRaw(enc2utf8(paste0(paste(lines, collapse = "
+"), "
+"))), con)
   message(path, ": ", nrow(d), " rows")
 }
 

@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 CACHE_ENV = "SDVPLOT_CACHE_DIR"
 TTL_ENV = "SDVPLOT_CACHE_TTL"
 DEFAULT_TTL_DAYS = 7.0
-CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse", "urlimages")
+CACHE_SUBDIRS = ("manifest", "images", "rasters", "nflverse", "urlimages", "cfbfastR-data")
 MARKER = ".sdvplot-cache"  # written into a subdirectory sdvplot created; clear_cache only deletes marked ones
 MAX_BYTES = 200 * 1024 * 1024  # default body cap, for the tables (the logo manifest is ~18 MB and grows)
 IMAGE_MAX_BYTES = 25 * 1024 * 1024

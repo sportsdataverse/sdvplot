@@ -415,6 +415,8 @@ def _id_str(value: Any) -> str | None:
     "14"), anything else as given (untrimmed), a missing value None."""
     if _is_na(value) or (isinstance(value, float) and value != value):
         return None
+    if isinstance(value, numbers.Integral) and not isinstance(value, bool):
+        return str(int(value))  # never through a float: 9007199254740993 keeps its digits
     if isinstance(value, numbers.Real) and not isinstance(value, bool):
         f = float(value)
         return str(int(f)) if f.is_integer() else str(value)

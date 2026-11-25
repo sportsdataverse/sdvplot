@@ -142,7 +142,7 @@ def test_add_athlete_id_matches_sdvplotr(monkeypatch, tmp_path):
 
 @pytest.mark.real_index
 @pytest.mark.filterwarnings("ignore::sdvplot._errors.SdvplotWarning")
-@pytest.mark.skipif(not os.environ.get("SDVPLOT_LIVE_TESTS"), reason="network: SDVPLOT_LIVE_TESTS=1")
+@pytest.mark.skipif(os.environ.get("SDVPLOT_LIVE_TESTS") != "1", reason="network: set SDVPLOT_LIVE_TESTS=1")
 def test_add_athlete_id_matches_sdvplotr_on_the_live_rosters():
     _same_index()
     want = _players()
@@ -258,3 +258,25 @@ def test_add_athlete_id_skips_a_missing_pandas_team(monkeypatch):
     monkeypatch.setattr(_headshots, "_roster", lambda league, season: rows if season == 2021 else ())
     df = pd.DataFrame({"name": ["Chris Johnson"], "team": [float("nan")], "season": [2021]})
     assert sdvplot.add_athlete_id(df, "name")["athlete_id"].isna().all()
+
+
+def test_add_athlete_id_takes_the_team_id_system_and_strict(monkeypatch):
+    rows = ((2021, "7", "Bo Nix", "Alabama", None),)
+    monkeypatch.setattr(_headshots, "_roster", lambda league, season: rows if season == 2021 else ())
+    df = pl.DataFrame({"name": ["Bo Nix"], "team": ["333"], "season": [2021]})
+    assert sdvplot.add_athlete_id(df, "name", id_system="team_id")["athlete_id"].to_list() == ["7"]
+    assert sdvplot.add_athlete_id(df, "name", id_system="name")["athlete_id"].to_list() == [None]  # "333" is no name
+    with pytest.raises(sdvplot.UnresolvedTeamError, match="'nowhere'"):
+        sdvplot.add_athlete_id(df.with_columns(team=pl.lit("nowhere")), "name", strict=True)
+    with pytest.raises(sdvplot.InputError, match="unknown id_system"):
+        sdvplot.add_athlete_id(df, "name", id_system="espnn")
+
+
+def test_clean_names_keeps_a_large_integer_s_digits():
+    assert sdvplot.clean_names(9007199254740993, "nfl") == "9007199254740993"
+
+
+def test_the_roster_cache_directory_is_one_clear_cache_empties():
+    from sdvplot import _cache
+
+    assert "cfbfastR-data" in _cache.CACHE_SUBDIRS

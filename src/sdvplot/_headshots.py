@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 from sdvplot._cache import MEMORY_CACHES, fetch_cached, safe_url
 from sdvplot._errors import InputError, OfflineError, UnsafeDownloadError, warn
 from sdvplot._normalize import norm_value
-from sdvplot._types import HeadshotIdSystem
+from sdvplot._types import HeadshotIdSystem, IdSystem
 
 if TYPE_CHECKING:
     import polars as pl
@@ -369,6 +369,8 @@ def add_athlete_id(
     season_col: str | None = None,
     league: str = "cfb",
     headshot_urls: bool = False,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
 ) -> Any:
     """Add each player's ESPN athlete id to a data frame of player names, matched to published rosters.
 
@@ -392,16 +394,20 @@ def add_athlete_id(
             outside the rosters' (2009 to the latest) match no one.
         league: A league with rosters: "cfb".
         headshot_urls: Also add each player's headshot URL (the roster's ESPN headshot).
+        id_system: The id system of ``team_col``'s values, as in ``resolve`` ("auto" tries each in order). The rosters'
+            own team names always resolve under "auto".
+        strict: Raise UnresolvedTeamError when a team in ``team_col`` does not resolve, instead of matching it by name.
 
     Returns:
         DataFrame: ``df`` (same library) with an ``athlete_id`` String column, null where no single athlete matched,
         and with ``headshot_urls=True`` a ``headshot_url`` column.
 
     Raises:
-        InputError: (a ValueError) If ``league`` is not a known league key.
+        InputError: (a ValueError) If ``league`` is not a known league key or ``id_system`` is unknown.
         ValueError: If ``league`` has no rosters, ``df`` already has an ``athlete_id`` column, or a column named is not
             in ``df``.
         TypeError: If ``df`` is not a data frame.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team in ``team_col`` does not resolve.
 
     Example:
         ::
@@ -420,7 +426,7 @@ def add_athlete_id(
     import narwhals as nw
 
     from sdvplot import _index
-    from sdvplot._resolve import _resolve_ids
+    from sdvplot._resolve import _report, _resolve_ids
 
     _index.check_league(league)
     if league not in ROSTER_LEAGUES:
@@ -446,8 +452,10 @@ def add_athlete_id(
     if not by_season:
         season_col = None  # no season with rosters: the latest's, as sdvplotR
 
-    def team_keys(values: list[Any]) -> list[str]:
-        ids, _ = _resolve_ids(values, league, [None] * len(values), "auto")
+    def team_keys(values: list[Any], system: str = "auto", must: bool = False) -> list[str]:
+        ids, unresolved = _resolve_ids(values, league, [None] * len(values), system)
+        if must and unresolved:
+            _report(unresolved, league, True)
         return [i if i is not None else f"name:{norm_value(v)}" for v, i in zip(values, ids, strict=True)]
 
     names = frame[name_col].to_list()
@@ -455,7 +463,7 @@ def add_athlete_id(
     key_df: list[Any] = [norm_value(n) for n in names]
     key_ro: list[Any] = [norm_value(r[2]) for r in rosters]
     if team_col:
-        key_df = list(zip(key_df, team_keys(teams), strict=True))
+        key_df = list(zip(key_df, team_keys(teams, id_system, strict), strict=True))
         key_ro = list(zip(key_ro, team_keys([r[3] for r in rosters]), strict=True))
     if season_col:
         key_df = list(zip(key_df, df_seasons, strict=True))
