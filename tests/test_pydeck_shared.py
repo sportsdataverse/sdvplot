@@ -17,7 +17,7 @@ from tests.conftest import FakeResponse, FakeSession
 PATH = Path(__file__).parent / "fixtures" / "deckgl_shared.json"
 BYTES = PATH.read_bytes()
 SHA256 = (
-    "0079966491bdc294687d81f9c68447bd448468cb9f77e6d3024b9f7ccdc4e6c0"  # pinned in sdvplot-js's deckgl-shared.test.ts
+    "117b596f58c2d77ec51367734919ac75469b51b9bca269c09a03a73d83452ef6"  # pinned in sdvplot-js's deckgl-shared.test.ts
 )
 FIXTURE = json.loads(BYTES)
 

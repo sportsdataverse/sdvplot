@@ -10,23 +10,39 @@ body:
       description: The league key you passed.
       options:
         - aaf
+        - aba
+        - acb
         - ahl
         - ajhl
+        - bbl
         - bchl
+        - bleague
+        - bnxt
         - cchl
         - cebl
         - cfb
         - cfl
         - chl
         - cricket
+        - dbbl
+        - dbl
         - easl
         - echl
+        - elh
+        - euroleague
         - f1
+        - feb
         - fiba
         - gojhl
+        - ha
+        - ibba
         - iihf
+        - kbl
         - kijhl
+        - kzs
         - lba
+        - lkl
+        - magnus
         - mbb
         - mhl
         - milb
@@ -35,6 +51,7 @@ body:
         - nba
         - nbagl
         - nbl
+        - nbl_au
         - ncaa_baseball
         - ncaa_mhockey
         - ncaa_softball
@@ -47,6 +64,7 @@ body:
         - phf
         - pwhl
         - qmjhl
+        - shl
         - sjhl
         - soccer
         - sphl
@@ -54,9 +72,12 @@ body:
         - usfl
         - ushl
         - vijhl
+        - vtb
         - wbb
         - whl
+        - wjbl
         - wnba
+        - wnbl
         - xfl
     validations: { required: true }
   - type: dropdown

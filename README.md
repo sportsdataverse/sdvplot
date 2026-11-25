@@ -22,7 +22,7 @@ Team logos, wordmarks, headshots and colors for Python plots and tables, from th
 <!-- badges: end -->
 
 sdvplot
-resolves team abbreviations, names and provider ids across 49 leagues and picks the right era's mark for a season. Colors
+resolves team abbreviations, names and provider ids across 70 leagues and picks the right era's mark for a season. Colors
 and logos work with any library through `palette()`, `team_colors()`, `logo_url()` and `logo_image()`, and the
 `add_logos()`, `add_wordmarks()` and `add_headshots()` adapters draw them on matplotlib (and seaborn), plotnine, plotly,
 altair, bokeh, holoviews, great_tables, folium and pygal plots, tables and maps. `sdvplot.great_tables` also ports
