@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_sdv_5_0_0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 520.0px;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+
+&lt;/head&gt;
+&lt;body&gt;
+
+
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_sdv_5_0_0&quot; &gt;&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;script&gt;
+
+
+            var map_sdv_5_0_0 = L.map(
+                &quot;map_sdv_5_0_0&quot;,
+                {
+                    center: [38.5, -96.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 4,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+
+
+
+
+            var tile_layer_sdv_5_0_1 = L.tileLayer(
+                &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 16,
+  &quot;maxNativeZoom&quot;: 16,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;Tiles \u0026copy; Esri \u0026mdash; Esri, DeLorme, NAVTEQ&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+
+
+            tile_layer_sdv_5_0_1.addTo(map_sdv_5_0_0);
+
+
+            var feature_group_sdv_5_0_2 = L.featureGroup(
+                {
+}
+            );
+
+
+            var marker_sdv_5_0_3 = L.marker(
+                [38.57994, -121.51246],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_4 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f4/f430543a6db8d652e4fb1a81c4ac99ee32022ae587834234a029830a9653b8d2.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_3.bindTooltip(
+                `&lt;div&gt;
+                     Athletics
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_3.setIcon(icon_sdv_5_0_4);
+
+
+            var marker_sdv_5_0_5 = L.marker(
+                [33.890672, -84.467641],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_6 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1c/1c36c62410bbed29624672b006173af58bcdfbb066ae9d6f7c4cb99205e861d2.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_5.bindTooltip(
+                `&lt;div&gt;
+                     Atlanta Braves
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_5.setIcon(icon_sdv_5_0_6);
+
+
+            var marker_sdv_5_0_7 = L.marker(
+                [33.445302, -112.066687],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_8 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b0/b060f0fcc21d64b978be260f0c24880c50094f0ec8e640d14896dc5045bf0b21.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_7.bindTooltip(
+                `&lt;div&gt;
+                     Arizona Diamondbacks
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_7.setIcon(icon_sdv_5_0_8);
+
+
+            var marker_sdv_5_0_9 = L.marker(
+                [39.283787, -76.621689],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_10 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e9/e96827050e6079674fa20221f5b8b8acbd4f80843f861dbb4d0261b309741472.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_9.bindTooltip(
+                `&lt;div&gt;
+                     Baltimore Orioles
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_9.setIcon(icon_sdv_5_0_10);
+
+
+            var marker_sdv_5_0_11 = L.marker(
+                [42.346456, -71.097441],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_12 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/47/471966c3b3f4ab7b567b9cd29e7eefc138963182e98b31c01c922335ad265597.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_11.bindTooltip(
+                `&lt;div&gt;
+                     Boston Red Sox
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_11.setIcon(icon_sdv_5_0_12);
+
+
+            var marker_sdv_5_0_13 = L.marker(
+                [41.948171, -87.655503],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_14 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39a2b071f52778bbaa9f7d58432db3dcf638bb9a25eb17a901d3551d5d859086.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_13.bindTooltip(
+                `&lt;div&gt;
+                     Chicago Cubs
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_13.setIcon(icon_sdv_5_0_14);
+
+
+            var marker_sdv_5_0_15 = L.marker(
+                [39.097389, -84.506611],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_16 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/57/57f685ca691ba291d8ed31378e489a44b71648b310bfb7ceb8017bd21373f23c.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_15.bindTooltip(
+                `&lt;div&gt;
+                     Cincinnati Reds
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_15.setIcon(icon_sdv_5_0_16);
+
+
+            var marker_sdv_5_0_17 = L.marker(
+                [41.495861, -81.685255],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_18 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/8883a4e8b7c6bb75f308f1fb27a39eb7cf81ce431ba781edbc4afe082164410f.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_17.bindTooltip(
+                `&lt;div&gt;
+                     Cleveland Guardians
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_17.setIcon(icon_sdv_5_0_18);
+
+
+            var marker_sdv_5_0_19 = L.marker(
+                [39.756042, -104.994136],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_20 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/bd/bd21e7588f021af3b44cc0aeab2b281ddc515b7d6b6a68e4c823086ed585ea75.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_19.bindTooltip(
+                `&lt;div&gt;
+                     Colorado Rockies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_19.setIcon(icon_sdv_5_0_20);
+
+
+            var marker_sdv_5_0_21 = L.marker(
+                [41.83, -87.634167],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_22 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f9/f92f9c32cea65d9e697a254d09a8ae16326889796f380649b2fee64396cc4640.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_21.bindTooltip(
+                `&lt;div&gt;
+                     Chicago White Sox
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_21.setIcon(icon_sdv_5_0_22);
+
+
+            var marker_sdv_5_0_23 = L.marker(
+                [42.3391151, -83.048695],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_24 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/00/0037b82f8f714da9f40b6a2ac036c5086f06ccb139473891135c3321a7a08750.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_23.bindTooltip(
+                `&lt;div&gt;
+                     Detroit Tigers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_23.setIcon(icon_sdv_5_0_24);
+
+
+            var marker_sdv_5_0_25 = L.marker(
+                [29.756967, -95.355509],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_26 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b7e6858d9d11fe9fade351624bfbab74ec12451749feef37bd1f083d59eb4f7b.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_25.bindTooltip(
+                `&lt;div&gt;
+                     Houston Astros
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_25.setIcon(icon_sdv_5_0_26);
+
+
+            var marker_sdv_5_0_27 = L.marker(
+                [39.051567, -94.480483],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_28 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95188fdcf6d74b4e5437549ad33e20548ce8f3e696621765680354da25a0207b.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_27.bindTooltip(
+                `&lt;div&gt;
+                     Kansas City Royals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_27.setIcon(icon_sdv_5_0_28);
+
+
+            var marker_sdv_5_0_29 = L.marker(
+                [33.80019044, -117.8823996],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_30 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/71/712a4a6f37cac63156de1d17a170532fd6bbbf3a9690b276fec2a6aac751809f.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_29.bindTooltip(
+                `&lt;div&gt;
+                     Los Angeles Angels
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_29.setIcon(icon_sdv_5_0_30);
+
+
+            var marker_sdv_5_0_31 = L.marker(
+                [34.07368, -118.24053],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_32 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/aa/aab854c59098d4f465c1c6f31b580f2a38d2ed4f5c0c03df2da76f62f5378dc4.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_31.bindTooltip(
+                `&lt;div&gt;
+                     Los Angeles Dodgers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_31.setIcon(icon_sdv_5_0_32);
+
+
+            var marker_sdv_5_0_33 = L.marker(
+                [25.77796236, -80.21951795],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_34 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ef/ef37342904a50d2807c45432909de83c62c6795e9e54ebe42ac85fdd5e24c91f.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_33.bindTooltip(
+                `&lt;div&gt;
+                     Miami Marlins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_33.setIcon(icon_sdv_5_0_34);
+
+
+            var marker_sdv_5_0_35 = L.marker(
+                [43.02838, -87.97099],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_36 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d4/d4f8fe1b5be4b266a7cb1520a46a863973467361a1d3fd528502e223cbe35490.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_35.bindTooltip(
+                `&lt;div&gt;
+                     Milwaukee Brewers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_35.setIcon(icon_sdv_5_0_36);
+
+
+            var marker_sdv_5_0_37 = L.marker(
+                [44.981829, -93.277891],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_38 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3fbce769013cd44f2370505f8982d732c58c511eac9ede4e4d9bbe1b24ad4d39.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_37.bindTooltip(
+                `&lt;div&gt;
+                     Minnesota Twins
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_37.setIcon(icon_sdv_5_0_38);
+
+
+            var marker_sdv_5_0_39 = L.marker(
+                [40.75753012, -73.84559155],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_40 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/94/94c334280d388936cb193fca6c3b620d2ed6abb7b932f352fa575630ce6243bd.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_39.bindTooltip(
+                `&lt;div&gt;
+                     New York Mets
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_39.setIcon(icon_sdv_5_0_40);
+
+
+            var marker_sdv_5_0_41 = L.marker(
+                [40.82919482, -73.9264977],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_42 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d98856c36bc8d3b0fb0bab5fabd79d2ae057619164365845cbc817b04ae74a26.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_41.bindTooltip(
+                `&lt;div&gt;
+                     New York Yankees
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_41.setIcon(icon_sdv_5_0_42);
+
+
+            var marker_sdv_5_0_43 = L.marker(
+                [39.90539086, -75.16716957],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_44 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/95997c9aaac40ec5d718b667c374561b782e5cb88665d69daf3178a16401d683.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_43.bindTooltip(
+                `&lt;div&gt;
+                     Philadelphia Phillies
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_43.setIcon(icon_sdv_5_0_44);
+
+
+            var marker_sdv_5_0_45 = L.marker(
+                [40.446904, -80.005753],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_46 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/0a/0af791c91bc01b4c654a65c90c983c3f907bf2605c67cfaaed731985efff34a1.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_45.bindTooltip(
+                `&lt;div&gt;
+                     Pittsburgh Pirates
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_45.setIcon(icon_sdv_5_0_46);
+
+
+            var marker_sdv_5_0_47 = L.marker(
+                [32.707861, -117.157278],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_48 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/8b/8bb012967768a5f476ff427f433e89960149217777c6371d80eafb8725c2f175.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_47.bindTooltip(
+                `&lt;div&gt;
+                     San Diego Padres
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_47.setIcon(icon_sdv_5_0_48);
+
+
+            var marker_sdv_5_0_49 = L.marker(
+                [47.591333, -122.33251],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_50 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/92/9273d78e456969b14ef9031f39fc0511d8e875a919d887daa6b0898b1ff52226.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_49.bindTooltip(
+                `&lt;div&gt;
+                     Seattle Mariners
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_49.setIcon(icon_sdv_5_0_50);
+
+
+            var marker_sdv_5_0_51 = L.marker(
+                [37.778383, -122.389448],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_52 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/da/dad3e0a51931bb8281ebb0215624849e0fd6cbec81aafc6a12d2260f583c04e5.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_51.bindTooltip(
+                `&lt;div&gt;
+                     San Francisco Giants
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_51.setIcon(icon_sdv_5_0_52);
+
+
+            var marker_sdv_5_0_53 = L.marker(
+                [38.62256667, -90.19286667],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_54 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b7/b738c8aaac9b726336cfa3e42745a4ddcc4c8d9537a9dc0b6abba02c5952e417.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_53.bindTooltip(
+                `&lt;div&gt;
+                     St. Louis Cardinals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_53.setIcon(icon_sdv_5_0_54);
+
+
+            var marker_sdv_5_0_55 = L.marker(
+                [27.767778, -82.6525],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_56 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/3f/3f16f721cfdbb929fac08c9e1d8f9e1ab410be8b409eed5dac9b5f5c9a7af5ae.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_55.bindTooltip(
+                `&lt;div&gt;
+                     Tampa Bay Rays
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_55.setIcon(icon_sdv_5_0_56);
+
+
+            var marker_sdv_5_0_57 = L.marker(
+                [32.747299, -97.081818],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_58 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/b1/b19ee28a151164ed231d98cafbcebe471faaa876a202e9c558b925be3ac3dac9.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_57.bindTooltip(
+                `&lt;div&gt;
+                     Texas Rangers
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_57.setIcon(icon_sdv_5_0_58);
+
+
+            var marker_sdv_5_0_59 = L.marker(
+                [43.64155, -79.38915],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_60 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af6d5454549834ea4b8cd6687618a76f936209ecf39eabdb17deaf76d21dd989.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_59.bindTooltip(
+                `&lt;div&gt;
+                     Toronto Blue Jays
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_59.setIcon(icon_sdv_5_0_60);
+
+
+            var marker_sdv_5_0_61 = L.marker(
+                [38.872861, -77.007501],
+                {
+  &quot;opacity&quot;: 1.0,
+}
+            ).addTo(feature_group_sdv_5_0_2);
+
+
+        var icon_sdv_5_0_62 = L.icon({
+  &quot;iconUrl&quot;: &quot;https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/1d/1d65931fe979aec3fe59a60b2d9df900e3f84da0eca81eb1646d0ea3a93fc810.png&quot;,
+  &quot;iconSize&quot;: [36, 36],
+  &quot;iconAnchor&quot;: [18, 18],
+});
+
+
+            marker_sdv_5_0_61.bindTooltip(
+                `&lt;div&gt;
+                     Washington Nationals
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+
+
+                marker_sdv_5_0_61.setIcon(icon_sdv_5_0_62);
+
+
+            feature_group_sdv_5_0_2.addTo(map_sdv_5_0_0);
+
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>

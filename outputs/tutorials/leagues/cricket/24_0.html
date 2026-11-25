@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;padding:8px;background:#fff;color:#0e1626;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body>
+
+<style>
+  #sdv_24_0_0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #sdv_24_0_0.vega-embed details,
+  #sdv_24_0_0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="sdv_24_0_0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "sdv_24_0_0") {
+      outputDiv = document.getElementById("sdv_24_0_0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@6?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@6.4.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "6")
+        .then(() => maybeLoadScript("vega-lite", "6.4.1"))
+        .then(() => maybeLoadScript("vega-embed", "7"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-sdv_24_0_1"}, "mark": {"type": "circle", "opacity": 0, "size": 300}, "encoding": {"tooltip": [{"field": "team", "type": "nominal"}, {"field": "group", "type": "nominal"}, {"field": "match_points", "type": "quantitative"}, {"field": "netrr", "format": "+.3f", "title": "NRR", "type": "quantitative"}], "x": {"field": "for", "scale": {"zero": false}, "title": "Runs scored per over", "type": "quantitative"}, "y": {"field": "against", "scale": {"reverse": true, "zero": false}, "title": "Runs conceded per over (reversed)", "type": "quantitative"}}, "title": "ICC Men's T20 World Cup 2026, group stage: run rates"}, {"data": {"values": [{"for": 9.225, "against": 6.725, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ec/ec04eb4d801b42aa7550ce57649c1778bf97026331999749fbaf9f31edc17607.png", "sdvplot_team": "6"}, {"for": 8.209, "against": 7.213, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/e7/e79ab6da0ccac782a0e5f35c6fecbefe43c5c6829eb55fc4a80c3ce1d8405274.png", "sdvplot_team": "7"}, {"for": 8.562, "against": 7.775, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/38/389708d24713aa31c55d74220b11a59d64eff0513b1ac45cf7037c087f131e0d.png", "sdvplot_team": "11"}, {"for": 7.5, "against": 8.739, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/a4/a4e3429816b4196789b45f129c7cb5553c6e8746c7566b8ef435a32031f6c240.png", "sdvplot_team": "15"}, {"for": 6.713, "against": 9.821, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/90/9030de7b1e437dd34e54248a98118e2310c2d858faee4c7b44f7448f46c54004.png", "sdvplot_team": "28"}, {"for": 8.623, "against": 7.117, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/6f/6f8268582243048cdb8ea571da17e9c6dd9de10062a008ba7ca7e7f9ee7a4c21.png", "sdvplot_team": "9"}, {"for": 9.615, "against": 7.894, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/39/39714fddc42250a495f5cd6cde8a33dc35b673ef33fb9ac32ec79ce01eba2718.png", "sdvplot_team": "8"}, {"for": 8.89, "against": 7.333, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/95/9549cdb31df977a43ee40d5de7dc6c075ed3beb20196232fb7fc7e4d590892d0.png", "sdvplot_team": "2"}, {"for": 8.217, "against": 8.067, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/af/af17a767eb64b7e73e510f5eedd203f5ff9f39e19d8958317824b0be9d4ef794.png", "sdvplot_team": "29"}, {"for": 5.825, "against": 10.681, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/82/82183bf6cb24e5a5dc4a957f56b3526d9f13d1f2425a2f4da0060d63eb748dad.png", "sdvplot_team": "37"}, {"for": 9.003, "against": 7.112, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/88/887c66486228ed6adec19f48cc66a970c6b51b1ed4fa6560416025de407f01b4.png", "sdvplot_team": "4"}, {"for": 9.041, "against": 8.825, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/f8/f858a903a80777ffaa7ee49bdeca1bc4958b1050c1dca3bc7a6084ebe84176dc.png", "sdvplot_team": "1"}, {"for": 8.45, "against": 8.295, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/d9/d927fb988c42c32606dce53bd6cb67e53fd00a93c27a73d3e902a25948c50452.png", "sdvplot_team": "30"}, {"for": 7.664, "against": 9.0, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/ba/ba78d4e74c2be4435d3bbc66f09b83db6bfb1e8f48413d67d849b8d680ef2b1d.png", "sdvplot_team": "33"}, {"for": 9.972, "against": 8.0, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/df/dff5b8aff2c069581b322bb01ba6d11af3e83c4f78f373e73db3b90a56a80b49.png", "sdvplot_team": "3"}, {"for": 10.396, "against": 9.157, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/32/32c4c231184f016bfb6e5326213ee70b0901ed8c83583c712ccc6e61ffbbe0ba.png", "sdvplot_team": "5"}, {"for": 9.23, "against": 8.361, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/df/df28626ba5b1d3b7bdccc3b0127636dda3ee14d821fba309e25d70e979833a9e.png", "sdvplot_team": "40"}, {"for": 7.632, "against": 8.971, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/35/3596bf033df2fdc9e0aa6230ffce45ff60100f57b76dc86cfcc332dac268813d.png", "sdvplot_team": "27"}, {"for": 7.463, "against": 9.933, "sdvplot_url": "https://sdv.nyc3.cdn.digitaloceanspaces.com/assets/public/sha256/35/35fd5fb2d767fdd7a23d17791f52900e8eb5906dfb57914965499760eeb2596d.png", "sdvplot_team": "17"}]}, "mark": {"type": "image", "aspect": true, "height": 26.4, "opacity": 1.0, "width": 26.4}, "encoding": {"url": {"field": "sdvplot_url", "type": "nominal"}, "x": {"field": "for", "type": "quantitative"}, "y": {"field": "against", "type": "quantitative"}}, "name": "sdvplot_logo"}], "height": 440, "width": 620, "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-sdv_24_0_1": [{"group": "Group A", "team": "India", "team_id": "6", "team_abbreviation": "IND", "rank": 1, "matches_played": 4, "matches_won": 4, "matches_lost": 0, "noresult": 0, "match_points": 8, "qualified": 1.0, "matches_tied": 0, "netrr": 2.5, "for": 9.225, "against": 6.725, "total": ""}, {"group": "Group A", "team": "Pakistan", "team_id": "7", "team_abbreviation": "PAK", "rank": 2, "matches_played": 4, "matches_won": 3, "matches_lost": 1, "noresult": 0, "match_points": 6, "qualified": 1.0, "matches_tied": 0, "netrr": 0.976, "for": 8.209, "against": 7.213, "total": ""}, {"group": "Group A", "team": "United States of America", "team_id": "11", "team_abbreviation": "USA", "rank": 3, "matches_played": 4, "matches_won": 2, "matches_lost": 2, "noresult": 0, "match_points": 4, "qualified": null, "matches_tied": 0, "netrr": 0.788, "for": 8.562, "against": 7.775, "total": ""}, {"group": "Group A", "team": "Netherlands", "team_id": "15", "team_abbreviation": "NED", "rank": 4, "matches_played": 4, "matches_won": 1, "matches_lost": 3, "noresult": 0, "match_points": 2, "qualified": null, "matches_tied": 0, "netrr": -1.217, "for": 7.5, "against": 8.739, "total": ""}, {"group": "Group A", "team": "Namibia", "team_id": "28", "team_abbreviation": "NAM", "rank": 5, "matches_played": 4, "matches_won": 0, "matches_lost": 4, "noresult": 0, "match_points": 0, "qualified": null, "matches_tied": 0, "netrr": -3.108, "for": 6.713, "against": 9.821, "total": ""}, {"group": "Group B", "team": "Zimbabwe", "team_id": "9", "team_abbreviation": "ZIM", "rank": 1, "matches_played": 4, "matches_won": 3, "matches_lost": 0, "noresult": 1, "match_points": 7, "qualified": 1.0, "matches_tied": 0, "netrr": 1.506, "for": 8.623, "against": 7.117, "total": ""}, {"group": "Group B", "team": "Sri Lanka", "team_id": "8", "team_abbreviation": "SL", "rank": 2, "matches_played": 4, "matches_won": 3, "matches_lost": 1, "noresult": 0, "match_points": 6, "qualified": 1.0, "matches_tied": 0, "netrr": 1.741, "for": 9.615, "against": 7.894, "total": ""}, {"group": "Group B", "team": "Australia", "team_id": "2", "team_abbreviation": "AUS", "rank": 3, "matches_played": 4, "matches_won": 2, "matches_lost": 2, "noresult": 0, "match_points": 4, "qualified": null, "matches_tied": 0, "netrr": 1.523, "for": 8.89, "against": 7.333, "total": ""}, {"group": "Group B", "team": "Ireland", "team_id": "29", "team_abbreviation": "IRE", "rank": 4, "matches_played": 4, "matches_won": 1, "matches_lost": 2, "noresult": 1, "match_points": 3, "qualified": null, "matches_tied": 0, "netrr": 0.15, "for": 8.217, "against": 8.067, "total": ""}, {"group": "Group B", "team": "Oman", "team_id": "37", "team_abbreviation": "OMA", "rank": 5, "matches_played": 4, "matches_won": 0, "matches_lost": 4, "noresult": 0, "match_points": 0, "qualified": null, "matches_tied": 0, "netrr": -4.845, "for": 5.825, "against": 10.681, "total": ""}, {"group": "Group C", "team": "West Indies", "team_id": "4", "team_abbreviation": "WI", "rank": 1, "matches_played": 4, "matches_won": 4, "matches_lost": 0, "noresult": 0, "match_points": 8, "qualified": 1.0, "matches_tied": 0, "netrr": 1.874, "for": 9.003, "against": 7.112, "total": ""}, {"group": "Group C", "team": "England", "team_id": "1", "team_abbreviation": "ENG", "rank": 2, "matches_played": 4, "matches_won": 3, "matches_lost": 1, "noresult": 0, "match_points": 6, "qualified": 1.0, "matches_tied": 0, "netrr": 0.201, "for": 9.041, "against": 8.825, "total": ""}, {"group": "Group C", "team": "Scotland", "team_id": "30", "team_abbreviation": "SCOT", "rank": 3, "matches_played": 4, "matches_won": 1, "matches_lost": 3, "noresult": 0, "match_points": 2, "qualified": null, "matches_tied": 0, "netrr": 0.184, "for": 8.45, "against": 8.295, "total": ""}, {"group": "Group C", "team": "Nepal", "team_id": "33", "team_abbreviation": "NEP", "rank": 5, "matches_played": 4, "matches_won": 1, "matches_lost": 3, "noresult": 0, "match_points": 2, "qualified": null, "matches_tied": 0, "netrr": -1.349, "for": 7.664, "against": 9.0, "total": ""}, {"group": "Group D", "team": "South Africa", "team_id": "3", "team_abbreviation": "SA", "rank": 1, "matches_played": 4, "matches_won": 4, "matches_lost": 0, "noresult": 0, "match_points": 8, "qualified": 1.0, "matches_tied": 0, "netrr": 1.943, "for": 9.972, "against": 8.0, "total": ""}, {"group": "Group D", "team": "New Zealand", "team_id": "5", "team_abbreviation": "NZ", "rank": 2, "matches_played": 4, "matches_won": 3, "matches_lost": 1, "noresult": 0, "match_points": 6, "qualified": 1.0, "matches_tied": 0, "netrr": 1.227, "for": 10.396, "against": 9.157, "total": ""}, {"group": "Group D", "team": "Afghanistan", "team_id": "40", "team_abbreviation": "AFG", "rank": 3, "matches_played": 4, "matches_won": 2, "matches_lost": 2, "noresult": 0, "match_points": 4, "qualified": null, "matches_tied": 0, "netrr": 0.889, "for": 9.23, "against": 8.361, "total": ""}, {"group": "Group D", "team": "United Arab Emirates", "team_id": "27", "team_abbreviation": "UAE", "rank": 4, "matches_played": 4, "matches_won": 1, "matches_lost": 3, "noresult": 0, "match_points": 2, "qualified": null, "matches_tied": 0, "netrr": -1.364, "for": 7.632, "against": 8.971, "total": ""}, {"group": "Group D", "team": "Canada", "team_id": "17", "team_abbreviation": "CAN", "rank": 5, "matches_played": 4, "matches_won": 0, "matches_lost": 4, "noresult": 0, "match_points": 0, "qualified": null, "matches_tied": 0, "netrr": -2.426, "for": 7.463, "against": 9.933, "total": ""}]}}, {"renderer": "svg", "actions": false, "mode": "vega-lite"});
+</script>
+<script>
+(function () {
+  function send() {
+    var h = Math.max(document.documentElement.getBoundingClientRect().height, document.body.scrollHeight);
+    parent.postMessage({sdvplotFrameHeight: Math.ceil(h)}, "*");
+  }
+  addEventListener("load", send);
+  addEventListener("message", function (e) { if (e.data === "sdvplot:height?") send(); });
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
