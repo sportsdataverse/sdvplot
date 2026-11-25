@@ -1,7 +1,7 @@
 ---
 title: logo_image
 sidebar_label: logo_image
-sidebar_position: 7
+sidebar_position: 10
 ---
 
 # logo_image

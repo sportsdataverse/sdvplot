@@ -15,6 +15,9 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [resolve](resolve.md) | Canonical team_id(s) for team values in one league. |
 | [suggest](suggest.md) | Up to n (team_id, name) candidates for a value that did not resolve, best first. |
 | [teams](teams.md) | The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors. |
+| [aliases](aliases.md) | Every team name, abbreviation and provider id the bundled index resolves, one row per alias. |
+| [clean_names](clean_names.md) | One display name per team value, for joins and labels (cfbplotR's ``clean_school_names()``). |
+| [team_factor](team_factor.md) | The team values as an ordered categorical, its categories ordered by each team's abbreviation. |
 
 ## Colors
 
@@ -31,6 +34,7 @@ Every public function, grouped by what it works with. Each top-level function ha
 | [logo_image](logo_image.md) | The team's mark as a PIL image (downloaded once, then cached). |
 | [marks](marks.md) | Every archived mark for one team, best first. |
 | [headshot_url](headshot_url.md) | A headshot URL for one player. |
+| [add_athlete_id](add_athlete_id.md) | Add each player's ESPN athlete id to a data frame of player names, matched to published rosters. |
 
 ## Plots and tables
 

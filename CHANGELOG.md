@@ -47,6 +47,15 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- The cfbplotR-era functions of sdvplotR 0.3.0: `clean_names()` (`sdv_clean_names()`: one display name per team
+  value, cfbplotR's `clean_school_names()` / `clean_team_abbrs()`), `aliases()` (`sdv_aliases()`, cfbplotR's
+  `team_name_mapping`), `teams(league, division=)` (FBS, FCS, DI, DII, DIII, P4, P5, G5 and Conference, cfbplotR's
+  division lists), `team_factor()` (`sdv_team_factor()`, cfbplotR's `cfb_team_factor()`: an ordered categorical by
+  abbreviation), `alt_colors=` on `palette()`, `team_colors()` and `sdvplot.plotnine.scale_color_sdv()` /
+  `scale_fill_sdv()`, and `add_athlete_id()` (`sdv_add_athlete_id()`, cfbplotR's `add_athlete_id_col()`: ESPN
+  athlete ids for college football player names from cfbfastR-data's rosters). Each is checked against sdvplotR's
+  own output on the bundled index (`tests/test_cfbplotr_parity.py`, fixtures from
+  `tools/export_cfbplotr_parity.R`).
 - cfbplotR's `team_name_mapping` spellings resolve: `resolve("VA TECH", "cfb")`, `"NC St."`, `"North Carolina
   State"`, `"UT San Antonio"`, `"Presbyterian College"`, `"St Francis (PA)"`. `tools/export_cfbplotr.R` exports the
   mapping with logo_ref's type and ESPN id into `data-raw/cfbplotr_names.csv` (commit in `data-raw/cfbplotr_commit.txt`),

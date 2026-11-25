@@ -1,7 +1,7 @@
 ---
 title: add_logos
 sidebar_label: add_logos
-sidebar_position: 10
+sidebar_position: 14
 ---
 
 # add_logos

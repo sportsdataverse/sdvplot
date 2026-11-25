@@ -1,7 +1,7 @@
 ---
 title: sdvplot.pydeck
 sidebar_label: sdvplot.pydeck
-sidebar_position: 25
+sidebar_position: 29
 ---
 
 # sdvplot.pydeck

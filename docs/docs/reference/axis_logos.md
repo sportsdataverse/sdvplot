@@ -1,7 +1,7 @@
 ---
 title: axis_logos
 sidebar_label: axis_logos
-sidebar_position: 13
+sidebar_position: 17
 ---
 
 # axis_logos

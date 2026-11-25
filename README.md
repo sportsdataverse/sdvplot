@@ -119,6 +119,12 @@ source publishes them, `logo` when they are derived from the team's archived log
 `fallback` for a placeholder that is not the team's colors (`cbbplotR` on the conference rows
 `teams(league, include_conferences=True)` adds).
 
+cfbplotR's helpers, as sdvplotR has them: `clean_names()` cleans team names to one display name,
+`teams("cfb", division="P5")` lists a division (FBS, FCS, DI-DIII, or the P4, P5 and G5 tiers), `aliases()` is
+every name and id the index resolves, `team_factor()` orders teams by abbreviation as a categorical, `alt_colors=`
+swaps teams to their other color in `palette()`, `team_colors()` and the plotnine scales, and `add_athlete_id()` adds
+ESPN athlete ids to a frame of college football player names, from cfbfastR-data's rosters.
+
 From the [gallery](https://sdvplot.sportsdataverse.org/docs/gallery), each drawn by sdvplot from the logo archive:
 
 | | |

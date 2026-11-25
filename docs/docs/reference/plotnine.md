@@ -1,7 +1,7 @@
 ---
 title: sdvplot.plotnine
 sidebar_label: sdvplot.plotnine
-sidebar_position: 18
+sidebar_position: 22
 ---
 
 # sdvplot.plotnine
@@ -709,6 +709,7 @@ scale_color_sdv(
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
+    alt_colors: Any = None,
     **kwargs: Any,
 ) -> Any
 ```
@@ -728,6 +729,7 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
+| `alt_colors` | `Any` | Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary one with ``which="secondary"``. A team with no other color keeps its own (cfbplotR's and sdvplotR's ``alt_colors``). |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
 
 ### Returns
@@ -769,6 +771,7 @@ scale_colour_sdv(
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
+    alt_colors: Any = None,
     **kwargs: Any,
 ) -> Any
 ```
@@ -788,6 +791,7 @@ A discrete color scale that maps each team value (any id system) to its team col
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
+| `alt_colors` | `Any` | Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary one with ``which="secondary"``. A team with no other color keeps its own (cfbplotR's and sdvplotR's ``alt_colors``). |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_color_manual`` (``name``, ``breaks``, ``guide``, ...). |
 
 ### Returns
@@ -829,6 +833,7 @@ scale_fill_sdv(
     strict: bool = False,
     na_value: str = 'grey',
     alpha: float | None = None,
+    alt_colors: Any = None,
     **kwargs: Any,
 ) -> Any
 ```
@@ -848,6 +853,7 @@ A discrete fill scale that maps each team value (any id system) to its team colo
 | `strict` | `bool` | Raise ``UnresolvedTeamError`` when the plot is drawn and a value does not resolve, instead of drawing it in ``na_value`` with one ``SdvplotWarning``. |
 | `na_value` | `str` | The color of values that are not teams; drawn as given, ``alpha`` does not fade it. |
 | `alpha` | `float \| None` | An opacity in [0, 1] applied to the team colors (sdvplotR's ``alpha``, ``scales::alpha()``); ``None`` (the default) leaves them opaque. |
+| `alt_colors` | `Any` | Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary one with ``which="secondary"``. A team with no other color keeps its own (cfbplotR's and sdvplotR's ``alt_colors``). |
 | `**kwargs` | `Any` | Passed to plotnine's ``scale_fill_manual``. |
 
 ### Returns

@@ -1,7 +1,7 @@
 ---
 title: add_headshots
 sidebar_label: add_headshots
-sidebar_position: 12
+sidebar_position: 16
 ---
 
 # add_headshots

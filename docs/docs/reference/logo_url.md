@@ -1,7 +1,7 @@
 ---
 title: logo_url
 sidebar_label: logo_url
-sidebar_position: 6
+sidebar_position: 9
 ---
 
 # logo_url

@@ -37,9 +37,9 @@ OUT = ROOT / "docs" / "docs" / "reference"
 DATA = ROOT / "docs" / "src" / "data"
 DATA_FILES = ["reference_sidebar.json", "home.json"]
 SECTIONS = [
-    ("Teams", ["resolve", "suggest", "teams"]),
+    ("Teams", ["resolve", "suggest", "teams", "aliases", "clean_names", "team_factor"]),
     ("Colors", ["palette", "team_colors"]),
-    ("Logos and headshots", ["logo_url", "logo_image", "marks", "headshot_url"]),
+    ("Logos and headshots", ["logo_url", "logo_image", "marks", "headshot_url", "add_athlete_id"]),
     (
         "Plots and tables",
         ["add_logos", "add_wordmarks", "add_headshots", "axis_logos", "surface", "court_coords", "pitch_coords"],

@@ -1,7 +1,7 @@
 ---
 title: sdv_table_themes
 sidebar_label: sdv_table_themes
-sidebar_position: 38
+sidebar_position: 42
 ---
 
 # sdv_table_themes

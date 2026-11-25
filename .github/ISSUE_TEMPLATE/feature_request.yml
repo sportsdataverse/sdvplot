@@ -50,12 +50,16 @@ body:
         - resolve
         - suggest
         - teams
+        - aliases
+        - clean_names
+        - team_factor
         - palette
         - team_colors
         - logo_url
         - logo_image
         - marks
         - headshot_url
+        - add_athlete_id
         - add_logos
         - add_wordmarks
         - add_headshots

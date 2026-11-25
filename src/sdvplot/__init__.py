@@ -22,12 +22,12 @@ from sdvplot._errors import (
     UnsafeDownloadError,
     UnsupportedTargetError,
 )
-from sdvplot._headshots import headshot_url
+from sdvplot._headshots import add_athlete_id, headshot_url
 from sdvplot._images import logo_image
-from sdvplot._index import teams
+from sdvplot._index import aliases, teams
 from sdvplot._marks import logo_url, marks
 from sdvplot._pitch import pitch_coords
-from sdvplot._resolve import resolve, suggest
+from sdvplot._resolve import clean_names, resolve, suggest, team_factor
 from sdvplot._surface import surface
 from sdvplot._table_themes import sdv_table_themes, table_theme_spec
 from sdvplot._versions import versions
@@ -51,14 +51,17 @@ __all__ = [
     "UnsafeDownloadError",
     "UnsupportedTargetError",
     "__version__",
+    "add_athlete_id",
     "add_bins",
     "add_headshots",
     "add_logos",
     "add_wordmarks",
+    "aliases",
     "axis_logos",
     "bin_ids",
     "binner",
     "cell_points",
+    "clean_names",
     "clear_cache",
     "court_coords",
     "headshot_url",
@@ -75,6 +78,7 @@ __all__ = [
     "surface",
     "table_theme_spec",
     "team_colors",
+    "team_factor",
     "teams",
     "versions",
 ]
