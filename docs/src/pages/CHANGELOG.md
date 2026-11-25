@@ -52,6 +52,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Current team marks in the NBA, WNBA, NFL, MLB and college basketball carry the season their logo was introduced,
+  from Sports Reference's logo history: `marks("TOR", "nba")` shows the current logo from 2021, the Bucks' from 2016.
+  `tools/fetch_sources.py --sr-manifest` now also writes `data-raw/sr_logo_runs.csv`, the latest logo run of each
+  Sports Reference code (seasons only; the private images and checksums never leave sdv-assets-private), and the
+  build dates each team's open-ended mark keys with it, starting after any relocation mark (the Raiders' current
+  mark from 2020, after Oakland's 1995-2019). A season before that window still draws the current logo when no
+  other mark covers it. `data-raw/curated/mark_ranges.csv` still wins over these dates.
 - F1 driver headshots: `headshot_url("max_verstappen", "f1", id_system="league")` and every headshot helper take a
   driver's Jolpica `driver_id` (sdv-py's F1 key). The photo is the one Wikidata gives the driver, on Wikimedia Commons,
   kept only under a free license (CC BY, CC BY-SA, CC0 or public domain). `src/sdvplot/data/f1_headshots.csv` carries

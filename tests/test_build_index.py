@@ -509,6 +509,69 @@ def test_curated_mark_ranges_date_their_key_and_fail_on_an_unknown_one():
         bi.curated_mark_ranges(mark, curated.with_columns(pl.lit("nhl:99").alias("mark")))
 
 
+def test_sr_logo_runs_date_a_teams_current_marks_after_its_relocation_marks():
+    def frame(rows, cols):
+        return pl.DataFrame(rows, schema=cols, orient="row")
+
+    a = ["league", "id_system", "value", "team_id", "valid_from", "valid_to"]
+    i32 = {"valid_from": pl.Int32, "valid_to": pl.Int32}
+    mark = frame(
+        [
+            ("nfl", "mark", "espn:13", "13", None, None),  # the Raiders' current mark
+            ("nfl", "mark", "espn:oak", "13", 1995, 2019),  # their Oakland mark, through a relocation alias
+            ("nba", "mark", "espn:28", "28", None, None),
+            ("nba", "mark", "espn:5", "5", None, None),  # two current codes that disagree: left undated
+            ("nba", "mark", "conference:nba:espn:28", "28", None, None),  # a conference key is never a team's
+            ("mbb", "mark", "espn:150", "150", None, None),
+            ("wnba", "mark", "espn:3", "3", None, None),  # two teams one SR code reaches: neither is dated
+            ("wnba", "mark", "espn:4", "4", None, None),
+        ],
+        a,
+    ).cast(i32)
+    aliases = frame(
+        [
+            ("nfl", "bref", "rai", "13", 1960, None),
+            ("nba", "bref", "TOR", "28", 1996, None),
+            ("nba", "bref", "CLE", "5", 1971, None),
+            ("nba", "bref", "CLV", "5", 1971, None),
+            ("mbb", "name", "Duke", "150", None, None),
+            ("wnba", "bref", "DUP", "3", 2000, None),  # one display name, two ESPN teams
+            ("wnba", "bref", "DUP", "4", 2000, None),
+        ],
+        a,
+    ).cast(i32)
+    runs = frame(
+        [
+            ("nfl", "rai", "1995", "2026"),
+            ("nba", "TOR", "2021", "2027"),
+            ("nba", "CLE", "2023", "2027"),
+            ("nba", "CLV", "2011", "2027"),
+            ("nba", "SEA", "2002", "2008"),  # not current: it ends before the league's latest season
+            ("mbb", "duke", "1971", "2026"),
+            ("wnba", "DUP", "2010", "2026"),
+        ],
+        ["league", "team_code", "valid_from", "valid_to"],
+    )
+    codes = frame(
+        [("mbb", "duke", "Duke", "1906", "2026")], ["league", "team_code", "team_name", "valid_from", "valid_to"]
+    )
+    got = bi.sr_mark_dates(mark, runs, codes, aliases)
+    assert got.columns == mark.columns
+    assert sorted(got.select("value", "valid_from", "valid_to").rows(), key=str) == sorted(
+        [
+            ("espn:13", 2020, None),  # the run starts in 1995, but the Oakland mark keeps 1995-2019
+            ("espn:oak", 1995, 2019),
+            ("espn:28", 2021, None),
+            ("espn:5", None, None),
+            ("conference:nba:espn:28", None, None),
+            ("espn:150", 1971, None),  # college: the SR name resolves to one team
+            ("espn:3", None, None),
+            ("espn:4", None, None),
+        ],
+        key=str,
+    )
+
+
 def test_unlisted_espn_teams_are_a_second_id_or_a_new_team(tmp_path):
     raw = _raw(tmp_path)
     _add(raw, "manifest_teams.csv", "ncaa_whockey,2364,Minnesota State Mavericks,womens")
