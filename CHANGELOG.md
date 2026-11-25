@@ -223,6 +223,9 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
   --crosswalks-only`): 238 new Fox, Yahoo and Torvik team ids for college football (now back to 2004) and men's and
   women's college basketball, most of them Yahoo's, and season windows that split many existing ids into one alias
   row per window (2,070 more alias rows in all). The existing teams, their colors and their marks are unchanged.
+- The team index takes sdv-reference-data's second 2026-11-25 publish: KenPom's 2027 names add `LSU New Orleans`
+  (New Orleans) and `West Florida`, and Long Island's Fox and Yahoo football ids start in 2019, the season LIU
+  football began, rather than 2004 (6 fewer alias rows). The teams, their colors and their marks are unchanged.
 - The team index takes the rest of the archive's 2026-11-03 capture: 50 more soccer clubs (Liga MX Femenil and
   Women's FA Cup sides, Copa del Rey, India's I-League 2 and friendlies; 16 renamed to ESPN's current names), ESPN's
   current names for three women's basketball teams (Central Arkansas Sugar Bears, East Tennessee State Buccaneers,
