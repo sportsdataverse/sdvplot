@@ -195,6 +195,10 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Changed
 
+- The team index takes sdv-reference-data's 2026-11-25 `{league}_team_aliases` (`fetch_sources.py
+  --crosswalks-only`): 2,070 more Fox, Yahoo and Torvik team ids for college football (now back to 2004), men's and
+  women's college basketball, most of them Yahoo's. Some existing ids now carry season windows. The teams, their
+  colors and their marks are unchanged.
 - The team index takes the rest of the archive's 2026-11-03 capture: 50 more soccer clubs (Liga MX Femenil and
   Women's FA Cup sides, Copa del Rey, India's I-League 2 and friendlies; 16 renamed to ESPN's current names), ESPN's
   current names for three women's basketball teams (Central Arkansas Sugar Bears, East Tennessee State Buccaneers,
