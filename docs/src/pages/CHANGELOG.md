@@ -52,6 +52,14 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- F1 driver headshots: `headshot_url("max_verstappen", "f1", id_system="league")` and every headshot helper take a
+  driver's Jolpica `driver_id` (sdv-py's F1 key). The photo is the one Wikidata gives the driver, on Wikimedia Commons,
+  kept only under a free license (CC BY, CC BY-SA, CC0 or public domain). `src/sdvplot/data/f1_headshots.csv` carries
+  each photo's license and the attribution its license requires, so credit them where the image is shown. A driver
+  without a free photo gives `None`. `tools/fetch_sources.py --f1-headshots-only` refreshes the table, sequentially and
+  only through URLs robots.txt allows. formula1.com's own photos are not used: their terms do not allow reuse.
+- MiLB headshots by MLBAM id: `headshot_url(701564, "milb", id_system="league")`, on mlbstatic's minor-league photo path.
+  An unknown id gets mlbstatic's silhouette, as for MLB.
 - cfbplotR's `team_name_mapping` spellings resolve: `resolve("VA TECH", "cfb")`, `"NC St."`, `"North Carolina
   State"`, `"UT San Antonio"`, `"Presbyterian College"`, `"St Francis (PA)"`. `tools/export_cfbplotr.R` exports the
   mapping with logo_ref's type and ESPN id into `data-raw/cfbplotr_names.csv` (commit in `data-raw/cfbplotr_commit.txt`),
