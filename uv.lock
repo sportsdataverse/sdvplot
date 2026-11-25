@@ -5766,6 +5766,7 @@ all = [
     { name = "altair", version = "6.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "altair", version = "6.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "bokeh" },
+    { name = "faicons" },
     { name = "folium" },
     { name = "great-tables" },
     { name = "holoviews" },
@@ -5835,6 +5836,7 @@ svg = [
     { name = "resvg-py" },
 ]
 tables = [
+    { name = "faicons" },
     { name = "great-tables" },
     { name = "htmltools" },
     { name = "nokap" },
@@ -5938,6 +5940,7 @@ requires-dist = [
     { name = "altair", marker = "extra == 'altair'", specifier = ">=5.5" },
     { name = "bokeh", marker = "extra == 'bokeh'", specifier = ">=3.8.2" },
     { name = "bokeh", marker = "extra == 'holoviews'", specifier = ">=3.8.2" },
+    { name = "faicons", marker = "extra == 'tables'", specifier = ">=0.2.2" },
     { name = "folium", marker = "extra == 'folium'", specifier = ">=0.19" },
     { name = "great-tables", marker = "extra == 'tables'", specifier = ">=1.0" },
     { name = "holoviews", marker = "extra == 'holoviews'", specifier = ">=1.18" },
