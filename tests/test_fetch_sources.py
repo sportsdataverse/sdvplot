@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -209,7 +210,7 @@ def test_a_failed_run_leaves_the_committed_snapshots_untouched(tmp_path, monkeyp
 
     monkeypatch.setattr(fs, "OUT", out)
     monkeypatch.setattr(fs, "fetch_all", boom)
-    monkeypatch.setattr(argparse.ArgumentParser, "parse_args", lambda self: argparse.Namespace())
+    monkeypatch.setattr(argparse.ArgumentParser, "parse_args", lambda self: argparse.Namespace(f1_headshots_only=False))
     with pytest.raises(RuntimeError, match="nhl"):
         fs.main()
     assert (out / "espn_teams.csv").read_text() == "old\n"
@@ -248,6 +249,49 @@ def test_manifest_teams_prefer_the_current_name_not_the_last_row():
     expected = {"307": "Hartford Wolf Pack", "2": "Acadie-Bathurst Titan"}
     for ordered in (rows, rows[::-1]):  # input order must not matter
         assert {r["team_id"]: r["name"] for r in fs.manifest_team_rows(ordered)} == expected
+
+
+def test_commons_license_takes_the_first_free_license_and_its_attribution():
+    page = (
+        '<div class="licensetpl"><span class="licensetpl&#95;attr">Someone</span>'
+        '<span class="licensetpl&#95;short">GFDL</span></div>'
+        '<div class="licensetpl"><span class="licensetpl&#95;attr"><a href="/wiki/User:X">Jane &amp; Co</a></span>'
+        '<span class="licensetpl&#95;short">CC BY-SA 4.0</span></div>'
+    )
+    assert fs.commons_license(page) == ("CC BY-SA 4.0", "Jane & Co")
+    assert fs.commons_license(page.split("</div>")[0]) is None  # GFDL alone is not kept
+    assert fs.commons_license("<html>no license block</html>") is None
+
+
+def test_commons_thumbnails_follow_the_md5_path_scheme():
+    name = "Lewis Hamilton 2016 Malaysia 2.jpg"
+    d = hashlib.md5(name.replace(" ", "_").encode()).hexdigest()  # noqa: S324
+    assert fs.commons_thumb_url(name) == (
+        f"https://upload.wikimedia.org/wikipedia/commons/thumb/{d[0]}/{d[:2]}/"
+        "Lewis_Hamilton_2016_Malaysia_2.jpg/330px-Lewis_Hamilton_2016_Malaysia_2.jpg"
+    )
+    assert "%28" in fs.commons_thumb_url("A (cropped).jpg")  # quoted: no raw parenthesis or quote reaches the HTML
+
+
+def test_an_f1_headshot_row_needs_a_non_deprecated_image_and_a_free_license():
+    entity = {"entities": {"Q1": {"claims": {"P18": [
+        {"rank": "deprecated", "mainsnak": {"datavalue": {"value": "Old.jpg"}}},
+        {"rank": "normal", "mainsnak": {"datavalue": {"value": "New photo.jpg"}}},
+    ]}}}}  # fmt: skip
+    assert fs.p18_file(entity) == "New photo.jpg"
+    assert fs.p18_file({"entities": {"Q1": {"claims": {}}}}) is None
+    driver = {"driverId": "hamilton", "givenName": "Lewis", "familyName": "Hamilton"}
+    page = '<div class="licensetpl"><span class="licensetpl_short">CC BY 2.0</span></div>'
+    row = fs.f1_headshot_row(driver, "New photo.jpg", page)
+    assert row is not None and list(row) == fs.F1_HEADSHOT_COLUMNS
+    assert (row["driver_id"], row["name"], row["license"], row["artist"]) == (
+        "hamilton",
+        "Lewis Hamilton",
+        "CC BY 2.0",
+        "",
+    )
+    assert fs.f1_headshot_row(driver, None, None) is None
+    assert fs.f1_headshot_row(driver, "New photo.jpg", '<span class="licensetpl_short">GFDL</span>') is None
 
 
 def test_sr_codes_are_written_aggregated_per_code():  # F5 (R47): never the per-season private capture

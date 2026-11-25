@@ -9,6 +9,7 @@ Usage:
     uv run python tools/fetch_sources.py --groups-only   # groups_latest.csv alone
     uv run python tools/fetch_sources.py --teams-only    # the archive's and ESPN's teams and f1_teams.csv alone
     uv run python tools/fetch_sources.py --crosswalks-only   # provider_ids.csv alone
+    uv run python tools/fetch_sources.py --f1-headshots-only   # src/sdvplot/data/f1_headshots.csv alone
 """
 
 from __future__ import annotations
@@ -16,12 +17,15 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import hashlib
+import html as html_lib
 import io
 import json
 import os
 import re
 import shutil
 import time
+import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -60,6 +64,21 @@ IDENTITY_SOURCES = {
     "datacore",  # the EASL's DataCore teamId
     "legabasket",  # LBA club_id
     "formula1.com",  # F1 constructors by Jolpica constructor_id
+    # international basketball and European hockey (sdv-assets, 2026-11-25), each keyed by the id sdv-py's family uses
+    "euroleague",  # EuroLeague club code
+    "sportpress",  # BNXT uu_team_id
+    "abaliga",  # ABA League club id
+    "ibba",  # Israeli league team_uid (the club)
+    "kzs",  # Slovenian league club_id
+    "lkl",  # LKL team id
+    "sportality",  # Basketligaen (dbl) Genius team id
+    "nbl_rosetta",  # nbl_au / wnbl DataCore team UUIDs (ESPN's ids stay league nbl)
+    "kbl",  # KBL team_code (keeps its leading zero)
+    "bleague",  # B.LEAGUE TeamID
+    "shl",  # SHL StatNet team code
+    "hockeyallsvenskan",  # HockeyAllsvenskan (ha) team_statnet_id
+    "hockeyfrance",  # Ligue Magnus team_id
+    "hokej.cz",  # Czech Extraliga (elh) hokej.cz team id
 }
 # sources whose entity_id is a team's ESPN id but which name no team and add none: tools/build_index.py keys their marks
 # to the team (mark_aliases) and follows their conference marks' ESPN keys (conference_mark_aliases), while
@@ -223,6 +242,20 @@ OPENF1_CONSTRUCTORS = {
     "Williams": "williams",
 }
 F1_COLUMNS = ["team_id", "name", "color"]
+# F1 driver headshots (src/sdvplot/data/f1_headshots.csv, --f1-headshots-only): formula1.com's photos are not free to
+# reuse, so each Jolpica driver since 2002 (the F1 marks' first season) takes the image Wikidata gives his Wikipedia
+# article (P18), on Wikimedia Commons, when that file carries a free license; the license and its required attribution
+# are kept for credit. Only URLs robots.txt allows: article pages, Special:EntityData/*.json and Commons file pages
+# (never /w/api.php). Sequential, one request a second; a 403 or 429 stops the fetch.
+JOLPICA_DRIVERS_URL = "https://api.jolpi.ca/ergast/f1/{year}/drivers.json?limit=100"
+F1_HEADSHOT_FIRST_SEASON = 2002  # the index's first F1 season
+WIKIDATA_ENTITY_URL = "https://www.wikidata.org/wiki/Special:EntityData/{qid}.json"
+COMMONS_FILE_URL = "https://commons.wikimedia.org/wiki/File:{name}"
+COMMONS_THUMB_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/{a}/{ab}/{name}/{width}px-{name}"
+F1_HEADSHOT_WIDTH = 330  # one of Wikimedia's standard thumbnail widths
+F1_HEADSHOT_COLUMNS = ["driver_id", "name", "url", "license", "artist", "file"]
+FREE_LICENSE = re.compile(r"^(CC0( 1\.0)?|Public domain|CC BY(-SA)? [0-9.]+( [A-Za-z-]+)?)$")
+PACKAGE_DATA = Path(__file__).resolve().parents[1] / "src" / "sdvplot" / "data"
 
 
 def _write(name: str, rows: list[dict], columns: list[str], out: Path) -> None:
@@ -702,7 +735,17 @@ def main() -> None:
         help="refresh only provider_ids.csv, from the sportsdataverse-data NCAA and WNBA crosswalk releases and the "
         "{league}_groups team_aliases",
     )
+    only.add_argument(
+        "--f1-headshots-only",
+        action="store_true",
+        help="refresh only src/sdvplot/data/f1_headshots.csv (Jolpica drivers, Wikidata images, Commons licenses)",
+    )
     args = p.parse_args()
+    if args.f1_headshots_only:  # package data, not a data-raw snapshot: headshot_url reads it at runtime
+        s = requests.Session()
+        s.headers.update(UA)
+        _write("f1_headshots", fetch_f1_headshots(s), F1_HEADSHOT_COLUMNS, PACKAGE_DATA)
+        return
     stage = Path(tempfile.mkdtemp(prefix="sdvplot-fetch-"))
     try:
         fetch_all(args, stage)
@@ -891,6 +934,85 @@ def fetch_f1_teams(s: requests.Session, manifest: list[dict]) -> list[dict]:
         time.sleep(0.5)  # Jolpica's burst limit is 4 requests a second
     drivers, meetings = (_get(s, OPENF1_URL.format(table=t), timeout=120).json() for t in ("drivers", "meetings"))
     return f1_team_rows(manifest_team_rows(manifest), seasons, drivers, meetings)
+
+
+def commons_thumb_url(file: str, width: int = F1_HEADSHOT_WIDTH) -> str:
+    """The upload.wikimedia.org thumbnail of a Commons file (its path is the md5 of the underscored name)."""
+    name = file.replace(" ", "_")
+    digest = hashlib.md5(name.encode("utf-8")).hexdigest()  # noqa: S324  (Commons' path scheme, not a security use)
+    q = urllib.parse.quote(name)
+    return COMMONS_THUMB_URL.format(a=digest[0], ab=digest[:2], name=q, width=width)
+
+
+def commons_license(html: str) -> tuple[str, str] | None:
+    """The first free license on a Commons file page's machine-readable license spans, and the attribution given
+    with it (the licensetpl_attr in its block: after the previous license's short name, before the next one's)."""
+    us = r"(?:_|&#95;)"  # Commons writes the class names' underscores as entities
+    shorts = list(re.finditer(rf'class="licensetpl{us}short"[^>]*>([^<]+)<', html))
+    for i, short in enumerate(shorts):
+        name = html_lib.unescape(short.group(1)).strip()
+        if FREE_LICENSE.match(name):
+            start, end = shorts[i - 1].end() if i else 0, shorts[i + 1].start() if i + 1 < len(shorts) else len(html)
+            attr = re.search(rf'class="licensetpl{us}attr"[^>]*>(.*?)</(?:span|div)>', html[start:end], re.S)
+            text = html_lib.unescape(re.sub(r"<[^>]+>", "", attr.group(1))) if attr else ""
+            return name, re.sub(r"\s+", " ", text).strip()
+    return None
+
+
+def p18_file(entity: dict) -> str | None:
+    """The first non-deprecated image (P18) of a Special:EntityData payload."""
+    claims = next(iter(entity["entities"].values())).get("claims", {})
+    files = [c["mainsnak"]["datavalue"]["value"] for c in claims.get("P18", [])
+             if c.get("rank") != "deprecated" and "datavalue" in c["mainsnak"]]  # fmt: skip
+    return files[0] if files else None
+
+
+def f1_headshot_row(driver: dict, file: str | None, file_page: str | None) -> dict | None:
+    """One driver's row from his Wikidata image and its Commons file page; None without a free license."""
+    lic = commons_license(file_page) if file and file_page else None
+    if lic is None:
+        return None
+    return {
+        "driver_id": driver["driverId"],
+        "name": f"{driver['givenName']} {driver['familyName']}",
+        "url": commons_thumb_url(file),
+        "license": lic[0],
+        "artist": lic[1],
+        "file": file,
+    }
+
+
+def _get_or_none(s: requests.Session, url: str) -> requests.Response | None:
+    r = s.get(url, timeout=60)
+    time.sleep(1)  # one request a second, sequentially
+    if r.status_code == 404:
+        return None
+    r.raise_for_status()  # a 403 or 429 stops the fetch
+    return r
+
+
+def fetch_f1_headshots(s: requests.Session) -> list[dict]:
+    """f1_headshot_row for each Jolpica driver since F1_HEADSHOT_FIRST_SEASON: article -> Wikidata item -> P18 file."""
+    drivers: dict[str, dict] = {}
+    for year in range(F1_HEADSHOT_FIRST_SEASON, dt.date.today().year + 1):
+        for d in _get(s, JOLPICA_DRIVERS_URL.format(year=year)).json()["MRData"]["DriverTable"]["Drivers"]:
+            drivers[d["driverId"]] = d
+        time.sleep(2)  # Jolpica answers 429 under its documented burst limit when other jobs share the IP
+    rows = []
+    for did in sorted(drivers):
+        wiki = drivers[did].get("url", "").replace("http://", "https://")
+        page = _get_or_none(s, wiki) if wiki.startswith("https://en.wikipedia.org/wiki/") else None
+        qid = re.search(r'"wgWikibaseItemId":"(Q\d+)"', page.text) if page else None
+        entity = _get_or_none(s, WIKIDATA_ENTITY_URL.format(qid=qid.group(1))) if qid else None
+        file = p18_file(entity.json()) if entity else None
+        file_page = (
+            _get_or_none(s, COMMONS_FILE_URL.format(name=urllib.parse.quote(file.replace(" ", "_")))) if file else None
+        )
+        row = f1_headshot_row(drivers[did], file, file_page.text if file_page else None)
+        print(f"{did}: {row['license'] if row else 'no free image'}", flush=True)
+        if row:
+            rows.append(row)
+    return rows
 
 
 def fetch_groups(s: requests.Session, write: Callable[[str, list[dict], list[str]], None]) -> None:
