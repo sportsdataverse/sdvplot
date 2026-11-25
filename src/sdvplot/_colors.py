@@ -31,6 +31,16 @@ def _colors(league: str, column: str) -> dict[str, str]:
     return {tid: c for tid, c in t.select("team_id", column).iter_rows() if c}
 
 
+def _with_alt(league: str, which: str, colors: dict[str, str], alt_colors: Any, strict: bool) -> dict[str, str]:
+    """``colors`` (team_id -> hex) with the ``alt_colors`` teams in their other color, where they have one: sdvplotR's
+    get_team_colors(alt_colors =). The alt teams resolve as sdvplotR's do: "auto", no season."""
+    if alt_colors is None:
+        return colors
+    alt_ids = resolve(_unpack(alt_colors)[0], league, strict=strict)
+    other = _colors(league, _COLUMNS["secondary" if which == "primary" else "primary"])
+    return colors | {i: other[i] for i in alt_ids if i is not None and i in other}
+
+
 def palette(
     league: str,
     teams: Any = None,
@@ -39,6 +49,7 @@ def palette(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> dict[Any, str]:
     """A ``{team: "#hex"}`` dict for a league, ready for seaborn, Plotly, Altair, Bokeh or PyPalettes.
 
@@ -54,6 +65,9 @@ def palette(
         id_system: The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
             "nhl_id".
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+        alt_colors: Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary
+            one with ``which="secondary"``. A team with no other color keeps its own. cfbplotR's and sdvplotR's
+            ``alt_colors``.
 
     Returns:
         dict: ``{team: "#hex"}``. Teams that do not resolve, or have no color, are left out. Without ``teams``, a team
@@ -74,6 +88,7 @@ def palette(
             import sdvplot
 
             sdvplot.palette("nfl", teams=["KC", "SF"])   # {'KC': '#e31837', 'SF': '#aa0000'}
+            sdvplot.palette("cfb", teams=["Alabama", "Utah"], alt_colors="Utah")   # Utah in its secondary color
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
@@ -81,7 +96,7 @@ def palette(
     """
     column = _column(which)
     _index.check_league(league)
-    colors = _colors(league, column)
+    colors = _with_alt(league, which, _colors(league, column), alt_colors, strict)
     if teams is None:
         rows = _index.team_table().filter(pl.col("league") == league).select("team_id", "abbr").rows()
         shared = {a for a, n in Counter(a for _, a in rows if a).items() if n > 1}
@@ -113,6 +128,7 @@ def team_colors(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> str | None: ...
 @overload
 def team_colors(
@@ -123,6 +139,7 @@ def team_colors(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> pl.Series: ...
 @overload
 def team_colors(
@@ -133,6 +150,7 @@ def team_colors(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> list[str | None]: ...
 @overload
 def team_colors(
@@ -143,6 +161,7 @@ def team_colors(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> pd.Series: ...
 @overload
 def team_colors(  # type: ignore[overload-cannot-match]
@@ -153,6 +172,7 @@ def team_colors(  # type: ignore[overload-cannot-match]
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> Any: ...
 def team_colors(
     league: str,
@@ -162,6 +182,7 @@ def team_colors(
     season: Any = None,
     id_system: IdSystem = "auto",
     strict: bool = False,
+    alt_colors: Any = None,
 ) -> Any:
     """One "#hex" (or None) per team value, in the same container the values came in.
 
@@ -173,6 +194,9 @@ def team_colors(
         id_system: The id system of ``teams``, as in ``resolve``: "auto" tries each in order; NHL stats ids need
             "nhl_id".
         strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+        alt_colors: Teams (any value ``resolve`` reads) drawn in their other color: the secondary one, or the primary
+            one with ``which="secondary"``. A team with no other color keeps its own. cfbplotR's and sdvplotR's
+            ``alt_colors``.
 
     Returns:
         str | list | Series | None: The hex color for each team, None where a team does not resolve or has no color.
@@ -200,7 +224,7 @@ def team_colors(
     """
     column = _column(which)
     _index.check_league(league)
-    colors = _colors(league, column)
+    colors = _with_alt(league, which, _colors(league, column), alt_colors, strict)
     values, wrap = _unpack(teams)
     ids = resolve(values, league, season=season, id_system=id_system, strict=strict)
     return wrap([colors.get(i) if i is not None else None for i in ids])

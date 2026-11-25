@@ -1,7 +1,7 @@
 ---
 title: pitch_coords
 sidebar_label: pitch_coords
-sidebar_position: 16
+sidebar_position: 20
 ---
 
 # pitch_coords

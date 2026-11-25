@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import datetime
 import functools
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from sdvplot._errors import InputError
+from sdvplot._errors import InputError, warn
 
 if TYPE_CHECKING:
     import polars as pl
@@ -169,7 +169,9 @@ def index_version() -> str:
     return path.read_text().strip() if path.exists() else "unknown"
 
 
-def teams(league: str | None = None, *, include_conferences: bool = False) -> pl.DataFrame:
+def teams(
+    league: str | None = None, *, include_conferences: bool = False, division: str | Sequence[str] | None = None
+) -> pl.DataFrame:
     """The bundled team index: one row per (league, team_id), with names, abbreviation, conference and colors.
 
     Args:
@@ -183,6 +185,14 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
             loops over teams sees only teams; conferences are opt-in everywhere (``resolve`` and ``palette`` never
             answer one). The mark helpers (``logo_url``, ``marks``, ``add_logos`` and the rest) do draw one, by this
             key, from the archive's conference, league and division marks ("SEC", "Big 12", "AFC", "NFL", "MLB").
+        division: None (every team), or one or more of "FBS", "FCS", "DI", "DII", "DIII", "P4", "P5", "G5" and
+            "Conference": only the teams in any of them, as cfbplotR's division filter keeps (sdvplotR's
+            ``sdv_teams(division=)``). It needs a ``league``. "FBS", "FCS", "DI", "DII" and "DIII" read the
+            ``division`` column; an index with no divisions for the league is an error. "P4" (the ACC, Big Ten, Big 12
+            and SEC, and Notre Dame), "P5" (the P4 and the Pac-12 as the index lists it) and "G5" (the American,
+            Conference USA, the MAC, the Mountain West, the Sun Belt and the FBS independents but Notre Dame) are
+            college football's, from each team's ``conference_id``, so they follow realignment as the index does.
+            "Conference" gives the conference and league rows. With ``division``, ``include_conferences`` is not read.
 
     Returns:
         polars.DataFrame: The index columns ``league``, ``team_id``, ``abbr``, ``name``, ``short_name``, ``location``,
@@ -197,7 +207,9 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
         conference grouping that changes (now the Power Four), so it is not a column: take it from ``conference_id``.
 
     Raises:
-        InputError: (a ValueError) If ``league`` is given and is not a known league key.
+        InputError: (a ValueError) If ``league`` is given and is not a known league key; with ``division``, if there is
+            no ``league``, a value is not one of the divisions above, "P4"/"P5"/"G5" is asked of a league other than
+            "cfb", or the index has no divisions for the league.
 
     Example:
         ::
@@ -207,13 +219,117 @@ def teams(league: str | None = None, *, include_conferences: bool = False) -> pl
 
             sdvplot.teams("nfl").shape   # (32, 13)
             sdvplot.teams("cfb", include_conferences=True).filter(pl.col("program") == "conference")["abbr"]
+            sdvplot.teams("cfb", division="P5")["location"]   # cfbplotR's P5 school list
 
     See Also:
         sdvplotR: https://sdvplotR.sportsdataverse.org/ ;
         sdv-py: https://py.sportsdataverse.org/
     """
+    if division is not None:
+        if league is None:
+            raise InputError("division needs a league, such as teams('cfb', division='FBS')")
+        check_league(league)
+        t = _read("teams", str(data_dir())).filter(pl.col("league") == league)
+        return t.filter(_in_division(t, league, division))
     t = _read("teams", str(data_dir())) if include_conferences else team_table()
     if league is None:
         return t.clone()  # never the cached frame: an in-place edit by the caller would leak into the session
     check_league(league)
     return t.filter(pl.col("league") == league)
+
+
+# College football's tiers by conference (the index's conference_id), as sdvplotR's in_division(); a conference that
+# changes its id needs an update here (the filter warns when the index has no team in one)
+_CFB_POWER4 = ("cfb:acc", "cfb:big-ten", "cfb:big-12", "cfb:sec")
+_CFB_GROUP5 = (
+    "cfb:american",
+    "cfb:cusa",
+    "cfb:mac",
+    "cfb:mountain-west",
+    "cfb:sun-belt",
+)
+_CFB_NOTRE_DAME = "87"
+_COLUMN_DIVISIONS = ("FBS", "FCS", "DI", "DII", "DIII")
+DIVISIONS = (*_COLUMN_DIVISIONS, "P4", "P5", "G5", "Conference")
+
+
+def _in_division(t: pl.DataFrame, league: str, division: str | Sequence[str]) -> pl.Series:
+    """Which rows of one league's index rows ``t`` (teams and conference rows) are in any of ``division``."""
+    asked = [division] if isinstance(division, str) else list(division)
+    if not asked or not all(isinstance(d, str) and d in DIVISIONS for d in asked):
+        raise InputError(f"division must be one or more of {list(DIVISIONS)}, got {division!r}")
+    tiers = [d for d in ("P4", "P5", "G5") if d in asked]
+    if tiers and league != "cfb":
+        raise InputError(f"{tiers} are college football tiers; use league='cfb'")
+    cols = [d for d in asked if d in _COLUMN_DIVISIONS]
+    if cols and t["division"].is_null().all():
+        raise InputError(
+            f"the team index {index_version()!r} has no {league!r} divisions for {cols}; "
+            "'P4', 'P5' and 'G5' work without it, from conferences"
+        )
+    tier_ids = [
+        *(_CFB_POWER4 if {"P4", "P5"} & set(tiers) else ()),
+        *(("cfb:pac-12",) if "P5" in tiers else ()),
+        *((*_CFB_GROUP5, "cfb:fbs-independents") if "G5" in tiers else ()),
+    ]
+    present = set(t["conference_id"].drop_nulls().to_list())
+    if gone := [c for c in tier_ids if c not in present]:
+        warn(
+            f"the team index {index_version()!r} has no teams in {gone}, so {tiers} may be incomplete; the conference "
+            "may have a new id: report it at https://github.com/sportsdataverse/sdvplot/issues"
+        )
+    conf = pl.col("program").is_in(("conference", "league")).fill_null(False)  # sdvplotR non_team_programs
+    cid, nd = (
+        pl.col("conference_id"),
+        (pl.col("team_id") == _CFB_NOTRE_DAME).fill_null(False),
+    )
+    p4 = ~conf & (cid.is_in(_CFB_POWER4).fill_null(False) | nd)
+    p5 = p4 | (~conf & (cid == "cfb:pac-12").fill_null(False))
+    g5 = ~conf & (cid.is_in(_CFB_GROUP5).fill_null(False) | ((cid == "cfb:fbs-independents").fill_null(False) & ~nd))
+    keep = pl.lit(False)
+    for name, expr in (("Conference", conf), ("P4", p4), ("P5", p5), ("G5", g5)):
+        if name in asked:
+            keep = keep | expr
+    if cols:
+        keep = keep | (~conf & pl.col("division").str.to_uppercase().is_in(cols).fill_null(False))
+    return t.select(keep.alias("keep"))["keep"]
+
+
+def aliases(league: str | None = None) -> pl.DataFrame:
+    """Every team name, abbreviation and provider id the bundled index resolves, one row per alias.
+
+    What ``resolve`` reads, as a table (sdvplotR's ``sdv_aliases()``, and the counterpart of cfbplotR's
+    ``team_name_mapping``: join ``team_id`` to ``teams`` for each alias's school).
+
+    Args:
+        league: An SDV league key such as "cfb"; None returns every league.
+
+    Returns:
+        polars.DataFrame: ``league``, ``id_system`` (the id system of ``value``: "name", "espn", "cfbd", ...; the
+        "mark", "conference" and "competition" rows serve the mark functions only, ``resolve`` never reads them),
+        ``value`` (the alias as the index stores it; lookups ignore case and accents), ``team_id`` (the ``teams``
+        row it names), ``valid_from`` and ``valid_to`` (Int32: the first and last season the alias names that team;
+        null for always and still).
+
+    Raises:
+        InputError: (a ValueError) If ``league`` is given and is not a known league key.
+
+    Example:
+        ::
+
+            import polars as pl
+            import sdvplot
+
+            a = sdvplot.aliases("cfb").filter(pl.col("id_system") == "name")
+            # cfbplotR's team_name_mapping: each name -> its school
+            a.join(sdvplot.teams("cfb").select("team_id", "location"), on="team_id").select("value", "location")
+
+    See Also:
+        sdvplotR sdv_aliases(): https://sdvplotR.sportsdataverse.org/reference/sdv_aliases.html ;
+        sdvplot.clean_names: one display name per team value
+    """
+    a = alias_table()
+    if league is None:
+        return a.clone()  # never the cached frame, as teams()
+    check_league(league)
+    return a.filter(pl.col("league") == league)

@@ -405,3 +405,153 @@ def suggest(value: Any, league: str, *, n: int = 5) -> list[tuple[str, str]]:
             if tid not in {t for t, _ in out}:
                 out.append((tid, names.get(tid, tid)))
     return out[:n]
+
+
+_CLEAN_COLUMNS = ("location", "short_name", "name", "abbr", "team_id")
+
+
+def _id_str(value: Any) -> str | None:
+    """A value as text the way sdvplotR's id_chr() writes it: an integral number without a decimal point (14.0 is
+    "14"), anything else as given (untrimmed), a missing value None."""
+    if _is_na(value) or (isinstance(value, float) and value != value):
+        return None
+    if isinstance(value, numbers.Integral) and not isinstance(value, bool):
+        return str(int(value))  # never through a float: 9007199254740993 keeps its digits
+    if isinstance(value, numbers.Real) and not isinstance(value, bool):
+        f = float(value)
+        return str(int(f)) if f.is_integer() else str(value)
+    return str(value)
+
+
+def clean_names(
+    values: Any,
+    league: str,
+    *,
+    column: str = "location",
+    keep_non_matches: bool = True,
+    season: Any = None,
+    id_system: IdSystem = "auto",
+    strict: bool = False,
+) -> Any:
+    """One display name per team value, for joins and labels (cfbplotR's ``clean_school_names()``).
+
+    Every alias and id system ``resolve`` reads cleans to the same name, and a value it cannot resolve without guessing
+    (an unknown name, or one that names two teams) is not cleaned. sdvplotR's ``sdv_clean_names()``; with
+    ``column="abbr"`` it is cfbplotR's ``clean_team_abbrs()`` and nflplotR's abbreviation cleaner.
+
+    Args:
+        values: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
+        league: The SDV league key, e.g. "cfb".
+        column: The ``teams`` column to return: "location" (the default; the school in college sports, the city in
+            the pros, and closest to cfbplotR's names), "short_name", "name", "abbr" or "team_id".
+        keep_non_matches: True (the default) keeps a value that does not resolve as it is, quietly (an integral number
+            as its digits, 14.0 as "14"). False makes it None, with one SdvplotWarning per call.
+        season: One season, or one per value, for values reused across eras.
+        id_system: The id system of ``values``, as in ``resolve``.
+        strict: Raise UnresolvedTeamError when a value does not resolve, whatever ``keep_non_matches`` says.
+
+    Returns:
+        str | list | Series | None: The same shape as ``values``: the name for each value (None where a resolved team
+        has no value in ``column``), as text.
+
+    Raises:
+        TypeError: If ``values`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        InputError: (a ValueError) If ``column`` is not one of the five above, ``league`` or ``id_system`` is unknown,
+            or ``season`` is not a year, is outside the seasons sdvplot knows for the league, or is a list whose
+            length does not match the values.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a value does not resolve.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            x = ["utah", "San Jose State", "Hawaii", "UTSA", "SLC", "USC"]
+            sdvplot.clean_names(x, "cfb")                          # unresolved values kept as given
+            sdvplot.clean_names(x, "cfb", keep_non_matches=False)  # or None, with one warning
+            sdvplot.clean_names(["Kansas City Chiefs", "OAK"], "nfl", column="abbr")   # ['KC', 'LV']
+
+    See Also:
+        sdvplotR sdv_clean_names(): https://sdvplotR.sportsdataverse.org/reference/sdv_clean_names.html ;
+        sdvplot.aliases: every name the index knows
+    """
+    if column not in _CLEAN_COLUMNS:
+        raise InputError(f"column must be one of {list(_CLEAN_COLUMNS)}, got {column!r}")
+    _index.check_league(league)
+    _systems(id_system)
+    items, wrap = _unpack(values)
+    ids, unresolved = _resolve_ids(items, league, _seasons(season, len(items), league), id_system)
+    if unresolved and (strict or not keep_non_matches):
+        _report(unresolved, league, strict)
+    t = _index.teams(league)
+    names = dict(zip(t["team_id"].to_list(), t[column].to_list(), strict=True))
+    return wrap(
+        [
+            names.get(i) if i is not None else (_id_str(v) if keep_non_matches else None)
+            for v, i in zip(items, ids, strict=True)
+        ]
+    )
+
+
+def team_factor(
+    teams: Any, league: str, *, season: Any = None, id_system: IdSystem = "auto", strict: bool = False
+) -> Any:
+    """The team values as an ordered categorical, its categories ordered by each team's abbreviation.
+
+    For a discrete axis or legend in team order (sdvplotR's ``sdv_team_factor()``, cfbplotR's ``cfb_team_factor()``):
+    plotnine, seaborn and Altair keep a categorical's order. The categories are the values as given (the first of each),
+    so labels stay the caller's; a value that does not resolve is null (with the resolver's warning), so a scale drops
+    it.
+
+    Args:
+        teams: A scalar, list/tuple, numpy array, or pandas/polars Series of team identifiers.
+        league: The SDV league key, e.g. "nfl".
+        season: One season, or one per team, for values reused across eras.
+        id_system: The id system of ``teams``, as in ``resolve``.
+        strict: Raise UnresolvedTeamError instead of warning when a team does not resolve.
+
+    Returns:
+        Series: A pandas Series of an ordered ``category`` dtype for a pandas Series (its index kept), else a polars
+        Series of dtype ``pl.Enum``, of the values as text (an integral number as its digits). The categories are the
+        resolved values, by abbreviation (a team with none by its team_id), then value.
+
+    Raises:
+        TypeError: If ``teams`` is not a scalar, list, tuple, numpy array, or pandas/polars Series.
+        InputError: (a ValueError) If ``league`` or ``id_system`` is unknown, or ``season`` is not a year, is outside
+            the seasons sdvplot knows for the league, or is a list whose length does not match the teams.
+        UnresolvedTeamError: (a ValueError) If ``strict=True`` and a team does not resolve.
+
+    Example:
+        ::
+
+            import sdvplot
+
+            f = sdvplot.team_factor(["KC", "BUF", "Kansas City Chiefs"], "nfl")
+            f.dtype.categories.to_list()   # ['BUF', 'KC', 'Kansas City Chiefs']
+
+    See Also:
+        sdvplotR sdv_team_factor(): https://sdvplotR.sportsdataverse.org/reference/sdv_team_factor.html ;
+        sdvplot.resolve: the team ids behind the order
+    """
+    import narwhals as nw
+    from narwhals.dependencies import is_pandas_like_series
+
+    items, _ = _unpack(teams)
+    values = [_id_str(v) for v in items]
+    ids = _resolve(values, league, season, id_system, strict)
+    abbr = dict(_index.teams(league).select("team_id", "abbr").iter_rows())
+    seen: set[str | None] = set()
+    keyed: list[tuple[str, str]] = []
+    for v, i in zip(values, ids, strict=True):
+        if i is not None and v is not None and v not in seen:  # R: !is.na(ids) & !duplicated(teams)
+            keyed.append((abbr.get(i) or i, v))
+        seen.add(v)
+    levels = [v for _, v in sorted(keyed)]  # codepoint order: R's order(method = "radix")
+    known = set(levels)  # a value whose first occurrence did not resolve is no level: null, as R's factor()
+    out = [v if i is not None and v in known else None for v, i in zip(values, ids, strict=True)]
+    if not is_pandas_like_series(teams):
+        return pl.Series(getattr(teams, "name", None) or "team", out, dtype=pl.Enum(levels))
+    s = nw.from_native(teams, series_only=True)
+    result = nw.new_series(s.name, out, nw.Enum(levels), backend=nw.get_native_namespace(s)).to_native()
+    result.index = teams.index
+    return result

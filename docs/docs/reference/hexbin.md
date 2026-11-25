@@ -1,7 +1,7 @@
 ---
 title: hexbin
 sidebar_label: hexbin
-sidebar_position: 33
+sidebar_position: 37
 ---
 
 # hexbin

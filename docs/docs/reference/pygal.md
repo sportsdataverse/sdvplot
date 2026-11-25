@@ -1,7 +1,7 @@
 ---
 title: sdvplot.pygal
 sidebar_label: sdvplot.pygal
-sidebar_position: 24
+sidebar_position: 28
 ---
 
 # sdvplot.pygal

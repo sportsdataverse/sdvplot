@@ -1,7 +1,7 @@
 ---
 title: add_bins
 sidebar_label: add_bins
-sidebar_position: 31
+sidebar_position: 35
 ---
 
 # add_bins
