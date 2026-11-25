@@ -250,6 +250,20 @@ def test_manifest_teams_prefer_the_current_name_not_the_last_row():
         assert {r["team_id"]: r["name"] for r in fs.manifest_team_rows(ordered)} == expected
 
 
+def test_sr_logo_runs_keep_each_codes_latest_run_and_no_checksum():  # R47: the private image never leaves
+    cp = [
+        {"league": "nba", "team_code": "TOR", "season_from": "2016", "season_to": "2020", "sha256": "b"},
+        {"league": "nba", "team_code": "TOR", "season_from": "2021", "season_to": "2027", "sha256": "c"},
+        {"league": "nba", "team_code": "TOR", "season_from": "1996", "season_to": "2008", "sha256": "a"},
+        {"league": "nba", "team_code": "SEA", "season_from": "2002", "season_to": "2008", "sha256": "d"},
+    ]
+    assert fs.sr_logo_run_rows(cp) == [
+        {"league": "nba", "team_code": "SEA", "valid_from": 2002, "valid_to": 2008},
+        {"league": "nba", "team_code": "TOR", "valid_from": 2021, "valid_to": 2027},
+    ]
+    assert list(fs.sr_logo_run_rows(cp)[0]) == fs.SR_RUN_COLUMNS
+
+
 def test_sr_codes_are_written_aggregated_per_code():  # F5 (R47): never the per-season private capture
     sr = [
         {"league": "mlb", "site": "bref", "team_code": "KCR", "team_name": "Kansas City Royals", "season": "2025"},

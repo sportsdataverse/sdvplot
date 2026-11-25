@@ -24,7 +24,7 @@ from fetch_sources import (  # noqa: E402
     LEAGUE_IDENTITY_SOURCES,
     MARKS_ONLY_SOURCES,
 )
-from sdvplot._index import ALIAS_SCHEMA, TEAM_SCHEMA  # noqa: E402
+from sdvplot._index import ALIAS_SCHEMA, NON_TEAM, TEAM_SCHEMA  # noqa: E402
 from sdvplot._normalize import norm_value  # noqa: E402  (sdvplotr keys compare as resolve() does)
 from sdvplot._resolve import _MARKS_ONLY, EXPLICIT_ONLY, PRIORITY, _match  # noqa: E402  (R50, cfbplotR: as resolve())
 
@@ -833,6 +833,63 @@ def curated_mark_ranges(mark: pl.DataFrame, curated: pl.DataFrame) -> pl.DataFra
     )
 
 
+def sr_mark_dates(mark: pl.DataFrame, runs: pl.DataFrame, codes: pl.DataFrame, aliases: pl.DataFrame) -> pl.DataFrame:
+    """Date each team's current marks by Sports Reference's logo history (data-raw/sr_logo_runs.csv: each SR code's
+    latest logo run, derived from sdv-assets-private's change points). A code whose run reaches the league's latest
+    SR season is current; it reaches its team through the bref aliases, or for college (whose SR names are not
+    ESPN display names) through a name that resolves to one team. The run's first season becomes valid_from of the
+    team's open-ended mark keys, after any closed key's last season (a relocation's era mark, which must keep its
+    seasons). A team two current codes date differently, or no code reaches, is left undated."""
+    runs = runs.with_columns(pl.col("valid_from", "valid_to").cast(pl.Int32))
+    current = runs.filter(pl.col("valid_to") == pl.col("valid_to").max().over("league")).select(
+        "league", "team_code", pl.col("valid_from").alias("_run")
+    )
+    pro = aliases.filter(pl.col("id_system") == "bref").select("league", pl.col("value").alias("team_code"), "team_id")
+    key = pl.col("value").map_elements(norm_value, return_dtype=pl.String).alias("_key")
+    names = (
+        aliases.filter((pl.col("id_system") == "name") & pl.col("league").is_in(["mbb", "wbb"]))
+        .with_columns(key)
+        .group_by("league", "_key")
+        .agg(pl.col("team_id").unique())
+        .filter(pl.col("team_id").list.len() == 1)
+        .with_columns(pl.col("team_id").list.first())
+    )
+    college = (
+        codes.filter(pl.col("league").is_in(["mbb", "wbb"]))
+        .with_columns(pl.col("team_name").alias("value"))
+        .with_columns(key)
+        .join(names, on=["league", "_key"])
+        .select("league", "team_code", "team_id")
+    )
+    dated = (
+        pl.concat([pro, college])
+        .unique()
+        .join(current, on=["league", "team_code"])
+        .group_by("league", "team_id")
+        .agg(pl.col("_run").unique())
+        .filter(pl.col("_run").list.len() == 1)
+        .with_columns(pl.col("_run").list.first())
+    )
+    team_key = ~pl.col("value").str.split(":").list.first().is_in(NON_TEAM)
+    floor = (
+        mark.filter(team_key & pl.col("valid_to").is_not_null())
+        .group_by("league", "team_id")
+        .agg((pl.col("valid_to").max() + 1).alias("_floor"))
+    )
+    target = team_key & pl.col("valid_from").is_null() & pl.col("valid_to").is_null() & pl.col("_run").is_not_null()
+    return (
+        mark.join(dated, on=["league", "team_id"], how="left")
+        .join(floor, on=["league", "team_id"], how="left")
+        .with_columns(
+            pl.when(target)
+            .then(pl.max_horizontal("_run", "_floor"))
+            .otherwise(pl.col("valid_from"))
+            .alias("valid_from")
+        )
+        .select(mark.columns)
+    )
+
+
 def _report_marks(mk: pl.DataFrame) -> None:
     print(f"mark aliases: {mk.filter(pl.col('n') == 1).height} of {mk.height} manifest keys map to one team")
     bad = (
@@ -968,6 +1025,8 @@ def build_aliases(raw: Path, teams: pl.DataFrame, conf: pl.DataFrame) -> pl.Data
     mark = mk.filter(pl.col("n") == 1).select(
         "league", pl.lit("mark").alias("id_system"), "value", "team_id", "valid_from", "valid_to"
     )
+    if (raw / "sr_logo_runs.csv").exists() and (raw / "sr_codes.csv").exists():  # before the curated ranges: they win
+        mark = sr_mark_dates(mark, _csv(raw, "sr_logo_runs.csv"), _csv(raw, "sr_codes.csv"), a)
     if (raw / "curated" / "mark_ranges.csv").exists():
         mark = curated_mark_ranges(mark, _csv(raw, "curated/mark_ranges.csv"))
     # every soccer competition a club was seen in (UCL, cups, fifa.world), dated by that competition's season: id

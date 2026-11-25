@@ -47,6 +47,13 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Added
 
+- Current team marks in the NBA, WNBA, NFL, MLB and college basketball carry the season their logo was introduced,
+  from Sports Reference's logo history: `marks("TOR", "nba")` shows the current logo from 2021, the Bucks' from 2016.
+  `tools/fetch_sources.py --sr-manifest` now also writes `data-raw/sr_logo_runs.csv`, the latest logo run of each
+  Sports Reference code (seasons only; the private images and checksums never leave sdv-assets-private), and the
+  build dates each team's open-ended mark keys with it, starting after any relocation mark (the Raiders' current
+  mark from 2020, after Oakland's 1995-2019). A season before that window still draws the current logo when no
+  other mark covers it. `data-raw/curated/mark_ranges.csv` still wins over these dates.
 - cfbplotR's `team_name_mapping` spellings resolve: `resolve("VA TECH", "cfb")`, `"NC St."`, `"North Carolina
   State"`, `"UT San Antonio"`, `"Presbyterian College"`, `"St Francis (PA)"`. `tools/export_cfbplotr.R` exports the
   mapping with logo_ref's type and ESPN id into `data-raw/cfbplotr_names.csv` (commit in `data-raw/cfbplotr_commit.txt`),

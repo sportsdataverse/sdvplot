@@ -635,6 +635,23 @@ def sr_code_rows(rows: list[dict]) -> list[dict]:
     ]
 
 
+SR_RUN_COLUMNS = ["league", "team_code", "valid_from", "valid_to"]
+
+
+def sr_logo_run_rows(rows: list[dict]) -> list[dict]:
+    """One row per (league, team_code): the seasons of the latest logo Sports Reference shows for the code, from
+    sdv-assets-private's manifest/sr_logo_change_points.csv. Only the season window is written, never the image or
+    its checksum (R47); tools/build_index.py dates each team's current mark with it."""
+    latest: dict[tuple[str, str], tuple[int, int]] = {}
+    for r in rows:
+        k, run = (r["league"], r["team_code"]), (int(r["season_from"]), int(r["season_to"]))
+        latest[k] = max(latest.get(k, run), run)
+    return [
+        {"league": lg, "team_code": code, "valid_from": a, "valid_to": b}
+        for (lg, code), (a, b) in sorted(latest.items())
+    ]
+
+
 MLB_HISTORY_COLUMNS = ["mlbstats_id", "abbreviation", "team_code", "name", "valid_from", "valid_to"]
 MLB_FIRST_SEASON = 1901
 
@@ -677,7 +694,11 @@ def main() -> None:
     import tempfile
 
     p = argparse.ArgumentParser()
-    p.add_argument("--sr-manifest", type=Path, help="sdv-assets-private manifest/sr_team_seasons.csv")
+    p.add_argument(
+        "--sr-manifest",
+        type=Path,
+        help="sdv-assets-private manifest/sr_team_seasons.csv (its sr_logo_change_points.csv is read beside it)",
+    )
     p.add_argument("--ncaa-xwalk", type=Path, help="ncaa-mfb-football-raw mfb/xwalk/espn_team_id.json")
     only = p.add_mutually_exclusive_group()  # each refreshes one part; two would silently run just the first
     only.add_argument(
@@ -849,6 +870,8 @@ def fetch_all(args: argparse.Namespace, stage: Path) -> None:
         with open(args.sr_manifest, newline="", encoding="utf-8") as f:
             sr = list(csv.DictReader(f))
         write("sr_codes", sr_code_rows(sr), SR_COLUMNS)
+        with open(args.sr_manifest.parent / "sr_logo_change_points.csv", newline="", encoding="utf-8") as f:
+            write("sr_logo_runs", sr_logo_run_rows(list(csv.DictReader(f))), SR_RUN_COLUMNS)
 
 
 def f1_team_rows(
