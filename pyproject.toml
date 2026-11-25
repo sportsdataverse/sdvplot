@@ -39,7 +39,7 @@ plotly = ["plotly>=5.14"]
 altair = ["altair>=5.5"]  # 5.5 is the first altair that renders polars 2 frames
 bokeh = ["bokeh>=3.8.2"]
 holoviews = ["holoviews>=1.18", "bokeh>=3.8.2"]
-tables = ["great_tables>=1.0", "htmltools>=0.4.1", "nokap>=0.1"]
+tables = ["great_tables>=1.0", "faicons>=0.2.2", "htmltools>=0.4.1", "nokap>=0.1"]  # faicons: _layout imports it
 reactable = ["reactable>=0.1.6"]
 folium = ["folium>=0.19"]
 surfaces = ["sportypy>=1.2.5", "mplsoccer>=1.2"]

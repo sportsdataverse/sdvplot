@@ -253,6 +253,8 @@ All notable changes to sdvplot are documented here. The format follows [Keep a C
 
 ### Fixed
 
+- The `tables` extra declares `faicons`. `sdvplot.great_tables` imports it, and great_tables 1.2.0 no longer depends
+  on it, so a fresh `pip install "sdvplot[tables]"` failed on import.
 - Team values fold eight Latin letters that have no accent to drop: `ø` to `o`, `æ` to `ae`, `œ` to `oe`, `đ` and `ð`
   to `d`, `ł` to `l`, `þ` to `th` and the dotless `ı` to `i`, in either case, so `resolve("HB Koge", "soccer")` finds
   HB Køge, as `"Brondby IF"`, `"F.C. Kobenhavn"` and `"Sherbrooke, Phoenix"` (qmjhl) find theirs (sdvplotR#70).
