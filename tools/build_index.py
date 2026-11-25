@@ -839,7 +839,8 @@ def sr_mark_dates(mark: pl.DataFrame, runs: pl.DataFrame, codes: pl.DataFrame, a
     SR season is current; it reaches its team through the bref aliases, or for college (whose SR names are not
     ESPN display names) through a name that resolves to one team. The run's first season becomes valid_from of the
     team's open-ended mark keys, after any closed key's last season (a relocation's era mark, which must keep its
-    seasons). A team two current codes date differently, or no code reaches, is left undated."""
+    seasons). A code that reaches two teams (a display name ESPN gives both) dates neither, as an ambiguous college
+    name does; a team two current codes date differently, or no code reaches, is left undated."""
     runs = runs.with_columns(pl.col("valid_from", "valid_to").cast(pl.Int32))
     current = runs.filter(pl.col("valid_to") == pl.col("valid_to").max().over("league")).select(
         "league", "team_code", pl.col("valid_from").alias("_run")
@@ -865,6 +866,7 @@ def sr_mark_dates(mark: pl.DataFrame, runs: pl.DataFrame, codes: pl.DataFrame, a
         pl.concat([pro, college])
         .unique()
         .join(current, on=["league", "team_code"])
+        .filter(pl.col("team_id").n_unique().over("league", "team_code") == 1)  # a code two teams share dates neither
         .group_by("league", "team_id")
         .agg(pl.col("_run").unique())
         .filter(pl.col("_run").list.len() == 1)

@@ -523,6 +523,8 @@ def test_sr_logo_runs_date_a_teams_current_marks_after_its_relocation_marks():
             ("nba", "mark", "espn:5", "5", None, None),  # two current codes that disagree: left undated
             ("nba", "mark", "conference:nba:espn:28", "28", None, None),  # a conference key is never a team's
             ("mbb", "mark", "espn:150", "150", None, None),
+            ("wnba", "mark", "espn:3", "3", None, None),  # two teams one SR code reaches: neither is dated
+            ("wnba", "mark", "espn:4", "4", None, None),
         ],
         a,
     ).cast(i32)
@@ -533,6 +535,8 @@ def test_sr_logo_runs_date_a_teams_current_marks_after_its_relocation_marks():
             ("nba", "bref", "CLE", "5", 1971, None),
             ("nba", "bref", "CLV", "5", 1971, None),
             ("mbb", "name", "Duke", "150", None, None),
+            ("wnba", "bref", "DUP", "3", 2000, None),  # one display name, two ESPN teams
+            ("wnba", "bref", "DUP", "4", 2000, None),
         ],
         a,
     ).cast(i32)
@@ -544,6 +548,7 @@ def test_sr_logo_runs_date_a_teams_current_marks_after_its_relocation_marks():
             ("nba", "CLV", "2011", "2027"),
             ("nba", "SEA", "2002", "2008"),  # not current: it ends before the league's latest season
             ("mbb", "duke", "1971", "2026"),
+            ("wnba", "DUP", "2010", "2026"),
         ],
         ["league", "team_code", "valid_from", "valid_to"],
     )
@@ -560,6 +565,8 @@ def test_sr_logo_runs_date_a_teams_current_marks_after_its_relocation_marks():
             ("espn:5", None, None),
             ("conference:nba:espn:28", None, None),
             ("espn:150", 1971, None),  # college: the SR name resolves to one team
+            ("espn:3", None, None),
+            ("espn:4", None, None),
         ],
         key=str,
     )
