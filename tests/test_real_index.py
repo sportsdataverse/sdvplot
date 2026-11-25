@@ -170,10 +170,10 @@ def test_team_alias_ids():
     )
     assert counts == {
         "nfl/fox": 32, "nfl/yahoo": 32, "nfl/cbs": 32,
-        "cfb/fox": 962, "cfb/yahoo": 1391, "cfb/cbs": 312, "cfb/sports247": 532, "cfb/on3": 151,
+        "cfb/fox": 960, "cfb/yahoo": 1387, "cfb/cbs": 312, "cfb/sports247": 532, "cfb/on3": 151,
         "nba/fox": 31, "nba/yahoo": 30, "nba/cbs": 30,
         "wnba/fox": 15, "wnba/yahoo": 15,
-        "mbb/fox": 397, "mbb/yahoo": 1015, "mbb/sports247": 730, "mbb/on3": 344, "mbb/kenpom": 391, "mbb/torvik": 375,
+        "mbb/fox": 397, "mbb/yahoo": 1015, "mbb/sports247": 730, "mbb/on3": 344, "mbb/kenpom": 393, "mbb/torvik": 375,
         "wbb/fox": 374, "wbb/yahoo": 367, "wbb/sports247": 363, "wbb/on3": 342, "wbb/torvik": 361,
         "mlb/fox": 30, "mlb/yahoo": 30, "mlb/cbs": 30,
         "nhl/fox": 32, "nhl/yahoo": 32, "nhl/cbs": 32,

@@ -761,9 +761,7 @@ cfb,fox,team,25,194,2012,2026
 cfb,fox,team,250,2803,2004,2004
 cfb,fox,team,250,2803,2006,2010
 cfb,fox,team,250,2803,2012,2026
-cfb,fox,team,251,2341,2004,2004
-cfb,fox,team,251,2341,2006,2010
-cfb,fox,team,251,2341,2012,2026
+cfb,fox,team,251,2341,2019,2026
 cfb,fox,team,252,2110,2004,2004
 cfb,fox,team,252,2110,2006,2010
 cfb,fox,team,252,2110,2012,2026
@@ -2614,11 +2612,7 @@ cfb,yahoo,team,ncaaf.t.249,2316,2026,2026
 cfb,yahoo,team,ncaaf.t.25,197,2004,2004
 cfb,yahoo,team,ncaaf.t.25,197,2006,2010
 cfb,yahoo,team,ncaaf.t.25,197,2012,2026
-cfb,yahoo,team,ncaaf.t.251,2341,2004,2004
-cfb,yahoo,team,ncaaf.t.251,2341,2006,2010
-cfb,yahoo,team,ncaaf.t.251,2341,2012,2013
-cfb,yahoo,team,ncaaf.t.251,2341,2015,2015
-cfb,yahoo,team,ncaaf.t.251,2341,2018,2026
+cfb,yahoo,team,ncaaf.t.251,2341,2019,2026
 cfb,yahoo,team,ncaaf.t.2524,133,2015,2015
 cfb,yahoo,team,ncaaf.t.2524,133,2018,2020
 cfb,yahoo,team,ncaaf.t.2524,133,2026,2026
@@ -3761,404 +3755,406 @@ mbb,fox,team,98,70,2018,2027
 mbb,fox,team,981,94,2018,2027
 mbb,fox,team,99,299,2020,2027
 mbb,fox,team,990,88,2027,2027
-mbb,kenpom,name,Abilene Christian,2000,2014,2026
-mbb,kenpom,name,Air Force,2005,2002,2026
-mbb,kenpom,name,Akron,2006,2002,2026
-mbb,kenpom,name,Alabama,333,2002,2026
-mbb,kenpom,name,Alabama A&M,2010,2002,2026
-mbb,kenpom,name,Alabama St.,2011,2002,2026
-mbb,kenpom,name,Albany,399,2002,2026
-mbb,kenpom,name,Alcorn St.,2016,2002,2026
-mbb,kenpom,name,American,44,2002,2026
-mbb,kenpom,name,Appalachian St.,2026,2002,2026
-mbb,kenpom,name,Arizona,12,2002,2026
-mbb,kenpom,name,Arizona St.,9,2002,2026
-mbb,kenpom,name,Arkansas,8,2002,2026
+mbb,kenpom,name,Abilene Christian,2000,2014,2027
+mbb,kenpom,name,Air Force,2005,2002,2027
+mbb,kenpom,name,Akron,2006,2002,2027
+mbb,kenpom,name,Alabama,333,2002,2027
+mbb,kenpom,name,Alabama A&M,2010,2002,2027
+mbb,kenpom,name,Alabama St.,2011,2002,2027
+mbb,kenpom,name,Albany,399,2002,2027
+mbb,kenpom,name,Alcorn St.,2016,2002,2027
+mbb,kenpom,name,American,44,2002,2027
+mbb,kenpom,name,Appalachian St.,2026,2002,2027
+mbb,kenpom,name,Arizona,12,2002,2027
+mbb,kenpom,name,Arizona St.,9,2002,2027
+mbb,kenpom,name,Arkansas,8,2002,2027
 mbb,kenpom,name,Arkansas Little Rock,2031,2002,2016
-mbb,kenpom,name,Arkansas Pine Bluff,2029,2002,2026
-mbb,kenpom,name,Arkansas St.,2032,2002,2026
-mbb,kenpom,name,Army,349,2002,2026
-mbb,kenpom,name,Auburn,2,2002,2026
-mbb,kenpom,name,Austin Peay,2046,2002,2026
-mbb,kenpom,name,BYU,252,2002,2026
-mbb,kenpom,name,Ball St.,2050,2002,2026
-mbb,kenpom,name,Baylor,239,2002,2026
-mbb,kenpom,name,Bellarmine,91,2021,2026
-mbb,kenpom,name,Belmont,2057,2002,2026
-mbb,kenpom,name,Bethune Cookman,2065,2002,2026
-mbb,kenpom,name,Binghamton,2066,2002,2026
+mbb,kenpom,name,Arkansas Pine Bluff,2029,2002,2027
+mbb,kenpom,name,Arkansas St.,2032,2002,2027
+mbb,kenpom,name,Army,349,2002,2027
+mbb,kenpom,name,Auburn,2,2002,2027
+mbb,kenpom,name,Austin Peay,2046,2002,2027
+mbb,kenpom,name,BYU,252,2002,2027
+mbb,kenpom,name,Ball St.,2050,2002,2027
+mbb,kenpom,name,Baylor,239,2002,2027
+mbb,kenpom,name,Bellarmine,91,2021,2027
+mbb,kenpom,name,Belmont,2057,2002,2027
+mbb,kenpom,name,Bethune Cookman,2065,2002,2027
+mbb,kenpom,name,Binghamton,2066,2002,2027
 mbb,kenpom,name,Birmingham Southern,3,2002,2006
-mbb,kenpom,name,Boise St.,68,2002,2026
-mbb,kenpom,name,Boston College,103,2002,2026
-mbb,kenpom,name,Boston University,104,2002,2026
-mbb,kenpom,name,Bowling Green,189,2002,2026
-mbb,kenpom,name,Bradley,71,2002,2026
-mbb,kenpom,name,Brown,225,2002,2026
-mbb,kenpom,name,Bryant,2803,2009,2026
-mbb,kenpom,name,Bucknell,2083,2002,2026
-mbb,kenpom,name,Buffalo,2084,2002,2026
-mbb,kenpom,name,Butler,2086,2002,2026
-mbb,kenpom,name,CSUN,2463,2025,2026
-mbb,kenpom,name,Cal Baptist,2856,2019,2026
-mbb,kenpom,name,Cal Poly,13,2002,2026
-mbb,kenpom,name,Cal St. Bakersfield,2934,2008,2026
-mbb,kenpom,name,Cal St. Fullerton,2239,2002,2026
+mbb,kenpom,name,Boise St.,68,2002,2027
+mbb,kenpom,name,Boston College,103,2002,2027
+mbb,kenpom,name,Boston University,104,2002,2027
+mbb,kenpom,name,Bowling Green,189,2002,2027
+mbb,kenpom,name,Bradley,71,2002,2027
+mbb,kenpom,name,Brown,225,2002,2027
+mbb,kenpom,name,Bryant,2803,2009,2027
+mbb,kenpom,name,Bucknell,2083,2002,2027
+mbb,kenpom,name,Buffalo,2084,2002,2027
+mbb,kenpom,name,Butler,2086,2002,2027
+mbb,kenpom,name,CSUN,2463,2025,2027
+mbb,kenpom,name,Cal Baptist,2856,2019,2027
+mbb,kenpom,name,Cal Poly,13,2002,2027
+mbb,kenpom,name,Cal St. Bakersfield,2934,2008,2027
+mbb,kenpom,name,Cal St. Fullerton,2239,2002,2027
 mbb,kenpom,name,Cal St. Northridge,2463,2002,2024
-mbb,kenpom,name,California,25,2002,2026
-mbb,kenpom,name,Campbell,2097,2002,2026
-mbb,kenpom,name,Canisius,2099,2002,2026
+mbb,kenpom,name,California,25,2002,2027
+mbb,kenpom,name,Campbell,2097,2002,2027
+mbb,kenpom,name,Canisius,2099,2002,2027
 mbb,kenpom,name,Centenary,2113,2002,2011
-mbb,kenpom,name,Central Arkansas,2110,2007,2026
-mbb,kenpom,name,Central Connecticut,2115,2002,2026
-mbb,kenpom,name,Central Michigan,2117,2002,2026
-mbb,kenpom,name,Charleston,232,2019,2026
-mbb,kenpom,name,Charleston Southern,2127,2002,2026
-mbb,kenpom,name,Charlotte,2429,2002,2026
-mbb,kenpom,name,Chattanooga,236,2002,2026
-mbb,kenpom,name,Chicago St.,2130,2002,2026
-mbb,kenpom,name,Cincinnati,2132,2002,2026
-mbb,kenpom,name,Clemson,228,2002,2026
-mbb,kenpom,name,Cleveland St.,325,2002,2026
-mbb,kenpom,name,Coastal Carolina,324,2002,2026
-mbb,kenpom,name,Colgate,2142,2002,2026
+mbb,kenpom,name,Central Arkansas,2110,2007,2027
+mbb,kenpom,name,Central Connecticut,2115,2002,2027
+mbb,kenpom,name,Central Michigan,2117,2002,2027
+mbb,kenpom,name,Charleston,232,2019,2027
+mbb,kenpom,name,Charleston Southern,2127,2002,2027
+mbb,kenpom,name,Charlotte,2429,2002,2027
+mbb,kenpom,name,Chattanooga,236,2002,2027
+mbb,kenpom,name,Chicago St.,2130,2002,2027
+mbb,kenpom,name,Cincinnati,2132,2002,2027
+mbb,kenpom,name,Clemson,228,2002,2027
+mbb,kenpom,name,Cleveland St.,325,2002,2027
+mbb,kenpom,name,Coastal Carolina,324,2002,2027
+mbb,kenpom,name,Colgate,2142,2002,2027
 mbb,kenpom,name,College of Charleston,232,2002,2018
-mbb,kenpom,name,Colorado,38,2002,2026
-mbb,kenpom,name,Colorado St.,36,2002,2026
-mbb,kenpom,name,Columbia,171,2002,2026
-mbb,kenpom,name,Connecticut,41,2002,2026
-mbb,kenpom,name,Coppin St.,2154,2002,2026
-mbb,kenpom,name,Cornell,172,2002,2026
-mbb,kenpom,name,Creighton,156,2002,2026
-mbb,kenpom,name,Dartmouth,159,2002,2026
-mbb,kenpom,name,Davidson,2166,2002,2026
-mbb,kenpom,name,Dayton,2168,2002,2026
-mbb,kenpom,name,DePaul,305,2002,2026
-mbb,kenpom,name,Delaware,48,2002,2026
-mbb,kenpom,name,Delaware St.,2169,2002,2026
-mbb,kenpom,name,Denver,2172,2002,2026
+mbb,kenpom,name,Colorado,38,2002,2027
+mbb,kenpom,name,Colorado St.,36,2002,2027
+mbb,kenpom,name,Columbia,171,2002,2027
+mbb,kenpom,name,Connecticut,41,2002,2027
+mbb,kenpom,name,Coppin St.,2154,2002,2027
+mbb,kenpom,name,Cornell,172,2002,2027
+mbb,kenpom,name,Creighton,156,2002,2027
+mbb,kenpom,name,Dartmouth,159,2002,2027
+mbb,kenpom,name,Davidson,2166,2002,2027
+mbb,kenpom,name,Dayton,2168,2002,2027
+mbb,kenpom,name,DePaul,305,2002,2027
+mbb,kenpom,name,Delaware,48,2002,2027
+mbb,kenpom,name,Delaware St.,2169,2002,2027
+mbb,kenpom,name,Denver,2172,2002,2027
 mbb,kenpom,name,Detroit,2174,2002,2021
-mbb,kenpom,name,Detroit Mercy,2174,2022,2026
+mbb,kenpom,name,Detroit Mercy,2174,2022,2027
 mbb,kenpom,name,Dixie St.,3101,2021,2022
-mbb,kenpom,name,Drake,2181,2002,2026
-mbb,kenpom,name,Drexel,2182,2002,2026
-mbb,kenpom,name,Duke,150,2002,2026
-mbb,kenpom,name,Duquesne,2184,2002,2026
-mbb,kenpom,name,East Carolina,151,2002,2026
-mbb,kenpom,name,East Tennessee St.,2193,2002,2026
-mbb,kenpom,name,East Texas A&M,2837,2025,2026
-mbb,kenpom,name,Eastern Illinois,2197,2002,2026
-mbb,kenpom,name,Eastern Kentucky,2198,2002,2026
-mbb,kenpom,name,Eastern Michigan,2199,2002,2026
-mbb,kenpom,name,Eastern Washington,331,2002,2026
-mbb,kenpom,name,Elon,2210,2002,2026
-mbb,kenpom,name,Evansville,339,2002,2026
-mbb,kenpom,name,FIU,2229,2002,2026
-mbb,kenpom,name,Fairfield,2217,2002,2026
-mbb,kenpom,name,Fairleigh Dickinson,161,2002,2026
-mbb,kenpom,name,Florida,57,2002,2026
-mbb,kenpom,name,Florida A&M,50,2002,2026
-mbb,kenpom,name,Florida Atlantic,2226,2002,2026
-mbb,kenpom,name,Florida Gulf Coast,526,2008,2026
-mbb,kenpom,name,Florida St.,52,2002,2026
-mbb,kenpom,name,Fordham,2230,2002,2026
+mbb,kenpom,name,Drake,2181,2002,2027
+mbb,kenpom,name,Drexel,2182,2002,2027
+mbb,kenpom,name,Duke,150,2002,2027
+mbb,kenpom,name,Duquesne,2184,2002,2027
+mbb,kenpom,name,East Carolina,151,2002,2027
+mbb,kenpom,name,East Tennessee St.,2193,2002,2027
+mbb,kenpom,name,East Texas A&M,2837,2025,2027
+mbb,kenpom,name,Eastern Illinois,2197,2002,2027
+mbb,kenpom,name,Eastern Kentucky,2198,2002,2027
+mbb,kenpom,name,Eastern Michigan,2199,2002,2027
+mbb,kenpom,name,Eastern Washington,331,2002,2027
+mbb,kenpom,name,Elon,2210,2002,2027
+mbb,kenpom,name,Evansville,339,2002,2027
+mbb,kenpom,name,FIU,2229,2002,2027
+mbb,kenpom,name,Fairfield,2217,2002,2027
+mbb,kenpom,name,Fairleigh Dickinson,161,2002,2027
+mbb,kenpom,name,Florida,57,2002,2027
+mbb,kenpom,name,Florida A&M,50,2002,2027
+mbb,kenpom,name,Florida Atlantic,2226,2002,2027
+mbb,kenpom,name,Florida Gulf Coast,526,2008,2027
+mbb,kenpom,name,Florida St.,52,2002,2027
+mbb,kenpom,name,Fordham,2230,2002,2027
 mbb,kenpom,name,Fort Wayne,2870,2017,2018
-mbb,kenpom,name,Fresno St.,278,2002,2026
-mbb,kenpom,name,Furman,231,2002,2026
-mbb,kenpom,name,Gardner Webb,2241,2002,2026
-mbb,kenpom,name,George Mason,2244,2002,2026
-mbb,kenpom,name,George Washington,45,2002,2026
-mbb,kenpom,name,Georgetown,46,2002,2026
-mbb,kenpom,name,Georgia,61,2002,2026
-mbb,kenpom,name,Georgia Southern,290,2002,2026
-mbb,kenpom,name,Georgia St.,2247,2002,2026
-mbb,kenpom,name,Georgia Tech,59,2002,2026
-mbb,kenpom,name,Gonzaga,2250,2002,2026
-mbb,kenpom,name,Grambling St.,2755,2002,2026
-mbb,kenpom,name,Grand Canyon,2253,2014,2026
-mbb,kenpom,name,Green Bay,2739,2002,2026
-mbb,kenpom,name,Hampton,2261,2002,2026
+mbb,kenpom,name,Fresno St.,278,2002,2027
+mbb,kenpom,name,Furman,231,2002,2027
+mbb,kenpom,name,Gardner Webb,2241,2002,2027
+mbb,kenpom,name,George Mason,2244,2002,2027
+mbb,kenpom,name,George Washington,45,2002,2027
+mbb,kenpom,name,Georgetown,46,2002,2027
+mbb,kenpom,name,Georgia,61,2002,2027
+mbb,kenpom,name,Georgia Southern,290,2002,2027
+mbb,kenpom,name,Georgia St.,2247,2002,2027
+mbb,kenpom,name,Georgia Tech,59,2002,2027
+mbb,kenpom,name,Gonzaga,2250,2002,2027
+mbb,kenpom,name,Grambling St.,2755,2002,2027
+mbb,kenpom,name,Grand Canyon,2253,2014,2027
+mbb,kenpom,name,Green Bay,2739,2002,2027
+mbb,kenpom,name,Hampton,2261,2002,2027
 mbb,kenpom,name,Hartford,42,2002,2023
-mbb,kenpom,name,Harvard,108,2002,2026
-mbb,kenpom,name,Hawaii,62,2002,2026
-mbb,kenpom,name,High Point,2272,2002,2026
-mbb,kenpom,name,Hofstra,2275,2002,2026
-mbb,kenpom,name,Holy Cross,107,2002,2026
-mbb,kenpom,name,Houston,248,2002,2026
+mbb,kenpom,name,Harvard,108,2002,2027
+mbb,kenpom,name,Hawaii,62,2002,2027
+mbb,kenpom,name,High Point,2272,2002,2027
+mbb,kenpom,name,Hofstra,2275,2002,2027
+mbb,kenpom,name,Holy Cross,107,2002,2027
+mbb,kenpom,name,Houston,248,2002,2027
 mbb,kenpom,name,Houston Baptist,2277,2009,2022
-mbb,kenpom,name,Houston Christian,2277,2023,2026
-mbb,kenpom,name,Howard,47,2002,2026
+mbb,kenpom,name,Houston Christian,2277,2023,2027
+mbb,kenpom,name,Howard,47,2002,2027
 mbb,kenpom,name,IPFW,2870,2002,2016
-mbb,kenpom,name,IU Indy,85,2025,2026
+mbb,kenpom,name,IU Indy,85,2025,2027
 mbb,kenpom,name,IUPUI,85,2002,2024
-mbb,kenpom,name,Idaho,70,2002,2026
-mbb,kenpom,name,Idaho St.,304,2002,2026
-mbb,kenpom,name,Illinois,356,2002,2026
-mbb,kenpom,name,Illinois Chicago,82,2002,2026
-mbb,kenpom,name,Illinois St.,2287,2002,2026
-mbb,kenpom,name,Incarnate Word,2916,2014,2026
-mbb,kenpom,name,Indiana,84,2002,2026
-mbb,kenpom,name,Indiana St.,282,2002,2026
-mbb,kenpom,name,Iona,314,2002,2026
-mbb,kenpom,name,Iowa,2294,2002,2026
-mbb,kenpom,name,Iowa St.,66,2002,2026
-mbb,kenpom,name,Jackson St.,2296,2002,2026
-mbb,kenpom,name,Jacksonville,294,2002,2026
-mbb,kenpom,name,Jacksonville St.,55,2002,2026
-mbb,kenpom,name,James Madison,256,2002,2026
-mbb,kenpom,name,Kansas,2305,2002,2026
-mbb,kenpom,name,Kansas City,140,2025,2026
-mbb,kenpom,name,Kansas St.,2306,2002,2026
-mbb,kenpom,name,Kennesaw St.,338,2006,2026
-mbb,kenpom,name,Kent St.,2309,2002,2026
-mbb,kenpom,name,Kentucky,96,2002,2026
-mbb,kenpom,name,LIU,112358,2020,2026
+mbb,kenpom,name,Idaho,70,2002,2027
+mbb,kenpom,name,Idaho St.,304,2002,2027
+mbb,kenpom,name,Illinois,356,2002,2027
+mbb,kenpom,name,Illinois Chicago,82,2002,2027
+mbb,kenpom,name,Illinois St.,2287,2002,2027
+mbb,kenpom,name,Incarnate Word,2916,2014,2027
+mbb,kenpom,name,Indiana,84,2002,2027
+mbb,kenpom,name,Indiana St.,282,2002,2027
+mbb,kenpom,name,Iona,314,2002,2027
+mbb,kenpom,name,Iowa,2294,2002,2027
+mbb,kenpom,name,Iowa St.,66,2002,2027
+mbb,kenpom,name,Jackson St.,2296,2002,2027
+mbb,kenpom,name,Jacksonville,294,2002,2027
+mbb,kenpom,name,Jacksonville St.,55,2002,2027
+mbb,kenpom,name,James Madison,256,2002,2027
+mbb,kenpom,name,Kansas,2305,2002,2027
+mbb,kenpom,name,Kansas City,140,2025,2027
+mbb,kenpom,name,Kansas St.,2306,2002,2027
+mbb,kenpom,name,Kennesaw St.,338,2006,2027
+mbb,kenpom,name,Kent St.,2309,2002,2027
+mbb,kenpom,name,Kentucky,96,2002,2027
+mbb,kenpom,name,LIU,112358,2020,2027
 mbb,kenpom,name,LIU Brooklyn,112358,2002,2019
-mbb,kenpom,name,LSU,99,2002,2026
-mbb,kenpom,name,La Salle,2325,2002,2026
-mbb,kenpom,name,Lafayette,322,2002,2026
-mbb,kenpom,name,Lamar,2320,2002,2026
-mbb,kenpom,name,Le Moyne,2330,2024,2026
-mbb,kenpom,name,Lehigh,2329,2002,2026
-mbb,kenpom,name,Liberty,2335,2002,2026
-mbb,kenpom,name,Lindenwood,2815,2023,2026
-mbb,kenpom,name,Lipscomb,288,2002,2026
-mbb,kenpom,name,Little Rock,2031,2017,2026
-mbb,kenpom,name,Long Beach St.,299,2002,2026
-mbb,kenpom,name,Longwood,2344,2005,2026
-mbb,kenpom,name,Louisiana,309,2019,2026
+mbb,kenpom,name,LSU,99,2002,2027
+mbb,kenpom,name,LSU New Orleans,2443,2027,2027
+mbb,kenpom,name,La Salle,2325,2002,2027
+mbb,kenpom,name,Lafayette,322,2002,2027
+mbb,kenpom,name,Lamar,2320,2002,2027
+mbb,kenpom,name,Le Moyne,2330,2024,2027
+mbb,kenpom,name,Lehigh,2329,2002,2027
+mbb,kenpom,name,Liberty,2335,2002,2027
+mbb,kenpom,name,Lindenwood,2815,2023,2027
+mbb,kenpom,name,Lipscomb,288,2002,2027
+mbb,kenpom,name,Little Rock,2031,2017,2027
+mbb,kenpom,name,Long Beach St.,299,2002,2027
+mbb,kenpom,name,Longwood,2344,2005,2027
+mbb,kenpom,name,Louisiana,309,2019,2027
 mbb,kenpom,name,Louisiana Lafayette,309,2002,2018
-mbb,kenpom,name,Louisiana Monroe,2433,2002,2026
-mbb,kenpom,name,Louisiana Tech,2348,2002,2026
-mbb,kenpom,name,Louisville,97,2002,2026
-mbb,kenpom,name,Loyola Chicago,2350,2002,2026
-mbb,kenpom,name,Loyola MD,2352,2002,2026
-mbb,kenpom,name,Loyola Marymount,2351,2002,2026
-mbb,kenpom,name,Maine,311,2002,2026
-mbb,kenpom,name,Manhattan,2363,2002,2026
-mbb,kenpom,name,Marist,2368,2002,2026
-mbb,kenpom,name,Marquette,269,2002,2026
-mbb,kenpom,name,Marshall,276,2002,2026
-mbb,kenpom,name,Maryland,120,2002,2026
-mbb,kenpom,name,Maryland Eastern Shore,2379,2002,2026
-mbb,kenpom,name,Massachusetts,113,2002,2026
-mbb,kenpom,name,McNeese,2377,2025,2026
+mbb,kenpom,name,Louisiana Monroe,2433,2002,2027
+mbb,kenpom,name,Louisiana Tech,2348,2002,2027
+mbb,kenpom,name,Louisville,97,2002,2027
+mbb,kenpom,name,Loyola Chicago,2350,2002,2027
+mbb,kenpom,name,Loyola MD,2352,2002,2027
+mbb,kenpom,name,Loyola Marymount,2351,2002,2027
+mbb,kenpom,name,Maine,311,2002,2027
+mbb,kenpom,name,Manhattan,2363,2002,2027
+mbb,kenpom,name,Marist,2368,2002,2027
+mbb,kenpom,name,Marquette,269,2002,2027
+mbb,kenpom,name,Marshall,276,2002,2027
+mbb,kenpom,name,Maryland,120,2002,2027
+mbb,kenpom,name,Maryland Eastern Shore,2379,2002,2027
+mbb,kenpom,name,Massachusetts,113,2002,2027
+mbb,kenpom,name,McNeese,2377,2025,2027
 mbb,kenpom,name,McNeese St.,2377,2002,2024
-mbb,kenpom,name,Memphis,235,2002,2026
-mbb,kenpom,name,Mercer,2382,2002,2026
-mbb,kenpom,name,Mercyhurst,2385,2025,2026
-mbb,kenpom,name,Merrimack,2771,2020,2026
-mbb,kenpom,name,Miami FL,2390,2002,2026
-mbb,kenpom,name,Miami OH,193,2002,2026
-mbb,kenpom,name,Michigan,130,2002,2026
-mbb,kenpom,name,Michigan St.,127,2002,2026
+mbb,kenpom,name,Memphis,235,2002,2027
+mbb,kenpom,name,Mercer,2382,2002,2027
+mbb,kenpom,name,Mercyhurst,2385,2025,2027
+mbb,kenpom,name,Merrimack,2771,2020,2027
+mbb,kenpom,name,Miami FL,2390,2002,2027
+mbb,kenpom,name,Miami OH,193,2002,2027
+mbb,kenpom,name,Michigan,130,2002,2027
+mbb,kenpom,name,Michigan St.,127,2002,2027
 mbb,kenpom,name,Middle Tennessee,2393,2002,2002
-mbb,kenpom,name,Middle Tennessee,2393,2004,2026
+mbb,kenpom,name,Middle Tennessee,2393,2004,2027
 mbb,kenpom,name,Middle Tennessee St.,2393,2003,2003
-mbb,kenpom,name,Milwaukee,270,2002,2026
-mbb,kenpom,name,Minnesota,135,2002,2026
-mbb,kenpom,name,Mississippi,145,2002,2026
-mbb,kenpom,name,Mississippi St.,344,2002,2026
-mbb,kenpom,name,Mississippi Valley St.,2400,2002,2026
-mbb,kenpom,name,Missouri,142,2002,2026
-mbb,kenpom,name,Missouri St.,2623,2006,2026
-mbb,kenpom,name,Monmouth,2405,2002,2026
-mbb,kenpom,name,Montana,149,2002,2026
-mbb,kenpom,name,Montana St.,147,2002,2026
-mbb,kenpom,name,Morehead St.,2413,2002,2026
-mbb,kenpom,name,Morgan St.,2415,2002,2026
+mbb,kenpom,name,Milwaukee,270,2002,2027
+mbb,kenpom,name,Minnesota,135,2002,2027
+mbb,kenpom,name,Mississippi,145,2002,2027
+mbb,kenpom,name,Mississippi St.,344,2002,2027
+mbb,kenpom,name,Mississippi Valley St.,2400,2002,2027
+mbb,kenpom,name,Missouri,142,2002,2027
+mbb,kenpom,name,Missouri St.,2623,2006,2027
+mbb,kenpom,name,Monmouth,2405,2002,2027
+mbb,kenpom,name,Montana,149,2002,2027
+mbb,kenpom,name,Montana St.,147,2002,2027
+mbb,kenpom,name,Morehead St.,2413,2002,2027
+mbb,kenpom,name,Morgan St.,2415,2002,2027
 mbb,kenpom,name,Morris Brown,2417,2002,2003
-mbb,kenpom,name,Mount St. Mary's,116,2002,2026
-mbb,kenpom,name,Murray St.,93,2002,2026
-mbb,kenpom,name,N.C. State,152,2002,2026
-mbb,kenpom,name,NJIT,2885,2007,2026
-mbb,kenpom,name,Navy,2426,2002,2026
-mbb,kenpom,name,Nebraska,158,2002,2026
-mbb,kenpom,name,Nebraska Omaha,2437,2012,2026
-mbb,kenpom,name,Nevada,2440,2002,2026
-mbb,kenpom,name,New Hampshire,160,2002,2026
-mbb,kenpom,name,New Haven,2441,2026,2026
-mbb,kenpom,name,New Mexico,167,2002,2026
-mbb,kenpom,name,New Mexico St.,166,2002,2026
+mbb,kenpom,name,Mount St. Mary's,116,2002,2027
+mbb,kenpom,name,Murray St.,93,2002,2027
+mbb,kenpom,name,N.C. State,152,2002,2027
+mbb,kenpom,name,NJIT,2885,2007,2027
+mbb,kenpom,name,Navy,2426,2002,2027
+mbb,kenpom,name,Nebraska,158,2002,2027
+mbb,kenpom,name,Nebraska Omaha,2437,2012,2027
+mbb,kenpom,name,Nevada,2440,2002,2027
+mbb,kenpom,name,New Hampshire,160,2002,2027
+mbb,kenpom,name,New Haven,2441,2026,2027
+mbb,kenpom,name,New Mexico,167,2002,2027
+mbb,kenpom,name,New Mexico St.,166,2002,2027
 mbb,kenpom,name,New Orleans,2443,2002,2010
 mbb,kenpom,name,New Orleans,2443,2013,2026
-mbb,kenpom,name,Niagara,315,2002,2026
-mbb,kenpom,name,Nicholls,2447,2025,2026
+mbb,kenpom,name,Niagara,315,2002,2027
+mbb,kenpom,name,Nicholls,2447,2025,2027
 mbb,kenpom,name,Nicholls St.,2447,2002,2024
-mbb,kenpom,name,Norfolk St.,2450,2002,2026
-mbb,kenpom,name,North Alabama,2453,2019,2026
-mbb,kenpom,name,North Carolina,153,2002,2026
-mbb,kenpom,name,North Carolina A&T,2448,2002,2026
-mbb,kenpom,name,North Carolina Central,2428,2008,2026
-mbb,kenpom,name,North Dakota,155,2010,2026
-mbb,kenpom,name,North Dakota St.,2449,2006,2026
-mbb,kenpom,name,North Florida,2454,2006,2026
-mbb,kenpom,name,North Texas,249,2002,2026
-mbb,kenpom,name,Northeastern,111,2002,2026
-mbb,kenpom,name,Northern Arizona,2464,2002,2026
-mbb,kenpom,name,Northern Colorado,2458,2005,2026
-mbb,kenpom,name,Northern Illinois,2459,2002,2026
-mbb,kenpom,name,Northern Iowa,2460,2002,2026
-mbb,kenpom,name,Northern Kentucky,94,2013,2026
-mbb,kenpom,name,Northwestern,77,2002,2026
-mbb,kenpom,name,Northwestern St.,2466,2002,2026
-mbb,kenpom,name,Notre Dame,87,2002,2026
-mbb,kenpom,name,Oakland,2473,2002,2026
-mbb,kenpom,name,Ohio,195,2002,2026
-mbb,kenpom,name,Ohio St.,194,2002,2026
-mbb,kenpom,name,Oklahoma,201,2002,2026
-mbb,kenpom,name,Oklahoma St.,197,2002,2026
-mbb,kenpom,name,Old Dominion,295,2002,2026
-mbb,kenpom,name,Oral Roberts,198,2002,2026
-mbb,kenpom,name,Oregon,2483,2002,2026
-mbb,kenpom,name,Oregon St.,204,2002,2026
-mbb,kenpom,name,Pacific,279,2002,2026
-mbb,kenpom,name,Penn,219,2002,2026
-mbb,kenpom,name,Penn St.,213,2002,2026
-mbb,kenpom,name,Pepperdine,2492,2002,2026
-mbb,kenpom,name,Pittsburgh,221,2002,2026
-mbb,kenpom,name,Portland,2501,2002,2026
-mbb,kenpom,name,Portland St.,2502,2002,2026
-mbb,kenpom,name,Prairie View A&M,2504,2002,2026
-mbb,kenpom,name,Presbyterian,2506,2008,2026
-mbb,kenpom,name,Princeton,163,2002,2026
-mbb,kenpom,name,Providence,2507,2002,2026
-mbb,kenpom,name,Purdue,2509,2002,2026
-mbb,kenpom,name,Purdue Fort Wayne,2870,2019,2026
-mbb,kenpom,name,Queens,2511,2023,2026
-mbb,kenpom,name,Quinnipiac,2514,2002,2026
-mbb,kenpom,name,Radford,2515,2002,2026
-mbb,kenpom,name,Rhode Island,227,2002,2026
-mbb,kenpom,name,Rice,242,2002,2026
-mbb,kenpom,name,Richmond,257,2002,2026
-mbb,kenpom,name,Rider,2520,2002,2026
-mbb,kenpom,name,Robert Morris,2523,2002,2026
-mbb,kenpom,name,Rutgers,164,2002,2026
+mbb,kenpom,name,Norfolk St.,2450,2002,2027
+mbb,kenpom,name,North Alabama,2453,2019,2027
+mbb,kenpom,name,North Carolina,153,2002,2027
+mbb,kenpom,name,North Carolina A&T,2448,2002,2027
+mbb,kenpom,name,North Carolina Central,2428,2008,2027
+mbb,kenpom,name,North Dakota,155,2010,2027
+mbb,kenpom,name,North Dakota St.,2449,2006,2027
+mbb,kenpom,name,North Florida,2454,2006,2027
+mbb,kenpom,name,North Texas,249,2002,2027
+mbb,kenpom,name,Northeastern,111,2002,2027
+mbb,kenpom,name,Northern Arizona,2464,2002,2027
+mbb,kenpom,name,Northern Colorado,2458,2005,2027
+mbb,kenpom,name,Northern Illinois,2459,2002,2027
+mbb,kenpom,name,Northern Iowa,2460,2002,2027
+mbb,kenpom,name,Northern Kentucky,94,2013,2027
+mbb,kenpom,name,Northwestern,77,2002,2027
+mbb,kenpom,name,Northwestern St.,2466,2002,2027
+mbb,kenpom,name,Notre Dame,87,2002,2027
+mbb,kenpom,name,Oakland,2473,2002,2027
+mbb,kenpom,name,Ohio,195,2002,2027
+mbb,kenpom,name,Ohio St.,194,2002,2027
+mbb,kenpom,name,Oklahoma,201,2002,2027
+mbb,kenpom,name,Oklahoma St.,197,2002,2027
+mbb,kenpom,name,Old Dominion,295,2002,2027
+mbb,kenpom,name,Oral Roberts,198,2002,2027
+mbb,kenpom,name,Oregon,2483,2002,2027
+mbb,kenpom,name,Oregon St.,204,2002,2027
+mbb,kenpom,name,Pacific,279,2002,2027
+mbb,kenpom,name,Penn,219,2002,2027
+mbb,kenpom,name,Penn St.,213,2002,2027
+mbb,kenpom,name,Pepperdine,2492,2002,2027
+mbb,kenpom,name,Pittsburgh,221,2002,2027
+mbb,kenpom,name,Portland,2501,2002,2027
+mbb,kenpom,name,Portland St.,2502,2002,2027
+mbb,kenpom,name,Prairie View A&M,2504,2002,2027
+mbb,kenpom,name,Presbyterian,2506,2008,2027
+mbb,kenpom,name,Princeton,163,2002,2027
+mbb,kenpom,name,Providence,2507,2002,2027
+mbb,kenpom,name,Purdue,2509,2002,2027
+mbb,kenpom,name,Purdue Fort Wayne,2870,2019,2027
+mbb,kenpom,name,Queens,2511,2023,2027
+mbb,kenpom,name,Quinnipiac,2514,2002,2027
+mbb,kenpom,name,Radford,2515,2002,2027
+mbb,kenpom,name,Rhode Island,227,2002,2027
+mbb,kenpom,name,Rice,242,2002,2027
+mbb,kenpom,name,Richmond,257,2002,2027
+mbb,kenpom,name,Rider,2520,2002,2027
+mbb,kenpom,name,Robert Morris,2523,2002,2027
+mbb,kenpom,name,Rutgers,164,2002,2027
 mbb,kenpom,name,SIU Edwardsville,2565,2009,2024
-mbb,kenpom,name,SIUE,2565,2025,2026
-mbb,kenpom,name,SMU,2567,2002,2026
-mbb,kenpom,name,Sacramento St.,16,2002,2026
-mbb,kenpom,name,Sacred Heart,2529,2002,2026
+mbb,kenpom,name,SIUE,2565,2025,2027
+mbb,kenpom,name,SMU,2567,2002,2027
+mbb,kenpom,name,Sacramento St.,16,2002,2027
+mbb,kenpom,name,Sacred Heart,2529,2002,2027
 mbb,kenpom,name,Saint Francis,2598,2024,2026
-mbb,kenpom,name,Saint Joseph's,2603,2002,2026
-mbb,kenpom,name,Saint Louis,139,2002,2026
-mbb,kenpom,name,Saint Mary's,2608,2002,2026
-mbb,kenpom,name,Saint Peter's,2612,2002,2026
-mbb,kenpom,name,Sam Houston St.,2534,2002,2026
-mbb,kenpom,name,Samford,2535,2002,2026
-mbb,kenpom,name,San Diego,301,2002,2026
-mbb,kenpom,name,San Diego St.,21,2002,2026
-mbb,kenpom,name,San Francisco,2539,2002,2026
-mbb,kenpom,name,San Jose St.,23,2002,2026
-mbb,kenpom,name,Santa Clara,2541,2002,2026
+mbb,kenpom,name,Saint Joseph's,2603,2002,2027
+mbb,kenpom,name,Saint Louis,139,2002,2027
+mbb,kenpom,name,Saint Mary's,2608,2002,2027
+mbb,kenpom,name,Saint Peter's,2612,2002,2027
+mbb,kenpom,name,Sam Houston St.,2534,2002,2027
+mbb,kenpom,name,Samford,2535,2002,2027
+mbb,kenpom,name,San Diego,301,2002,2027
+mbb,kenpom,name,San Diego St.,21,2002,2027
+mbb,kenpom,name,San Francisco,2539,2002,2027
+mbb,kenpom,name,San Jose St.,23,2002,2027
+mbb,kenpom,name,Santa Clara,2541,2002,2027
 mbb,kenpom,name,Savannah St.,2542,2002,2019
-mbb,kenpom,name,Seattle,2547,2010,2026
-mbb,kenpom,name,Seton Hall,2550,2002,2026
-mbb,kenpom,name,Siena,2561,2002,2026
-mbb,kenpom,name,South Alabama,6,2002,2026
-mbb,kenpom,name,South Carolina,2579,2002,2026
-mbb,kenpom,name,South Carolina St.,2569,2002,2026
-mbb,kenpom,name,South Dakota,233,2010,2026
-mbb,kenpom,name,South Dakota St.,2571,2006,2026
-mbb,kenpom,name,South Florida,58,2002,2026
-mbb,kenpom,name,Southeast Missouri,2546,2025,2026
+mbb,kenpom,name,Seattle,2547,2010,2027
+mbb,kenpom,name,Seton Hall,2550,2002,2027
+mbb,kenpom,name,Siena,2561,2002,2027
+mbb,kenpom,name,South Alabama,6,2002,2027
+mbb,kenpom,name,South Carolina,2579,2002,2027
+mbb,kenpom,name,South Carolina St.,2569,2002,2027
+mbb,kenpom,name,South Dakota,233,2010,2027
+mbb,kenpom,name,South Dakota St.,2571,2006,2027
+mbb,kenpom,name,South Florida,58,2002,2027
+mbb,kenpom,name,Southeast Missouri,2546,2025,2027
 mbb,kenpom,name,Southeast Missouri St.,2546,2002,2024
-mbb,kenpom,name,Southeastern Louisiana,2545,2002,2026
-mbb,kenpom,name,Southern,2582,2002,2026
-mbb,kenpom,name,Southern Illinois,79,2002,2026
-mbb,kenpom,name,Southern Indiana,88,2023,2026
-mbb,kenpom,name,Southern Miss,2572,2002,2026
-mbb,kenpom,name,Southern Utah,253,2002,2026
+mbb,kenpom,name,Southeastern Louisiana,2545,2002,2027
+mbb,kenpom,name,Southern,2582,2002,2027
+mbb,kenpom,name,Southern Illinois,79,2002,2027
+mbb,kenpom,name,Southern Indiana,88,2023,2027
+mbb,kenpom,name,Southern Miss,2572,2002,2027
+mbb,kenpom,name,Southern Utah,253,2002,2027
 mbb,kenpom,name,Southwest Missouri St.,2623,2002,2005
 mbb,kenpom,name,Southwest Texas St.,326,2002,2003
-mbb,kenpom,name,St. Bonaventure,179,2002,2026
+mbb,kenpom,name,St. Bonaventure,179,2002,2027
 mbb,kenpom,name,St. Francis NY,2597,2002,2023
 mbb,kenpom,name,St. Francis PA,2598,2002,2023
-mbb,kenpom,name,St. John's,2599,2002,2026
-mbb,kenpom,name,St. Thomas,2900,2022,2026
-mbb,kenpom,name,Stanford,24,2002,2026
-mbb,kenpom,name,Stephen F. Austin,2617,2002,2026
-mbb,kenpom,name,Stetson,56,2002,2026
-mbb,kenpom,name,Stonehill,284,2023,2026
-mbb,kenpom,name,Stony Brook,2619,2002,2026
-mbb,kenpom,name,Syracuse,183,2002,2026
-mbb,kenpom,name,TCU,2628,2002,2026
-mbb,kenpom,name,Tarleton St.,2627,2021,2026
-mbb,kenpom,name,Temple,218,2002,2026
-mbb,kenpom,name,Tennessee,2633,2002,2026
-mbb,kenpom,name,Tennessee Martin,2630,2002,2026
-mbb,kenpom,name,Tennessee St.,2634,2002,2026
-mbb,kenpom,name,Tennessee Tech,2635,2002,2026
-mbb,kenpom,name,Texas,251,2002,2026
-mbb,kenpom,name,Texas A&M,245,2002,2026
+mbb,kenpom,name,St. John's,2599,2002,2027
+mbb,kenpom,name,St. Thomas,2900,2022,2027
+mbb,kenpom,name,Stanford,24,2002,2027
+mbb,kenpom,name,Stephen F. Austin,2617,2002,2027
+mbb,kenpom,name,Stetson,56,2002,2027
+mbb,kenpom,name,Stonehill,284,2023,2027
+mbb,kenpom,name,Stony Brook,2619,2002,2027
+mbb,kenpom,name,Syracuse,183,2002,2027
+mbb,kenpom,name,TCU,2628,2002,2027
+mbb,kenpom,name,Tarleton St.,2627,2021,2027
+mbb,kenpom,name,Temple,218,2002,2027
+mbb,kenpom,name,Tennessee,2633,2002,2027
+mbb,kenpom,name,Tennessee Martin,2630,2002,2027
+mbb,kenpom,name,Tennessee St.,2634,2002,2027
+mbb,kenpom,name,Tennessee Tech,2635,2002,2027
+mbb,kenpom,name,Texas,251,2002,2027
+mbb,kenpom,name,Texas A&M,245,2002,2027
 mbb,kenpom,name,Texas A&M Commerce,2837,2023,2024
-mbb,kenpom,name,Texas A&M Corpus Chris,357,2002,2026
+mbb,kenpom,name,Texas A&M Corpus Chris,357,2002,2027
 mbb,kenpom,name,Texas Pan American,292,2002,2015
-mbb,kenpom,name,Texas Southern,2640,2002,2026
-mbb,kenpom,name,Texas St.,326,2004,2026
-mbb,kenpom,name,Texas Tech,2641,2002,2026
-mbb,kenpom,name,The Citadel,2643,2002,2026
-mbb,kenpom,name,Toledo,2649,2002,2026
-mbb,kenpom,name,Towson,119,2002,2026
-mbb,kenpom,name,Troy,2653,2005,2026
+mbb,kenpom,name,Texas Southern,2640,2002,2027
+mbb,kenpom,name,Texas St.,326,2004,2027
+mbb,kenpom,name,Texas Tech,2641,2002,2027
+mbb,kenpom,name,The Citadel,2643,2002,2027
+mbb,kenpom,name,Toledo,2649,2002,2027
+mbb,kenpom,name,Towson,119,2002,2027
+mbb,kenpom,name,Troy,2653,2005,2027
 mbb,kenpom,name,Troy St.,2653,2002,2004
-mbb,kenpom,name,Tulane,2655,2002,2026
-mbb,kenpom,name,Tulsa,202,2002,2026
-mbb,kenpom,name,UAB,5,2002,2026
-mbb,kenpom,name,UC Davis,302,2005,2026
-mbb,kenpom,name,UC Irvine,300,2002,2026
-mbb,kenpom,name,UC Riverside,27,2002,2026
-mbb,kenpom,name,UC San Diego,28,2021,2026
-mbb,kenpom,name,UC Santa Barbara,2540,2002,2026
-mbb,kenpom,name,UCF,2116,2002,2026
-mbb,kenpom,name,UCLA,26,2002,2026
-mbb,kenpom,name,UMBC,2378,2002,2026
+mbb,kenpom,name,Tulane,2655,2002,2027
+mbb,kenpom,name,Tulsa,202,2002,2027
+mbb,kenpom,name,UAB,5,2002,2027
+mbb,kenpom,name,UC Davis,302,2005,2027
+mbb,kenpom,name,UC Irvine,300,2002,2027
+mbb,kenpom,name,UC Riverside,27,2002,2027
+mbb,kenpom,name,UC San Diego,28,2021,2027
+mbb,kenpom,name,UC Santa Barbara,2540,2002,2027
+mbb,kenpom,name,UCF,2116,2002,2027
+mbb,kenpom,name,UCLA,26,2002,2027
+mbb,kenpom,name,UMBC,2378,2002,2027
 mbb,kenpom,name,UMKC,140,2002,2024
-mbb,kenpom,name,UMass Lowell,2349,2014,2026
-mbb,kenpom,name,UNC Asheville,2427,2002,2026
-mbb,kenpom,name,UNC Greensboro,2430,2002,2026
-mbb,kenpom,name,UNC Wilmington,350,2002,2026
-mbb,kenpom,name,UNLV,2439,2002,2026
-mbb,kenpom,name,USC,30,2002,2026
-mbb,kenpom,name,USC Upstate,2908,2008,2026
-mbb,kenpom,name,UT Arlington,250,2002,2026
-mbb,kenpom,name,UT Rio Grande Valley,292,2016,2026
-mbb,kenpom,name,UTEP,2638,2002,2026
-mbb,kenpom,name,UTSA,2636,2002,2026
-mbb,kenpom,name,Utah,254,2002,2026
-mbb,kenpom,name,Utah St.,328,2002,2026
-mbb,kenpom,name,Utah Tech,3101,2023,2026
-mbb,kenpom,name,Utah Valley,3084,2009,2026
+mbb,kenpom,name,UMass Lowell,2349,2014,2027
+mbb,kenpom,name,UNC Asheville,2427,2002,2027
+mbb,kenpom,name,UNC Greensboro,2430,2002,2027
+mbb,kenpom,name,UNC Wilmington,350,2002,2027
+mbb,kenpom,name,UNLV,2439,2002,2027
+mbb,kenpom,name,USC,30,2002,2027
+mbb,kenpom,name,USC Upstate,2908,2008,2027
+mbb,kenpom,name,UT Arlington,250,2002,2027
+mbb,kenpom,name,UT Rio Grande Valley,292,2016,2027
+mbb,kenpom,name,UTEP,2638,2002,2027
+mbb,kenpom,name,UTSA,2636,2002,2027
+mbb,kenpom,name,Utah,254,2002,2027
+mbb,kenpom,name,Utah St.,328,2002,2027
+mbb,kenpom,name,Utah Tech,3101,2023,2027
+mbb,kenpom,name,Utah Valley,3084,2009,2027
 mbb,kenpom,name,Utah Valley St.,3084,2005,2008
-mbb,kenpom,name,VCU,2670,2002,2026
-mbb,kenpom,name,VMI,2678,2002,2026
-mbb,kenpom,name,Valparaiso,2674,2002,2026
-mbb,kenpom,name,Vanderbilt,238,2002,2026
-mbb,kenpom,name,Vermont,261,2002,2026
-mbb,kenpom,name,Villanova,222,2002,2026
-mbb,kenpom,name,Virginia,258,2002,2026
-mbb,kenpom,name,Virginia Tech,259,2002,2026
-mbb,kenpom,name,Wagner,2681,2002,2026
-mbb,kenpom,name,Wake Forest,154,2002,2026
-mbb,kenpom,name,Washington,264,2002,2026
-mbb,kenpom,name,Washington St.,265,2002,2026
-mbb,kenpom,name,Weber St.,2692,2002,2026
-mbb,kenpom,name,West Georgia,2698,2025,2026
-mbb,kenpom,name,West Virginia,277,2002,2026
-mbb,kenpom,name,Western Carolina,2717,2002,2026
-mbb,kenpom,name,Western Illinois,2710,2002,2026
-mbb,kenpom,name,Western Kentucky,98,2002,2026
-mbb,kenpom,name,Western Michigan,2711,2002,2026
-mbb,kenpom,name,Wichita St.,2724,2002,2026
-mbb,kenpom,name,William & Mary,2729,2002,2026
+mbb,kenpom,name,VCU,2670,2002,2027
+mbb,kenpom,name,VMI,2678,2002,2027
+mbb,kenpom,name,Valparaiso,2674,2002,2027
+mbb,kenpom,name,Vanderbilt,238,2002,2027
+mbb,kenpom,name,Vermont,261,2002,2027
+mbb,kenpom,name,Villanova,222,2002,2027
+mbb,kenpom,name,Virginia,258,2002,2027
+mbb,kenpom,name,Virginia Tech,259,2002,2027
+mbb,kenpom,name,Wagner,2681,2002,2027
+mbb,kenpom,name,Wake Forest,154,2002,2027
+mbb,kenpom,name,Washington,264,2002,2027
+mbb,kenpom,name,Washington St.,265,2002,2027
+mbb,kenpom,name,Weber St.,2692,2002,2027
+mbb,kenpom,name,West Florida,2697,2027,2027
+mbb,kenpom,name,West Georgia,2698,2025,2027
+mbb,kenpom,name,West Virginia,277,2002,2027
+mbb,kenpom,name,Western Carolina,2717,2002,2027
+mbb,kenpom,name,Western Illinois,2710,2002,2027
+mbb,kenpom,name,Western Kentucky,98,2002,2027
+mbb,kenpom,name,Western Michigan,2711,2002,2027
+mbb,kenpom,name,Wichita St.,2724,2002,2027
+mbb,kenpom,name,William & Mary,2729,2002,2027
 mbb,kenpom,name,Winston Salem St.,2736,2007,2010
-mbb,kenpom,name,Winthrop,2737,2002,2026
-mbb,kenpom,name,Wisconsin,275,2002,2026
-mbb,kenpom,name,Wofford,2747,2002,2026
-mbb,kenpom,name,Wright St.,2750,2002,2026
-mbb,kenpom,name,Wyoming,2751,2002,2026
-mbb,kenpom,name,Xavier,2752,2002,2026
-mbb,kenpom,name,Yale,43,2002,2026
-mbb,kenpom,name,Youngstown St.,2754,2002,2026
+mbb,kenpom,name,Winthrop,2737,2002,2027
+mbb,kenpom,name,Wisconsin,275,2002,2027
+mbb,kenpom,name,Wofford,2747,2002,2027
+mbb,kenpom,name,Wright St.,2750,2002,2027
+mbb,kenpom,name,Wyoming,2751,2002,2027
+mbb,kenpom,name,Xavier,2752,2002,2027
+mbb,kenpom,name,Yale,43,2002,2027
+mbb,kenpom,name,Youngstown St.,2754,2002,2027
 mbb,ncaa,org,1004,2110,2010,2027
 mbb,ncaa,org,101,2463,2010,2027
 mbb,ncaa,org,1014,232,2010,2027
@@ -19182,7 +19178,7 @@ nfl,fox,team,14,26,2018,2026
 nfl,fox,team,15,6,2018,2026
 nfl,fox,team,16,19,2018,2026
 nfl,fox,team,17,21,2018,2026
-nfl,fox,team,18,22,2018,2025
+nfl,fox,team,18,22,2018,2026
 nfl,fox,team,19,28,2018,2026
 nfl,fox,team,2,11,2018,2026
 nfl,fox,team,20,3,2018,2026
@@ -19200,43 +19196,43 @@ nfl,fox,team,32,29,2018,2026
 nfl,fox,team,33,33,2018,2026
 nfl,fox,team,34,34,2018,2026
 nfl,fox,team,4,17,2018,2026
-nfl,fox,team,5,20,2018,2025
+nfl,fox,team,5,20,2018,2026
 nfl,fox,team,6,4,2018,2026
 nfl,fox,team,7,5,2018,2026
 nfl,fox,team,8,10,2018,2026
 nfl,fox,team,9,23,2018,2026
-nfl,yahoo,team,nfl.t.1,1,2013,2025
-nfl,yahoo,team,nfl.t.10,10,2013,2025
-nfl,yahoo,team,nfl.t.11,11,2013,2025
-nfl,yahoo,team,nfl.t.12,12,2013,2025
-nfl,yahoo,team,nfl.t.13,13,2013,2025
-nfl,yahoo,team,nfl.t.14,14,2013,2025
-nfl,yahoo,team,nfl.t.15,15,2013,2025
-nfl,yahoo,team,nfl.t.16,16,2013,2025
-nfl,yahoo,team,nfl.t.17,17,2013,2025
-nfl,yahoo,team,nfl.t.18,18,2013,2025
-nfl,yahoo,team,nfl.t.19,19,2013,2025
-nfl,yahoo,team,nfl.t.2,2,2013,2025
-nfl,yahoo,team,nfl.t.20,20,2013,2025
-nfl,yahoo,team,nfl.t.21,21,2013,2025
-nfl,yahoo,team,nfl.t.22,22,2013,2025
-nfl,yahoo,team,nfl.t.23,23,2013,2025
-nfl,yahoo,team,nfl.t.24,24,2013,2025
-nfl,yahoo,team,nfl.t.25,25,2013,2025
-nfl,yahoo,team,nfl.t.26,26,2013,2025
-nfl,yahoo,team,nfl.t.27,27,2013,2025
-nfl,yahoo,team,nfl.t.28,28,2013,2025
-nfl,yahoo,team,nfl.t.29,29,2013,2025
-nfl,yahoo,team,nfl.t.3,3,2013,2025
-nfl,yahoo,team,nfl.t.30,30,2013,2025
-nfl,yahoo,team,nfl.t.33,33,2013,2025
-nfl,yahoo,team,nfl.t.34,34,2013,2025
-nfl,yahoo,team,nfl.t.4,4,2013,2025
-nfl,yahoo,team,nfl.t.5,5,2013,2025
-nfl,yahoo,team,nfl.t.6,6,2013,2025
-nfl,yahoo,team,nfl.t.7,7,2013,2025
-nfl,yahoo,team,nfl.t.8,8,2013,2025
-nfl,yahoo,team,nfl.t.9,9,2013,2025
+nfl,yahoo,team,nfl.t.1,1,2013,2026
+nfl,yahoo,team,nfl.t.10,10,2013,2026
+nfl,yahoo,team,nfl.t.11,11,2013,2026
+nfl,yahoo,team,nfl.t.12,12,2013,2026
+nfl,yahoo,team,nfl.t.13,13,2013,2026
+nfl,yahoo,team,nfl.t.14,14,2013,2026
+nfl,yahoo,team,nfl.t.15,15,2013,2026
+nfl,yahoo,team,nfl.t.16,16,2013,2026
+nfl,yahoo,team,nfl.t.17,17,2013,2026
+nfl,yahoo,team,nfl.t.18,18,2013,2026
+nfl,yahoo,team,nfl.t.19,19,2013,2026
+nfl,yahoo,team,nfl.t.2,2,2013,2026
+nfl,yahoo,team,nfl.t.20,20,2013,2026
+nfl,yahoo,team,nfl.t.21,21,2013,2026
+nfl,yahoo,team,nfl.t.22,22,2013,2026
+nfl,yahoo,team,nfl.t.23,23,2013,2026
+nfl,yahoo,team,nfl.t.24,24,2013,2026
+nfl,yahoo,team,nfl.t.25,25,2013,2026
+nfl,yahoo,team,nfl.t.26,26,2013,2026
+nfl,yahoo,team,nfl.t.27,27,2013,2026
+nfl,yahoo,team,nfl.t.28,28,2013,2026
+nfl,yahoo,team,nfl.t.29,29,2013,2026
+nfl,yahoo,team,nfl.t.3,3,2013,2026
+nfl,yahoo,team,nfl.t.30,30,2013,2026
+nfl,yahoo,team,nfl.t.33,33,2013,2026
+nfl,yahoo,team,nfl.t.34,34,2013,2026
+nfl,yahoo,team,nfl.t.4,4,2013,2026
+nfl,yahoo,team,nfl.t.5,5,2013,2026
+nfl,yahoo,team,nfl.t.6,6,2013,2026
+nfl,yahoo,team,nfl.t.7,7,2013,2026
+nfl,yahoo,team,nfl.t.8,8,2013,2026
+nfl,yahoo,team,nfl.t.9,9,2013,2026
 nhl,cbs,team,1842464,28,2027,2027
 nhl,cbs,team,26678952,124292,2027,2027
 nhl,cbs,team,2835761,37,2027,2027
