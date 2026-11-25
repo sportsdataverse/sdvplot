@@ -32,7 +32,7 @@ commit <- Sys.getenv("SDVPLOTR_COMMIT", suppressWarnings(system2("git", c("-C", 
 write(data.frame(sdvplotr_commit = commit, index_version = index_version), "sdvplotr_cfbplotr_meta.csv")
 
 # sdv_teams(division =): every division alone, and the cfbplotR pairs, in each college league
-college <- c("cfb", "mbb", "wbb", "ncaa_baseball", "ncaa_softball", "ncaa_mhockey", "ncaa_whockey", "ncaa_wvb")
+college <- c("cfb", "mbb", "wbb", "ncaa_baseball", "ncaa_softball", "ncaa_mhockey", "ncaa_whockey")
 college <- intersect(college, sdv_leagues())
 div_cases <- list()
 for (lg in college) {

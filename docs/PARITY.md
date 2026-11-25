@@ -144,10 +144,11 @@ the script, once the bundled index is rebuilt and until the fixtures are exporte
   (R's `order(method = "radix")`). It returns an ordered pandas categorical for a pandas Series (index kept), else a
   polars `Enum` Series.
 - `clean_names` (X16): 30 sampled aliases per id system in cfb, nfl, mbb and nba plus misses (an unknown, an ambiguous
-  "Miami", accents, spaces, `"12.0"`), every `column`, both `keep_non_matches`: 4,380 answers equal. sdvplot adds
-  `strict` (raise on a value that does not resolve), as every resolving function has.
+  "Miami", accents, spaces, `"12.0"`), every `column`, both `keep_non_matches`, and numbers in (13, 4e6, 1.5, NA):
+  4,385 answers equal. sdvplot adds `strict` (raise on a value that does not resolve), as every resolving function
+  has.
 - `aliases` (X17): per league, the row count and an md5 of the sorted, tab-joined rows equal sdvplotR's, all 49 leagues.
-- `teams(division=)` (X18): every division and two pairs in each of the eight college leagues (4,515 rows); the
+- `teams(division=)` (X18): every division and two pairs in each of the seven college leagues (4,515 rows); the
   same errors (no league, an unknown division, a tier outside cfb, an index with no divisions) and the same warning
   when a tier's conference id is gone from the index.
 - `alt_colors` (X19): the colors sdvplotR's scales give (`get_team_colors()`) with and without `alt_colors`, both
