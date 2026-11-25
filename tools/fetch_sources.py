@@ -60,6 +60,21 @@ IDENTITY_SOURCES = {
     "datacore",  # the EASL's DataCore teamId
     "legabasket",  # LBA club_id
     "formula1.com",  # F1 constructors by Jolpica constructor_id
+    # international basketball and European hockey (sdv-assets, 2026-11-25), each keyed by the id sdv-py's family uses
+    "euroleague",  # EuroLeague club code
+    "sportpress",  # BNXT uu_team_id
+    "abaliga",  # ABA League club id
+    "ibba",  # Israeli league team_uid (the club)
+    "kzs",  # Slovenian league club_id
+    "lkl",  # LKL team id
+    "sportality",  # Basketligaen (dbl) Genius team id
+    "nbl_rosetta",  # nbl_au / wnbl DataCore team UUIDs (ESPN's ids stay league nbl)
+    "kbl",  # KBL team_code (keeps its leading zero)
+    "bleague",  # B.LEAGUE TeamID
+    "shl",  # SHL StatNet team code
+    "hockeyallsvenskan",  # HockeyAllsvenskan (ha) team_statnet_id
+    "hockeyfrance",  # Ligue Magnus team_id
+    "hokej.cz",  # Czech Extraliga (elh) hokej.cz team id
 }
 # sources whose entity_id is a team's ESPN id but which name no team and add none: tools/build_index.py keys their marks
 # to the team (mark_aliases) and follows their conference marks' ESPN keys (conference_mark_aliases), while
