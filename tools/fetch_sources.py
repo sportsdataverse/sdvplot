@@ -79,6 +79,11 @@ IDENTITY_SOURCES = {
     "hockeyallsvenskan",  # HockeyAllsvenskan (ha) team_statnet_id
     "hockeyfrance",  # Ligue Magnus team_id
     "hokej.cz",  # Czech Extraliga (elh) hokej.cz team id
+    "acb",  # ACB club_id
+    "feb",  # FEB team-season id
+    "scb",  # bbl / dbbl SCB team id
+    "infobasket",  # VTB United League Infobasket TeamID
+    "wjbl",  # W League franchise team_id
 }
 # sources whose entity_id is a team's ESPN id but which name no team and add none: tools/build_index.py keys their marks
 # to the team (mark_aliases) and follows their conference marks' ESPN keys (conference_mark_aliases), while
