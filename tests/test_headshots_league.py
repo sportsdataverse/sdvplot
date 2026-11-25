@@ -1,10 +1,13 @@
 """Headshots by the league's own player id (``id_system="league"``, sdvplotR's ``id_type = "league"``): the CDN URL
 templates, the error for a league without them, the placement key, every adapter, and the datacenter 403 message."""
 
+import csv
 import hashlib
 import io
 import json
+import re
 import time
+from importlib import resources
 
 import numpy as np
 import polars as pl
@@ -28,6 +31,12 @@ TEMPLATES = {
     ),
     "nhl": ("8478402", "https://assets.nhle.com/mugs/nhl/latest/8478402.png"),
 }
+# MiLB: MLBAM people on mlbstatic's milb path (sdvplot only; a 2025 roster id probed 2026-11-25, a real photo)
+MILB = (
+    "701564",
+    "https://img.mlbstatic.com/mlb-photos/image/upload/w_213,d_people:generic:headshot:silo:current.png,"
+    "q_auto:best,f_auto/v1/people/701564/headshot/milb/current",
+)
 PLAYERS = ("2544", "201939")  # NBA Stats PERSON_IDs the adapter tests draw
 
 
@@ -35,6 +44,29 @@ PLAYERS = ("2544", "201939")  # NBA Stats PERSON_IDs the adapter tests draw
 def test_league_ids_build_each_cdns_url_as_sdvplotr_does(league):
     pid, url = TEMPLATES[league]
     assert _headshots.headshot_url(pid, league, id_system="league") == url
+
+
+def test_milb_ids_are_mlbam_ids_on_the_milb_photo_path():
+    assert _headshots.headshot_url(MILB[0], "milb", id_system="league") == MILB[1]
+    assert _headshots.headshot_url("abc", "milb", id_system="league") is None
+
+
+def test_f1_driver_ids_reach_their_commons_photo_and_only_a_free_one():
+    rows = list(csv.DictReader(io.StringIO(
+        resources.files("sdvplot").joinpath("data", _headshots.F1_HEADSHOTS).read_text(encoding="utf-8")
+    )))  # fmt: skip
+    assert len(rows) > 50 and len({r["driver_id"] for r in rows}) == len(rows)
+    for r in rows:
+        assert re.fullmatch(
+            r"https://upload\.wikimedia\.org/wikipedia/commons/thumb/[0-9a-f]/[0-9a-f]{2}/\S+", r["url"]
+        )
+        assert re.match(r"CC0|Public domain|CC BY", r["license"]), r
+    first = rows[0]
+    assert _headshots.headshot_url(first["driver_id"], "f1", id_system="league") == first["url"]
+    assert _headshots.headshot_url(f" {first['driver_id'].upper()} ", "f1", id_system="league") == first["url"]
+    assert _headshots.headshot_url("not_a_driver", "f1", id_system="league") is None
+    with pytest.raises(InputError, match=r"no ESPN headshots for league 'f1'.*id_system='league'"):
+        _headshots.headshot_url(first["driver_id"], "f1")
 
 
 # HockeyTech leagues: the player_id of their feeds on assets.leaguestat.com, the QMJHL under client code "lhjmq"
